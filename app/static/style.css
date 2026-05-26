@@ -1,0 +1,106 @@
+/* QuantumVault Academy — Custom Streamlit Styles */
+
+/* ── Fonts ── */
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=Fira+Code&display=swap');
+
+html, body, [class*="css"] {
+    font-family: 'Space Grotesk', sans-serif;
+}
+
+/* ── Hero Section ── */
+.hero {
+    background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+    border-radius: 16px;
+    padding: 3rem 2rem;
+    margin-bottom: 2rem;
+    text-align: center;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+.hero h1 {
+    color: #ffffff;
+    font-size: 2.8rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    text-shadow: 0 0 20px rgba(99, 179, 237, 0.5);
+}
+
+.hero .subtitle {
+    color: #a0c4ff;
+    font-size: 1.15rem;
+    max-width: 600px;
+    margin: 0 auto;
+    line-height: 1.7;
+}
+
+/* ── Sidebar ── */
+section[data-testid="stSidebar"] {
+    background: linear-gradient(180deg, #0d1117 0%, #161b22 100%);
+    border-right: 1px solid #30363d;
+}
+
+section[data-testid="stSidebar"] .stMarkdown {
+    color: #c9d1d9;
+}
+
+/* ── Buttons ── */
+.stButton > button {
+    background: linear-gradient(90deg, #4f46e5, #7c3aed);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    padding: 0.5rem 1.5rem;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.35);
+}
+
+.stButton > button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(79, 70, 229, 0.5);
+}
+
+/* ── Code blocks ── */
+.stCodeBlock {
+    font-family: 'Fira Code', monospace !important;
+    border-radius: 8px !important;
+}
+
+/* ── Metric cards ── */
+[data-testid="stMetric"] {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    padding: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* ── Tabs ── */
+.stTabs [data-baseweb="tab-list"] {
+    gap: 4px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 10px;
+    padding: 4px;
+}
+
+.stTabs [data-baseweb="tab"] {
+    border-radius: 8px;
+    font-weight: 600;
+}
+
+/* ── Success / Error / Info boxes ── */
+.stSuccess {
+    border-left: 4px solid #10b981;
+    border-radius: 8px;
+}
+.stError {
+    border-left: 4px solid #ef4444;
+    border-radius: 8px;
+}
+.stInfo {
+    border-left: 4px solid #3b82f6;
+    border-radius: 8px;
+}
+.stWarning {
+    border-left: 4px solid #f59e0b;
+    border-radius: 8px;
+}

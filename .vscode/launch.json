@@ -1,0 +1,35 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "🚀 Run QuantumVault (Streamlit)",
+      "type": "python",
+      "request": "launch",
+      "module": "streamlit",
+      "args": ["run", "app/main.py", "--server.port=8501"],
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}/app"
+      },
+      "justMyCode": true
+    },
+    {
+      "name": "🧪 Run All Tests (pytest)",
+      "type": "python",
+      "request": "launch",
+      "module": "pytest",
+      "args": ["tests/", "-v", "--tb=short"],
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}/app"
+      },
+      "justMyCode": false
+    },
+    {
+      "name": "🔒 Security Scan (bandit)",
+      "type": "python",
+      "request": "launch",
+      "module": "bandit",
+      "args": ["-r", "app/", "-ll"],
+      "justMyCode": false
+    }
+  ]
+}

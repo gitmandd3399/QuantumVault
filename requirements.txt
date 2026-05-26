@@ -1,0 +1,28 @@
+# QuantumVault Academy — Python Dependencies
+# Pin ALL versions for reproducibility and security auditability.
+# After updating any package, run: pip-audit && safety check
+
+# ── Core UI ──────────────────────────────────────────────────────────────────
+streamlit==1.35.0
+
+# ── Security ─────────────────────────────────────────────────────────────────
+bleach==6.1.0              # HTML sanitisation
+python-dotenv==1.0.1       # .env secrets management
+
+# ── Testing & Static Analysis ─────────────────────────────────────────────────
+pytest==8.2.0
+bandit==1.7.8              # Static security analysis
+pip-audit==2.7.3           # CVE scanning of dependencies
+safety==3.2.0              # Alternative CVE checker
+
+# ── Visualisation (optional for charts) ──────────────────────────────────────
+plotly==5.22.0
+
+# ── Post-Quantum Cryptography (production use) ────────────────────────────────
+# Uncomment after installing liboqs system library:
+# https://github.com/open-quantum-safe/liboqs-python
+# liboqs-python==0.10.0
+
+# ── Development utilities ─────────────────────────────────────────────────────
+# pylint==3.2.0
+# mypy==1.10.0
