@@ -13,6 +13,12 @@ Concepts taught:
 import streamlit as st
 from utils.security import sanitize_input, check_rate_limit
 
+# ── XP Constants ──────────────────────────────────────────────────────────────
+XP_CORRECT_ANSWER = 10
+XP_STREAK_BONUS = 5
+XP_BADGE_EARNED = 25
+XP_SPEED_BONUS = 15
+XP_VOCAB_COMPLETE = 5
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -123,9 +129,31 @@ def render_elementary():
             award_badge("🎨 Color Cryptographer", xp=10)
 
     # ── Tab 3: Lock Puzzle ────────────────────────────────────────────────────
+    
     with tab3:
         st.subheader("🔒 Which Lock is Quantum-Safe?")
         st.markdown("Help Agent Pixel choose the right lock! Tap the quantum-safe one:")
+
+        # ── Timer setup ───────────────────────────────────────────────────
+        import time
+        if "quiz_start" not in st.session_state:
+            st.session_state.quiz_start = time.time()
+
+        elapsed = int(time.time() - st.session_state.quiz_start)
+        remaining = max(0, 30 - elapsed)
+
+        if remaining > 0:
+            st.info(f"⏱️ Time remaining: **{remaining} seconds**")
+        else:
+            st.warning("⏰ Time's up! Try again.")
+            st.session_state.quiz_start = time.time()
+
+        options = {
+            "🔑 RSA Lock — math with big numbers": False,
+            "🌐 Lattice Lock — tangled grid math": True,
+            "🔓 Padlock — just a key": False,
+            "🧮 ECC Lock — elliptic curves": False,
+        }
 
         options = {
             "🔑 RSA Lock — math with big numbers": False,
@@ -145,7 +173,12 @@ def render_elementary():
                     st.session_state.lock_answered = True
                     if is_correct:
                         st.success("✅ Correct! The Lattice Lock stumps quantum monsters!")
+                        if elapsed < 10:
+                            st.balloons()
+                            st.success("⚡ Speed bonus! +15 XP")
+                            st.session_state.xp += 15
                         award_badge("🔒 Lock Expert", xp=15)
+                        st.session_state.quiz_start = time.time()
                     else:
                         st.error(
                             "❌ Not quite. Hint: quantum computers are great at number "
