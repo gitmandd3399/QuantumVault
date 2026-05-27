@@ -3,7 +3,9 @@
 /* ── Fonts ── */
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=Fira+Code&display=swap');
 
-html, body, [class*="css"] {
+html,
+body,
+[class*="css"] {
     font-family: 'Space Grotesk', sans-serif;
 }
 
@@ -44,7 +46,7 @@ section[data-testid="stSidebar"] .stMarkdown {
 }
 
 /* ── Buttons ── */
-.stButton > button {
+.stButton>button {
     background: linear-gradient(90deg, #4f46e5, #7c3aed);
     color: white;
     border: none;
@@ -55,7 +57,7 @@ section[data-testid="stSidebar"] .stMarkdown {
     box-shadow: 0 4px 12px rgba(79, 70, 229, 0.35);
 }
 
-.stButton > button:hover {
+.stButton>button:hover {
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(79, 70, 229, 0.5);
 }
@@ -92,15 +94,82 @@ section[data-testid="stSidebar"] .stMarkdown {
     border-left: 4px solid #10b981;
     border-radius: 8px;
 }
+
 .stError {
     border-left: 4px solid #ef4444;
     border-radius: 8px;
 }
+
 .stInfo {
     border-left: 4px solid #3b82f6;
     border-radius: 8px;
 }
+
 .stWarning {
     border-left: 4px solid #f59e0b;
     border-radius: 8px;
+}
+
+/* ── Badge Pop Animation ─────────────────────────────────────────────────── */
+@keyframes badge-pop {
+    0% {
+        transform: scale(0.5);
+        opacity: 0;
+    }
+
+    70% {
+        transform: scale(1.2);
+        opacity: 1;
+    }
+
+    100% {
+        transform: scale(1.0);
+        opacity: 1;
+    }
+}
+
+@keyframes flash-green {
+    0% {
+        background-color: rgba(16, 185, 129, 0);
+    }
+
+    30% {
+        background-color: rgba(16, 185, 129, 0.2);
+    }
+
+    100% {
+        background-color: rgba(16, 185, 129, 0);
+    }
+}
+
+@keyframes flash-red {
+    0% {
+        background-color: rgba(239, 68, 68, 0);
+    }
+
+    30% {
+        background-color: rgba(239, 68, 68, 0.15);
+    }
+
+    100% {
+        background-color: rgba(239, 68, 68, 0);
+    }
+}
+
+.badge-pop {
+    animation: badge-pop 0.4s ease-out forwards;
+    display: inline-block;
+    font-size: 2rem;
+}
+
+.flash-correct {
+    animation: flash-green 0.6s ease-out forwards;
+    border-radius: 12px;
+    padding: 8px;
+}
+
+.flash-wrong {
+    animation: flash-red 0.6s ease-out forwards;
+    border-radius: 12px;
+    padding: 8px;
 }

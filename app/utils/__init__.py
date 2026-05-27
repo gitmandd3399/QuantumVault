@@ -138,3 +138,23 @@ COPPA_NOTICE = (
     "from users under 13 years of age, in compliance with COPPA. "
     "No account creation is required to use any learning module."
 )
+
+def play_sound(sound_type: str = "correct") -> str:
+    """
+    Return an HTML snippet that plays a sound effect.
+    Uses free sounds from a public CDN — no file uploads needed.
+    sound_type: 'correct' | 'wrong' | 'badge' | 'levelup'
+    """
+    sounds = {
+        "correct": "https://cdn.freesound.org/previews/320/320655_5260872-lq.mp3",
+        "wrong":   "https://cdn.freesound.org/previews/142/142608_1840739-lq.mp3",
+        "badge":   "https://cdn.freesound.org/previews/270/270404_5123851-lq.mp3",
+        "levelup": "https://cdn.freesound.org/previews/341/341695_5858296-lq.mp3",
+    }
+    url = sounds.get(sound_type, sounds["correct"])
+    return f'<audio autoplay><source src="{url}" type="audio/mpeg"></audio>'
+
+
+def show_badge_pop(badge: str) -> str:
+    """Return HTML for an animated badge pop display."""
+    return f'<div class="badge-pop">{badge}</div>'

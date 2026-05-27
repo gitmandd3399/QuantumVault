@@ -26,9 +26,16 @@ def award_badge(badge: str, xp: int = 10):
     if badge not in st.session_state.badges:
         st.session_state.badges.append(badge)
         st.session_state.xp += xp
+        from utils import play_sound, show_badge_pop
+        st.markdown(play_sound("badge"), unsafe_allow_html=True)
+        st.markdown(
+            f'<div class="flash-correct">'
+            f'{show_badge_pop("🏅")} '
+            f'<strong>Badge Earned: {badge}!</strong> +{xp} XP'
+            f'</div>',
+            unsafe_allow_html=True
+        )
         st.balloons()
-        st.success(f"🏅 You earned the **{badge}** badge! +{xp} XP")
-
 
 # ── Main render ───────────────────────────────────────────────────────────────
 

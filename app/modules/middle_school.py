@@ -22,14 +22,23 @@ XP_BADGE_EARNED = 25
 XP_SPEED_BONUS = 15
 XP_VOCAB_COMPLETE = 5
 
+
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
-def award_badge(badge: str, xp: int = 15):
+def award_badge(badge: str, xp: int = 10):
     if badge not in st.session_state.badges:
         st.session_state.badges.append(badge)
         st.session_state.xp += xp
+        from utils import play_sound, show_badge_pop
+        st.markdown(play_sound("badge"), unsafe_allow_html=True)
+        st.markdown(
+            f'<div class="flash-correct">'
+            f'{show_badge_pop("🏅")} '
+            f'<strong>Badge Earned: {badge}!</strong> +{xp} XP'
+            f'</div>',
+            unsafe_allow_html=True
+        )
         st.balloons()
-        st.success(f"🏅 **{badge}** badge earned! +{xp} XP")
 
 
 # ── Main render ───────────────────────────────────────────────────────────────
@@ -60,6 +69,70 @@ def render_middle_school():
             - An attacker has to find `s` — nearly impossible with lattice noise!
             """
         )
+
+# ── Live Lattice Visualizer ───────────────────────────────────────
+        import plotly.graph_objects as go
+        import numpy as np
+
+        grid_range = range(-5, 6)
+        x_points = [x for x in grid_range for _ in grid_range]
+        y_points = [y for _ in grid_range for y in grid_range]
+
+        if "target_x" not in st.session_state:
+            st.session_state.target_x = round(random.uniform(-4, 4), 2)
+            st.session_state.target_y = round(random.uniform(-4, 4), 2)
+
+        tx = st.session_state.target_x
+        ty = st.session_state.target_y
+        closest_x = round(tx)
+        closest_y = round(ty)
+
+        fig = go.Figure()
+        fig.add_trace(go.Scatter(
+            x=x_points, y=y_points,
+            mode="markers",
+            marker=dict(size=8, color="#4f46e5"),
+            name="Lattice points"
+        ))
+        fig.add_trace(go.Scatter(
+            x=[tx], y=[ty],
+            mode="markers",
+            marker=dict(size=14, color="#ef4444", symbol="star"),
+            name="Mystery point"
+        ))
+        fig.add_trace(go.Scatter(
+            x=[closest_x], y=[closest_y],
+            mode="markers",
+            marker=dict(size=14, color="#10b981", symbol="circle"),
+            name="Closest lattice point"
+        ))
+        fig.add_trace(go.Scatter(
+            x=[tx, closest_x], y=[ty, closest_y],
+            mode="lines",
+            line=dict(color="#f59e0b", width=2, dash="dash"),
+            name="Distance"
+        ))
+        fig.update_layout(
+            height=400,
+            showlegend=True,
+            plot_bgcolor="rgba(0,0,0,0)",
+            paper_bgcolor="rgba(0,0,0,0)",
+            xaxis=dict(showgrid=False, zeroline=False),
+            yaxis=dict(showgrid=False, zeroline=False),
+            margin=dict(l=20, r=20, t=20, b=20),
+        )
+
+        st.plotly_chart(fig, use_container_width=True)
+        st.caption(
+            f"⭐ Mystery point: ({tx}, {ty}) — "
+            f"Closest lattice point: ({closest_x}, {closest_y})"
+        )
+        if st.button("🎲 New mystery point", key="new_target"):
+            st.session_state.target_x = round(random.uniform(-4, 4), 2)
+            st.session_state.target_y = round(random.uniform(-4, 4), 2)
+            st.rerun()
+
+        st.markdown("### 🎮 Mini Lattice Challenge")
 
         st.markdown("### 🎮 Mini Lattice Challenge")
         st.markdown(
