@@ -15,6 +15,12 @@ import random
 import streamlit as st
 from utils.security import sanitize_input, check_rate_limit, sha256_hex
 
+# ── XP Constants ──────────────────────────────────────────────────────────────
+XP_CORRECT_ANSWER = 10
+XP_STREAK_BONUS = 5
+XP_BADGE_EARNED = 25
+XP_SPEED_BONUS = 15
+XP_VOCAB_COMPLETE = 5
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
