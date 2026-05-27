@@ -3,11 +3,14 @@ QuantumVault Academy — Main Entry Point
 Teaches Post-Quantum Cryptography from K–12.
 """
 
+import os
+
 import streamlit as st
 from modules.elementary import render_elementary
 from modules.middle_school import render_middle_school
 from modules.high_school import render_high_school
 from utils.security import sanitize_input
+from utils.security import get_level, get_level_progress, get_next_level_xp
 
 # ── Page config ──────────────────────────────────────────────────────────────
 st.set_page_config(
@@ -18,7 +21,6 @@ st.set_page_config(
 )
 
 # ── Custom CSS ────────────────────────────────────────────────────────────────
-import os
 with open(os.path.join(os.path.dirname(__file__), "static/style.css")) as f:
     st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
 
@@ -36,7 +38,8 @@ if "xp" not in st.session_state:
 def sidebar():
     st.sidebar.image("static/logo.png", use_column_width=True) if False else None
     st.sidebar.title("🔐 QuantumVault Academy")
-    st.sidebar.markdown("---")
+    st.sidebar.markdown("🔒 **Privacy:** This app collects no personal data. "
+    "Safe for all ages.")
 
     grade = st.sidebar.selectbox(
         "Choose your grade level:",
@@ -47,9 +50,24 @@ def sidebar():
         st.session_state.level = grade
 
     st.sidebar.markdown("---")
-    st.sidebar.markdown(f"⭐ **XP:** {st.session_state.xp}")
+    
+
+    xp = st.session_state.xp
+    level = get_level(xp)
+    progress = get_level_progress(xp)
+    next_xp = get_next_level_xp(xp)
+
+    st.sidebar.markdown(f"### {level}")
+    bar_filled = int(progress * 10)
+    bar_empty = 10 - bar_filled
+    bar_visual = "🟦" * bar_filled + "⬜" * bar_empty
+    st.sidebar.markdown(f"{bar_visual}")
+    st.sidebar.caption(f"⭐ {xp} XP — {next_xp - xp} XP to next rank")
+
     if st.session_state.badges:
-        st.sidebar.markdown("🏅 **Badges:** " + " ".join(st.session_state.badges))
+        st.sidebar.markdown("**🏅 Badges earned:**")
+        for badge in st.session_state.badges:
+            st.sidebar.markdown(f"- {badge}")
     st.sidebar.markdown("---")
     st.sidebar.info(
         "QuantumVault Academy is a safe, ad-free learning environment. "
