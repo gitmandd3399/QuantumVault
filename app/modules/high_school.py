@@ -17,6 +17,12 @@ import time
 import streamlit as st
 from utils.security import sanitize_input, check_rate_limit
 
+# ── XP Constants ──────────────────────────────────────────────────────────────
+XP_CORRECT_ANSWER = 10
+XP_STREAK_BONUS = 5
+XP_BADGE_EARNED = 25
+XP_SPEED_BONUS = 15
+XP_VOCAB_COMPLETE = 5
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -127,6 +133,81 @@ def render_high_school():
             > the hard math. It's a trade-off: slightly bigger keys for quantum security.
             """
         )
+
+        st.markdown("---")
+        st.markdown("### ⚡ Quantum Computer Attack Simulator")
+        st.markdown(
+            "Watch what happens when a quantum computer attacks RSA vs Kyber. "
+            "Click **Start Race** to see the difference in real time."
+        )
+
+        if st.button("🚀 Start Race", key="start_race"):
+            import time
+
+            col1, col2 = st.columns(2)
+
+            with col1:
+                st.error("🔑 RSA-2048")
+                st.caption("Classical encryption — vulnerable to Shor's Algorithm")
+                rsa_bar = st.progress(0)
+                rsa_status = st.empty()
+
+            with col2:
+                st.success("🔐 ML-KEM (Kyber)")
+                st.caption("Post-quantum encryption — lattice-based")
+                kyber_bar = st.progress(0)
+                kyber_status = st.empty()
+
+            # ── Simulate the race ─────────────────────────────────────────
+            rsa_progress = 0
+            kyber_progress = 0
+
+            for step in range(100):
+                # RSA gets cracked fast by quantum (Shor's algorithm)
+                rsa_progress = min(100, rsa_progress + 4)
+
+                # Kyber barely moves — quantum gets stuck on lattice math
+                if step < 30:
+                    kyber_progress = min(100, kyber_progress + 0.3)
+                else:
+                    kyber_progress = min(15, kyber_progress + 0.05)
+
+                rsa_bar.progress(int(rsa_progress))
+                kyber_bar.progress(int(kyber_progress))
+
+                if rsa_progress < 100:
+                    rsa_status.markdown(
+                        f"💥 Quantum cracking... **{int(rsa_progress)}%** broken"
+                    )
+                else:
+                    rsa_status.markdown("💀 **RSA BROKEN** — key exposed!")
+
+                if kyber_progress < 15:
+                    kyber_status.markdown(
+                        f"🛡️ Quantum stuck on lattice... **{int(kyber_progress)}%** progress"
+                    )
+                else:
+                    kyber_status.markdown("✅ **Kyber HOLDING** — quantum computer lost!")
+
+                time.sleep(0.05)
+
+            # ── Final verdict ─────────────────────────────────────────────
+            st.markdown("---")
+            verdict_col1, verdict_col2 = st.columns(2)
+            with verdict_col1:
+                st.error(
+                    "❌ **RSA Result**\n\n"
+                    "Broken in minutes by a cryptographically-relevant "
+                    "quantum computer using Shor's Algorithm."
+                )
+            with verdict_col2:
+                st.success(
+                    "✅ **Kyber Result**\n\n"
+                    "Quantum computer made less than 15% progress. "
+                    "Lattice problems remain hard even for quantum!"
+                )
+            st.balloons()
+            award_badge("⚡ Quantum Race Champion", xp=30)
 
         if st.button("⚖️ I understand the trade-offs!", key="lab_done"):
             award_badge("⚖️ Algorithm Analyst", xp=25)
