@@ -46,8 +46,8 @@ def render_elementary():
         "that even the scariest quantum monsters can't crack. 🐉🔐"
     )
 
-    tab1, tab2, tab3, tab4 = st.tabs(
-        ["📖 Story Time", "🎨 Color Mixing Keys", "🔒 Lock Puzzle", "📝 Vocab Cards"]
+    tab1, tab2, tab3, tab4, tab5 = st.tabs(
+        ["📖 Story Time", "🎨 Color Mixing Keys", "🔒 Lock Puzzle", "📝 Vocab Cards", "🧱 Mini Game"]
     )
 
     # ── Tab 1: Story Mode ──────────────────────────────────────────────────────
@@ -179,7 +179,13 @@ def render_elementary():
                 else:
                     st.session_state.lock_answered = True
                     if is_correct:
-                        st.success("✅ Correct! The Lattice Lock stumps quantum monsters!")
+                        from utils import play_sound
+                        st.markdown(play_sound("correct"), unsafe_allow_html=True)
+                        st.markdown(
+                            '<div class="flash-correct">✅ Correct! '
+                            'The Lattice Lock stumps quantum monsters!</div>',
+                            unsafe_allow_html=True
+                        )
                         if elapsed < 10:
                             st.balloons()
                             st.success("⚡ Speed bonus! +15 XP")
@@ -187,9 +193,13 @@ def render_elementary():
                         award_badge("🔒 Lock Expert", xp=15)
                         st.session_state.quiz_start = time.time()
                     else:
-                        st.error(
-                            "❌ Not quite. Hint: quantum computers are great at number "
-                            "problems. What kind of math is hardest for them?"
+                        from utils import play_sound
+                        st.markdown(play_sound("wrong"), unsafe_allow_html=True)
+                        st.markdown(
+                            '<div class="flash-wrong">❌ Not quite! '
+                            f"You've tried {st.session_state.lattice_attempts} time(s). "
+                            'The noise makes it tricky, right? That\'s the whole point!</div>',
+                            unsafe_allow_html=True
                         )
 
     # ── Tab 4: Vocabulary Cards ───────────────────────────────────────────────
@@ -218,3 +228,7 @@ def render_elementary():
                     award_badge("📚 Vocab Vault", xp=5)
                 else:
                     st.warning("Tell me a little more — you've got this!")
+
+    with tab5:
+        from modules.games import render_falling_blocks
+        render_falling_blocks()

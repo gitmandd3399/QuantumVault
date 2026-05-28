@@ -50,8 +50,8 @@ def render_middle_school():
         "post-quantum cryptography. Let's go! 🚀"
     )
 
-    tab1, tab2, tab3, tab4 = st.tabs(
-        ["🏗️ Lattice Explorer", "🏭 Hash Factory", "⚡ Quantum Race", "🔑 Key Workshop"]
+    tab1, tab2, tab3, tab4, tab5 = st.tabs(
+        ["📖 Story Time", "🎨 Color Mixing Keys", "🔒 Lock Puzzle", "📝 Vocab Cards", "🧱 Mini Game"]
     )
 
     # ── Tab 1: Lattice Explorer ───────────────────────────────────────────────
@@ -300,3 +300,7 @@ def render_middle_school():
                 f"{k['A'] * k['s'] + k['e']} ≡ **{k['b']}** (mod {mod}) ✅"
             )
             award_badge("🔑 Key Crafter", xp=25)
+
+    with tab5:
+        from modules.games import render_lattice_maze
+        render_lattice_maze()

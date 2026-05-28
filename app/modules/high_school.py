@@ -51,12 +51,13 @@ def render_high_school():
         "real standards, and real Python code. Let's build the future of security. 🛡️"
     )
 
-    tab1, tab2, tab3, tab4, tab5 = st.tabs([
+    tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
         "📅 NIST Timeline",
         "⚖️ Algorithm Lab",
         "💻 Code It Yourself",
         "🛡️ Threat Modeler",
         "🔬 Research Journal",
+        "🎮 Tower Defense",
     ])
 
     # ── Tab 1: NIST PQC Timeline ──────────────────────────────────────────────
@@ -422,3 +423,7 @@ if __name__ == "__main__":
             for j in reversed(st.session_state.journal):
                 with st.expander(f"📝 {j['topic']} — {j['timestamp']}"):
                     st.write(j["entry"])
+
+    with tab6:
+        from modules.games import render_tower_defense
+        render_tower_defense()
