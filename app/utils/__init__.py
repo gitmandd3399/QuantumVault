@@ -141,20 +141,70 @@ COPPA_NOTICE = (
 
 def play_sound(sound_type: str = "correct") -> str:
     """
-    Return an HTML snippet that plays a sound effect.
-    Uses free sounds from a public CDN — no file uploads needed.
-    sound_type: 'correct' | 'wrong' | 'badge' | 'levelup'
+    Play a sound using Web Audio API — works on Streamlit Cloud.
+    No external CDN needed, generates tones directly in the browser.
     """
     sounds = {
-        "correct": "https://cdn.freesound.org/previews/320/320655_5260872-lq.mp3",
-        "wrong":   "https://cdn.freesound.org/previews/142/142608_1840739-lq.mp3",
-        "badge":   "https://cdn.freesound.org/previews/270/270404_5123851-lq.mp3",
-        "levelup": "https://cdn.freesound.org/previews/341/341695_5858296-lq.mp3",
+        "correct": "playTone(880, 0.1, 'sine', 0.3);",
+        "wrong":   "playTone(220, 0.15, 'sawtooth', 0.4);",
+        "badge":   "playFanfare();",
+        "levelup": "playLevelUp();",
     }
-    url = sounds.get(sound_type, sounds["correct"])
-    return f'<audio autoplay><source src="{url}" type="audio/mpeg"></audio>'
-
-
+    action = sounds.get(sound_type, sounds["correct"])
+    return f"""
+    <script>
+    function playTone(freq, vol, type, duration) {{
+        try {{
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.frequency.setValueAtTime(freq, ctx.currentTime);
+            osc.type = type;
+            gain.gain.setValueAtTime(vol, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+            osc.start(ctx.currentTime);
+            osc.stop(ctx.currentTime + duration);
+        }} catch(e) {{ console.log('Audio not supported'); }}
+    }}
+    function playFanfare() {{
+        try {{
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            [[523,0],[659,0.1],[784,0.2],[1047,0.3]].forEach(([f,t]) => {{
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.frequency.value = f;
+                osc.type = 'sine';
+                gain.gain.setValueAtTime(0.15, ctx.currentTime + t);
+                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + t + 0.2);
+                osc.start(ctx.currentTime + t);
+                osc.stop(ctx.currentTime + t + 0.3);
+            }});
+        }} catch(e) {{ console.log('Audio not supported'); }}
+    }}
+    function playLevelUp() {{
+        try {{
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            [[523,0],[659,0.15],[784,0.3],[1047,0.45],[1319,0.6]].forEach(([f,t]) => {{
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.frequency.value = f;
+                osc.type = 'sine';
+                gain.gain.setValueAtTime(0.15, ctx.currentTime + t);
+                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + t + 0.25);
+                osc.start(ctx.currentTime + t);
+                osc.stop(ctx.currentTime + t + 0.35);
+            }});
+        }} catch(e) {{ console.log('Audio not supported'); }}
+    }}
+    {action}
+    </script>
+    """
 def show_badge_pop(badge: str) -> str:
     """Return HTML for an animated badge pop display."""
     return f'<div class="badge-pop">{badge}</div>'
