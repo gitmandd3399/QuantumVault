@@ -945,3 +945,509 @@ def render_zombie_blast(difficulty: str = "easy"):
     zx.fillText('Press ▶ Start to play', W/2, H/2+45);
     </script>
     """, height=600)
+
+def render_quantumcraft_elementary():
+    """K-5: QuantumCraft — Crypto Kingdom top-down block world."""
+    st.subheader("⛏️ QuantumCraft — Crypto Kingdom!")
+    st.markdown(
+        "Mine **crypto blocks** and build your quantum-safe fortress! "
+        "WASD or arrow keys to move. Press **E** to mine, **F** to place blocks. "
+        "Avoid the 💀 quantum creepers!"
+    )
+    components.html("""
+    <style>
+        #qcCanvas{border:2px solid #10b981;border-radius:12px;display:block;margin:0 auto;}
+        .qc-wrap{text-align:center;font-family:sans-serif;}
+        .qc-bar{display:flex;justify-content:space-between;max-width:480px;margin:6px auto;color:#a5b4fc;font-size:12px;font-weight:bold;}
+        .qc-inv{display:flex;justify-content:center;gap:6px;margin:6px;flex-wrap:wrap;}
+        .inv-slot{background:#1e293b;border:2px solid #4f46e5;border-radius:6px;padding:4px 8px;font-size:11px;color:white;min-width:60px;}
+        #qc-msg{font-size:12px;color:#34d399;min-height:18px;margin:3px;}
+        .qc-btn{padding:7px 14px;border-radius:8px;border:none;cursor:pointer;font-size:12px;font-weight:bold;background:#10b981;color:white;margin:3px;}
+    </style>
+    <div class="qc-wrap">
+        <div class="qc-bar">
+            <span>HP:<span id="qhp">100</span></span>
+            <span>Score:<span id="qscore">0</span></span>
+            <span>Mined:<span id="qmined">0</span></span>
+            <span>Level:<span id="qlevel">1</span></span>
+        </div>
+        <canvas id="qcCanvas" width="480" height="400"></canvas>
+        <div id="qc-msg">WASD to move, E to mine, F to place!</div>
+        <div class="qc-inv">
+            <div class="inv-slot" id="slot-kyber">Kyber:0</div>
+            <div class="inv-slot" id="slot-lattice">Lattice:0</div>
+            <div class="inv-slot" id="slot-hash">Hash:0</div>
+            <div class="inv-slot" id="slot-key">Keys:0</div>
+        </div>
+        <button class="qc-btn" onclick="startQC()">Start</button>
+        <button class="qc-btn" onclick="mineBlock()">Mine(E)</button>
+        <button class="qc-btn" onclick="placeBlock()">Place(F)</button>
+    </div>
+    <script>
+    const qc=document.getElementById('qcCanvas');
+    const qx=qc.getContext('2d');
+    const CELL=40,COLS=12,ROWS=10;
+    const BLOCKS={
+        empty:{color:'#0f172a',emoji:'',solid:false,mineable:false},
+        grass:{color:'#166534',emoji:'🌿',solid:true,mineable:false},
+        kyber:{color:'#10b981',emoji:'🔐',solid:true,mineable:true,item:'kyber',pts:10},
+        lattice:{color:'#3b82f6',emoji:'🏗',solid:true,mineable:true,item:'lattice',pts:15},
+        hash:{color:'#8b5cf6',emoji:'#',solid:true,mineable:true,item:'hash',pts:20},
+        key:{color:'#f59e0b',emoji:'K',solid:true,mineable:true,item:'key',pts:30},
+        wall:{color:'#1e293b',emoji:'',solid:true,mineable:false},
+        chest:{color:'#b45309',emoji:'C',solid:true,mineable:true,item:'chest',pts:50},
+        placed:{color:'#4f46e5',emoji:'',solid:true,mineable:false},
+    };
+    let world=[],player,enemies,inventory,score,qhp,level,running,mined,keys={};
+    function genWorld(){
+        world=[];
+        for(let r=0;r<ROWS;r++){world[r]=[];for(let c=0;c<COLS;c++){
+            if(r===0||r===ROWS-1||c===0||c===COLS-1){world[r][c]='wall';continue;}
+            const rn=Math.random();
+            if(rn<0.10)world[r][c]='kyber';
+            else if(rn<0.18)world[r][c]='lattice';
+            else if(rn<0.24)world[r][c]='hash';
+            else if(rn<0.27)world[r][c]='key';
+            else if(rn<0.29)world[r][c]='chest';
+            else if(rn<0.40)world[r][c]='grass';
+            else world[r][c]='empty';
+        }}
+        world[5][1]='empty';world[5][2]='empty';world[4][1]='empty';world[4][2]='empty';
+    }
+    function startQC(){
+        genWorld();player={x:1,y:4};enemies=[];
+        inventory={kyber:0,lattice:0,hash:0,key:0,chest:0};
+        score=0;qhp=100;level=1;running=true;mined=0;
+        for(let i=0;i<4;i++)spawnC();
+        document.getElementById('qc-msg').textContent='Mine the glowing crypto blocks!';
+        updateUI();cancelAnimationFrame(window._qcF);gLoop();
+    }
+    function spawnC(){
+        const x=Math.floor(Math.random()*(COLS-4))+COLS-5;
+        const y=Math.floor(Math.random()*(ROWS-2))+1;
+        if(world[y]&&world[y][x]==='empty')enemies.push({x,y,timer:0,rate:45});
+    }
+    function canWalk(x,y){
+        if(x<0||y<0||x>=COLS||y>=ROWS)return false;
+        const b=BLOCKS[world[y][x]];return b&&!b.solid;
+    }
+    function mineBlock(){
+        if(!running)return;
+        const dirs=[{dx:0,dy:-1},{dx:0,dy:1},{dx:-1,dy:0},{dx:1,dy:0}];
+        for(const d of dirs){
+            const nx=player.x+d.dx,ny=player.y+d.dy;
+            if(nx>=0&&ny>=0&&nx<COLS&&ny<ROWS){
+                const bt=world[ny][nx],b=BLOCKS[bt];
+                if(b&&b.mineable){
+                    if(b.item)inventory[b.item]=(inventory[b.item]||0)+1;
+                    score+=b.pts;mined++;world[ny][nx]='empty';
+                    document.getElementById('qc-msg').textContent='Mined '+bt+'! +'+b.pts+' pts';
+                    updateUI();
+                    if(mined>=level*8){level++;document.getElementById('qlevel').textContent=level;genWorld();for(let i=0;i<level+2;i++)spawnC();}
+                    return;
+                }
+            }
+        }
+    }
+    function placeBlock(){
+        if(!running||inventory.kyber<=0)return;
+        const dirs=[{dx:0,dy:-1},{dx:1,dy:0},{dx:-1,dy:0},{dx:0,dy:1}];
+        for(const d of dirs){
+            const nx=player.x+d.dx,ny=player.y+d.dy;
+            if(nx>=0&&ny>=0&&nx<COLS&&ny<ROWS&&world[ny][nx]==='empty'){
+                inventory.kyber--;world[ny][nx]='placed';
+                document.getElementById('qc-msg').textContent='Kyber wall placed!';
+                updateUI();return;
+            }
+        }
+    }
+    function updateUI(){
+        document.getElementById('qscore').textContent=score;
+        document.getElementById('qhp').textContent=Math.max(0,qhp);
+        document.getElementById('qmined').textContent=mined;
+        document.getElementById('slot-kyber').textContent='Kyber:'+inventory.kyber;
+        document.getElementById('slot-lattice').textContent='Lattice:'+inventory.lattice;
+        document.getElementById('slot-hash').textContent='Hash:'+inventory.hash;
+        document.getElementById('slot-key').textContent='Keys:'+inventory.key;
+    }
+    document.addEventListener('keydown',e=>{
+        keys[e.key]=true;
+        if(e.key==='e'||e.key==='E')mineBlock();
+        if(e.key==='f'||e.key==='F')placeBlock();
+    });
+    document.addEventListener('keyup',e=>{keys[e.key]=false;});
+    let mt=0;
+    function gLoop(){
+        window._qcF=requestAnimationFrame(gLoop);mt++;
+        if(mt>=8){mt=0;if(!running)return;
+            let nx=player.x,ny=player.y;
+            if(keys['ArrowUp']||keys['w'])ny--;
+            if(keys['ArrowDown']||keys['s'])ny++;
+            if(keys['ArrowLeft']||keys['a'])nx--;
+            if(keys['ArrowRight']||keys['d'])nx++;
+            if(canWalk(nx,ny)){player.x=nx;player.y=ny;}
+            enemies.forEach((e,i)=>{
+                e.timer++;if(e.timer<e.rate)return;e.timer=0;
+                const dx=player.x-e.x,dy=player.y-e.y;
+                const moves=[];
+                if(dx>0&&canWalk(e.x+1,e.y))moves.push({x:e.x+1,y:e.y});
+                if(dx<0&&canWalk(e.x-1,e.y))moves.push({x:e.x-1,y:e.y});
+                if(dy>0&&canWalk(e.x,e.y+1))moves.push({x:e.x,y:e.y+1});
+                if(dy<0&&canWalk(e.x,e.y-1))moves.push({x:e.x,y:e.y-1});
+                if(moves.length>0){const m=moves[0];e.x=m.x;e.y=m.y;}
+                if(e.x===player.x&&e.y===player.y){
+                    qhp-=15;updateUI();enemies.splice(i,1);
+                    if(qhp<=0){running=false;
+                        qx.fillStyle='rgba(0,0,0,0.85)';qx.fillRect(0,0,480,400);
+                        qx.fillStyle='#ef4444';qx.font='bold 26px sans-serif';qx.textAlign='center';
+                        qx.fillText('Quantum Won! Score:'+score,240,200);
+                    }
+                }
+            });
+        }
+        draw();
+    }
+    function draw(){
+        qx.clearRect(0,0,480,400);
+        for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){
+            const b=BLOCKS[world[r][c]];if(!b)continue;
+            qx.fillStyle=b.color;qx.fillRect(c*CELL,r*CELL,CELL,CELL);
+            qx.strokeStyle='rgba(255,255,255,0.05)';qx.strokeRect(c*CELL,r*CELL,CELL,CELL);
+            if(b.emoji){qx.font='20px sans-serif';qx.textAlign='center';qx.fillText(b.emoji,c*CELL+20,r*CELL+28);}
+            if(b.mineable){qx.strokeStyle='rgba(255,255,255,0.3)';qx.lineWidth=1.5;qx.strokeRect(c*CELL+2,r*CELL+2,CELL-4,CELL-4);}
+        }
+        enemies.forEach(e=>{qx.font='22px sans-serif';qx.textAlign='center';qx.fillText('X',e.x*CELL+20,e.y*CELL+28);});
+        qx.font='24px sans-serif';qx.textAlign='center';qx.fillText('P',player.x*CELL+20,player.y*CELL+28);
+        qx.strokeStyle='#10b981';qx.lineWidth=2;qx.strokeRect(player.x*CELL+2,player.y*CELL+2,CELL-4,CELL-4);
+    }
+    qx.fillStyle='#0f172a';qx.fillRect(0,0,480,400);
+    qx.fillStyle='#10b981';qx.font='bold 18px sans-serif';qx.textAlign='center';
+    qx.fillText('QuantumCraft - Crypto Kingdom',240,180);
+    qx.fillStyle='white';qx.font='14px sans-serif';qx.fillText('Press Start to play!',240,220);
+    </script>
+    """, height=620)
+
+
+def render_quantumcraft_middle():
+    """6-8: QuantumCraft — Lattice Mines."""
+    st.subheader("⛏️ QuantumCraft — Lattice Mines!")
+    st.markdown(
+        "Dig deep into the **lattice mines** to find rare Kyber ore! "
+        "WASD to move, E to mine, F to place. Go deeper for rarer algorithms!"
+    )
+    components.html("""
+    <style>
+        #qmCanvas{border:2px solid #3b82f6;border-radius:12px;display:block;margin:0 auto;}
+        .qm-wrap{text-align:center;font-family:sans-serif;}
+        .qm-bar{display:flex;justify-content:space-between;max-width:520px;margin:6px auto;color:#a5b4fc;font-size:12px;font-weight:bold;}
+        .qm-inv{display:flex;justify-content:center;gap:5px;margin:5px;flex-wrap:wrap;}
+        .qm-slot{background:#1e293b;border:2px solid #3b82f6;border-radius:6px;padding:3px 7px;font-size:11px;color:white;}
+        #qm-msg{font-size:12px;color:#60a5fa;min-height:18px;margin:3px;}
+        .qm-btn{padding:6px 12px;border-radius:8px;border:none;cursor:pointer;font-size:12px;font-weight:bold;background:#3b82f6;color:white;margin:3px;}
+    </style>
+    <div class="qm-wrap">
+        <div class="qm-bar">
+            <span>HP:<span id="mhp">120</span></span>
+            <span>Score:<span id="mscore2">0</span></span>
+            <span>Depth:<span id="mdepth">1</span></span>
+            <span>Rare:<span id="mrare">0</span></span>
+        </div>
+        <canvas id="qmCanvas" width="520" height="420"></canvas>
+        <div id="qm-msg">Mine deeper to find rarer crypto ore!</div>
+        <div class="qm-inv">
+            <div class="qm-slot" id="m-kyber">Kyber:0</div>
+            <div class="qm-slot" id="m-dilithium">Dilithium:0</div>
+            <div class="qm-slot" id="m-sphincs">SPHINCS:0</div>
+            <div class="qm-slot" id="m-falcon">Falcon:0</div>
+            <div class="qm-slot" id="m-lwe">LWE:0</div>
+        </div>
+        <button class="qm-btn" onclick="startMines()">Start</button>
+        <button class="qm-btn" onclick="mineMid()">Mine(E)</button>
+        <button class="qm-btn" onclick="placeMid()">Place(F)</button>
+        <button class="qm-btn" onclick="goDeeper()">Deeper</button>
+    </div>
+    <script>
+    const mc2=document.getElementById('qmCanvas');
+    const mx2=mc2.getContext('2d');
+    const CELL2=40,COLS2=13,ROWS2=10;
+    const MB={
+        empty:{color:'#0f172a',emoji:'',solid:false,mineable:false},
+        stone:{color:'#374151',emoji:'',solid:true,mineable:true,item:null,pts:2},
+        kyber:{color:'#10b981',emoji:'K',solid:true,mineable:true,item:'kyber',pts:20},
+        dilithium:{color:'#3b82f6',emoji:'D',solid:true,mineable:true,item:'dilithium',pts:30},
+        sphincs:{color:'#8b5cf6',emoji:'S',solid:true,mineable:true,item:'sphincs',pts:35},
+        falcon:{color:'#f59e0b',emoji:'F',solid:true,mineable:true,item:'falcon',pts:50},
+        lwe:{color:'#ec4899',emoji:'L',solid:true,mineable:true,item:'lwe',pts:60},
+        wall:{color:'#111827',emoji:'',solid:true,mineable:false},
+        ladder:{color:'#78350f',emoji:'^',solid:false,mineable:false},
+        placed:{color:'#1d4ed8',emoji:'',solid:true,mineable:false},
+    };
+    let mw=[],mp,me2,mi,ms2=0,mh=120,md=1,mr=0,mrun=false,mk={},mmt=0;
+    function genMines(depth){
+        mw=[];
+        const rc=Math.min(0.05+depth*0.03,0.25);
+        for(let r=0;r<ROWS2;r++){mw[r]=[];for(let c=0;c<COLS2;c++){
+            if(r===0||r===ROWS2-1||c===0||c===COLS2-1){mw[r][c]='wall';continue;}
+            const rn=Math.random();
+            if(rn<rc*0.3)mw[r][c]='lwe';
+            else if(rn<rc*0.6)mw[r][c]='falcon';
+            else if(rn<rc*0.9)mw[r][c]='sphincs';
+            else if(rn<rc*1.5)mw[r][c]='dilithium';
+            else if(rn<rc*2.5)mw[r][c]='kyber';
+            else if(rn<0.40)mw[r][c]='stone';
+            else mw[r][c]='empty';
+        }}
+        mw[1][1]='empty';mw[1][2]='empty';mw[2][1]='empty';
+        mw[ROWS2-2][COLS2-2]='ladder';
+    }
+    function startMines(){
+        md=1;ms2=0;mh=120;mr=0;mi={kyber:0,dilithium:0,sphincs:0,falcon:0,lwe:0};
+        genMines(1);mp={x:1,y:1};me2=[];
+        for(let i=0;i<2;i++)spawnME();
+        mrun=true;updateMUI();cancelAnimationFrame(window._mF);mLoop();
+    }
+    function spawnME(){
+        const x=Math.floor(Math.random()*(COLS2-4))+COLS2-5;
+        const y=Math.floor(Math.random()*(ROWS2-3))+2;
+        if(mw[y]&&mw[y][x]==='empty')me2.push({x,y,timer:0,rate:35});
+    }
+    function mCW(x,y){
+        if(x<0||y<0||x>=COLS2||y>=ROWS2)return false;
+        const b=MB[mw[y][x]];return b&&!b.solid;
+    }
+    function mineMid(){
+        if(!mrun)return;
+        const dirs=[{dx:0,dy:-1},{dx:0,dy:1},{dx:-1,dy:0},{dx:1,dy:0}];
+        for(const d of dirs){
+            const nx=mp.x+d.dx,ny=mp.y+d.dy;
+            if(nx>=0&&ny>=0&&nx<COLS2&&ny<ROWS2){
+                const bt=mw[ny][nx],b=MB[bt];
+                if(b&&b.mineable){
+                    if(b.item){mi[b.item]=(mi[b.item]||0)+1;if(['falcon','lwe','sphincs'].includes(b.item))mr++;}
+                    ms2+=b.pts;mw[ny][nx]='empty';
+                    document.getElementById('qm-msg').textContent='Mined '+bt+'! +'+b.pts;
+                    updateMUI();return;
+                }
+            }
+        }
+    }
+    function placeMid(){
+        if(!mrun||mi.kyber<=0){document.getElementById('qm-msg').textContent='Need Kyber!';return;}
+        const dirs=[{dx:0,dy:-1},{dx:1,dy:0},{dx:-1,dy:0},{dx:0,dy:1}];
+        for(const d of dirs){
+            const nx=mp.x+d.dx,ny=mp.y+d.dy;
+            if(nx>=0&&ny>=0&&nx<COLS2&&ny<ROWS2&&mw[ny][nx]==='empty'){
+                mi.kyber--;mw[ny][nx]='placed';
+                document.getElementById('qm-msg').textContent='Kyber wall placed!';
+                updateMUI();return;
+            }
+        }
+    }
+    function goDeeper(){
+        if(!mrun)return;
+        if(mp.x>=COLS2-3&&mp.y>=ROWS2-3){
+            md++;genMines(md);mp={x:1,y:1};me2=[];
+            for(let i=0;i<Math.min(md+1,6);i++)spawnME();
+            document.getElementById('mdepth').textContent=md;
+            document.getElementById('qm-msg').textContent='Depth '+md+'! Rarer ore ahead!';
+        } else {
+            document.getElementById('qm-msg').textContent='Find the ladder ^ in bottom-right!';
+        }
+    }
+    function updateMUI(){
+        document.getElementById('mscore2').textContent=ms2;
+        document.getElementById('mhp').textContent=Math.max(0,mh);
+        document.getElementById('mrare').textContent=mr;
+        document.getElementById('m-kyber').textContent='Kyber:'+mi.kyber;
+        document.getElementById('m-dilithium').textContent='Dilithium:'+mi.dilithium;
+        document.getElementById('m-sphincs').textContent='SPHINCS:'+mi.sphincs;
+        document.getElementById('m-falcon').textContent='Falcon:'+mi.falcon;
+        document.getElementById('m-lwe').textContent='LWE:'+mi.lwe;
+    }
+    document.addEventListener('keydown',e=>{mk[e.key]=true;if(e.key==='e'||e.key==='E')mineMid();if(e.key==='f'||e.key==='F')placeMid();});
+    document.addEventListener('keyup',e=>{mk[e.key]=false;});
+    function mLoop(){
+        window._mF=requestAnimationFrame(mLoop);mmt++;
+        if(mmt>=8){mmt=0;if(!mrun)return;
+            let nx=mp.x,ny=mp.y;
+            if(mk['ArrowUp']||mk['w'])ny--;if(mk['ArrowDown']||mk['s'])ny++;
+            if(mk['ArrowLeft']||mk['a'])nx--;if(mk['ArrowRight']||mk['d'])nx++;
+            if(mCW(nx,ny)||mw[ny]&&mw[ny][nx]==='ladder'){mp.x=nx;mp.y=ny;}
+            me2.forEach((e,i)=>{
+                e.timer++;if(e.timer<e.rate)return;e.timer=0;
+                const dx=mp.x-e.x,dy=mp.y-e.y;const moves=[];
+                if(dx>0&&mCW(e.x+1,e.y))moves.push({x:e.x+1,y:e.y});
+                if(dx<0&&mCW(e.x-1,e.y))moves.push({x:e.x-1,y:e.y});
+                if(dy>0&&mCW(e.x,e.y+1))moves.push({x:e.x,y:e.y+1});
+                if(dy<0&&mCW(e.x,e.y-1))moves.push({x:e.x,y:e.y-1});
+                if(moves.length>0){const m=moves[0];e.x=m.x;e.y=m.y;}
+                if(e.x===mp.x&&e.y===mp.y){
+                    mh-=20;updateMUI();me2.splice(i,1);
+                    if(mh<=0){mrun=false;mx2.fillStyle='rgba(0,0,0,0.85)';mx2.fillRect(0,0,520,420);mx2.fillStyle='#ef4444';mx2.font='bold 24px sans-serif';mx2.textAlign='center';mx2.fillText('Mine Collapsed! Score:'+ms2,260,210);}
+                }
+            });
+        }
+        mDraw();
+    }
+    function mDraw(){
+        mx2.clearRect(0,0,520,420);
+        for(let r=0;r<ROWS2;r++)for(let c=0;c<COLS2;c++){
+            const b=MB[mw[r][c]];if(!b)continue;
+            mx2.fillStyle=b.color;mx2.fillRect(c*CELL2,r*CELL2,CELL2,CELL2);
+            mx2.strokeStyle='rgba(255,255,255,0.04)';mx2.strokeRect(c*CELL2,r*CELL2,CELL2,CELL2);
+            if(b.emoji){mx2.font='16px sans-serif';mx2.textAlign='center';mx2.fillStyle='white';mx2.fillText(b.emoji,c*CELL2+20,r*CELL2+26);}
+            if(b.mineable&&b.item){mx2.strokeStyle='rgba(255,255,255,0.25)';mx2.lineWidth=1;mx2.strokeRect(c*CELL2+2,r*CELL2+2,CELL2-4,CELL2-4);}
+        }
+        me2.forEach(e=>{mx2.font='18px sans-serif';mx2.textAlign='center';mx2.fillStyle='#ef4444';mx2.fillText('Q',e.x*CELL2+20,e.y*CELL2+26);});
+        mx2.font='20px sans-serif';mx2.textAlign='center';mx2.fillStyle='white';mx2.fillText('P',mp.x*CELL2+20,mp.y*CELL2+26);
+        mx2.strokeStyle='#3b82f6';mx2.lineWidth=2;mx2.strokeRect(mp.x*CELL2+2,mp.y*CELL2+2,CELL2-4,CELL2-4);
+    }
+    mx2.fillStyle='#0f172a';mx2.fillRect(0,0,520,420);
+    mx2.fillStyle='#3b82f6';mx2.font='bold 18px sans-serif';mx2.textAlign='center';
+    mx2.fillText('QuantumCraft - Lattice Mines',260,190);
+    mx2.fillStyle='white';mx2.font='14px sans-serif';mx2.fillText('Press Start to play!',260,230);
+    </script>
+    """, height=620)
+
+
+def render_quantumcraft_highschool():
+    """9-12: QuantumCraft — Cipher Ruins side-scrolling platformer."""
+    st.subheader("🏃 QuantumCraft — Cipher Ruins!")
+    st.markdown(
+        "Run through the **quantum-corrupted ruins**! "
+        "Arrow keys to run, SPACE to jump. Collect PQC power-ups, avoid broken crypto!"
+    )
+    components.html("""
+    <style>
+        #crCanvas{border:2px solid #8b5cf6;border-radius:12px;display:block;margin:0 auto;}
+        .cr-wrap{text-align:center;font-family:sans-serif;}
+        .cr-bar{display:flex;justify-content:space-between;max-width:520px;margin:6px auto;color:#a5b4fc;font-size:12px;font-weight:bold;}
+        #cr-msg{font-size:12px;color:#a78bfa;min-height:18px;margin:3px;}
+        .cr-btn{padding:7px 16px;border-radius:8px;border:none;cursor:pointer;font-size:13px;font-weight:bold;background:#8b5cf6;color:white;margin:3px;}
+    </style>
+    <div class="cr-wrap">
+        <div class="cr-bar">
+            <span>HP:<span id="crhp">100</span></span>
+            <span>Score:<span id="crscore">0</span></span>
+            <span>PQC:<span id="crpqc">0</span></span>
+            <span>Zone:<span id="crzone">1</span></span>
+        </div>
+        <canvas id="crCanvas" width="520" height="380"></canvas>
+        <div id="cr-msg">Arrow keys to run, SPACE to jump!</div>
+        <button class="cr-btn" onclick="startRunner()">Start</button>
+        <button class="cr-btn" onclick="jumpPlayer()">Jump</button>
+        <button class="cr-btn" onclick="if(crrunning&&player)player.vx=-4">Left</button>
+        <button class="cr-btn" onclick="if(crrunning&&player)player.vx=4">Right</button>
+    </div>
+    <script>
+    const cr=document.getElementById('crCanvas');
+    const cx2=cr.getContext('2d');
+    const CW=520,CH=380,GROUND=CH-60,GRAV=0.5,JUMP=-12;
+    const PU=[
+        {emoji:'K',name:'Kyber',color:'#10b981',pts:30,fact:'ML-KEM!'},
+        {emoji:'D',name:'Dilithium',color:'#3b82f6',pts:40,fact:'ML-DSA!'},
+        {emoji:'S',name:'SPHINCS',color:'#8b5cf6',pts:50,fact:'Hash-based!'},
+        {emoji:'F',name:'Falcon',color:'#f59e0b',pts:60,fact:'Compact Lattice!'},
+        {emoji:'L',name:'LWE',color:'#ec4899',pts:70,fact:'Learning With Errors!'},
+    ];
+    const OB=[
+        {emoji:'R',name:'RSA',color:'#ef4444',dmg:20},
+        {emoji:'E',name:'ECC',color:'#f97316',dmg:15},
+        {emoji:'D2',name:'DES',color:'#eab308',dmg:10},
+    ];
+    let player,items,particles,crscore=0,crhp=100,crpqc=0,crzone=1;
+    let crrunning=false,crkeys={},scrollX=0,spawnT=0,frameId2;
+    function startRunner(){
+        player={x:80,y:GROUND-40,w:36,h:36,vx:0,vy:0,onGround:false};
+        items=[];particles=[];crscore=0;crhp=100;crpqc=0;crzone=1;scrollX=0;spawnT=0;
+        crrunning=true;
+        document.getElementById('crscore').textContent=0;
+        document.getElementById('crhp').textContent=100;
+        document.getElementById('crpqc').textContent=0;
+        document.getElementById('crzone').textContent=1;
+        document.getElementById('cr-msg').textContent='Run through the Cipher Ruins!';
+        cancelAnimationFrame(frameId2);rLoop();
+    }
+    function jumpPlayer(){if(player&&player.onGround&&crrunning){player.vy=JUMP;player.onGround=false;}}
+    document.addEventListener('keydown',e=>{
+        crkeys[e.key]=true;
+        if((e.key===' '||e.key==='ArrowUp')&&player&&player.onGround&&crrunning){e.preventDefault();jumpPlayer();}
+    });
+    document.addEventListener('keyup',e=>{crkeys[e.key]=false;});
+    function rLoop(){
+        frameId2=requestAnimationFrame(rLoop);if(!crrunning)return;
+        if(crkeys['ArrowLeft']||crkeys['a'])player.vx=-4;
+        else if(crkeys['ArrowRight']||crkeys['d'])player.vx=4;
+        scrollX+=2+crzone*0.3;
+        player.x+=player.vx;player.vy+=GRAV;player.y+=player.vy;
+        if(player.y>=GROUND-player.h){player.y=GROUND-player.h;player.vy=0;player.onGround=true;}
+        else player.onGround=false;
+        player.x=Math.max(20,Math.min(CW-60,player.x));
+        spawnT++;
+        const rate=Math.max(60,120-crzone*10);
+        if(spawnT%rate===0){
+            const x=CW+scrollX+Math.random()*200+100;
+            if(Math.random()<0.55){
+                const p=PU[Math.floor(Math.random()*PU.length)];
+                items.push({x,y:GROUND-50-Math.random()*80,w:28,h:28,...p,type:'powerup'});
+            } else {
+                const o=OB[Math.floor(Math.random()*OB.length)];
+                const h=30+Math.random()*40;
+                items.push({x,y:GROUND-h,w:32,h,...o,type:'obstacle'});
+            }
+        }
+        items=items.filter(item=>{
+            const ix=item.x-scrollX;if(ix<-60)return false;
+            const hit=player.x<ix+item.w&&player.x+player.w>ix&&player.y<item.y+item.h&&player.y+player.h>item.y;
+            if(hit){
+                if(item.type==='powerup'){
+                    crscore+=item.pts;crpqc++;
+                    document.getElementById('crscore').textContent=crscore;
+                    document.getElementById('crpqc').textContent=crpqc;
+                    document.getElementById('cr-msg').textContent=item.name+' collected! '+item.fact;
+                    if(crpqc>=crzone*5){crzone++;document.getElementById('crzone').textContent=crzone;}
+                } else {
+                    crhp-=item.dmg;document.getElementById('crhp').textContent=Math.max(0,crhp);
+                    document.getElementById('cr-msg').textContent=item.name+' hit! NOT quantum safe!';
+                    if(crhp<=0){crrunning=false;cx2.fillStyle='rgba(0,0,0,0.85)';cx2.fillRect(0,0,CW,CH);cx2.fillStyle='#8b5cf6';cx2.font='bold 24px sans-serif';cx2.textAlign='center';cx2.fillText('Ruins Collapsed! Score:'+crscore,CW/2,CH/2);}
+                }
+                return false;
+            }
+            return true;
+        });
+        particles=particles.filter(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=0.2;p.alpha-=0.05;return p.alpha>0;});
+        rDraw();
+    }
+    function rDraw(){
+        cx2.clearRect(0,0,CW,CH);
+        const g=cx2.createLinearGradient(0,0,0,CH);g.addColorStop(0,'#0f0c29');g.addColorStop(1,'#302b63');
+        cx2.fillStyle=g;cx2.fillRect(0,0,CW,CH);
+        cx2.fillStyle='#1e1b4b';cx2.fillRect(0,GROUND,CW,CH-GROUND);
+        cx2.fillStyle='#4f46e5';cx2.fillRect(0,GROUND,CW,3);
+        items.forEach(item=>{
+            const ix=item.x-scrollX;
+            if(item.type==='obstacle'){
+                cx2.fillStyle=item.color+'55';cx2.fillRect(ix,item.y,item.w,item.h);
+                cx2.strokeStyle=item.color;cx2.lineWidth=2;cx2.strokeRect(ix,item.y,item.w,item.h);
+                cx2.fillStyle=item.color;cx2.font='bold 11px sans-serif';cx2.textAlign='center';
+                cx2.fillText(item.emoji,ix+item.w/2,item.y+item.h/2+4);
+            } else {
+                cx2.font='20px sans-serif';cx2.textAlign='center';
+                cx2.fillText(item.emoji,ix+item.w/2,item.y+item.h/1.3);
+                cx2.beginPath();cx2.arc(ix+item.w/2,item.y+item.h/2,16,0,Math.PI*2);
+                cx2.fillStyle=item.color+'22';cx2.fill();
+            }
+        });
+        cx2.font='26px sans-serif';cx2.textAlign='center';cx2.fillText('P',player.x+player.w/2,player.y+player.h);
+        const pw=50;cx2.fillStyle='#374151';cx2.fillRect(player.x,player.y-10,pw,5);
+        cx2.fillStyle=crhp>60?'#10b981':crhp>30?'#f59e0b':'#ef4444';
+        cx2.fillRect(player.x,player.y-10,pw*(crhp/100),5);
+    }
+    cx2.fillStyle='#0f0c29';cx2.fillRect(0,0,CW,CH);
+    cx2.fillStyle='#8b5cf6';cx2.font='bold 18px sans-serif';cx2.textAlign='center';
+    cx2.fillText('QuantumCraft - Cipher Ruins',CW/2,CH/2-40);
+    cx2.fillStyle='white';cx2.font='13px sans-serif';
+    cx2.fillText('Collect PQC, avoid RSA/ECC/DES',CW/2,CH/2);
+    cx2.fillText('Press Start to play!',CW/2,CH/2+35);
+    </script>
+    """, height=580)
