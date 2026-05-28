@@ -230,5 +230,11 @@ def render_elementary():
                     st.warning("Tell me a little more — you've got this!")
 
     with tab5:
-        from modules.games import render_falling_blocks
-        render_falling_blocks()
+        from modules.games import render_falling_blocks, render_zombie_blast, render_quantumcraft_elementary
+        game_choice = st.radio("Pick a game:", ["🧱 Falling Blocks", "🧟 Zombie Blast", "⛏️ QuantumCraft"], horizontal=True)
+        if game_choice == "🧱 Falling Blocks":
+            render_falling_blocks()
+        elif game_choice == "🧟 Zombie Blast":
+            render_zombie_blast(difficulty="easy")
+        else:
+            render_quantumcraft_elementary()
