@@ -425,5 +425,9 @@ if __name__ == "__main__":
                     st.write(j["entry"])
 
     with tab6:
-        from modules.games import render_tower_defense
-        render_tower_defense()
+        from modules.games import render_tower_defense, render_zombie_blast
+        game_choice = st.radio("Pick a game:", ["🛡️ Tower Defense", "🧟 Zombie Blast"], horizontal=True)
+        if game_choice == "🛡️ Tower Defense":
+            render_tower_defense()
+        else:
+            render_zombie_blast(difficulty="hard")
