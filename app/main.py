@@ -12,6 +12,7 @@ from modules.high_school import render_high_school
 from utils.security import sanitize_input
 from utils.security import get_level, get_level_progress, get_next_level_xp
 from modules.leaderboard import render_leaderboard
+from modules.mission_map import render_mission_map
 # ── Page config ──────────────────────────────────────────────────────────────
 st.set_page_config(
     page_title="QuantumVault Academy",
@@ -43,7 +44,7 @@ def sidebar():
 
     grade = st.sidebar.selectbox(
         "Choose your grade level:",
-        ["", "🟢 Elementary (K–5)", "🟡 Middle School (6–8)", "🔴 High School (9–12)", "🏆 Leaderboard"],
+        ["", "🟢 Elementary (K–5)", "🟡 Middle School (6–8)", "🔴 High School (9–12)", "🏆 Leaderboard", "🗺️ Mission Map"],
     )
 
     if grade:
@@ -112,7 +113,8 @@ def main():
         render_high_school()
     elif "Leaderboard" in level:
         render_leaderboard()
-
+    elif "Mission Map" in level:
+        render_mission_map()
 
 if __name__ == "__main__":
     main()
