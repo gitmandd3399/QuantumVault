@@ -1,3 +1,4 @@
+from modules.progress_tracker import mark_complete, is_complete
 """
 modules/elementary.py
 ─────────────────────
@@ -179,6 +180,7 @@ def render_elementary():
                 else:
                     st.session_state.lock_answered = True
                     if is_correct:
+                        mark_complete("lock_puzzle")
                         from utils import play_sound
                         st.markdown(play_sound("correct"), unsafe_allow_html=True)
                         st.markdown(
