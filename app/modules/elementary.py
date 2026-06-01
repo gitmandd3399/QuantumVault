@@ -47,45 +47,199 @@ def render_elementary():
         "that even the scariest quantum monsters can't crack. 🐉🔐"
     )
 
-    tab1, tab2, tab3, tab4, tab5 = st.tabs(
-        ["📖 Story Time", "🎨 Color Mixing Keys", "🔒 Lock Puzzle", "📝 Vocab Cards", "🧱 Mini Game"]
+    tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs(
+        ["📖 Story Time", "🎨 Color Mixing Keys", "🔒 Lock Puzzle", "📝 Vocab Cards", "🧱 Mini Game", "🔤 Word Search", "✏️ Crossword"]
     )
 
     # ── Tab 1: Story Mode ──────────────────────────────────────────────────────
     with tab1:
-        st.subheader("🌟 Help Agent Pixel!")
+        st.subheader("📖 Agent Pixel and the Quantum Monster")
+
+        if "story_page" not in st.session_state:
+            st.session_state.story_page = 0
+
+        pages = [
+            {
+                "title": "Chapter 1 — The Sneaky Quantum Monster",
+                "emoji": "👾",
+                "color": "#4f46e5",
+                "text": (
+                    "Meet **Agent Pixel** — the world's coolest cryptographer.\n\n"
+                    "She has purple hair, a jetpack, and a pet robot named **Byte** who only speaks in beeps.\n\n"
+                    "One day Agent Pixel gets an emergency message:\n\n"
+                    "> *ALERT! The Quantum Monster escaped from the math dimension! "
+                    "It is eating all the world's secret codes for BREAKFAST!* 🍳\n\n"
+                    "Agent Pixel looks at Byte. Byte looks at Agent Pixel.\n\n"
+                    "**Uh oh** says Byte. *(Beep boop.)*\n\n"
+                    "**The Quantum Monster can break every old lock in the world. "
+                    "RSA locks, ECC locks, even the lock on my lunch box!**\n\n"
+                    "**BEEP!** says Byte, very alarmed.\n\n"
+                    "**We need quantum-safe locks. FAST!** 🔐"
+                ),
+                "quiz": None,
+            },
+            {
+                "title": "Chapter 2 — Old Locks Are No Good",
+                "emoji": "💀",
+                "color": "#ef4444",
+                "text": (
+                    "The Quantum Monster is HUGE. It has seventeen eyes, six arms, "
+                    "and it smells like old math homework.\n\n"
+                    "**NOM!** There goes the bank's password. 🏦\n\n"
+                    "**CHOMP!** There goes the school's homework files. 📚\n\n"
+                    "**BURP!** Excuse you, Quantum Monster. 🫢\n\n"
+                    "Agent Pixel explains: **The old locks use RSA — big numbers multiplied together. "
+                    "Normal computers take a million years to crack them.**\n\n"
+                    "**Beep?** asks Byte. *(So what's the problem?)*\n\n"
+                    "**The Quantum Monster uses Shor's Algorithm — it tries ALL the answers at the same time!**\n\n"
+                    "Byte's eyes go very wide. **BEEEEEP.**\n\n"
+                    "**Yep. We need NEW locks. Quantum-safe ones.** 🔒"
+                ),
+                "quiz": {
+                    "question": "Why is the Quantum Monster dangerous to RSA locks?",
+                    "options": [
+                        "It is very smelly",
+                        "It uses Shor's Algorithm to try all answers at once",
+                        "It has seventeen eyes",
+                        "It ate the keys"
+                    ],
+                    "answer": 1,
+                    "xp": 10,
+                    "key": "story_q1"
+                }
+            },
+            {
+                "title": "Chapter 3 — The Magic Lattice",
+                "emoji": "🏗️",
+                "color": "#10b981",
+                "text": (
+                    "Agent Pixel pulls out her secret weapon — a glowing blue crystal called **KYBER**. ✨\n\n"
+                    "**What does it do?** beeps Byte.\n\n"
+                    "**It uses LATTICE math** — imagine a dot-to-dot puzzle with a TRILLION dots "
+                    "across a THOUSAND dimensions.\n\n"
+                    "Byte tries to imagine this. Byte's brain overheats. 🤯\n\n"
+                    "**Even the Quantum Monster cannot solve that puzzle!**\n\n"
+                    "She installs Kyber locks on everything. The Quantum Monster runs up and tries to eat one.\n\n"
+                    "It bounces off. 💥 Tries again. Bounces off again. Sits down and cries a little. 😢\n\n"
+                    "**QUANTUM SAFE!** cheers Byte. 🎉"
+                ),
+                "quiz": {
+                    "question": "What is Kyber based on?",
+                    "options": [
+                        "Lattice math — a giant dot grid across thousands of dimensions!",
+                        "RSA prime numbers",
+                        "Byte's brain",
+                        "Homework"
+                    ],
+                    "answer": 0,
+                    "xp": 10,
+                    "key": "story_q2"
+                }
+            },
+            {
+                "title": "Chapter 4 — Three Heroes Save the Day",
+                "emoji": "🦸",
+                "color": "#8b5cf6",
+                "text": (
+                    "But the Quantum Monster has PLAN B — a giant hammer labelled **Grover's Algorithm**. 🔨\n\n"
+                    "**Uh oh** beeps Byte. *(Again.)*\n\n"
+                    "Agent Pixel calls in backup:\n\n"
+                    "🛡️ **DILITHIUM** — big and strong, signs documents so you know they are real.\n\n"
+                    "🌲 **SPHINCS+** — speedy, uses fingerprint math as a backup plan.\n\n"
+                    "**KYBER! DILITHIUM! SPHINCS+!** The wall holds.\n\n"
+                    "The Quantum Monster sits down and eats its own tail in frustration. 🤦\n\n"
+                    "**Should we help it?** beeps Byte.\n\n"
+                    "**Absolutely not** says Agent Pixel. 😄"
+                ),
+                "quiz": {
+                    "question": "Which three algorithms saved the world?",
+                    "options": [
+                        "RSA, ECC, and DES",
+                        "Kyber, Dilithium, and SPHINCS+",
+                        "Byte, Pixel, and Grover",
+                        "SHA, MD5, and AES"
+                    ],
+                    "answer": 1,
+                    "xp": 25,
+                    "key": "story_q3"
+                }
+            },
+            {
+                "title": "Chapter 5 — The Happy Ending 🎉",
+                "emoji": "🎉",
+                "color": "#f59e0b",
+                "text": (
+                    "The Quantum Monster shuffled away, grumbling about lattice math.\n\n"
+                    "Agent Pixel high-fived Byte. 🙏 Every lock was now quantum-safe. "
+                    "Banks. Hospitals. Schools. Even Agent Pixel's lunch box.\n\n"
+                    "**Will it ever come back?** asked Byte.\n\n"
+                    "**Maybe. That is why we keep learning!** smiled Agent Pixel.\n\n"
+                    "Byte beeped happily. 🤖\n\n"
+                    "**THE END!**\n\n"
+                    "*(The Quantum Monster eventually got a job teaching math. It was not very good at it.)*\n\n"
+                    "---\n🏅 **You finished the story! You are now an official Secret Keeper!**"
+                ),
+                "quiz": None,
+            },
+        ]
+
+        page = pages[st.session_state.story_page]
+        total_pages = len(pages)
+        current = st.session_state.story_page
+
+        st.progress(current / total_pages)
+        st.caption(f"Chapter {current + 1} of {total_pages}")
+
         st.markdown(
-            """
-            Agent Pixel needs to send a secret message to her friend Byte across town.
-            But the evil **Quantum Monster** can break ALL the old locks!
-
-            > *"Don't worry,"* says her teacher. *"We have NEW locks — lattice locks —
-            that even quantum monsters can't pick!"*
-
-            **Lattice locks** use a special math puzzle: imagine a giant tangled grid.
-            Even a super-fast quantum computer gets lost in it!
-            """
+            f"<div style='background:{page[chr(39)]color[chr(39)]}15;border-left:4px solid "
+            f"{page[chr(39)]color[chr(39)]};border-radius:0 10px 10px 0;"
+            f"padding:1rem 1.5rem;margin-bottom:1rem;'>"
+            f"<div style='font-size:2rem;margin-bottom:0.5rem'>{page[chr(39)]emoji[chr(39)]}</div>"
+            f"<h3 style='color:{page[chr(39)]color[chr(39)]};margin:0'>{page[chr(39)]title[chr(39)]}</h3>"
+            f"</div>",
+            unsafe_allow_html=True
         )
-        st.image(
-            "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/Lattice_torsion_points.svg/320px-Lattice_torsion_points.svg.png",
-            caption="A lattice — like a giant tangled grid of dots 🔵",
-            width=300,
-        )
-        st.markdown("### 🐉 Meet the Quantum Monster")
-        col1, col2 = st.columns(2)
+
+        st.markdown(page["text"])
+
+        if page["quiz"]:
+            quiz = page["quiz"]
+            st.markdown("---")
+            st.markdown(f"**🧠 Quick Check:** {quiz[chr(39)]question[chr(39)]}")
+            key = quiz["key"]
+            if f"answered_{key}" not in st.session_state:
+                st.session_state[f"answered_{key}"] = False
+            if not st.session_state[f"answered_{key}"]:
+                for i, option in enumerate(quiz["options"]):
+                    if st.button(option, key=f"quiz_{key}_{i}"):
+                        if i == quiz["answer"]:
+                            st.session_state[f"answered_{key}"] = True
+                            st.session_state.xp += quiz["xp"]
+                            st.success(f"✅ Correct! +{quiz[chr(39)]xp[chr(39)]} XP")
+                            st.balloons()
+                        else:
+                            st.error("❌ Not quite! Read the chapter again!")
+            else:
+                st.success("✅ Already answered!")
+
+        st.markdown("---")
+        col1, col2, col3 = st.columns([1, 2, 1])
         with col1:
-            st.error(
-                "🐉 **Old Lock (RSA)**\n\n"
-                "The Quantum Monster can pick this lock in seconds. ❌"
-            )
+            if current > 0:
+                if st.button("← Previous", key="story_prev"):
+                    st.session_state.story_page -= 1
+                    st.rerun()
         with col2:
-            st.success(
-                "🔐 **Lattice Lock (Kyber)**\n\n"
-                "The Quantum Monster is totally stumped! ✅"
-            )
-
-        if st.button("✅ I finished the story!", key="story_done"):
-            award_badge("📖 Story Reader", xp=5)
+            st.caption(f"Page {current + 1} / {total_pages}")
+        with col3:
+            if current < total_pages - 1:
+                if st.button("Next →", key="story_next"):
+                    st.session_state.story_page += 1
+                    st.rerun()
+            else:
+                st.success("🎉 Story Complete!")
+                if st.button("✅ Claim Story Badge!", key="story_badge"):
+                    award_badge("📖 Story Reader", xp=5)
 
     # ── Tab 2: Color Mixing Key Exchange ──────────────────────────────────────
     with tab2:
