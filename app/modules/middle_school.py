@@ -1,3 +1,4 @@
+from modules.progress_tracker import mark_complete, is_complete
 """
 modules/middle_school.py
 ────────────────────────
@@ -165,6 +166,7 @@ def render_middle_school():
                 st.session_state.lattice_attempts += 1
                 if int(guess) == s:
                     st.success(f"✅ Correct! s = {s}. Imagine this with 1000 variables — impossible to guess!")
+                    mark_complete("lattice_challenge")
                     award_badge("🏗️ Lattice Navigator", xp=20)
                     st.session_state.lattice_s = random.randint(2, 9)
                 else:

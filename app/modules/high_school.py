@@ -1,3 +1,4 @@
+from modules.progress_tracker import mark_complete, is_complete
 """
 modules/high_school.py
 ──────────────────────
@@ -216,6 +217,7 @@ def render_high_school():
                     "Lattice problems remain hard even for quantum!"
                 )
             st.balloons()
+            mark_complete("quantum_race_hs")
             award_badge("⚡ Quantum Race Champion", xp=30)
 
         if st.button("⚖️ I understand the trade-offs!", key="lab_done"):
