@@ -51,8 +51,8 @@ def render_middle_school():
         "post-quantum cryptography. Let's go! 🚀"
     )
 
-    tab1, tab2, tab3, tab4, tab5 = st.tabs(
-        ["📖 Story Time", "🎨 Color Mixing Keys", "🔒 Lock Puzzle", "📝 Vocab Cards", "🧱 Mini Game"]
+    tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8 = st.tabs(
+        ["📖 Story Time", "🏗️ Lattice Explorer", "🏭 Hash Factory", "⚡ Quantum Race", "🔑 Key Workshop", "🌀 Mini Game", "🎨 Hash Visualizer", "🔬 Key Size Lab"]
     )
 
     # ── Tab 1: Lattice Explorer ───────────────────────────────────────────────
@@ -312,3 +312,145 @@ def render_middle_school():
             render_zombie_blast(difficulty="medium")
         else:
             render_quantumcraft_middle()
+    with tab7:
+        st.subheader("🎨 Live Hash Visualizer")
+        st.markdown(
+            "Type any message below and watch the **SHA-3 hash change in real time**! "
+            "Change even one letter and the entire hash changes completely — "
+            "that is the **avalanche effect**!"
+        )
+        import streamlit.components.v1 as components_ms
+        components_ms.html("""
+<style>
+.hv-wrap{font-family:sans-serif;padding:12px;max-width:600px;margin:0 auto;}
+.hv-input{width:100%;padding:10px;background:#1e293b;border:1px solid #334155;
+border-radius:8px;color:#a5b4fc;font-size:14px;outline:none;box-sizing:border-box;}
+.hv-hash{font-family:monospace;font-size:11px;word-break:break-all;
+padding:12px;background:#0f172a;border:1px solid #334155;border-radius:8px;
+color:#10b981;margin:8px 0;min-height:40px;line-height:1.6;}
+.hv-label{font-size:12px;color:#888;margin:6px 0 3px;}
+.hv-diff{font-size:12px;color:#f59e0b;margin:6px 0;}
+.hv-algo{display:flex;gap:8px;margin:8px 0;}
+.algo-btn{padding:5px 12px;border-radius:6px;border:none;cursor:pointer;
+font-size:11px;font-weight:bold;background:#1e293b;color:#a5b4fc;
+border:1px solid #334155;}
+.algo-btn.active{background:#4f46e5;color:white;border-color:#4f46e5;}
+</style>
+<div class="hv-wrap">
+    <div class="hv-algo">
+        <button class="algo-btn active" onclick="setAlgo('SHA-256')">SHA-256</button>
+        <button class="algo-btn" onclick="setAlgo('SHA-512')">SHA-512</button>
+    </div>
+    <div class="hv-label">Type your message:</div>
+    <input class="hv-input" id="msg1" placeholder="Type anything here..." oninput="updateHash()">
+    <div class="hv-label">Hash output:</div>
+    <div class="hv-hash" id="hash1">Your hash will appear here...</div>
+    <div class="hv-label">Try a slightly different message:</div>
+    <input class="hv-input" id="msg2" placeholder="Change one letter..." oninput="updateHash()">
+    <div class="hv-label">Hash output:</div>
+    <div class="hv-hash" id="hash2">Your hash will appear here...</div>
+    <div class="hv-diff" id="diff-msg"></div>
+</div>
+<script>
+let currentAlgo = 'SHA-256';
+
+function setAlgo(algo) {
+    currentAlgo = algo;
+    document.querySelectorAll('.algo-btn').forEach(b => {
+        b.className = 'algo-btn' + (b.textContent === algo ? ' active' : '');
+    });
+    updateHash();
+}
+
+async function hashMessage(message) {
+    if (!message) return '';
+    const encoder = new TextEncoder();
+    const data = encoder.encode(message);
+    const algoMap = {'SHA-256': 'SHA-256', 'SHA-512': 'SHA-512'};
+    const hashBuffer = await crypto.subtle.digest(algoMap[currentAlgo], data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+async function updateHash() {
+    const msg1 = document.getElementById('msg1').value;
+    const msg2 = document.getElementById('msg2').value;
+    const h1 = await hashMessage(msg1);
+    const h2 = await hashMessage(msg2);
+    document.getElementById('hash1').textContent = h1 || 'Your hash will appear here...';
+    document.getElementById('hash2').textContent = h2 || 'Your hash will appear here...';
+    if (h1 && h2) {
+        let diff = 0;
+        for (let i = 0; i < Math.max(h1.length, h2.length); i++) {
+            if (h1[i] !== h2[i]) diff++;
+        }
+        const pct = Math.round(diff / h1.length * 100);
+        document.getElementById('diff-msg').textContent =
+            diff === 0 ? '✅ Identical messages — identical hashes!' :
+            '🌊 Avalanche effect! ' + diff + ' of ' + h1.length + ' characters changed (' + pct + '%) — from just one letter difference!';
+    } else {
+        document.getElementById('diff-msg').textContent = '';
+    }
+}
+</script>
+""", height=480)
+
+    with tab8:
+        st.subheader("🔬 Key Size Comparison Lab")
+        st.markdown(
+            "See how **post-quantum keys compare to classical keys** in size. "
+            "Bigger isn't always better — but quantum-safe is always necessary!"
+        )
+
+        import plotly.graph_objects as go
+
+        algorithms = [
+            "RSA-2048", "RSA-4096", "ECC-256",
+            "Kyber-512", "Kyber-768", "Kyber-1024",
+            "Dilithium-2", "Dilithium-3", "Falcon-512"
+        ]
+        public_keys = [256, 512, 64, 0.8, 1.2, 1.6, 1.3, 1.9, 0.9]
+        colors = [
+            "#ef4444", "#ef4444", "#f97316",
+            "#10b981", "#10b981", "#10b981",
+            "#3b82f6", "#3b82f6", "#8b5cf6"
+        ]
+        quantum_safe = [False, False, False, True, True, True, True, True, True]
+
+        fig = go.Figure()
+        fig.add_trace(go.Bar(
+            x=algorithms,
+            y=public_keys,
+            marker_color=colors,
+            text=[str(k) + " KB" for k in public_keys],
+            textposition="outside",
+        ))
+
+        fig.update_layout(
+            height=400,
+            title="Public Key Sizes (KB)",
+            plot_bgcolor="rgba(0,0,0,0)",
+            paper_bgcolor="rgba(0,0,0,0)",
+            xaxis=dict(color="#888", tickangle=-30),
+            yaxis=dict(title="Size (KB)", color="#888"),
+            font=dict(color="#ccc"),
+            margin=dict(l=20, r=20, t=40, b=80),
+        )
+        st.plotly_chart(fig, use_container_width=True)
+
+        st.markdown("### 📊 Full Comparison Table")
+        data = {
+            "Algorithm": algorithms,
+            "Type": ["Classical"]*3 + ["PQC"]*6,
+            "Public Key (KB)": public_keys,
+            "Quantum Safe": ["❌" if not q else "✅" for q in quantum_safe],
+            "NIST Standard": ["None","None","None","FIPS 203","FIPS 203","FIPS 203","FIPS 204","FIPS 204","FIPS 206"],
+        }
+        import pandas as pd
+        st.dataframe(pd.DataFrame(data), use_container_width=True)
+
+        st.info(
+            "💡 **Key insight:** Kyber keys are much smaller than RSA keys "
+            "AND quantum safe. This is why NIST chose lattice-based crypto — "
+            "it is both secure AND efficient!"
+        )
