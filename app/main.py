@@ -4,16 +4,16 @@ Teaches Post-Quantum Cryptography from K–12.
 """
 
 import os
-
 import streamlit as st
 from modules.elementary import render_elementary
 from modules.middle_school import render_middle_school
 from modules.high_school import render_high_school
-from utils.security import sanitize_input
-from utils.security import get_level, get_level_progress, get_next_level_xp
 from modules.leaderboard import render_leaderboard
 from modules.mission_map import render_mission_map
-# ── Page config ──────────────────────────────────────────────────────────────
+from modules.teacher_dashboard import render_teacher_dashboard
+from utils.security import sanitize_input, get_level, get_level_progress, get_next_level_xp
+
+# ── Page config ───────────────────────────────────────────────────────────────
 st.set_page_config(
     page_title="QuantumVault Academy",
     page_icon="🔐",
@@ -25,7 +25,6 @@ st.set_page_config(
 with open(os.path.join(os.path.dirname(__file__), "static/style.css")) as f:
     st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
 
-
 # ── Session state defaults ────────────────────────────────────────────────────
 if "level" not in st.session_state:
     st.session_state.level = None
@@ -35,23 +34,30 @@ if "xp" not in st.session_state:
     st.session_state.xp = 0
 
 
-# ── Sidebar — grade selector ──────────────────────────────────────────────────
+# ── Sidebar ───────────────────────────────────────────────────────────────────
 def sidebar():
-    st.sidebar.image("static/logo.png", use_column_width=True) if False else None
     st.sidebar.title("🔐 QuantumVault Academy")
-    st.sidebar.markdown("🔒 **Privacy:** This app collects no personal data. "
-    "Safe for all ages.")
+    st.sidebar.markdown(
+        "🔒 **Privacy:** This app collects no personal data. Safe for all ages."
+    )
 
     grade = st.sidebar.selectbox(
         "Choose your grade level:",
-        ["", "🟢 Elementary (K–5)", "🟡 Middle School (6–8)", "🔴 High School (9–12)", "🏆 Leaderboard", "🗺️ Mission Map"],
+        [
+            "",
+            "🟢 Elementary (K–5)",
+            "🟡 Middle School (6–8)",
+            "🔴 High School (9–12)",
+            "🏆 Leaderboard",
+            "🗺️ Mission Map",
+            "👨‍🏫 Teacher Dashboard",
+        ],
     )
 
     if grade:
         st.session_state.level = grade
 
     st.sidebar.markdown("---")
-    
 
     xp = st.session_state.xp
     level = get_level(xp)
@@ -69,6 +75,7 @@ def sidebar():
         st.sidebar.markdown("**🏅 Badges earned:**")
         for badge in st.session_state.badges:
             st.sidebar.markdown(f"- {badge}")
+
     st.sidebar.markdown("---")
     st.sidebar.info(
         "QuantumVault Academy is a safe, ad-free learning environment. "
@@ -81,7 +88,6 @@ def main():
     sidebar()
 
     if not st.session_state.level:
-        # Landing page
         st.markdown(
             """
             <div class="hero">
@@ -115,6 +121,9 @@ def main():
         render_leaderboard()
     elif "Mission Map" in level:
         render_mission_map()
+    elif "Teacher Dashboard" in level:
+        render_teacher_dashboard()
+
 
 if __name__ == "__main__":
     main()
