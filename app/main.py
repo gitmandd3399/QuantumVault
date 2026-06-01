@@ -12,7 +12,7 @@ from modules.leaderboard import render_leaderboard
 from modules.mission_map import render_mission_map
 from modules.teacher_dashboard import render_teacher_dashboard
 from utils.security import sanitize_input, get_level, get_level_progress, get_next_level_xp
-
+from modules.progress_tracker import render_full_progress_page, mark_complete, render_progress_card
 # ── Page config ───────────────────────────────────────────────────────────────
 st.set_page_config(
     page_title="QuantumVault Academy",
@@ -51,6 +51,8 @@ def sidebar():
             "🏆 Leaderboard",
             "🗺️ Mission Map",
             "👨‍🏫 Teacher Dashboard",
+            "📊 My Progress",
+
         ],
     )
 
@@ -123,7 +125,8 @@ def main():
         render_mission_map()
     elif "Teacher Dashboard" in level:
         render_teacher_dashboard()
-
+    elif "My Progress" in level:
+        render_full_progress_page()
 
 if __name__ == "__main__":
     main()
