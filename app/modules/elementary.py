@@ -191,11 +191,11 @@ def render_elementary():
         st.caption(f"Chapter {current + 1} of {total_pages}")
 
         st.markdown(
-            f"<div style='background:{page[chr(39)]color[chr(39)]}15;border-left:4px solid "
-            f"{page[chr(39)]color[chr(39)]};border-radius:0 10px 10px 0;"
+            f"<div style='background:{color}15;border-left:4px solid "
+            f"{color};border-radius:0 10px 10px 0;"
             f"padding:1rem 1.5rem;margin-bottom:1rem;'>"
-            f"<div style='font-size:2rem;margin-bottom:0.5rem'>{page[chr(39)]emoji[chr(39)]}</div>"
-            f"<h3 style='color:{page[chr(39)]color[chr(39)]};margin:0'>{page[chr(39)]title[chr(39)]}</h3>"
+            f"<div style='font-size:2rem;margin-bottom:0.5rem'>{emoji}</div>"
+            f"<h3 style='color:{color};margin:0'>{title}</h3>"
             f"</div>",
             unsafe_allow_html=True
         )
@@ -205,7 +205,7 @@ def render_elementary():
         if page["quiz"]:
             quiz = page["quiz"]
             st.markdown("---")
-            st.markdown(f"**🧠 Quick Check:** {quiz[chr(39)]question[chr(39)]}")
+            st.markdown(f"**🧠 Quick Check:** {quiz['question']}")
             key = quiz["key"]
             if f"answered_{key}" not in st.session_state:
                 st.session_state[f"answered_{key}"] = False
@@ -215,7 +215,7 @@ def render_elementary():
                         if i == quiz["answer"]:
                             st.session_state[f"answered_{key}"] = True
                             st.session_state.xp += quiz["xp"]
-                            st.success(f"✅ Correct! +{quiz[chr(39)]xp[chr(39)]} XP")
+                            st.success(f"✅ Correct! +{quiz['xp']} XP")
                             st.balloons()
                         else:
                             st.error("❌ Not quite! Read the chapter again!")
