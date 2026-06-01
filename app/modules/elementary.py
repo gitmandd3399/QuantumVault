@@ -189,6 +189,9 @@ def render_elementary():
 
         st.progress(current / total_pages)
         st.caption(f"Chapter {current + 1} of {total_pages}")
+        color = page["color"]
+        emoji = page["emoji"]
+        title = page["title"]
 
         st.markdown(
             f"<div style='background:{color}15;border-left:4px solid "
