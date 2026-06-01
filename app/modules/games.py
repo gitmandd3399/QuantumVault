@@ -786,349 +786,433 @@ updateUI();
 """, height=680)
 
 def render_zombie_blast(difficulty: str = "easy"):
-    """
-    Quantum Zombie Blast — shoot quantum zombies with PQC weapons.
-    difficulty: 'easy' | 'medium' | 'hard'
-    """
+    """Quantum Zombie Blast — clean redesign with better UI and gameplay."""
+    diff = {
+        "easy":   {"speed": 1.2, "rate": 100, "hp": 30,  "label": "🟢 Recruit",     "waves": 5},
+        "medium": {"speed": 1.8, "rate": 75,  "hp": 55,  "label": "🟡 Code Cadet",  "waves": 8},
+        "hard":   {"speed": 2.8, "rate": 50,  "hp": 90,  "label": "🔴 Cipher Corps", "waves": 12},
+    }.get(difficulty, {"speed": 1.2, "rate": 100, "hp": 30, "label": "🟢 Recruit", "waves": 5})
+
     st.subheader("🧟 Quantum Zombie Blast!")
-    st.markdown(
-        "Quantum zombies are attacking your server! "
-        "Blast them with **post-quantum cryptography weapons** before they reach you! "
-        "Move with ← → keys and shoot with **SPACE**."
-    )
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.info(f"🎯 Difficulty: **{diff['label']}**")
+    with col2:
+        st.info("🔫 SPACE or Fire button to shoot")
+    with col3:
+        st.info("← → Arrow keys or buttons to move")
 
-    diff_settings = {
-        "easy":   {"speed": "1.2", "rate": "120", "hp": "30",  "label": "🟢 Agent Recruit"},
-        "medium": {"speed": "2.0", "rate": "80",  "hp": "50",  "label": "🟡 Code Cadet"},
-        "hard":   {"speed": "3.0", "rate": "50",  "hp": "80",  "label": "🔴 Cipher Corps"},
-    }
-    d = diff_settings.get(difficulty, diff_settings["easy"])
-
-    components.html(f"""
-    <style>
-        #zbCanvas {{ border: 2px solid #4f46e5; border-radius: 12px; display: block; margin: 0 auto; background: #0f172a; }}
-        .zb-wrap {{ text-align: center; font-family: sans-serif; }}
-        .zb-bar {{ display: flex; justify-content: space-between; max-width: 480px; margin: 6px auto; color: #a5b4fc; font-size: 13px; font-weight: bold; }}
-        .weapon-row {{ display: flex; justify-content: center; gap: 8px; margin: 8px; flex-wrap: wrap; }}
-        .wbtn {{ padding: 6px 12px; border-radius: 8px; border: 2px solid transparent; cursor: pointer; font-size: 11px; font-weight: bold; color: white; }}
-        .wbtn.active {{ border-color: white; transform: scale(1.1); }}
-        #zb-msg {{ font-size: 13px; color: #34d399; min-height: 18px; margin: 4px; }}
-    </style>
-    <div class="zb-wrap">
-        <div class="zb-bar">
-            <span>❤️ HP: <span id="zhp">100</span></span>
-            <span>⭐ Score: <span id="zscore">0</span></span>
-            <span>🌊 Wave: <span id="zwave">1</span></span>
-            <span>🎯 Difficulty: {d['label']}</span>
-        </div>
-        <canvas id="zbCanvas" width="480" height="460"></canvas>
-        <div id="zb-msg">Press SPACE or tap Fire to shoot!</div>
-        <div class="weapon-row">
-            <button class="wbtn active" id="w0" style="background:#10b981" onclick="selectWeapon(0)">🔐 Kyber</button>
-            <button class="wbtn" id="w1" style="background:#3b82f6" onclick="selectWeapon(1)">✍️ Dilithium</button>
-            <button class="wbtn" id="w2" style="background:#8b5cf6" onclick="selectWeapon(2)">🌲 SPHINCS+</button>
-            <button class="wbtn" id="w3" style="background:#ef4444" onclick="selectWeapon(3)">⚡ Lattice Bomb</button>
-            <button class="wbtn" style="background:#4f46e5" onclick="startZombies()">▶ Start</button>
-            <button class="wbtn" style="background:#374151" onclick="fireWeapon()">🔫 Fire</button>
-        </div>
+    import streamlit.components.v1 as components_zb
+    components_zb.html(f"""
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+*{{margin:0;padding:0;box-sizing:border-box;}}
+body{{background:#0f172a;font-family:sans-serif;color:white;}}
+#zb-wrap{{display:flex;flex-direction:column;align-items:center;padding:10px;}}
+.zb-hud{{display:flex;justify-content:space-between;width:500px;margin-bottom:8px;gap:6px;}}
+.hud-box{{background:#1e293b;border:1px solid #334155;border-radius:8px;
+padding:5px 10px;font-size:12px;font-weight:bold;color:#a5b4fc;flex:1;text-align:center;}}
+#zbCanvas{{border:2px solid #4f46e5;border-radius:12px;display:block;}}
+.weapon-bar{{display:flex;gap:5px;margin:8px 0;flex-wrap:wrap;justify-content:center;}}
+.wbtn{{padding:6px 10px;border-radius:8px;border:2px solid transparent;
+cursor:pointer;font-size:11px;font-weight:bold;color:white;transition:all 0.15s;}}
+.wbtn.active{{border-color:white;transform:scale(1.08);}}
+.ctrl-bar{{display:flex;gap:6px;margin:4px 0;justify-content:center;}}
+.cbtn{{padding:8px 18px;border-radius:8px;border:none;cursor:pointer;
+font-size:13px;font-weight:bold;background:#4f46e5;color:white;}}
+.cbtn:active{{background:#3730a3;}}
+#zb-msg{{font-size:12px;color:#34d399;min-height:18px;margin:4px;
+text-align:center;max-width:500px;}}
+#zb-fact{{background:rgba(79,70,229,0.15);border:1px solid rgba(79,70,229,0.4);
+border-radius:8px;padding:6px 12px;margin:4px;font-size:11px;color:#a5b4fc;
+max-width:500px;display:none;text-align:center;}}
+</style>
+</head>
+<body>
+<div id="zb-wrap">
+    <div class="zb-hud">
+        <div class="hud-box">❤️ HP<br><span id="zhp">100</span></div>
+        <div class="hud-box">⭐ Score<br><span id="zscore">0</span></div>
+        <div class="hud-box">🌊 Wave<br><span id="zwave">1</span></div>
+        <div class="hud-box">🧟 Left<br><span id="zleft">0</span></div>
+        <div class="hud-box">🎯 Killed<br><span id="zkilled">0</span></div>
     </div>
-    <script>
-    const zc = document.getElementById('zbCanvas');
-    const zx = zc.getContext('2d');
-    const W = 480, H = 460;
+    <canvas id="zbCanvas" width="500" height="460"></canvas>
+    <div id="zb-msg">Press Start to play!</div>
+    <div id="zb-fact"></div>
+    <div class="weapon-bar">
+        <button class="wbtn active" id="w0" style="background:#10b981" onclick="selW(0)">🔐 Kyber</button>
+        <button class="wbtn" id="w1" style="background:#3b82f6" onclick="selW(1)">✍️ Dilithium</button>
+        <button class="wbtn" id="w2" style="background:#8b5cf6" onclick="selW(2)">🌲 SPHINCS+</button>
+        <button class="wbtn" id="w3" style="background:#ef4444" onclick="selW(3)">⚡ LWE Bomb</button>
+    </div>
+    <div class="ctrl-bar">
+        <button class="cbtn" onclick="moveL()">◀</button>
+        <button class="cbtn" style="background:#10b981" onclick="startGame()">▶ Start</button>
+        <button class="cbtn" style="background:#ef4444" onclick="fire()">🔫 Fire</button>
+        <button class="cbtn" onclick="moveR()">▶</button>
+    </div>
+</div>
+<script>
+const W=500, H=460;
+const zc = document.getElementById("zbCanvas");
+const zx = zc.getContext("2d");
 
-    const WEAPONS = [
-        {{name:'Kyber Blaster',   emoji:'🔐', color:'#10b981', dmg:25,  speed:8,  spread:0,  ammo:999, desc:'Fast single shot'}},
-        {{name:'Dilithium Cannon',emoji:'✍️', color:'#3b82f6', dmg:60,  speed:5,  spread:0,  ammo:999, desc:'Heavy slow shot'}},
-        {{name:'SPHINCS Shotgun', emoji:'🌲', color:'#8b5cf6', dmg:20,  speed:7,  spread:3,  ammo:999, desc:'3-way spread'}},
-        {{name:'Lattice Bomb',    emoji:'⚡', color:'#ef4444', dmg:100, speed:4,  spread:0,  ammo:999, desc:'Huge area blast'}},
-    ];
+const WEAPONS = [
+    {{name:"Kyber Blaster",   emoji:"🔐", color:"#10b981", dmg:30,  spd:9, spread:1, area:0,  fact:"ML-KEM FIPS 203 — Quantum-safe key encapsulation!"}},
+    {{name:"Dilithium Cannon",emoji:"✍️", color:"#3b82f6", dmg:70,  spd:6, spread:1, area:0,  fact:"ML-DSA FIPS 204 — Quantum-safe digital signatures!"}},
+    {{name:"SPHINCS Shotgun", emoji:"🌲", color:"#8b5cf6", dmg:25,  spd:8, spread:3, area:0,  fact:"SLH-DSA FIPS 205 — Hash-based backup standard!"}},
+    {{name:"LWE Bomb",        emoji:"⚡", color:"#ef4444", dmg:150, spd:5, spread:1, area:70, fact:"Learning With Errors — The hardest quantum math!"}},
+];
 
-    const ZOMBIE_TYPES = [
-        {{label:'RSA☠️',   color:'#ef4444', emoji:'🧟', hp:{d['hp']},   pts:10, fact:'RSA broken by Shor Algorithm!'}},
-        {{label:'ECC💀',   color:'#f97316', emoji:'🧟‍♀️', hp:{int(d['hp'])//2}, pts:15, fact:'ECC vulnerable to quantum!'}},
-        {{label:'DES⚠️',  color:'#eab308', emoji:'🧟‍♂️', hp:{int(d['hp'])//3}, pts:20, fact:'DES is classically broken!'}},
-        {{label:'MD5💥',   color:'#ec4899', emoji:'🧟', hp:{int(d['hp'])//2}, pts:25, fact:'MD5 has collision attacks!'}},
-    ];
+const ZOMBIES = [
+    {{label:"RSA☠️",   emoji:"🧟",   color:"#ef4444", hp:{diff['hp']},      pts:10, fact:"RSA is broken by Shor's Algorithm!"}},
+    {{label:"ECC💀",   emoji:"🧟‍♀️",  color:"#f97316", hp:{int(diff['hp']*0.7)}, pts:15, fact:"ECC is also broken by Shor's Algorithm!"}},
+    {{label:"DES⚠️",  emoji:"🧟‍♂️",  color:"#eab308", hp:{int(diff['hp']*0.5)}, pts:20, fact:"DES was classically broken in 1999!"}},
+    {{label:"MD5💥",   emoji:"🧟",   color:"#ec4899", hp:{int(diff['hp']*0.6)}, pts:18, fact:"MD5 has dangerous collision attacks!"}},
+];
 
-    let player = {{x: W/2, y: H-50, w: 44, h: 44, speed: 6}};
-    let bullets = [], zombies = [], explosions = [];
-    let selectedWeapon = 0, score = 0, zhp = 100, wave = 1;
-    let running = false, frameId, spawnTimer = 0;
-    let keys = {{}};
-    const ZOMBIE_SPEED = {d['speed']};
-    const SPAWN_RATE   = {d['rate']};
+const ZOMBIE_SPEED = {diff['speed']};
+const SPAWN_RATE = {diff['rate']};
+const MAX_WAVES = {diff['waves']};
 
-    function selectWeapon(i) {{
-        selectedWeapon = i;
-        document.querySelectorAll('.wbtn').forEach((b,j) => {{
-            b.classList.toggle('active', j===i);
+let player = {{x:W/2, y:H-55, w:40, h:40, spd:6}};
+let bullets=[], zombies=[], explosions=[], stars=[];
+let selWeapon=0, zhp=100, score=0, wave=1, killed=0;
+let running=false, frameId, spawnT=0, spawnCount=0, waveSize=0;
+let keys={{}};
+
+// Generate starfield
+for(let i=0;i<60;i++) stars.push({{x:Math.random()*W,y:Math.random()*H,r:Math.random()*1.5+0.5}});
+
+function selW(i) {{
+    selWeapon=i;
+    document.querySelectorAll(".wbtn").forEach((b,j)=>b.classList.toggle("active",j===i));
+    showMsg(WEAPONS[i].emoji+" "+WEAPONS[i].name+" — "+WEAPONS[i].fact);
+}}
+
+function showMsg(msg) {{ document.getElementById("zb-msg").textContent=msg; }}
+function showFact(fact) {{
+    const f=document.getElementById("zb-fact");
+    f.textContent="📚 "+fact; f.style.display="block";
+    clearTimeout(window._ft);
+    window._ft=setTimeout(()=>{{f.style.display="none";}},3500);
+}}
+
+function updateHUD() {{
+    document.getElementById("zhp").textContent=Math.max(0,zhp);
+    document.getElementById("zscore").textContent=score;
+    document.getElementById("zwave").textContent=wave;
+    document.getElementById("zleft").textContent=Math.max(0,waveSize-spawnCount)+zombies.length;
+    document.getElementById("zkilled").textContent=killed;
+}}
+
+function startGame() {{
+    bullets=[]; zombies=[]; explosions=[];
+    zhp=100; score=0; wave=1; killed=0; spawnT=0; spawnCount=0;
+    waveSize=6+wave*2; running=true; player.x=W/2;
+    updateHUD();
+    showMsg("🧟 Wave 1 incoming! Blast the quantum zombies!");
+    cancelAnimationFrame(frameId);
+    loop();
+}}
+
+function moveL() {{ if(running) player.x=Math.max(25,player.x-player.spd*3); }}
+function moveR() {{ if(running) player.x=Math.min(W-25,player.x+player.spd*3); }}
+
+function fire() {{
+    if(!running) return;
+    const w=WEAPONS[selWeapon];
+    const angles = w.spread===3 ? [-0.3,0,0.3] : [0];
+    angles.forEach(angle=>{{
+        const spd_x = Math.sin(angle)*w.spd;
+        bullets.push({{
+            x:player.x, y:player.y-20,
+            vx:spd_x, vy:-w.spd,
+            dmg:w.dmg, color:w.color,
+            emoji:w.emoji, area:w.area,
+            fact:w.fact
         }});
-        const w = WEAPONS[i];
-        document.getElementById('zb-msg').textContent = w.emoji+' '+w.name+' selected — '+w.desc;
-    }}
-
-    function startZombies() {{
-        bullets=[]; zombies=[]; explosions=[];
-        score=0; zhp=100; wave=1; running=true; spawnTimer=0;
-        document.getElementById('zscore').textContent=0;
-        document.getElementById('zhp').textContent=100;
-        document.getElementById('zwave').textContent=1;
-        document.getElementById('zb-msg').textContent='🧟 Quantum zombies incoming!';
-        player.x = W/2;
-        cancelAnimationFrame(frameId);
-        gameLoop();
-    }}
-
-    function fireWeapon() {{
-        if (!running) return;
-        const w = WEAPONS[selectedWeapon];
-        if (w.spread > 0) {{
-            for (let i=-1; i<=1; i++) {{
-                bullets.push({{
-                    x: player.x, y: player.y-20,
-                    dx: i*2.5, dy: -w.speed,
-                    dmg: w.dmg, color: w.color,
-                    emoji: w.emoji, r: 8,
-                    bomb: w.dmg >= 100
-                }});
-            }}
-        }} else {{
-            bullets.push({{
-                x: player.x, y: player.y-20,
-                dx: 0, dy: -w.speed,
-                dmg: w.dmg, color: w.color,
-                emoji: w.emoji, r: w.dmg>=100 ? 14 : 8,
-                bomb: w.dmg >= 100
-            }});
-        }}
-    }}
-
-    document.addEventListener('keydown', e => {{
-        keys[e.key] = true;
-        if (e.key===' ') {{ e.preventDefault(); fireWeapon(); }}
     }});
-    document.addEventListener('keyup', e => {{ keys[e.key] = false; }});
+}}
 
-    function spawnZombie() {{
-        const type = ZOMBIE_TYPES[Math.floor(Math.random()*ZOMBIE_TYPES.length)];
-        const waveHpBoost = 1 + (wave-1)*0.3;
-        zombies.push({{
-            x: Math.random()*(W-60)+30,
-            y: -40,
-            w: 40, h: 40,
-            hp: Math.floor(type.hp * waveHpBoost),
-            maxHp: Math.floor(type.hp * waveHpBoost),
-            speed: ZOMBIE_SPEED + (wave-1)*0.15,
-            label: type.label,
-            color: type.color,
-            emoji: type.emoji,
-            pts: type.pts * wave,
-            fact: type.fact,
-            wobble: Math.random()*Math.PI*2,
-        }});
-    }}
+document.addEventListener("keydown", e=>{{
+    keys[e.key]=true;
+    if(e.key===" "){{e.preventDefault();fire();}}
+}});
+document.addEventListener("keyup", e=>{{keys[e.key]=false;}});
 
-    function gameLoop() {{
-        frameId = requestAnimationFrame(gameLoop);
-        update();
-        draw();
-    }}
+function spawnZombie() {{
+    const z=ZOMBIES[Math.floor(Math.random()*ZOMBIES.length)];
+    const hpBoost=1+(wave-1)*0.2;
+    zombies.push({{
+        x:Math.random()*(W-60)+30, y:-40,
+        w:38, h:38,
+        hp:Math.floor(z.hp*hpBoost),
+        maxHp:Math.floor(z.hp*hpBoost),
+        spd:ZOMBIE_SPEED+(wave-1)*0.1,
+        wobble:Math.random()*Math.PI*2,
+        label:z.label, emoji:z.emoji,
+        color:z.color, pts:z.pts*wave,
+        fact:z.fact
+    }});
+    spawnCount++;
+}}
 
-    function update() {{
-        // Player movement
-        if (keys['ArrowLeft']  || keys['a']) player.x = Math.max(22, player.x-player.speed);
-        if (keys['ArrowRight'] || keys['d']) player.x = Math.min(W-22, player.x+player.speed);
+function loop() {{
+    frameId=requestAnimationFrame(loop);
+    if(!running) return;
 
-        // Spawn zombies
-        spawnTimer++;
-        const effectiveRate = Math.max(25, SPAWN_RATE - (wave-1)*8);
-        if (spawnTimer >= effectiveRate) {{ spawnZombie(); spawnTimer=0; }}
+    // Controls
+    if(keys["ArrowLeft"]||keys["a"]) player.x=Math.max(25,player.x-player.spd);
+    if(keys["ArrowRight"]||keys["d"]) player.x=Math.min(W-25,player.x+player.spd);
 
-        // Move bullets
-        bullets = bullets.filter(b => {{
-            b.x += b.dx; b.y += b.dy;
-            return b.y > -20 && b.x > -20 && b.x < W+20;
-        }});
+    // Spawn
+    spawnT++;
+    const effRate=Math.max(20,SPAWN_RATE-(wave-1)*5);
+    if(spawnT>=effRate && spawnCount<waveSize) {{ spawnZombie(); spawnT=0; }}
 
-        // Move zombies
-        zombies.forEach(z => {{
-            z.wobble += 0.08;
-            z.y += z.speed;
-            z.x += Math.sin(z.wobble)*0.8;
-        }});
+    // Move bullets
+    bullets=bullets.filter(b=>{{
+        b.x+=b.vx; b.y+=b.vy;
+        return b.y>-20 && b.x>-20 && b.x<W+20;
+    }});
 
-        // Bullet-zombie collisions
-        bullets.forEach((b,bi) => {{
-            zombies.forEach((z,zi) => {{
-                const dist = Math.hypot(b.x-z.x-z.w/2, b.y-z.y-z.h/2);
-                const hitR = b.bomb ? 60 : 22;
-                if (dist < hitR) {{
-                    if (b.bomb) {{
-                        // Area damage to ALL zombies in range
-                        zombies.forEach(oz => {{
-                            if (Math.hypot(b.x-oz.x-oz.w/2, b.y-oz.y-oz.h/2) < 60) {{
-                                oz.hp -= b.dmg;
-                            }}
-                        }});
-                        explosions.push({{x:b.x, y:b.y, r:10, maxR:65, alpha:1}});
-                        bullets[bi] = null;
-                    }} else {{
-                        z.hp -= b.dmg;
-                        bullets[bi] = null;
-                    }}
-                    if (z.hp <= 0) {{
-                        score += z.pts;
-                        document.getElementById('zscore').textContent = score;
-                        document.getElementById('zb-msg').textContent = '💥 '+z.label+' destroyed! '+z.fact;
-                        zombies[zi] = null;
-                        if (score >= wave * 200) {{
-                            wave++;
-                            document.getElementById('zwave').textContent = wave;
-                            document.getElementById('zb-msg').textContent = '🌊 Wave '+wave+'! Quantum zombies getting stronger!';
-                        }}
-                    }}
+    // Move zombies
+    zombies.forEach(z=>{{
+        z.wobble+=0.06;
+        z.y+=z.spd;
+        z.x+=Math.sin(z.wobble)*0.6;
+    }});
+
+    // Bullet-zombie collision
+    bullets=bullets.filter(b=>{{
+        let hit=false;
+        zombies=zombies.filter(z=>{{
+            const dist=Math.hypot(b.x-z.x-z.w/2, b.y-z.y-z.h/2);
+            const hitR=b.area>0?b.area:20;
+            if(dist<hitR){{
+                z.hp-=b.dmg;
+                hit=true;
+                if(z.hp<=0){{
+                    score+=z.pts; killed++;
+                    showFact(z.fact);
+                    // Explosion
+                    for(let i=0;i<8;i++) explosions.push({{
+                        x:z.x+z.w/2, y:z.y+z.h/2,
+                        vx:(Math.random()-0.5)*5,
+                        vy:(Math.random()-0.5)*5,
+                        r:4, alpha:1, color:z.color
+                    }});
+                    updateHUD();
+                    return false;
                 }}
-            }});
-        }});
-
-        bullets  = bullets.filter(Boolean);
-        zombies  = zombies.filter(Boolean);
-
-        // Zombie reaches player
-        zombies.forEach((z,zi) => {{
-            if (z.y + z.h >= player.y && z.y <= player.y+player.h &&
-                z.x + z.w >= player.x-22 && z.x <= player.x+22) {{
-                zhp -= 8;
-                document.getElementById('zhp').textContent = Math.max(0,zhp);
-                document.getElementById('zb-msg').textContent = '💀 '+z.label+' hit you! -8 HP';
-                zombies[zi] = null;
-                if (zhp <= 0) {{
-                    running = false;
-                    cancelAnimationFrame(frameId);
-                    zx.fillStyle='rgba(0,0,0,0.8)';
-                    zx.fillRect(0,0,W,H);
-                    zx.fillStyle='#ef4444';
-                    zx.font='bold 32px sans-serif';
-                    zx.textAlign='center';
-                    zx.fillText('💀 SERVER BREACHED!', W/2, H/2-40);
-                    zx.fillStyle='white';
-                    zx.font='18px sans-serif';
-                    zx.fillText('Final Score: '+score, W/2, H/2+5);
-                    zx.fillText('Wave Reached: '+wave, W/2, H/2+35);
-                    zx.fillStyle='#a5b4fc';
-                    zx.font='14px sans-serif';
-                    zx.fillText('Kyber & Dilithium would have protected you!', W/2, H/2+70);
-                    document.getElementById('zb-msg').textContent='☠️ Game Over! Press Start to try again.';
-                }}
+                return true;
             }}
+            return true;
         }});
+        if(hit && b.area===0) showFact(b.fact);
+        return b.area>0 ? false : !hit;
+    }});
 
-        zombies = zombies.filter(Boolean);
-
-        // Update explosions
-        explosions = explosions.filter(e => {{
-            e.r += 4; e.alpha -= 0.07;
-            return e.alpha > 0;
-        }});
-    }}
-
-    function draw() {{
-        zx.clearRect(0,0,W,H);
-
-        // Starfield background
-        zx.fillStyle='#0f172a';
-        zx.fillRect(0,0,W,H);
-        for (let i=0; i<40; i++) {{
-            zx.fillStyle='rgba(165,180,252,0.3)';
-            zx.fillRect((i*67)%W, (i*43+Date.now()*0.02)%H, 1.5, 1.5);
+    // Zombie reaches player
+    zombies=zombies.filter(z=>{{
+        if(z.y+z.h>=player.y&&z.y<=player.y+player.h&&
+           z.x+z.w>=player.x-22&&z.x<=player.x+22){{
+            zhp-=8; updateHUD();
+            showMsg("💀 "+z.label+" hit you! "+z.fact);
+            if(zhp<=0){{ running=false; showMsg("☠️ Game Over! Score: "+score); }}
+            return false;
         }}
+        return true;
+    }});
 
-        // Ground line
-        zx.strokeStyle='#4f46e5';
-        zx.lineWidth=2;
-        zx.beginPath();
-        zx.moveTo(0, H-30);
-        zx.lineTo(W, H-30);
-        zx.stroke();
+    // Update explosions
+    explosions=explosions.filter(e=>{{
+        e.x+=e.vx; e.y+=e.vy; e.alpha-=0.05; return e.alpha>0;
+    }});
 
-        // Draw explosions
-        explosions.forEach(e => {{
-            zx.beginPath();
-            zx.arc(e.x, e.y, e.r, 0, Math.PI*2);
-            zx.fillStyle=`rgba(239,68,68,${{e.alpha*0.4}})`;
-            zx.fill();
-            zx.strokeStyle=`rgba(251,191,36,${{e.alpha}})`;
-            zx.lineWidth=3;
-            zx.stroke();
-        }});
-
-        // Draw zombies
-        zombies.forEach(z => {{
-            zx.font='30px sans-serif';
-            zx.textAlign='center';
-            zx.fillText(z.emoji, z.x+z.w/2, z.y+z.h);
-
-            // Label
-            zx.fillStyle=z.color;
-            zx.font='bold 9px sans-serif';
-            zx.fillText(z.label, z.x+z.w/2, z.y-2);
-
-            // HP bar
-            const bw=38, bh=4;
-            zx.fillStyle='#374151';
-            zx.fillRect(z.x+z.w/2-bw/2, z.y-10, bw, bh);
-            zx.fillStyle=z.hp/z.maxHp > 0.5 ? '#10b981' : '#ef4444';
-            zx.fillRect(z.x+z.w/2-bw/2, z.y-10, bw*(z.hp/z.maxHp), bh);
-        }});
-
-        // Draw bullets
-        bullets.forEach(b => {{
-            zx.font=(b.bomb?'22':'14')+'px sans-serif';
-            zx.textAlign='center';
-            zx.fillText(b.emoji, b.x, b.y);
-        }});
-
-        // Draw player
-        zx.font='36px sans-serif';
-        zx.textAlign='center';
-        zx.fillText('🧑‍💻', player.x, player.y+10);
-
-        // Player HP bar
-        const pw=60;
-        zx.fillStyle='#374151';
-        zx.fillRect(player.x-pw/2, player.y+16, pw, 5);
-        zx.fillStyle = zhp > 50 ? '#10b981' : zhp > 25 ? '#f59e0b' : '#ef4444';
-        zx.fillRect(player.x-pw/2, player.y+16, pw*(zhp/100), 5);
-
-        // Weapon indicator
-        const w = WEAPONS[selectedWeapon];
-        zx.fillStyle='rgba(79,70,229,0.3)';
-        zx.beginPath();
-        zx.roundRect(10, H-28, 160, 20, 4);
-        zx.fill();
-        zx.fillStyle='white';
-        zx.font='11px sans-serif';
-        zx.textAlign='left';
-        zx.fillText(w.emoji+' '+w.name, 16, H-14);
+    // Wave complete
+    if(spawnCount>=waveSize&&zombies.length===0){{
+        if(wave>=MAX_WAVES){{
+            running=false;
+            showMsg("🏆 YOU WIN! All "+MAX_WAVES+" waves cleared! Score: "+score);
+        }} else {{
+            wave++;
+            waveSize=6+wave*2;
+            spawnCount=0; spawnT=0;
+            document.getElementById("zwave").textContent=wave;
+            showMsg("✅ Wave "+(wave-1)+" cleared! Wave "+wave+" incoming... +50 bonus bits!");
+        }}
     }}
 
-    // Idle screen
-    zx.fillStyle='#0f172a';
-    zx.fillRect(0,0,W,H);
-    zx.fillStyle='#a5b4fc';
-    zx.font='bold 22px sans-serif';
-    zx.textAlign='center';
-    zx.fillText('🧟 Quantum Zombie Blast!', W/2, H/2-60);
-    zx.font='14px sans-serif';
-    zx.fillStyle='#6b7280';
-    zx.fillText('Blast RSA, ECC and DES zombies', W/2, H/2-25);
-    zx.fillText('with Kyber, Dilithium & SPHINCS+!', W/2, H/2+5);
-    zx.fillStyle='#4f46e5';
-    zx.font='bold 16px sans-serif';
-    zx.fillText('Press ▶ Start to play', W/2, H/2+45);
-    </script>
-    """, height=600)
+    updateHUD();
+    render();
+}}
+
+function render() {{
+    zx.clearRect(0,0,W,H);
+
+    // Sky gradient
+    const grad=zx.createLinearGradient(0,0,0,H);
+    grad.addColorStop(0,"#0f0c29");
+    grad.addColorStop(1,"#1e1b4b");
+    zx.fillStyle=grad; zx.fillRect(0,0,W,H);
+
+    // Stars
+    stars.forEach(s=>{{
+        zx.beginPath();
+        zx.arc(s.x,s.y,s.r,0,Math.PI*2);
+        zx.fillStyle="rgba(255,255,255,0.5)";
+        zx.fill();
+    }});
+
+    // Ground
+    zx.fillStyle="#1e1b4b";
+    zx.fillRect(0,H-35,W,35);
+    zx.fillStyle="#4f46e5";
+    zx.fillRect(0,H-35,W,3);
+
+    // Grid lines on ground
+    zx.strokeStyle="rgba(79,70,229,0.2)";
+    for(let i=0;i<W;i+=50){{
+        zx.beginPath();
+        zx.moveTo(i,H-35);
+        zx.lineTo(i,H);
+        zx.stroke();
+    }}
+
+    // Explosions
+    explosions.forEach(e=>{{
+        zx.beginPath();
+        zx.arc(e.x,e.y,e.r,0,Math.PI*2);
+        const hex=Math.floor(e.alpha*255).toString(16).padStart(2,"0");
+        zx.fillStyle=e.color+hex;
+        zx.fill();
+    }});
+
+    // Zombies
+    zombies.forEach(z=>{{
+        // Shadow
+        zx.beginPath();
+        zx.ellipse(z.x+z.w/2,z.y+z.h+4,z.w/2,6,0,0,Math.PI*2);
+        zx.fillStyle="rgba(0,0,0,0.3)";
+        zx.fill();
+
+        // Emoji
+        zx.font="28px sans-serif";
+        zx.textAlign="center";
+        zx.fillText(z.emoji,z.x+z.w/2,z.y+z.h);
+
+        // Label
+        zx.font="bold 9px sans-serif";
+        zx.fillStyle=z.color;
+        zx.fillText(z.label,z.x+z.w/2,z.y-3);
+
+        // HP bar
+        const bw=38,bh=4;
+        zx.fillStyle="#374151";
+        zx.fillRect(z.x+z.w/2-bw/2,z.y-12,bw,bh);
+        const pct=Math.max(0,z.hp/z.maxHp);
+        zx.fillStyle=pct>0.5?"#10b981":pct>0.25?"#f59e0b":"#ef4444";
+        zx.fillRect(z.x+z.w/2-bw/2,z.y-12,bw*pct,bh);
+    }});
+
+    // Bullets
+    bullets.forEach(b=>{{
+        zx.font=(b.area>0?"20":"14")+"px sans-serif";
+        zx.textAlign="center";
+        zx.fillText(b.emoji,b.x,b.y+5);
+        if(b.area>0){{
+            zx.beginPath();
+            zx.arc(b.x,b.y,b.area,0,Math.PI*2);
+            zx.strokeStyle=b.color+"44";
+            zx.lineWidth=2;
+            zx.stroke();
+        }}
+    }});
+
+    // Player
+    zx.font="34px sans-serif";
+    zx.textAlign="center";
+    zx.fillText("🧑‍💻",player.x,player.y+12);
+
+    // Player HP bar
+    const pw=56;
+    zx.fillStyle="#374151";
+    zx.fillRect(player.x-pw/2,player.y+16,pw,6);
+    zx.fillStyle=zhp>60?"#10b981":zhp>30?"#f59e0b":"#ef4444";
+    zx.fillRect(player.x-pw/2,player.y+16,pw*(zhp/100),6);
+
+    // Weapon HUD
+    const w=WEAPONS[selWeapon];
+    zx.fillStyle="rgba(15,23,42,0.8)";
+    zx.beginPath();
+    zx.roundRect(8,H-32,180,22,4);
+    zx.fill();
+    zx.fillStyle=w.color;
+    zx.font="bold 11px sans-serif";
+    zx.textAlign="left";
+    zx.fillText(w.emoji+" "+w.name,14,H-17);
+
+    // Wave progress bar
+    const wPct=spawnCount/Math.max(1,waveSize);
+    zx.fillStyle="rgba(15,23,42,0.8)";
+    zx.beginPath();
+    zx.roundRect(W-140,H-32,132,22,4);
+    zx.fill();
+    zx.fillStyle="#334155";
+    zx.fillRect(W-134,H-26,120,10);
+    zx.fillStyle="#4f46e5";
+    zx.fillRect(W-134,H-26,120*wPct,10);
+    zx.fillStyle="#a5b4fc";
+    zx.font="9px sans-serif";
+    zx.textAlign="left";
+    zx.fillText("Wave "+wave+" progress",W-134,H-18);
+
+    // Game over / win overlay
+    if(!running&&(score>0||zhp<=0)){{
+        zx.fillStyle="rgba(0,0,0,0.75)";
+        zx.fillRect(0,0,W,H);
+        zx.fillStyle=zhp>0?"#10b981":"#ef4444";
+        zx.font="bold 30px sans-serif";
+        zx.textAlign="center";
+        zx.fillText(zhp>0?"🏆 YOU WIN!":"💀 GAME OVER",W/2,H/2-40);
+        zx.fillStyle="white";
+        zx.font="18px sans-serif";
+        zx.fillText("Score: "+score+" | Killed: "+killed,W/2,H/2);
+        zx.fillStyle="#a5b4fc";
+        zx.font="13px sans-serif";
+        zx.fillText("Kyber + Dilithium + SPHINCS+ = Quantum Safe!",W/2,H/2+40);
+    }}
+}}
+
+// Idle screen
+zx.fillStyle="#0f0c29";
+zx.fillRect(0,0,W,H);
+stars.forEach(s=>{{
+    zx.beginPath();
+    zx.arc(s.x,s.y,s.r,0,Math.PI*2);
+    zx.fillStyle="rgba(255,255,255,0.5)";
+    zx.fill();
+}});
+zx.fillStyle="#a5b4fc";
+zx.font="bold 24px sans-serif";
+zx.textAlign="center";
+zx.fillText("🧟 Quantum Zombie Blast",W/2,H/2-60);
+zx.fillStyle="#6b7280";
+zx.font="13px sans-serif";
+zx.fillText("Blast RSA, ECC and DES zombies",W/2,H/2-25);
+zx.fillText("with Kyber, Dilithium, SPHINCS+ and LWE!",W/2,H/2+5);
+zx.fillStyle="#4f46e5";
+zx.font="bold 15px sans-serif";
+zx.fillText("Press ▶ Start to play",W/2,H/2+45);
+</script>
+</body>
+</html>
+""", height=700)
 
 def render_quantumcraft_elementary():
     """K-5: QuantumCraft — Crypto Kingdom top-down block world."""
