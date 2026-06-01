@@ -374,232 +374,416 @@ def render_lattice_maze():
 
 
 def render_tower_defense():
-    """9-12: Tower Defense — deploy PQC algorithms to block quantum attacks."""
-    st.subheader("🛡️ PQC Tower Defense!")
+    """9-12: Improved PQC Tower Defense with more towers, enemies, bosses and education."""
+    st.subheader("🛡️ PQC Tower Defense — Advanced!")
     st.markdown(
-        "Deploy **post-quantum algorithms** to stop the quantum attack waves! "
-        "Click a tower type then click the grid to place it. "
-        "Stop the quantum computers from reaching your data! 💾"
+        "Deploy **post-quantum algorithms** to stop quantum attack waves! "
+        "Place towers on the grid, then hit **Start Wave**. "
+        "Earn bits by defeating enemies to buy more towers. **Boss enemies appear every 3 waves!**"
     )
 
-    components.html("""
-    <style>
-        #tdCanvas { border: 2px solid #4f46e5; border-radius: 12px; display: block; margin: 0 auto; }
-        .td-wrap { text-align: center; font-family: sans-serif; background: #0f172a; padding: 10px; border-radius: 12px; }
-        .td-bar { display: flex; justify-content: space-between; max-width: 500px; margin: 6px auto; color: #a5b4fc; font-size: 13px; font-weight: bold; }
-        .tower-btns { display: flex; justify-content: center; gap: 8px; margin: 8px; flex-wrap: wrap; }
-        .tbtn { padding: 7px 14px; border-radius: 8px; border: 2px solid transparent; cursor: pointer; font-size: 12px; font-weight: bold; color: white; }
-        .tbtn.selected { border-color: white; }
-        #td-msg { font-size: 13px; color: #34d399; min-height: 18px; }
-    </style>
-    <div class="td-wrap">
-        <div class="td-bar">
-            <span>💾 Data HP: <span id="hp">100</span></span>
-            <span>⭐ Score: <span id="tdscore">0</span></span>
-            <span>💎 Bits: <span id="bits">150</span></span>
-            <span>🌊 Wave: <span id="wave">1</span></span>
-        </div>
-        <canvas id="tdCanvas" width="500" height="400"></canvas>
-        <div id="td-msg">Select a tower and click the grid to place it!</div>
-        <div class="tower-btns">
-            <button class="tbtn selected" id="btn-kyber" style="background:#10b981" onclick="selectTower('kyber')">🔐 Kyber (50💎)</button>
-            <button class="tbtn" id="btn-dilithium" style="background:#3b82f6" onclick="selectTower('dilithium')">✍️ Dilithium (75💎)</button>
-            <button class="tbtn" id="btn-sphincs" style="background:#8b5cf6" onclick="selectTower('sphincs')">🌲 SPHINCS+ (100💎)</button>
-            <button class="tbtn" style="background:#4f46e5" onclick="startWave()">▶ Start Wave</button>
-        </div>
-    </div>
-    <script>
-    const tc = document.getElementById('tdCanvas');
-    const tx = tc.getContext('2d');
-    const CELL=50, COLS=10, ROWS=8;
+    with st.expander("📚 Tower Guide — PQC Algorithms", expanded=False):
+        cols = st.columns(3)
+        with cols[0]:
+            st.success("🔐 **Kyber (ML-KEM)** — Fast, cheap, good range. FIPS 203 key encapsulation.")
+            st.success("✍️ **Dilithium (ML-DSA)** — Heavy damage, medium range. FIPS 204 signatures.")
+        with cols[1]:
+            st.success("🌲 **SPHINCS+ (SLH-DSA)** — Slow but massive damage. FIPS 205 hash-based.")
+            st.success("🦅 **Falcon (FN-DSA)** — Fast rate, small range. FIPS 206 compact signature.")
+        with cols[2]:
+            st.success("⚡ **LWE Cannon** — Area damage, hits all enemies nearby. Ultimate weapon!")
+            st.info("🌊 **Enemy Types:** Shor attacks key exchange. Grover attacks hashes. Boss = full quantum computer!")
 
-    const TOWERS = {
-        kyber:     {cost:50,  color:'#10b981', dmg:15, range:90,  rate:40,  emoji:'🔐', name:'Kyber'},
-        dilithium: {cost:75,  color:'#3b82f6', dmg:25, range:110, rate:60,  emoji:'✍️', name:'Dilithium'},
-        sphincs:   {cost:100, color:'#8b5cf6', dmg:40, range:130, rate:80,  emoji:'🌲', name:'SPHINCS+'},
-    };
+    import streamlit.components.v1 as components_td
+    components_td.html("""
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+body{margin:0;background:#0f172a;font-family:sans-serif;color:white;}
+#gameArea{display:flex;flex-direction:column;align-items:center;padding:8px;}
+.topbar{display:flex;justify-content:space-between;width:520px;margin-bottom:6px;
+font-size:12px;font-weight:bold;color:#a5b4fc;}
+.stat{background:#1e293b;padding:4px 10px;border-radius:6px;border:1px solid #334155;}
+#tdCanvas{border:2px solid #4f46e5;border-radius:10px;cursor:pointer;}
+.tower-panel{display:flex;gap:6px;margin:6px 0;flex-wrap:wrap;justify-content:center;}
+.tbtn{padding:6px 10px;border-radius:8px;border:2px solid transparent;
+cursor:pointer;font-size:11px;font-weight:bold;color:white;transition:all 0.15s;}
+.tbtn.sel{border-color:white;transform:scale(1.05);}
+.msg-box{font-size:12px;color:#34d399;min-height:18px;margin:4px;text-align:center;}
+.wave-btn{padding:8px 24px;border-radius:8px;border:none;cursor:pointer;
+background:#4f46e5;color:white;font-size:13px;font-weight:bold;margin:4px;}
+.wave-btn:hover{background:#6d60ff;}
+#fact-box{background:rgba(79,70,229,0.15);border:1px solid rgba(79,70,229,0.4);
+border-radius:8px;padding:8px 12px;margin:4px;font-size:11px;color:#a5b4fc;
+max-width:520px;display:none;text-align:center;}
+</style>
+</head>
+<body>
+<div id="gameArea">
+<div class="topbar">
+    <div class="stat">💾 HP: <span id="hp">100</span></div>
+    <div class="stat">⭐ Score: <span id="tdscore">0</span></div>
+    <div class="stat">💎 Bits: <span id="bits">200</span></div>
+    <div class="stat">🌊 Wave: <span id="wave">0</span></div>
+    <div class="stat">👾 Left: <span id="eleft">0</span></div>
+</div>
+<canvas id="tdCanvas" width="520" height="400"></canvas>
+<div class="msg-box" id="td-msg">Select a tower and click the grid to place it!</div>
+<div id="fact-box"></div>
+<div class="tower-panel">
+    <button class="tbtn sel" id="btn-kyber" style="background:#10b981"
+        onclick="selT('kyber')">🔐 Kyber 40💎</button>
+    <button class="tbtn" id="btn-dilithium" style="background:#3b82f6"
+        onclick="selT('dilithium')">✍️ Dilithium 70💎</button>
+    <button class="tbtn" id="btn-sphincs" style="background:#8b5cf6"
+        onclick="selT('sphincs')">🌲 SPHINCS 100💎</button>
+    <button class="tbtn" id="btn-falcon" style="background:#f59e0b"
+        onclick="selT('falcon')">🦅 Falcon 60💎</button>
+    <button class="tbtn" id="btn-lwe" style="background:#ec4899"
+        onclick="selT('lwe')">⚡ LWE 150💎</button>
+    <button class="wave-btn" onclick="startWave()">▶ Start Wave</button>
+    <button class="wave-btn" style="background:#374151" onclick="resetGame()">🔄 Reset</button>
+</div>
+</div>
+<script>
+const tc = document.getElementById("tdCanvas");
+const tx = tc.getContext("2d");
+const CELL=40, COLS=13, ROWS=10;
 
-    // Path for enemies to follow (column indices)
-    const PATH = [{x:0,y:3},{x:1,y:3},{x:2,y:3},{x:2,y:5},{x:3,y:5},
-                {x:4,y:5},{x:4,y:2},{x:5,y:2},{x:6,y:2},{x:6,y:6},
-                {x:7,y:6},{x:8,y:6},{x:9,y:6}];
+const TOWERS = {
+    kyber:     {cost:40,  color:"#10b981", dmg:20,  range:80,  rate:30,  emoji:"🔐", name:"Kyber",     area:false, fact:"ML-KEM FIPS 203 — Lattice key encapsulation! Quantum safe!"},
+    dilithium: {cost:70,  color:"#3b82f6", dmg:45,  range:100, rate:50,  emoji:"✍️", name:"Dilithium",  area:false, fact:"ML-DSA FIPS 204 — Lattice digital signature! Cannot be forged!"},
+    sphincs:   {cost:100, color:"#8b5cf6", dmg:80,  range:120, rate:90,  emoji:"🌲", name:"SPHINCS+",   area:false, fact:"SLH-DSA FIPS 205 — Hash-based! Works even if lattices break!"},
+    falcon:    {cost:60,  color:"#f59e0b", dmg:25,  range:70,  rate:20,  emoji:"🦅", name:"Falcon",     area:false, fact:"FN-DSA FIPS 206 — Smallest quantum-safe signature ever!"},
+    lwe:       {cost:150, color:"#ec4899", dmg:120, range:110, rate:80,  emoji:"⚡", name:"LWE Cannon", area:true,  fact:"Learning With Errors — The hardest quantum math problem exists!"},
+};
 
-    const PATH_SET = new Set(PATH.map(p => p.x+','+p.y));
+const ENEMY_TYPES = [
+    {name:"Shor",    emoji:"⚛️",  hp:60,   spd:1.2, pts:15, color:"#ef4444", fact:"Shor Algorithm breaks RSA and ECC!", boss:false},
+    {name:"Grover",  emoji:"🌀",  hp:40,   spd:1.8, pts:12, color:"#f97316", fact:"Grover Algorithm speeds up brute force!", boss:false},
+    {name:"Harrow",  emoji:"👾",  hp:100,  spd:0.9, pts:20, color:"#eab308", fact:"HHL Algorithm attacks linear systems!", boss:false},
+    {name:"QAOA",    emoji:"🔮",  hp:80,   spd:1.5, pts:18, color:"#a855f7", fact:"QAOA finds optimal solutions faster!", boss:false},
+    {name:"Q-BOSS",  emoji:"💀",  hp:800,  spd:0.7, pts:100,color:"#dc2626", fact:"Full quantum computer — the ultimate threat!", boss:true},
+];
 
-    let towers=[], enemies=[], selectedTower='kyber';
-    let hp=100, score=0, bits=150, wave=1, waveRunning=false, frameId;
+const PATH = [
+    {x:0,y:2},{x:1,y:2},{x:2,y:2},{x:3,y:2},{x:3,y:5},
+    {x:4,y:5},{x:5,y:5},{x:6,y:5},{x:6,y:1},{x:7,y:1},
+    {x:8,y:1},{x:9,y:1},{x:9,y:7},{x:10,y:7},{x:11,y:7},{x:12,y:7}
+];
+const PATH_SET = new Set(PATH.map(p=>p.x+","+p.y));
 
-    function selectTower(t) {
-        selectedTower = t;
-        document.querySelectorAll('.tbtn').forEach(b => b.classList.remove('selected'));
-        document.getElementById('btn-'+t).classList.add('selected');
+let towers=[], enemies=[], bullets=[], particles=[];
+let selTower="kyber", hp=100, score=0, bits=200, wave=0;
+let waveRunning=false, frameId, spawnQ=[], spawnTimer=0;
+
+function selT(t) {
+    selTower=t;
+    document.querySelectorAll(".tbtn").forEach(b=>b.classList.remove("sel"));
+    document.getElementById("btn-"+t).classList.add("sel");
+    const td = TOWERS[t];
+    showMsg(td.emoji+" "+td.name+" selected — "+td.fact);
+}
+
+function showMsg(msg) {
+    document.getElementById("td-msg").textContent=msg;
+}
+
+function showFact(fact) {
+    const fb = document.getElementById("fact-box");
+    fb.textContent = "📚 " + fact;
+    fb.style.display = "block";
+    clearTimeout(window._factTimer);
+    window._factTimer = setTimeout(()=>{fb.style.display="none";}, 4000);
+}
+
+tc.addEventListener("click", e=>{
+    const rect = tc.getBoundingClientRect();
+    const cx = Math.floor((e.clientX-rect.left)/CELL);
+    const cy = Math.floor((e.clientY-rect.top)/CELL);
+    const key = cx+","+cy;
+    const td = TOWERS[selTower];
+    if (!PATH_SET.has(key) && !towers.find(t=>t.x===cx&&t.y===cy) && bits>=td.cost) {
+        towers.push({x:cx,y:cy,type:selTower,timer:0,...td});
+        bits-=td.cost;
+        updateUI();
+        showMsg(td.emoji+" "+td.name+" placed! "+td.fact);
+        draw();
+    } else if (bits<td.cost) {
+        showMsg("💎 Need "+td.cost+" bits! Defeat more enemies to earn bits.");
+    }
+});
+
+function startWave() {
+    if (waveRunning) return;
+    wave++;
+    waveRunning=true;
+    spawnQ=[];
+    const isBoss = wave%3===0;
+    const count = isBoss ? 1 : 4+wave*2;
+
+    if (isBoss) {
+        showMsg("💀 BOSS WAVE "+wave+"! The full quantum computer attacks!");
+        spawnQ.push({...ENEMY_TYPES[4], delay:0});
+    } else {
+        for(let i=0;i<count;i++){
+            const eType = ENEMY_TYPES[Math.floor(Math.random()*(ENEMY_TYPES.length-1))];
+            const hpBoost = 1+(wave-1)*0.25;
+            spawnQ.push({...eType, hp:Math.floor(eType.hp*hpBoost), maxHp:Math.floor(eType.hp*hpBoost), delay:i*60});
+        }
+    }
+    document.getElementById("wave").textContent=wave;
+    updateUI();
+    if (!frameId) gameLoop();
+}
+
+function resetGame() {
+    towers=[]; enemies=[]; bullets=[]; particles=[];
+    hp=100; score=0; bits=200; wave=0; waveRunning=false;
+    spawnQ=[]; spawnTimer=0;
+    cancelAnimationFrame(frameId); frameId=null;
+    updateUI();
+    showMsg("Game reset! Select towers and start a new wave.");
+    draw();
+}
+
+function updateUI() {
+    document.getElementById("hp").textContent=Math.max(0,hp);
+    document.getElementById("tdscore").textContent=score;
+    document.getElementById("bits").textContent=bits;
+    document.getElementById("eleft").textContent=enemies.length+spawnQ.length;
+}
+
+function gameLoop() {
+    frameId=requestAnimationFrame(gameLoop);
+    update();
+    draw();
+}
+
+function update() {
+    // Spawn enemies from queue
+    spawnTimer++;
+    if (spawnQ.length>0 && spawnQ[0].delay<=spawnTimer) {
+        const e = spawnQ.shift();
+        const hpVal = e.hp || e.maxHp || 60;
+        enemies.push({
+            pathIdx:0,
+            x:PATH[0].x*CELL+CELL/2,
+            y:PATH[0].y*CELL+CELL/2,
+            hp:hpVal, maxHp:hpVal,
+            speed:e.spd||1.2,
+            name:e.name, emoji:e.emoji,
+            color:e.color, pts:e.pts,
+            fact:e.fact, boss:e.boss||false,
+        });
     }
 
-    tc.addEventListener('click', e => {
-        const rect = tc.getBoundingClientRect();
-        const cx = Math.floor((e.clientX - rect.left) / CELL);
-        const cy = Math.floor((e.clientY - rect.top)  / CELL);
-        const key = cx+','+cy;
-        const tDef = TOWERS[selectedTower];
-        if (!PATH_SET.has(key) && !towers.find(t=>t.x===cx&&t.y===cy) && bits >= tDef.cost) {
-            towers.push({x:cx, y:cy, type:selectedTower, timer:0, ...tDef});
-            bits -= tDef.cost;
-            document.getElementById('bits').textContent = bits;
-            document.getElementById('td-msg').textContent = tDef.emoji+' '+tDef.name+' placed!';
-            draw();
-        } else if (bits < tDef.cost) {
-            document.getElementById('td-msg').textContent = '💎 Not enough bits!';
+    // Move enemies
+    enemies.forEach(e=>{
+        if(e.pathIdx>=PATH.length-1){
+            hp-= e.boss?30:10;
+            document.getElementById("hp").textContent=Math.max(0,hp);
+            showMsg("💥 "+e.name+" breached! "+(e.boss?"-30":"-10")+" HP");
+            e.pathIdx=-1;
+            if(hp<=0){
+                cancelAnimationFrame(frameId); frameId=null;
+                waveRunning=false;
+                showMsg("☠️ Data corrupted! Quantum won. Score: "+score);
+            }
+            return;
+        }
+        const tgt=PATH[e.pathIdx+1];
+        const tx2=tgt.x*CELL+CELL/2, ty2=tgt.y*CELL+CELL/2;
+        const dx=tx2-e.x, dy=ty2-e.y;
+        const dist=Math.sqrt(dx*dx+dy*dy);
+        if(dist<e.speed+1){e.pathIdx++;}
+        else{e.x+=dx/dist*e.speed; e.y+=dy/dist*e.speed;}
+    });
+
+    // Tower shooting
+    towers.forEach(tower=>{
+        tower.timer++;
+        if(tower.timer<tower.rate) return;
+        tower.timer=0;
+        const cx=tower.x*CELL+CELL/2, cy=tower.y*CELL+CELL/2;
+        if(tower.area){
+            // LWE area damage
+            const hit=enemies.filter(e=>e.pathIdx>=0&&Math.hypot(e.x-cx,e.y-cy)<=tower.range);
+            if(hit.length>0){
+                hit.forEach(e=>{e.hp-=tower.dmg;});
+                particles.push({x:cx,y:cy,r:5,maxR:tower.range,alpha:0.8,color:tower.color});
+                showFact(tower.fact);
+            }
+        } else {
+            const inR=enemies.filter(e=>e.pathIdx>=0&&Math.hypot(e.x-cx,e.y-cy)<=tower.range);
+            if(inR.length>0){
+                bullets.push({x:cx,y:cy,tx:inR[0].x,ty:inR[0].y,
+                    target:inR[0],dmg:tower.dmg,color:tower.color,
+                    emoji:tower.emoji,speed:6,fact:tower.fact});
+            }
         }
     });
 
-    function startWave() {
-        if (waveRunning) return;
-        waveRunning = true;
-        const count = 5 + wave * 2;
-        for (let i=0; i<count; i++) {
-            setTimeout(() => {
-                enemies.push({
-                    pathIdx:0,
-                    x: PATH[0].x*CELL+CELL/2,
-                    y: PATH[0].y*CELL+CELL/2,
-                    hp: 50 + wave*20,
-                    maxHp: 50 + wave*20,
-                    speed: 1 + wave*0.2,
-                    type: Math.random()<0.5 ? 'shor' : 'grover',
+    // Move bullets
+    bullets=bullets.filter(b=>{
+        const dx=b.tx-b.x, dy=b.ty-b.y;
+        const dist=Math.sqrt(dx*dx+dy*dy);
+        if(dist<b.speed+2){
+            b.target.hp-=b.dmg;
+            showFact(b.fact);
+            return false;
+        }
+        b.x+=dx/dist*b.speed; b.y+=dy/dist*b.speed;
+        b.tx=b.target.x; b.ty=b.target.y;
+        return true;
+    });
+
+    // Remove dead enemies
+    enemies=enemies.filter(e=>{
+        if(e.pathIdx<0) return false;
+        if(e.hp<=0){
+            score+=e.pts*(e.boss?5:1);
+            bits+=e.boss?80:20;
+            // Death particles
+            for(let i=0;i<6;i++){
+                particles.push({
+                    x:e.x, y:e.y,
+                    vx:(Math.random()-0.5)*4,
+                    vy:(Math.random()-0.5)*4,
+                    r:4, alpha:1, color:e.color, type:"spark"
                 });
-            }, i * 800);
-        }
-        document.getElementById('td-msg').textContent = '🌊 Wave '+wave+' incoming! '+count+' quantum attackers!';
-        gameLoop();
-    }
-
-    function gameLoop() {
-        frameId = requestAnimationFrame(gameLoop);
-        update();
-        draw();
-    }
-
-    function update() {
-        // Move enemies along path
-        enemies.forEach(e => {
-            if (e.pathIdx >= PATH.length-1) {
-                hp -= 10;
-                document.getElementById('hp').textContent = Math.max(0,hp);
-                e.pathIdx = -1; // Mark for removal
-                document.getElementById('td-msg').textContent = '💥 Quantum attacker breached! -10 HP';
-                return;
             }
-            const target = PATH[e.pathIdx+1];
-            const tx2 = target.x*CELL+CELL/2;
-            const ty2 = target.y*CELL+CELL/2;
-            const dx = tx2-e.x, dy = ty2-e.y;
-            const dist = Math.sqrt(dx*dx+dy*dy);
-            if (dist < e.speed+1) { e.pathIdx++; }
-            else { e.x += (dx/dist)*e.speed; e.y += (dy/dist)*e.speed; }
-        });
-
-        // Tower shooting
-        towers.forEach(tower => {
-            tower.timer++;
-            if (tower.timer >= tower.rate) {
-                tower.timer = 0;
-                const inRange = enemies.filter(e => e.pathIdx >= 0 &&
-                    Math.hypot(e.x - tower.x*CELL-CELL/2, e.y - tower.y*CELL-CELL/2) <= tower.range);
-                if (inRange.length > 0) {
-                    inRange[0].hp -= tower.dmg;
-                    if (inRange[0].hp <= 0) {
-                        score += 10 * wave;
-                        bits  += 15;
-                        document.getElementById('tdscore').textContent = score;
-                        document.getElementById('bits').textContent   = bits;
-                        inRange[0].pathIdx = -1;
-                    }
-                }
-            }
-        });
-
-        enemies = enemies.filter(e => e.pathIdx >= 0);
-
-        if (hp <= 0) {
-            cancelAnimationFrame(frameId);
-            waveRunning = false;
-            document.getElementById('td-msg').textContent = '☠️ Data corrupted! Quantum won. Score: '+score;
-            return;
+            showMsg("💥 "+e.name+" destroyed! +"+(e.pts*(e.boss?5:1))+" score +"+(e.boss?80:20)+" bits");
+            updateUI();
+            return false;
         }
+        return true;
+    });
 
-        if (waveRunning && enemies.length === 0) {
-            waveRunning = false;
-            wave++;
-            bits += 50;
-            document.getElementById('wave').textContent = wave;
-            document.getElementById('bits').textContent = bits;
-            document.getElementById('td-msg').textContent = '✅ Wave cleared! +50 bits. Ready for wave '+wave+'?';
-            cancelAnimationFrame(frameId);
+    // Update particles
+    particles=particles.filter(p=>{
+        p.alpha-=p.type==="spark"?0.06:0.04;
+        if(p.type==="spark"){p.x+=p.vx;p.y+=p.vy;}
+        else{p.r+=3;}
+        return p.alpha>0;
+    });
+
+    // Check wave complete
+    if(waveRunning && enemies.length===0 && spawnQ.length===0){
+        waveRunning=false;
+        const bonus=50+wave*20;
+        bits+=bonus;
+        updateUI();
+        showMsg("✅ Wave "+wave+" cleared! +"+bonus+" bits bonus. Ready for wave "+(wave+1)+"?");
+        cancelAnimationFrame(frameId); frameId=null;
+    }
+}
+
+function draw() {
+    tx.clearRect(0,0,tc.width,tc.height);
+
+    // Background
+    tx.fillStyle="#0f172a";
+    tx.fillRect(0,0,tc.width,tc.height);
+
+    // Grid
+    for(let r=0;r<ROWS;r++){
+        for(let c=0;c<COLS;c++){
+            const key=c+","+r;
+            tx.fillStyle=PATH_SET.has(key)?"#1e293b":"#0f172a";
+            tx.fillRect(c*CELL,r*CELL,CELL,CELL);
+            tx.strokeStyle="rgba(79,70,229,0.15)";
+            tx.strokeRect(c*CELL,r*CELL,CELL,CELL);
         }
     }
 
-    function draw() {
-        tx.clearRect(0,0,tc.width,tc.height);
+    // Path arrows
+    for(let i=0;i<PATH.length-1;i++){
+        const p=PATH[i], n=PATH[i+1];
+        tx.fillStyle="rgba(165,180,252,0.3)";
+        tx.font="14px sans-serif";
+        tx.textAlign="center";
+        const arrow = n.x>p.x?"→":n.x<p.x?"←":n.y>p.y?"↓":"↑";
+        tx.fillText(arrow,p.x*CELL+CELL/2,p.y*CELL+CELL/1.5);
+    }
 
-        // Grid
-        for (let r=0; r<ROWS; r++) {
-            for (let c=0; c<COLS; c++) {
-                const key = c+','+r;
-                if (PATH_SET.has(key)) {
-                    tx.fillStyle='#1e293b';
-                } else {
-                    tx.fillStyle='#0f172a';
-                }
-                tx.fillRect(c*CELL, r*CELL, CELL, CELL);
-                tx.strokeStyle='rgba(79,70,229,0.2)';
-                tx.strokeRect(c*CELL, r*CELL, CELL, CELL);
-            }
-        }
+    // Goal
+    tx.font="22px sans-serif";
+    tx.textAlign="center";
+    tx.fillText("💾",PATH[PATH.length-1].x*CELL+CELL/2,PATH[PATH.length-1].y*CELL+CELL/1.4);
 
-        // Path arrows
-        tx.fillStyle='rgba(100,116,139,0.4)';
-        for (let i=0; i<PATH.length-1; i++) {
-            const p=PATH[i];
-            tx.font='16px sans-serif';
-            tx.textAlign='center';
-            tx.fillText('→', p.x*CELL+CELL/2, p.y*CELL+CELL/1.5);
-        }
-
-        // Goal
-        tx.font='22px sans-serif';
-        tx.textAlign='center';
-        tx.fillText('💾', PATH[PATH.length-1].x*CELL+CELL/2, PATH[PATH.length-1].y*CELL+CELL/1.4);
-
-        // Towers
-        towers.forEach(t => {
-            tx.fillStyle=t.color+'33';
-            tx.beginPath();
-            tx.arc(t.x*CELL+CELL/2, t.y*CELL+CELL/2, t.range, 0, Math.PI*2);
+    // Particles
+    particles.forEach(p=>{
+        tx.beginPath();
+        if(p.type==="spark"){
+            tx.arc(p.x,p.y,p.r,0,Math.PI*2);
+            tx.fillStyle=p.color+Math.floor(p.alpha*255).toString(16).padStart(2,"0");
             tx.fill();
-            tx.font='22px sans-serif';
-            tx.textAlign='center';
-            tx.fillText(t.emoji, t.x*CELL+CELL/2, t.y*CELL+CELL/1.4);
-        });
+        } else {
+            tx.arc(p.x,p.y,p.r,0,Math.PI*2);
+            tx.strokeStyle=p.color+Math.floor(p.alpha*255).toString(16).padStart(2,"0");
+            tx.lineWidth=2;
+            tx.stroke();
+        }
+    });
 
-        // Enemies
-        enemies.forEach(e => {
-            if (e.pathIdx < 0) return;
-            const emoji = e.type==='shor' ? '⚛️' : '🌀';
-            tx.font='20px sans-serif';
-            tx.textAlign='center';
-            tx.fillText(emoji, e.x, e.y+6);
-            // HP bar
-            const bw=34, bh=5;
-            tx.fillStyle='#ef4444';
-            tx.fillRect(e.x-bw/2, e.y-18, bw, bh);
-            tx.fillStyle='#10b981';
-            tx.fillRect(e.x-bw/2, e.y-18, bw*(e.hp/e.maxHp), bh);
-        });
+    // Tower ranges (on hover - always show for selected)
+    towers.forEach(t=>{
+        tx.beginPath();
+        tx.arc(t.x*CELL+CELL/2,t.y*CELL+CELL/2,t.range,0,Math.PI*2);
+        tx.fillStyle=t.color+"15";
+        tx.fill();
+        tx.font="22px sans-serif";
+        tx.textAlign="center";
+        tx.fillText(t.emoji,t.x*CELL+CELL/2,t.y*CELL+CELL/1.4);
+    });
+
+    // Bullets
+    bullets.forEach(b=>{
+        tx.font="14px sans-serif";
+        tx.textAlign="center";
+        tx.fillText(b.emoji,b.x,b.y+5);
+    });
+
+    // Enemies
+    enemies.forEach(e=>{
+        if(e.pathIdx<0) return;
+        const size = e.boss?32:22;
+        tx.font=size+"px sans-serif";
+        tx.textAlign="center";
+        tx.fillText(e.emoji,e.x,e.y+size/2);
+
+        // HP bar
+        const bw=e.boss?50:36, bh=e.boss?7:4;
+        tx.fillStyle="#374151";
+        tx.fillRect(e.x-bw/2,e.y-size/2-10,bw,bh);
+        const pct=Math.max(0,e.hp/e.maxHp);
+        tx.fillStyle=pct>0.6?"#10b981":pct>0.3?"#f59e0b":"#ef4444";
+        tx.fillRect(e.x-bw/2,e.y-size/2-10,bw*pct,bh);
+
+        // Boss label
+        if(e.boss){
+            tx.fillStyle="#dc2626";
+            tx.font="bold 9px sans-serif";
+            tx.textAlign="center";
+            tx.fillText("BOSS: "+e.hp+"/"+e.maxHp,e.x,e.y-size/2-14);
+        }
+    });
+
+    // HP warning overlay
+    if(hp<=30){
+        tx.fillStyle="rgba(239,68,68,0.08)";
+        tx.fillRect(0,0,tc.width,tc.height);
     }
+}
 
-    draw();
-    </script>
-    """, height=560)
+draw();
+updateUI();
+</script>
+</body>
+</html>
+""", height=680)
 
 def render_zombie_blast(difficulty: str = "easy"):
     """
