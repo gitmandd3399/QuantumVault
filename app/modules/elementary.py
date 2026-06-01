@@ -397,3 +397,196 @@ def render_elementary():
             render_zombie_blast(difficulty="easy")
         else:
             render_quantumcraft_elementary()
+    with tab6:
+        st.subheader("🔤 PQC Word Search")
+        st.markdown("Find all the PQC words! Click letters in order to spell each word.")
+        components.html("""
+<style>
+.ws-wrap{text-align:center;font-family:sans-serif;padding:10px;}
+.ws-grid{display:inline-grid;grid-template-columns:repeat(12,30px);gap:2px;margin:10px auto;}
+.ws-cell{width:30px;height:30px;display:flex;align-items:center;justify-content:center;
+font-size:13px;font-weight:bold;border-radius:4px;cursor:pointer;
+background:#1e293b;color:#a5b4fc;border:1px solid #334155;user-select:none;}
+.ws-cell.selected{background:#4f46e5;color:white;}
+.ws-cell.found{background:#10b981;color:white;}
+.ws-words{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:8px;}
+.ws-word{padding:3px 8px;border-radius:6px;font-size:11px;font-weight:bold;
+background:#1e293b;color:#a5b4fc;border:1px solid #334155;}
+.ws-word.found{background:#10b981;color:white;text-decoration:line-through;}
+#ws-msg{font-size:12px;color:#34d399;min-height:18px;margin:4px;}
+.ws-btn{padding:5px 12px;border-radius:6px;border:none;cursor:pointer;
+background:#4f46e5;color:white;font-size:11px;font-weight:bold;margin:3px;}
+</style>
+<div class="ws-wrap">
+<div id="ws-msg">Click letters to spell a word!</div>
+<div class="ws-grid" id="wgrid"></div>
+<div class="ws-words" id="wlist"></div>
+<button class="ws-btn" onclick="resetWS()">New Game</button>
+<div id="ws-score" style="font-size:12px;color:#a5b4fc;margin-top:6px;">Found: 0 / 7</div>
+</div>
+<script>
+const WDS=[
+{word:"KYBER",fact:"NIST ML-KEM — quantum-safe key exchange!"},
+{word:"LATTICE",fact:"Math grid that stumps quantum computers!"},
+{word:"QUANTUM",fact:"Quantum computers can break old locks!"},
+{word:"NIST",fact:"US agency that approved PQC standards!"},
+{word:"HASH",fact:"SHA-3 creates unique message fingerprints!"},
+{word:"CIPHER",fact:"A method of writing secret messages!"},
+{word:"FALCON",fact:"Smallest quantum-safe signature algorithm!"},
+];
+const R=9,C=12;
+let gr=[],pl=[],sel=[],fd=[];
+function resetWS(){
+gr=Array.from({length:R},()=>Array(C).fill(""));
+pl=[];sel=[];fd=[];placeW();fillW();renderW();renderWL();
+document.getElementById("ws-msg").textContent="Click letters to spell a word!";
+document.getElementById("ws-score").textContent="Found: 0 / 7";
+}
+function placeW(){
+const dirs=[{dr:0,dc:1},{dr:1,dc:0},{dr:1,dc:1}];
+WDS.forEach(({word})=>{
+let t=0;
+while(t<200){t++;
+const d=dirs[Math.floor(Math.random()*dirs.length)];
+const mr=R-d.dr*(word.length-1),mc=C-d.dc*(word.length-1);
+if(mr<=0||mc<=0)continue;
+const r=Math.floor(Math.random()*mr),c=Math.floor(Math.random()*mc);
+let ok=true;const cs=[];
+for(let i=0;i<word.length;i++){
+const nr=r+d.dr*i,nc=c+d.dc*i;
+if(gr[nr][nc]!==""&&gr[nr][nc]!==word[i]){ok=false;break;}
+cs.push([nr,nc]);}
+if(ok){cs.forEach(([nr,nc],i)=>{gr[nr][nc]=word[i];});pl.push({word,cells:cs});break;}}});
+}
+function fillW(){
+const L="ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+for(let r=0;r<R;r++)for(let c=0;c<C;c++)
+if(!gr[r][c])gr[r][c]=L[Math.floor(Math.random()*26)];
+}
+function renderW(){
+const el=document.getElementById("wgrid");el.innerHTML="";
+for(let r=0;r<R;r++)for(let c=0;c<C;c++){
+const cell=document.createElement("div");
+cell.className="ws-cell";cell.textContent=gr[r][c];
+cell.dataset.r=r;cell.dataset.c=c;
+cell.onclick=()=>selC(r,c);el.appendChild(cell);}
+updCS();}
+function selC(r,c){
+const idx=sel.findIndex(s=>s[0]===r&&s[1]===c);
+if(idx>=0){sel=[];}else{sel.push([r,c]);chkW();}
+updCS();}
+function chkW(){
+const s=sel.map(([r,c])=>gr[r][c]).join("");
+const m=pl.find(p=>p.word===s&&!fd.includes(p.word));
+if(m){fd.push(m.word);
+m.cells.forEach(([r,c])=>{
+const cell=document.querySelector("[data-r='"+r+"'][data-c='"+c+"']");
+if(cell)cell.classList.add("found");});
+sel=[];
+document.getElementById("ws-msg").textContent="Found "+m.word+"! "+m.fact;
+document.getElementById("ws-score").textContent="Found: "+fd.length+" / 7";
+renderWL();
+if(fd.length===WDS.length)document.getElementById("ws-msg").textContent="All found! PQC expert!";}
+else if(sel.length>=9){sel=[];}
+updCS();}
+function updCS(){
+document.querySelectorAll(".ws-cell").forEach(cell=>{
+const r=parseInt(cell.dataset.r),c=parseInt(cell.dataset.c);
+const isSel=sel.some(([sr,sc])=>sr===r&&sc===c);
+const isF=pl.some(p=>fd.includes(p.word)&&p.cells.some(([pr,pc])=>pr===r&&pc===c));
+cell.className="ws-cell"+(isF?" found":isSel?" selected":"");});}
+function renderWL(){
+document.getElementById("wlist").innerHTML=
+WDS.map(({word})=>"<div class='ws-word"+(fd.includes(word)?" found":"")+"'>"+word+"</div>").join("");}
+resetWS();
+</script>
+""", height=520)
+
+    with tab7:
+        st.subheader("✏️ PQC Crossword Puzzle")
+        st.markdown("Fill in the crossword using your PQC knowledge!")
+        components.html("""
+<style>
+.cw-wrap{text-align:center;font-family:sans-serif;padding:10px;}
+.cw-grid{display:inline-grid;gap:2px;margin:8px auto;
+grid-template-columns:repeat(9,34px);grid-template-rows:repeat(8,34px);}
+.black{background:#0f172a;width:34px;height:34px;}
+.white{background:#1e293b;border:1px solid #334155;width:34px;height:34px;
+position:relative;display:flex;align-items:center;justify-content:center;}
+.white input{width:26px;height:26px;background:transparent;border:none;
+text-align:center;font-size:13px;font-weight:bold;color:#a5b4fc;
+text-transform:uppercase;outline:none;}
+.white input.ok{color:#10b981;}
+.cnum{position:absolute;top:1px;left:2px;font-size:8px;color:#6b7280;line-height:1;}
+.cw-clues{display:grid;grid-template-columns:1fr 1fr;gap:12px;
+max-width:480px;margin:8px auto;text-align:left;}
+.clue{font-size:11px;color:#888;margin-bottom:4px;line-height:1.4;}
+.clue strong{color:#a5b4fc;}
+.cw-btn{padding:5px 12px;border-radius:6px;border:none;cursor:pointer;
+background:#4f46e5;color:white;font-size:11px;font-weight:bold;margin:3px;}
+#cw-msg{font-size:12px;color:#34d399;min-height:18px;margin:4px;}
+h4{color:#a5b4fc;font-size:12px;margin:0 0 6px;}
+</style>
+<div class="cw-wrap">
+<div id="cw-msg">Type letters in the white boxes!</div>
+<div class="cw-grid" id="cwg"></div>
+<button class="cw-btn" onclick="chkCW()">Check Answers</button>
+<button class="cw-btn" onclick="revCW()">Reveal All</button>
+<div class="cw-clues">
+<div><h4>ACROSS</h4>
+<div class="clue"><strong>1.</strong> NIST key exchange standard (5)</div>
+<div class="clue"><strong>4.</strong> Keeping messages secret (6)</div>
+<div class="clue"><strong>6.</strong> US agency that approved PQC (4)</div>
+</div>
+<div><h4>DOWN</h4>
+<div class="clue"><strong>1.</strong> Math grid that stumps quantum computers (7)</div>
+<div class="clue"><strong>2.</strong> Type of computer that breaks RSA (7)</div>
+<div class="clue"><strong>3.</strong> ML-DSA signature algorithm (9)</div>
+</div>
+</div>
+</div>
+<script>
+const ANS=[
+[-1,-1,-1,-1,-1,-1,-1,-1,-1],
+[-1,"K","Y","B","E","R",-1,-1,-1],
+[-1,"A",-1,-1,-1,-1,-1,-1,-1],
+[-1,"T",-1,"D",-1,-1,-1,-1,-1],
+["C","I","P","I","E","R",-1,-1,-1],
+[-1,"C",-1,"L",-1,-1,-1,-1,-1],
+[-1,"E",-1,"I","N","I","S","T",-1],
+[-1,-1,-1,"T",-1,-1,-1,-1,-1],
+];
+const NMS={"1,1":"1","4,0":"4","6,4":"6"};
+let ug=Array.from({length:8},(_,r)=>Array.from({length:9},(_,c)=>ANS[r][c]===-1?-1:""));
+function buildCW(){
+const el=document.getElementById("cwg");el.innerHTML="";
+for(let r=0;r<8;r++)for(let c=0;c<9;c++){
+const div=document.createElement("div");
+if(ANS[r][c]===-1){div.className="black";}
+else{div.className="white";
+const k=r+","+c;
+if(NMS[k]){const n=document.createElement("div");n.className="cnum";n.textContent=NMS[k];div.appendChild(n);}
+const inp=document.createElement("input");inp.maxLength=1;
+inp.dataset.r=r;inp.dataset.c=c;inp.value=ug[r][c];
+inp.oninput=e=>{ug[r][c]=e.target.value.toUpperCase();e.target.value=e.target.value.toUpperCase();};
+div.appendChild(inp);}
+el.appendChild(div);}
+}
+function chkCW(){
+let ok=0,tot=0;
+for(let r=0;r<8;r++)for(let c=0;c<9;c++){
+if(ANS[r][c]!==-1){tot++;
+const inp=document.querySelector("input[data-r='"+r+"'][data-c='"+c+"']");
+if(inp){if(ug[r][c]===ANS[r][c]){ok++;inp.classList.add("ok");}else inp.classList.remove("ok");}}}
+const p=Math.round(ok/tot*100);
+document.getElementById("cw-msg").textContent=p===100?"Perfect! You know PQC!":ok+"/"+tot+" correct ("+p+"%)";
+}
+function revCW(){
+for(let r=0;r<8;r++)for(let c=0;c<9;c++){
+if(ANS[r][c]!==-1){ug[r][c]=ANS[r][c];
+const inp=document.querySelector("input[data-r='"+r+"'][data-c='"+c+"']");
+if(inp){inp.value=ANS[r][c];inp.classList.add("ok");}}}
+document.getElementById("cw-msg").textContent="Answers revealed!";}
+buildCW();
+</script>
+""", height=580)
