@@ -12,6 +12,7 @@ Concepts taught:
 """
 
 import streamlit as st
+import streamlit.components.v1 as components
 from utils.security import sanitize_input, check_rate_limit
 
 # ── XP Constants ──────────────────────────────────────────────────────────────
