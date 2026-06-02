@@ -55,8 +55,154 @@ def render_middle_school():
         ["📖 Story Time", "🏗️ Lattice Explorer", "🏭 Hash Factory", "⚡ Quantum Race", "🔑 Key Workshop", "🌀 Mini Game", "🎨 Hash Visualizer", "🔬 Key Size Lab"]
     )
 
-    # ── Tab 1: Lattice Explorer ───────────────────────────────────────────────
+    # ── Tab 2: Lattice Explorer ───────────────────────────────────────────────
     with tab1:
+        st.subheader("📖 The Codebreaker Crew")
+        if "ms_story_page" not in st.session_state:
+            st.session_state.ms_story_page = 0
+        ms_pages = [
+            {
+                "title": "Chapter 1 — The Hack",
+                "emoji": "💻",
+                "color": "#3b82f6",
+                "text": (
+                    "It is 2031. Three middle schoolers — **Maya**, **Zion**, and **Priya** — "
+                    "are in their school computer lab when the lights flicker.\n\n"
+                    "Every screen shows the same message:\n\n"
+                    "> **SYSTEM COMPROMISED. QUANTUM DECRYPTION IN PROGRESS. "
+                    "ALL STUDENT RECORDS EXPOSED IN 60 MINUTES.**\n\n"
+                    "Their teacher, Mr. Chen, goes pale.\n\n"
+                    "**It is a quantum attack** he whispers. **Our school uses RSA encryption. "
+                    "A quantum computer can factor the prime numbers and crack it in minutes.**\n\n"
+                    "**What is factoring?** asks Zion.\n\n"
+                    "**RSA works by multiplying two giant prime numbers together. "
+                    "It is easy to multiply them but nearly impossible to reverse — unless "
+                    "you have a quantum computer running Shor Algorithm.**\n\n"
+                    "Priya pulls up her laptop. **I know what to do. We need lattice crypto.**"
+                ),
+                "quiz": None,
+            },
+            {
+                "title": "Chapter 2 — The Lattice",
+                "emoji": "🏗️",
+                "color": "#10b981",
+                "text": (
+                    "**What is a lattice?** asks Maya.\n\n"
+                    "**Imagine a giant grid of dots** says Priya. "
+                    "**Millions of them in hundreds of dimensions. "
+                    "Now imagine I give you a point CLOSE to one of those dots "
+                    "but not exactly on it. Can you find the closest dot?**\n\n"
+                    "**That sounds easy** says Zion.\n\n"
+                    "**In 2 dimensions sure** says Priya. "
+                    "**In 1000 dimensions? Even a quantum computer takes longer than "
+                    "the age of the universe.**\n\n"
+                    "**That is the Learning With Errors problem** says Mr. Chen. "
+                    "**We add intentional noise to the equations. "
+                    "The noise makes it impossible to reverse.**\n\n"
+                    "**KYBER uses this** says Priya. **It is NIST ML-KEM FIPS 203. Let me install it.**\n\n"
+                    "The countdown clock ticks. **48 minutes remaining.**"
+                ),
+                "quiz": {
+                    "question": "Why cannot a quantum computer crack lattice cryptography?",
+                    "options": [
+                        "Finding the closest point in 1000 dimensions with noise takes longer than the age of the universe",
+                        "Lattices are made of metal",
+                        "Quantum computers do not like grids",
+                        "Priya is too fast"
+                    ],
+                    "answer": 0,
+                    "xp": 15,
+                    "key": "ms_story_q1"
+                }
+            },
+            {
+                "title": "Chapter 3 — Saved!",
+                "emoji": "🎉",
+                "color": "#f59e0b",
+                "text": (
+                    "With 10 minutes left Priya finishes installing Kyber.\n\n"
+                    "**Done!** she announces. "
+                    "**All student records are now protected by ML-KEM. "
+                    "The quantum attacker has nothing.**\n\n"
+                    "On screen the attack progress bar grinds to a halt.\n\n"
+                    "**It is working!** cheers Zion.\n\n"
+                    "The screen clears. A new message appears:\n\n"
+                    "> **QUANTUM ATTACK FAILED. ML-KEM ENCRYPTION ACTIVE. ALL RECORDS SECURE.**\n\n"
+                    "**The Codebreaker Crew saves the day!** 🎉\n\n"
+                    "---\n\n"
+                    "🏅 **Story complete! You are now a Code Cadet!**"
+                ),
+                "quiz": {
+                    "question": "Which NIST standard did Priya use to protect the school?",
+                    "options": [
+                        "ML-KEM (Kyber) FIPS 203",
+                        "RSA-2048",
+                        "SHA-256",
+                        "DES"
+                    ],
+                    "answer": 0,
+                    "xp": 20,
+                    "key": "ms_story_q2"
+                }
+            },
+        ]
+        ms_page = ms_pages[st.session_state.ms_story_page]
+        ms_total = len(ms_pages)
+        ms_current = st.session_state.ms_story_page
+        st.progress(ms_current / ms_total)
+        st.caption(f"Chapter {ms_current + 1} of {ms_total}")
+        ms_color = ms_page["color"]
+        ms_emoji = ms_page["emoji"]
+        ms_title = ms_page["title"]
+        st.markdown(
+            f"<div style='background:{ms_color}15;border-left:4px solid {ms_color};"
+            f"border-radius:0 10px 10px 0;padding:1rem 1.5rem;margin-bottom:1rem;'>"
+            f"<div style='font-size:2rem;margin-bottom:0.5rem'>{ms_emoji}</div>"
+            f"<h3 style='color:{ms_color};margin:0'>{ms_title}</h3>"
+            f"</div>",
+            unsafe_allow_html=True
+        )
+        st.markdown(ms_page["text"])
+        if ms_page["quiz"]:
+            quiz = ms_page["quiz"]
+            ms_key = quiz["key"]
+            st.markdown("---")
+            st.markdown(f"**🧠 Quick Check:** {quiz['question']}")
+            if f"answered_{ms_key}" not in st.session_state:
+                st.session_state[f"answered_{ms_key}"] = False
+            if not st.session_state[f"answered_{ms_key}"]:
+                for i, option in enumerate(quiz["options"]):
+                    if st.button(option, key=f"quiz_{ms_key}_{i}"):
+                        if i == quiz["answer"]:
+                            st.session_state[f"answered_{ms_key}"] = True
+                            st.session_state.xp += quiz["xp"]
+                            st.success(f"Correct! +{quiz['xp']} XP")
+                            st.balloons()
+                        else:
+                            st.error("Not quite! Read the chapter again!")
+            else:
+                st.success("Already answered!")
+        st.markdown("---")
+        c1, c2, c3 = st.columns([1, 2, 1])
+        with c1:
+            if ms_current > 0:
+                if st.button("← Previous", key="ms_prev"):
+                    st.session_state.ms_story_page -= 1
+                    st.rerun()
+        with c2:
+            st.caption(f"Page {ms_current + 1} / {ms_total}")
+        with c3:
+            if ms_current < ms_total - 1:
+                if st.button("Next →", key="ms_next"):
+                    st.session_state.ms_story_page += 1
+                    st.rerun()
+            else:
+                st.success("Story Complete!")
+                if st.button("Claim Badge!", key="ms_story_badge"):
+                    from modules.elementary import award_badge
+                    award_badge("📖 Code Cadet Story", xp=10)
+
+    with tab2:
         st.subheader("🏗️ Lattice Maze Explorer")
         st.markdown(
             """
@@ -175,8 +321,8 @@ def render_middle_school():
                         "The noise makes it tricky, right? That's the whole point!"
                     )
 
-    # ── Tab 2: Hash Factory ───────────────────────────────────────────────────
-    with tab2:
+    # ── Tab 3: Hash Factory ───────────────────────────────────────────────────
+    with tab3:
         st.subheader("🏭 Hash Function Factory")
         st.markdown(
             """
@@ -231,8 +377,8 @@ def render_middle_school():
         if st.button("🏭 I understand hash functions!", key="hash_done"):
             award_badge("🏭 Hash Factory Worker", xp=15)
 
-    # ── Tab 3: Quantum vs Classical Race ─────────────────────────────────────
-    with tab3:
+    # ── Tab 4: Quantum vs Classical Race ─────────────────────────────────────
+    with tab4:
         st.subheader("⚡ Quantum Computer vs Classical Computer — Head to Head!")
         st.markdown(
             """
@@ -262,8 +408,8 @@ def render_middle_school():
         if st.button("⚡ Got it — I understand the threat!", key="race_done"):
             award_badge("⚡ Quantum Racer", xp=20)
 
-    # ── Tab 4: Key Workshop ───────────────────────────────────────────────────
-    with tab4:
+    # ── Tab 5: Key Workshop ───────────────────────────────────────────────────
+    with tab5:
         st.subheader("🔑 Build-a-Key Workshop (Simplified Kyber)")
         st.markdown(
             """
