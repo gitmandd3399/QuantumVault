@@ -1025,11 +1025,11 @@ function restartLevel() {{
 document.getElementById("qbox").style.display="none";
 document.getElementById("start-screen").style.display="block";
 
-document.getElementById("start-btn").addEventListener("click", function() {{
+document.getElementById("start-btn").addEventListener("click", function() {
     document.getElementById("start-screen").style.display="none";
     document.getElementById("qbox").style.display="block";
     loadQuestion();
-}});
+});
 </script>
 </body>
 </html>
