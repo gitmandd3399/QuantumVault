@@ -542,60 +542,144 @@ async function updateHash() {
 """, height=480)
 
     with tab8:
-        st.subheader("🔬 Key Size Comparison Lab")
+        st.subheader("🔬 Key Size Lab — How Big Are Crypto Keys?")
         st.markdown(
-            "See how **post-quantum keys compare to classical keys** in size. "
-            "Bigger isn't always better — but quantum-safe is always necessary!"
+            "A **key** is like a password that locks your secret messages. "
+            "Crypto keys are HUGE compared to regular passwords! "
+            "Let us explore how big they are and which ones are quantum-safe."
+        )
+        st.markdown("---")
+        st.markdown("### What Even Is a Crypto Key?")
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.info("Your house key\n\nAbout 5cm long\nVery simple\nEasy to copy!")
+        with col2:
+            st.warning("RSA key\n\nMade of 2048 ones and zeros\nClassical computers cannot crack it\nBut quantum computers can!")
+        with col3:
+            st.success("Kyber key\n\nSmaller than RSA\nBased on lattice math\nEven quantum computers cannot crack it!")
+        st.markdown("---")
+        st.markdown("### Pick an Algorithm to Learn About It!")
+
+        ALGOS = [
+            {"name":"RSA-2048",    "type":"Classical",    "safe":False, "key_kb":256, "emoji":"💀", "color":"#ef4444", "nist":"No standard",
+             "analogy":"Like a lock with 2048 tumblers. Classical computers cannot pick it. But a quantum computer using Shor Algorithm cracks it in hours!",
+             "fact":"RSA was invented in 1977 and has protected the internet for 45 years. But quantum computers will break it.",
+             "size":"256 KB — about the size of a small photo"},
+            {"name":"RSA-4096",    "type":"Classical",    "safe":False, "key_kb":512, "emoji":"💀", "color":"#ef4444", "nist":"No standard",
+             "analogy":"Double the tumblers of RSA-2048. Still cracked by quantum computers just takes a bit longer!",
+             "fact":"Some people use RSA-4096 thinking it is safer. Against quantum computers bigger RSA keys just delay the inevitable.",
+             "size":"512 KB — twice as big but still quantum-vulnerable"},
+            {"name":"ECC-256",     "type":"Classical",    "safe":False, "key_kb":64,  "emoji":"⚠️", "color":"#f97316", "nist":"No PQC standard",
+             "analogy":"ECC uses elliptic curves — fancy math that makes smaller keys than RSA. But Shor Algorithm breaks elliptic curves too!",
+             "fact":"Your phone uses ECC right now for HTTPS connections. All of it becomes vulnerable to quantum computers.",
+             "size":"64 KB — much smaller than RSA but still quantum-vulnerable"},
+            {"name":"Kyber-512",   "type":"Post-Quantum", "safe":True,  "key_kb":0.8, "emoji":"🔐", "color":"#10b981", "nist":"FIPS 203 ML-KEM",
+             "analogy":"Uses lattice math — finding the closest point in a 256-dimensional grid with noise added. Quantum computers cannot solve this!",
+             "fact":"Kyber was selected by NIST in 2022 after 6 years of global competition beating 69 other algorithms. Now it is FIPS 203.",
+             "size":"800 bytes — smaller than most profile pictures!"},
+            {"name":"Kyber-768",   "type":"Post-Quantum", "safe":True,  "key_kb":1.2, "emoji":"🔐", "color":"#10b981", "nist":"FIPS 203 ML-KEM",
+             "analogy":"Stronger version of Kyber-512. Uses a larger lattice grid making it even harder to crack. Recommended for most uses!",
+             "fact":"Kyber-768 gives 192-bit security. A quantum computer would need 2^192 operations to crack it. The universe is only 2^60 seconds old!",
+             "size":"1.2 KB — still tiny! Fits in a text message"},
+            {"name":"Dilithium-2", "type":"Post-Quantum", "safe":True,  "key_kb":1.3, "emoji":"✍️", "color":"#3b82f6", "nist":"FIPS 204 ML-DSA",
+             "analogy":"Dilithium creates digital signatures — like a wax seal on a royal letter. It proves a message really came from you. Quantum-safe!",
+             "fact":"Dilithium is named after a crystal from Star Trek! It was chosen by NIST for signing documents and software updates.",
+             "size":"1.3 KB — about the size of a short text message"},
+            {"name":"Falcon-512",  "type":"Post-Quantum", "safe":True,  "key_kb":0.9, "emoji":"🦅", "color":"#8b5cf6", "nist":"FIPS 206 FN-DSA",
+             "analogy":"Falcon makes the SMALLEST quantum-safe signatures! It uses NTRU lattices — a special lattice math that produces tiny signatures.",
+             "fact":"Falcon signatures are 5 times smaller than Dilithium! Perfect for smart cards and IoT sensors with limited storage.",
+             "size":"897 bytes — the most compact quantum-safe signature algorithm!"},
+        ]
+
+        selected = st.selectbox("Choose an algorithm:", [a["name"] for a in ALGOS], key="keylab_sel")
+        algo = next(a for a in ALGOS if a["name"] == selected)
+        color = algo["color"]
+        safe_label = "Quantum Safe" if algo["safe"] else "NOT Quantum Safe"
+        safe_color = "#10b981" if algo["safe"] else "#ef4444"
+        safe_emoji = "✅" if algo["safe"] else "❌"
+
+        st.markdown(
+            "<div style='background:" + color + "15;border:2px solid " + color + "40;"
+            "border-radius:12px;padding:1.25rem;margin:0.75rem 0;'>"
+            "<div style='display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem;'>"
+            "<h3 style='margin:0;color:" + color + "'>" + algo["emoji"] + " " + algo["name"] + "</h3>"
+            "<span style='background:" + safe_color + "20;border:1px solid " + safe_color + ";color:" + safe_color + ";"
+            "padding:3px 10px;border-radius:100px;font-size:0.78rem;font-weight:bold;'>"
+            + safe_emoji + " " + safe_label + "</span>"
+            "</div>"
+            "<p style='color:#aaa;font-size:0.82rem;margin:0;'>"
+            "Type: " + algo["type"] + "  |  NIST Standard: " + algo["nist"] + "</p>"
+            "</div>",
+            unsafe_allow_html=True
         )
 
-        import plotly.graph_objects as go
+        col1, col2 = st.columns(2)
+        with col1:
+            st.markdown("**How it works (simple version):**")
+            st.info(algo["analogy"])
+        with col2:
+            st.markdown("**Fun Fact:**")
+            st.success(algo["fact"])
+        st.markdown("**Key Size:** " + algo["size"])
 
-        algorithms = [
-            "RSA-2048", "RSA-4096", "ECC-256",
-            "Kyber-512", "Kyber-768", "Kyber-1024",
-            "Dilithium-2", "Dilithium-3", "Falcon-512"
-        ]
-        public_keys = [256, 512, 64, 0.8, 1.2, 1.6, 1.3, 1.9, 0.9]
-        colors = [
-            "#ef4444", "#ef4444", "#f97316",
-            "#10b981", "#10b981", "#10b981",
-            "#3b82f6", "#3b82f6", "#8b5cf6"
-        ]
-        quantum_safe = [False, False, False, True, True, True, True, True, True]
+        st.markdown("---")
+        st.markdown("### How Does It Compare to Others?")
+
+        import plotly.graph_objects as go
+        names = [a["name"] for a in ALGOS]
+        sizes = [a["key_kb"] for a in ALGOS]
+        colors_list = [a["color"] for a in ALGOS]
+        sel_idx = next(i for i, a in enumerate(ALGOS) if a["name"] == selected)
+        bar_colors = [c + "ff" if i == sel_idx else c + "66" for i, c in enumerate(colors_list)]
 
         fig = go.Figure()
         fig.add_trace(go.Bar(
-            x=algorithms,
-            y=public_keys,
-            marker_color=colors,
-            text=[str(k) + " KB" for k in public_keys],
+            x=names, y=sizes,
+            marker_color=bar_colors,
+            marker_line_color=["white" if i == sel_idx else "transparent" for i in range(len(ALGOS))],
+            marker_line_width=[2 if i == sel_idx else 0 for i in range(len(ALGOS))],
+            text=[str(s) + " KB" for s in sizes],
             textposition="outside",
         ))
-
         fig.update_layout(
-            height=400,
-            title="Public Key Sizes (KB)",
+            height=320,
             plot_bgcolor="rgba(0,0,0,0)",
             paper_bgcolor="rgba(0,0,0,0)",
             xaxis=dict(color="#888", tickangle=-30),
-            yaxis=dict(title="Size (KB)", color="#888"),
-            font=dict(color="#ccc"),
-            margin=dict(l=20, r=20, t=40, b=80),
+            yaxis=dict(title="Key Size (KB)", color="#888"),
+            font=dict(color="#ccc", size=11),
+            margin=dict(l=20, r=20, t=20, b=80),
         )
         st.plotly_chart(fig, use_container_width=True)
 
-        st.markdown("### 📊 Full Comparison Table")
-        data = {
-            "Algorithm": algorithms,
-            "Type": ["Classical"]*3 + ["PQC"]*6,
-            "Public Key (KB)": public_keys,
-            "Quantum Safe": ["❌" if not q else "✅" for q in quantum_safe],
-            "NIST Standard": ["None","None","None","FIPS 203","FIPS 203","FIPS 203","FIPS 204","FIPS 204","FIPS 206"],
-        }
-        st.table(data)
+        col1, col2 = st.columns(2)
+        with col1:
+            st.metric("Key Size", algo["size"].split("—")[0].strip())
+        with col2:
+            st.metric("Quantum Safe", safe_emoji + " " + safe_label)
 
+        st.markdown("---")
+        st.markdown("### Quick Quiz!")
+        quiz = st.radio(
+            "Which algorithm is BOTH quantum-safe AND has a small key?",
+            ["RSA-4096 — big key, quantum safe",
+             "Kyber-512 — small key, quantum safe",
+             "ECC-256 — small key, not quantum safe",
+             "RSA-2048 — small key, quantum safe"],
+            key="keylab_quiz"
+        )
+        if st.button("Check My Answer!", key="keylab_check"):
+            if "Kyber-512" in quiz:
+                st.success("Correct! Kyber-512 has an 800-byte public key AND is quantum-safe! That is why NIST made it FIPS 203.")
+                award_badge("🔬 Key Lab Expert", xp=15)
+                from modules.progress_tracker import mark_complete
+                mark_complete("key_size_lab")
+            else:
+                st.error("Not quite! RSA keys are huge and NOT quantum-safe. ECC is small but also NOT quantum-safe. Kyber wins on both!")
+
+        st.markdown("---")
         st.info(
-            "💡 **Key insight:** Kyber keys are much smaller than RSA keys "
-            "AND quantum safe. This is why NIST chose lattice-based crypto — "
-            "it is both secure AND efficient!"
+            "The winner: Kyber (ML-KEM) gives us keys that are SMALLER than RSA "
+            "AND completely quantum-safe. That is why the US government chose it as FIPS 203 in 2024. "
+            "Every internet connection will eventually switch to Kyber!"
         )
