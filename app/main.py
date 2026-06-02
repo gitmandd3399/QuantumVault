@@ -5,6 +5,7 @@ Teaches Post-Quantum Cryptography from K–12.
 
 import os
 import streamlit as st
+import datetime
 from modules.elementary import render_elementary
 from modules.middle_school import render_middle_school
 from modules.high_school import render_high_school
@@ -34,6 +35,33 @@ if "badges" not in st.session_state:
     st.session_state.badges = []
 if "xp" not in st.session_state:
     st.session_state.xp = 0
+if "streak_days" not in st.session_state:
+    st.session_state.streak_days = 0
+if "last_visit" not in st.session_state:
+    st.session_state.last_visit = None
+if "streak_bonus_claimed" not in st.session_state:
+    st.session_state.streak_bonus_claimed = False
+
+# ── Daily streak logic ────────────────────────────────────────────────────────
+def update_streak():
+    today = datetime.date.today()
+    last = st.session_state.last_visit
+    if last is None:
+        st.session_state.streak_days = 1
+        st.session_state.last_visit = today
+        st.session_state.streak_bonus_claimed = False
+    elif last == today:
+        pass  # Already visited today
+    elif last == today - datetime.timedelta(days=1):
+        st.session_state.streak_days += 1
+        st.session_state.last_visit = today
+        st.session_state.streak_bonus_claimed = False
+    else:
+        st.session_state.streak_days = 1
+        st.session_state.last_visit = today
+        st.session_state.streak_bonus_claimed = False
+
+update_streak()
 
 
 # ── Sidebar ───────────────────────────────────────────────────────────────────
@@ -76,6 +104,54 @@ def sidebar():
     bar_visual = "🟦" * bar_filled + "⬜" * bar_empty
     st.sidebar.markdown(f"{bar_visual}")
     st.sidebar.caption(f"⭐ {xp} XP — {next_xp - xp} XP to next rank")
+
+    # ── Streak display ────────────────────────────────────────────────────
+    streak = st.session_state.streak_days
+    if streak >= 7:
+        streak_emoji = "🔥🔥🔥"
+        streak_color = "#ef4444"
+    elif streak >= 3:
+        streak_emoji = "🔥🔥"
+        streak_color = "#f97316"
+    elif streak >= 1:
+        streak_emoji = "🔥"
+        streak_color = "#f59e0b"
+    else:
+        streak_emoji = "💤"
+        streak_color = "#6b7280"
+
+    st.sidebar.markdown(
+        f"<div style='background:{streak_color}15;border:1px solid {streak_color}40;"
+        f"border-radius:8px;padding:8px 12px;margin:6px 0;'>"
+        f"<div style='display:flex;justify-content:space-between;align-items:center;'>"
+        f"<span style='font-size:0.8rem;font-weight:bold;color:{streak_color}'>"
+        f"{streak_emoji} {streak} Day Streak!</span>"
+        f"<span style='font-size:0.7rem;color:#888'>Keep it up!</span>"
+        f"</div>"
+        f"</div>",
+        unsafe_allow_html=True
+    )
+
+    # ── Streak bonus XP ───────────────────────────────────────────────────
+    if not st.session_state.streak_bonus_claimed and streak > 1:
+        bonus_xp = min(streak * 5, 50)
+        st.session_state.xp += bonus_xp
+        st.session_state.streak_bonus_claimed = True
+        st.sidebar.success(f"🔥 Streak bonus! +{bonus_xp} XP for {streak} day streak!")
+
+    # ── Streak milestones ─────────────────────────────────────────────────
+    if streak == 3:
+        if "streak_3" not in st.session_state.badges:
+            st.session_state.badges.append("🔥 3-Day Streak")
+            st.sidebar.success("🏅 Badge: 3-Day Streak!")
+    elif streak == 7:
+        if "streak_7" not in st.session_state.badges:
+            st.session_state.badges.append("🔥 7-Day Streak")
+            st.sidebar.success("🏅 Badge: 7-Day Streak! You are on fire!")
+    elif streak == 30:
+        if "streak_30" not in st.session_state.badges:
+            st.session_state.badges.append("🔥 30-Day Streak")
+            st.sidebar.success("🏅 Badge: 30-Day Streak! Quantum Guardian!")
 
     if st.session_state.badges:
         st.sidebar.markdown("**🏅 Badges earned:**")
