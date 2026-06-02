@@ -1025,11 +1025,12 @@ function restartLevel() {{
 document.getElementById("qbox").style.display="none";
 document.getElementById("start-screen").style.display="block";
 
-document.getElementById("start-btn").addEventListener("click", function() {{
+function startChallenge() {{
     document.getElementById("start-screen").style.display="none";
     document.getElementById("qbox").style.display="block";
     loadQuestion();
-}});
+}}
+document.getElementById("start-btn").onclick = startChallenge;
 </script>
 </body>
 </html>
