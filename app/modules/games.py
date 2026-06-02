@@ -1665,7 +1665,7 @@ function loop() {{
 
     // Spawn
     spawnT++;
-    const effRate=Math.max(20,SPAWN_RATE-(wave-1)*5);
+    const effRate=Math.max(15,getWaveConfig().rate);
     if(spawnT>=effRate && spawnCount<waveSize) {{ spawnZombie(); spawnT=0; }}
 
     // Move bullets
