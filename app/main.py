@@ -183,6 +183,80 @@ def sidebar():
             st.sidebar.markdown(f"- {badge}")
 
     st.sidebar.markdown("---")
+
+    # ── Background Music ──────────────────────────────────────────────────
+    if "music_on" not in st.session_state:
+        st.session_state.music_on = False
+
+    music_col1, music_col2 = st.sidebar.columns([1, 3])
+    with music_col1:
+        if st.button("🎵" if not st.session_state.music_on else "🔇", key="music_toggle"):
+            st.session_state.music_on = not st.session_state.music_on
+            st.rerun()
+    with music_col2:
+        st.caption("Music " + ("ON" if st.session_state.music_on else "OFF"))
+
+    if st.session_state.music_on:
+        st.sidebar.components.v1.html("""
+<script>
+(function() {
+    if (window._qvMusicStarted) return;
+    window._qvMusicStarted = true;
+
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+
+    // Chiptune melody notes (frequencies in Hz)
+    const MELODY = [
+        261, 293, 329, 349, 392, 349, 329, 293,
+        261, 261, 293, 329, 261, 261, 0,   0,
+        349, 349, 392, 440, 392, 349, 329, 293,
+        261, 0,   261, 293, 329, 293, 261, 0,
+    ];
+
+    const BASS = [
+        130, 0, 130, 0, 146, 0, 146, 0,
+        130, 0, 130, 0, 116, 0, 116, 0,
+        174, 0, 174, 0, 164, 0, 164, 0,
+        130, 0, 130, 0, 146, 0, 146, 0,
+    ];
+
+    let noteIdx = 0;
+    const BPM = 120;
+    const NOTE_DUR = 60 / BPM / 2;
+
+    function playNote(freq, vol, type, start, dur) {
+        if (freq === 0) return;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, start);
+        gain.gain.setValueAtTime(vol, start);
+        gain.gain.exponentialRampToValueAtTime(0.001, start + dur * 0.9);
+        osc.start(start);
+        osc.stop(start + dur);
+    }
+
+    function scheduleNotes() {
+        const now = ctx.currentTime;
+        for (let i = 0; i < 8; i++) {
+            const t = now + i * NOTE_DUR;
+            const idx = (noteIdx + i) % MELODY.length;
+            playNote(MELODY[idx], 0.08, "square", t, NOTE_DUR * 0.8);
+            playNote(BASS[idx],   0.06, "triangle", t, NOTE_DUR * 0.9);
+        }
+        noteIdx = (noteIdx + 8) % MELODY.length;
+    }
+
+    ctx.resume().then(() => {
+        scheduleNotes();
+        setInterval(scheduleNotes, NOTE_DUR * 8 * 1000);
+    });
+})();
+</script>
+""", height=0)
+
     st.sidebar.info(
         "QuantumVault Academy is a safe, ad-free learning environment. "
         "No personal data is stored."
