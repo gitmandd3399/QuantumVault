@@ -399,195 +399,310 @@ def render_elementary():
         else:
             render_quantumcraft_elementary()
     with tab6:
-        st.subheader("🔤 PQC Word Search")
-        st.markdown("Find all the PQC words! Click letters in order to spell each word.")
-        components.html("""
+        st.subheader("🔤 PQC Word Search — 12 Levels!")
+        st.markdown("Find all the hidden words! Each level gets bigger and harder!")
+
+        if "ws_level" not in st.session_state:
+            st.session_state.ws_level = 1
+
+        WS_LEVELS = [
+            {"level":1,  "words":["KYBER","HASH","KEY","NIST","SAFE"],                                          "cols":10,"rows":8,  "desc":"Beginner — 5 words"},
+            {"level":2,  "words":["KYBER","LATTICE","HASH","NIST","CIPHER"],                                    "cols":10,"rows":8,  "desc":"Easy — 5 words"},
+            {"level":3,  "words":["KYBER","LATTICE","QUANTUM","NIST","HASH","FALCON"],                          "cols":12,"rows":9,  "desc":"Easy — 6 words"},
+            {"level":4,  "words":["KYBER","LATTICE","QUANTUM","NIST","CIPHER","FALCON","DILITHIUM"],            "cols":12,"rows":9,  "desc":"Medium — 7 words"},
+            {"level":5,  "words":["KYBER","LATTICE","QUANTUM","NIST","CIPHER","FALCON","DILITHIUM","HASH"],     "cols":13,"rows":10, "desc":"Medium — 8 words"},
+            {"level":6,  "words":["KYBER","LATTICE","QUANTUM","NIST","CIPHER","FALCON","DILITHIUM","ENCRYPT"],  "cols":13,"rows":10, "desc":"Medium — 8 words"},
+            {"level":7,  "words":["KYBER","LATTICE","QUANTUM","NIST","CIPHER","FALCON","DILITHIUM","ENCRYPT","SHOR"],"cols":14,"rows":11,"desc":"Hard — 9 words"},
+            {"level":8,  "words":["KYBER","LATTICE","QUANTUM","NIST","CIPHER","FALCON","DILITHIUM","ENCRYPT","SHOR","GROVER"],"cols":14,"rows":11,"desc":"Hard — 10 words"},
+            {"level":9,  "words":["KYBER","LATTICE","QUANTUM","NIST","CIPHER","FALCON","DILITHIUM","ENCRYPT","SHOR","GROVER","PRIME"],"cols":15,"rows":12,"desc":"Expert — 11 words"},
+            {"level":10, "words":["KYBER","LATTICE","QUANTUM","NIST","CIPHER","FALCON","DILITHIUM","ENCRYPT","SHOR","GROVER","PRIME","MODULAR"],"cols":15,"rows":12,"desc":"Expert — 12 words"},
+            {"level":11, "words":["KYBER","LATTICE","QUANTUM","NIST","CIPHER","FALCON","DILITHIUM","ENCRYPT","SHOR","GROVER","PRIME","MODULAR","SPHINCS"],"cols":16,"rows":13,"desc":"Master — 13 words"},
+            {"level":12, "words":["KYBER","LATTICE","QUANTUM","NIST","CIPHER","FALCON","DILITHIUM","ENCRYPT","SHOR","GROVER","PRIME","MODULAR","SPHINCS","FIPS"],"cols":16,"rows":13,"desc":"Master — 14 words"},
+        ]
+
+        WORD_FACTS = {
+            "KYBER":"ML-KEM FIPS 203 — quantum-safe key encapsulation!",
+            "LATTICE":"Math grid that stumps quantum computers!",
+            "QUANTUM":"Quantum computers threaten old crypto!",
+            "NIST":"US agency that approved PQC standards!",
+            "HASH":"SHA-3 creates unique message fingerprints!",
+            "FALCON":"Smallest quantum-safe signature algorithm!",
+            "CIPHER":"A method of writing secret messages!",
+            "DILITHIUM":"ML-DSA FIPS 204 digital signature standard!",
+            "ENCRYPT":"Process of scrambling data to keep it secret!",
+            "SHOR":"Shor Algorithm breaks RSA on quantum computers!",
+            "GROVER":"Grover Algorithm speeds up quantum search!",
+            "PRIME":"Prime numbers are the foundation of RSA!",
+            "MODULAR":"Modular arithmetic is the math behind crypto!",
+            "SPHINCS":"SLH-DSA FIPS 205 hash-based signature!",
+            "FIPS":"Federal Information Processing Standard!",
+            "KEY":"Secret information used to lock or unlock data!",
+            "SAFE":"Quantum-safe means secure against quantum attacks!",
+        }
+
+        # Level selector
+        col1, col2, col3 = st.columns([2,1,1])
+        with col1:
+            lvl_names = [f"Level {l['level']} — {l['desc']}" for l in WS_LEVELS]
+            sel = st.selectbox("Choose level:", lvl_names, index=st.session_state.ws_level-1, key="ws_lvl_sel")
+            st.session_state.ws_level = int(sel.split()[1])
+        with col2:
+            if st.session_state.ws_level > 1:
+                if st.button("← Previous", key="ws_prev"):
+                    st.session_state.ws_level -= 1
+                    st.rerun()
+        with col3:
+            if st.session_state.ws_level < 12:
+                if st.button("Next →", key="ws_next"):
+                    st.session_state.ws_level += 1
+                    st.rerun()
+
+        lvl = WS_LEVELS[st.session_state.ws_level - 1]
+        words_json = str(lvl["words"]).replace("'", '"')
+        facts_entries = ", ".join([f'"{w}": "{WORD_FACTS.get(w, w)}"' for w in lvl["words"]])
+
+        import streamlit.components.v1 as components
+        components.html(f"""
 <style>
-.ws-wrap{text-align:center;font-family:sans-serif;padding:10px;}
-.ws-grid{display:inline-grid;grid-template-columns:repeat(12,30px);gap:2px;margin:10px auto;}
-.ws-cell{width:30px;height:30px;display:flex;align-items:center;justify-content:center;
-font-size:13px;font-weight:bold;border-radius:4px;cursor:pointer;
-background:#1e293b;color:#a5b4fc;border:1px solid #334155;user-select:none;}
-.ws-cell.selected{background:#4f46e5;color:white;}
-.ws-cell.found{background:#10b981;color:white;}
-.ws-words{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:8px;}
-.ws-word{padding:3px 8px;border-radius:6px;font-size:11px;font-weight:bold;
-background:#1e293b;color:#a5b4fc;border:1px solid #334155;}
-.ws-word.found{background:#10b981;color:white;text-decoration:line-through;}
-#ws-msg{font-size:12px;color:#34d399;min-height:18px;margin:4px;}
-.ws-btn{padding:5px 12px;border-radius:6px;border:none;cursor:pointer;
-background:#4f46e5;color:white;font-size:11px;font-weight:bold;margin:3px;}
+.ws-wrap{{text-align:center;font-family:sans-serif;padding:10px;}}
+.ws-grid{{display:inline-grid;grid-template-columns:repeat({lvl["cols"]},28px);gap:2px;margin:8px auto;}}
+.ws-cell{{width:28px;height:28px;display:flex;align-items:center;justify-content:center;
+font-size:12px;font-weight:bold;border-radius:4px;cursor:pointer;
+background:#1e293b;color:#a5b4fc;border:1px solid #334155;user-select:none;}}
+.ws-cell.selected{{background:#4f46e5;color:white;}}
+.ws-cell.found{{background:#10b981;color:white;}}
+.ws-words{{display:flex;flex-wrap:wrap;gap:5px;justify-content:center;margin:6px;}}
+.ws-word{{padding:3px 7px;border-radius:5px;font-size:10px;font-weight:bold;
+background:#1e293b;color:#a5b4fc;border:1px solid #334155;}}
+.ws-word.found{{background:#10b981;color:white;text-decoration:line-through;}}
+#ws-msg{{font-size:11px;color:#34d399;min-height:16px;margin:3px;}}
+.ws-btn{{padding:5px 10px;border-radius:6px;border:none;cursor:pointer;
+background:#4f46e5;color:white;font-size:11px;font-weight:bold;margin:2px;}}
 </style>
 <div class="ws-wrap">
+<div style="font-size:13px;font-weight:bold;color:#a5b4fc;margin-bottom:4px;">
+Level {lvl["level"]} — {lvl["desc"]}</div>
 <div id="ws-msg">Click letters to spell a word!</div>
 <div class="ws-grid" id="wgrid"></div>
 <div class="ws-words" id="wlist"></div>
 <button class="ws-btn" onclick="resetWS()">New Game</button>
-<div id="ws-score" style="font-size:12px;color:#a5b4fc;margin-top:6px;">Found: 0 / 7</div>
+<div id="ws-score" style="font-size:11px;color:#a5b4fc;margin-top:4px;">Found: 0 / {len(lvl["words"])}</div>
 </div>
 <script>
-const WDS=[
-{word:"KYBER",fact:"NIST ML-KEM — quantum-safe key exchange!"},
-{word:"LATTICE",fact:"Math grid that stumps quantum computers!"},
-{word:"QUANTUM",fact:"Quantum computers can break old locks!"},
-{word:"NIST",fact:"US agency that approved PQC standards!"},
-{word:"HASH",fact:"SHA-3 creates unique message fingerprints!"},
-{word:"CIPHER",fact:"A method of writing secret messages!"},
-{word:"FALCON",fact:"Smallest quantum-safe signature algorithm!"},
-];
-const R=9,C=12;
+const WDS = {words_json};
+const FACTS = {{{facts_entries}}};
+const R={lvl["rows"]},C={lvl["cols"]};
 let gr=[],pl=[],sel=[],fd=[];
-function resetWS(){
-gr=Array.from({length:R},()=>Array(C).fill(""));
+function resetWS(){{
+gr=Array.from({{length:R}},()=>Array(C).fill(""));
 pl=[];sel=[];fd=[];placeW();fillW();renderW();renderWL();
 document.getElementById("ws-msg").textContent="Click letters to spell a word!";
-document.getElementById("ws-score").textContent="Found: 0 / 7";
-}
-function placeW(){
-const dirs=[{dr:0,dc:1},{dr:1,dc:0},{dr:1,dc:1}];
-WDS.forEach(({word})=>{
+document.getElementById("ws-score").textContent="Found: 0 / "+WDS.length;
+}}
+function placeW(){{
+const dirs=[{{dr:0,dc:1}},{{dr:1,dc:0}},{{dr:1,dc:1}},{{dr:0,dc:-1}},{{dr:-1,dc:0}}];
+WDS.forEach(word=>{{
 let t=0;
-while(t<200){t++;
+while(t<300){{t++;
 const d=dirs[Math.floor(Math.random()*dirs.length)];
 const mr=R-d.dr*(word.length-1),mc=C-d.dc*(word.length-1);
-if(mr<=0||mc<=0)continue;
+if(mr<=0||mc<=0||mr>R||mc>C)continue;
 const r=Math.floor(Math.random()*mr),c=Math.floor(Math.random()*mc);
+if(r<0||c<0)continue;
 let ok=true;const cs=[];
-for(let i=0;i<word.length;i++){
+for(let i=0;i<word.length;i++){{
 const nr=r+d.dr*i,nc=c+d.dc*i;
-if(gr[nr][nc]!==""&&gr[nr][nc]!==word[i]){ok=false;break;}
-cs.push([nr,nc]);}
-if(ok){cs.forEach(([nr,nc],i)=>{gr[nr][nc]=word[i];});pl.push({word,cells:cs});break;}}});
-}
-function fillW(){
+if(nr<0||nc<0||nr>=R||nc>=C){{ok=false;break;}}
+if(gr[nr][nc]!==""&&gr[nr][nc]!==word[i]){{ok=false;break;}}
+cs.push([nr,nc]);}}
+if(ok){{cs.forEach(([nr,nc],i)=>{{gr[nr][nc]=word[i];}});pl.push({{word,cells:cs}});break;}}}}
+}});
+}}
+function fillW(){{
 const L="ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 for(let r=0;r<R;r++)for(let c=0;c<C;c++)
 if(!gr[r][c])gr[r][c]=L[Math.floor(Math.random()*26)];
-}
-function renderW(){
+}}
+function renderW(){{
 const el=document.getElementById("wgrid");el.innerHTML="";
-for(let r=0;r<R;r++)for(let c=0;c<C;c++){
+for(let r=0;r<R;r++)for(let c=0;c<C;c++){{
 const cell=document.createElement("div");
 cell.className="ws-cell";cell.textContent=gr[r][c];
 cell.dataset.r=r;cell.dataset.c=c;
-cell.onclick=()=>selC(r,c);el.appendChild(cell);}
-updCS();}
-function selC(r,c){
+cell.onclick=()=>selC(r,c);el.appendChild(cell);}}
+updCS();}}
+function selC(r,c){{
 const idx=sel.findIndex(s=>s[0]===r&&s[1]===c);
-if(idx>=0){sel=[];}else{sel.push([r,c]);chkW();}
-updCS();}
-function chkW(){
+if(idx>=0){{sel=[];}}else{{sel.push([r,c]);chkW();}}
+updCS();}}
+function chkW(){{
 const s=sel.map(([r,c])=>gr[r][c]).join("");
-const m=pl.find(p=>p.word===s&&!fd.includes(p.word));
-if(m){fd.push(m.word);
-m.cells.forEach(([r,c])=>{
+const sr=sel.map(([r,c])=>gr[r][c]).reverse().join("");
+const m=pl.find(p=>(p.word===s||p.word===sr)&&!fd.includes(p.word));
+if(m){{fd.push(m.word);
+m.cells.forEach(([r,c])=>{{
 const cell=document.querySelector("[data-r='"+r+"'][data-c='"+c+"']");
-if(cell)cell.classList.add("found");});
+if(cell)cell.classList.add("found");}});
 sel=[];
-document.getElementById("ws-msg").textContent="Found "+m.word+"! "+m.fact;
-document.getElementById("ws-score").textContent="Found: "+fd.length+" / 7";
+const fact=FACTS[m.word]||m.word;
+document.getElementById("ws-msg").textContent="Found "+m.word+"! "+fact;
+document.getElementById("ws-score").textContent="Found: "+fd.length+" / "+WDS.length;
 renderWL();
-if(fd.length===WDS.length)document.getElementById("ws-msg").textContent="All found! PQC expert!";}
-else if(sel.length>=9){sel=[];}
-updCS();}
-function updCS(){
-document.querySelectorAll(".ws-cell").forEach(cell=>{
+if(fd.length===WDS.length)document.getElementById("ws-msg").textContent="All words found! PQC expert!";
+}}else if(sel.length>=12){{sel=[];}}
+updCS();}}
+function updCS(){{
+document.querySelectorAll(".ws-cell").forEach(cell=>{{
 const r=parseInt(cell.dataset.r),c=parseInt(cell.dataset.c);
 const isSel=sel.some(([sr,sc])=>sr===r&&sc===c);
 const isF=pl.some(p=>fd.includes(p.word)&&p.cells.some(([pr,pc])=>pr===r&&pc===c));
-cell.className="ws-cell"+(isF?" found":isSel?" selected":"");});}
-function renderWL(){
+cell.className="ws-cell"+(isF?" found":isSel?" selected":"");
+}});}}
+function renderWL(){{
 document.getElementById("wlist").innerHTML=
-WDS.map(({word})=>"<div class='ws-word"+(fd.includes(word)?" found":"")+"'>"+word+"</div>").join("");}
+WDS.map(w=>"<div class='ws-word"+(fd.includes(w)?" found":"")+"'>"+w+"</div>").join("");}}
 resetWS();
 </script>
-""", height=520)
+""", height={min(400 + lvl["rows"] * 10, 580)})
+
+        # XP reward for completing levels
+        if f"ws_complete_{lvl['level']}" not in st.session_state:
+            if st.button(f"Mark Level {lvl['level']} Complete! +{lvl['level']*5} XP", key=f"ws_done_{lvl['level']}"):
+                st.session_state[f"ws_complete_{lvl['level']}"] = True
+                st.session_state.xp += lvl['level'] * 5
+                st.success(f"Level {lvl['level']} complete! +{lvl['level']*5} XP earned!")
+                if st.session_state.ws_level < 12:
+                    st.session_state.ws_level += 1
+                    st.rerun()
+        else:
+            st.success(f"Level {lvl['level']} already completed! +{lvl['level']*5} XP")
 
     with tab7:
-        st.subheader("✏️ PQC Crossword Puzzle")
-        st.markdown("Fill in the crossword using your PQC knowledge!")
-        components.html("""
+        st.subheader("✏️ PQC Crossword Puzzle — 12 Levels!")
+        st.markdown("Fill in the crossword! Each level adds new PQC vocabulary.")
+
+        if "cw_level" not in st.session_state:
+            st.session_state.cw_level = 1
+
+        CW_LEVELS = [
+            {"level":1, "desc":"Beginner", "clues_across":[("1","NIST key exchange standard (5)","KYBER"),("4","Keeping messages secret (6)","CIPHER")], "clues_down":[("1","Math grid stumping quantum computers (7)","LATTICE"),("2","Type of computer that breaks RSA (7)","QUANTUM")],"grid_size":8},
+            {"level":2, "desc":"Easy",     "clues_across":[("1","NIST key exchange standard (5)","KYBER"),("4","US agency that approved PQC (4)","NIST")],   "clues_down":[("1","Math grid stumping quantum computers (7)","LATTICE"),("2","Digital signature algorithm (9)","DILITHIUM")],"grid_size":9},
+            {"level":3, "desc":"Easy",     "clues_across":[("1","ML-KEM standard (5)","KYBER"),("3","Unique message fingerprint (4)","HASH"),("5","NIST approved PQC in 2024 (4)","FIPS")], "clues_down":[("1","Lattice math problem (3)","LWE"),("2","Quantum algorithm breaking RSA (4)","SHOR")],"grid_size":9},
+            {"level":4, "desc":"Medium",   "clues_across":[("1","ML-KEM FIPS 203 (5)","KYBER"),("4","Keeps data secret (7)","ENCRYPT"),("6","US PQC standards agency (4)","NIST")], "clues_down":[("1","Quantum-safe math grid (7)","LATTICE"),("2","Hash-based signature (7)","SPHINCS")],"grid_size":10},
+            {"level":5, "desc":"Medium",   "clues_across":[("1","Key encapsulation standard (5)","KYBER"),("4","Secret scrambling (7)","ENCRYPT"),("6","Quantum speedup algorithm (6)","GROVER")], "clues_down":[("1","Math grid (7)","LATTICE"),("2","Breaks RSA (4)","SHOR"),("3","Signature size unit (3)","BIT")],"grid_size":10},
+            {"level":6, "desc":"Medium",   "clues_across":[("1","FIPS 203 standard (5)","KYBER"),("4","Encryption scrambling (7)","ENCRYPT"),("6","Prime number math (7)","MODULAR")], "clues_down":[("1","LWE math structure (7)","LATTICE"),("2","Quantum computer threat (4)","SHOR"),("3","Signature algorithm (9)","DILITHIUM")],"grid_size":11},
+            {"level":7, "desc":"Hard",     "clues_across":[("1","ML-KEM (5)","KYBER"),("4","ML-DSA (9)","DILITHIUM"),("7","Secure standard code (4)","FIPS")], "clues_down":[("1","Quantum-safe grid math (7)","LATTICE"),("2","Hash fingerprint (4)","HASH"),("3","Quantum search speedup (6)","GROVER")],"grid_size":11},
+            {"level":8, "desc":"Hard",     "clues_across":[("1","FIPS 203 (5)","KYBER"),("4","FIPS 204 (9)","DILITHIUM"),("7","Learning With Errors (3)","LWE")], "clues_down":[("1","Grid math (7)","LATTICE"),("2","Hash-based FIPS 205 (7)","SPHINCS"),("3","Breaking algorithm (4)","SHOR")],"grid_size":12},
+            {"level":9, "desc":"Expert",   "clues_across":[("1","Key encapsulation (5)","KYBER"),("4","Digital signature (9)","DILITHIUM"),("7","Federal standard (4)","FIPS"),("9","Secret number (5)","PRIME")], "clues_down":[("1","Lattice problem (7)","LATTICE"),("2","Hash signature (7)","SPHINCS"),("3","Quantum break (4)","SHOR"),("5","Encryption process (7)","ENCRYPT")],"grid_size":12},
+            {"level":10,"desc":"Expert",   "clues_across":[("1","ML-KEM (5)","KYBER"),("4","ML-DSA (9)","DILITHIUM"),("7","FIPS number (4)","FIPS"),("9","Number theory (7)","MODULAR")], "clues_down":[("1","Grid math (7)","LATTICE"),("2","SLH-DSA (7)","SPHINCS"),("3","RSA breaker (4)","SHOR"),("5","Message fingerprint (4)","HASH")],"grid_size":13},
+            {"level":11,"desc":"Master",   "clues_across":[("1","FIPS 203 (5)","KYBER"),("4","FIPS 204 (9)","DILITHIUM"),("7","Standard code (4)","FIPS"),("9","Arithmetic type (7)","MODULAR"),("11","FN-DSA (6)","FALCON")], "clues_down":[("1","LWE grid (7)","LATTICE"),("2","FIPS 205 (7)","SPHINCS"),("3","Shor target (4)","SHOR"),("5","Data scramble (7)","ENCRYPT")],"grid_size":13},
+            {"level":12,"desc":"Master",   "clues_across":[("1","FIPS 203 (5)","KYBER"),("4","FIPS 204 (9)","DILITHIUM"),("7","Standard (4)","FIPS"),("9","Clock math (7)","MODULAR"),("11","FIPS 206 (6)","FALCON"),("13","Secure hash (4)","HASH")], "clues_down":[("1","Quantum-safe grid (7)","LATTICE"),("2","FIPS 205 (7)","SPHINCS"),("3","RSA breaker (4)","SHOR"),("5","Scramble data (7)","ENCRYPT"),("8","LWE short form (3)","LWE")],"grid_size":14},
+        ]
+
+        col1, col2, col3 = st.columns([2,1,1])
+        with col1:
+            cw_names = [f"Level {l['level']} — {l['desc']}" for l in CW_LEVELS]
+            cw_sel = st.selectbox("Choose level:", cw_names, index=st.session_state.cw_level-1, key="cw_lvl_sel")
+            st.session_state.cw_level = int(cw_sel.split()[1])
+        with col2:
+            if st.session_state.cw_level > 1:
+                if st.button("← Previous", key="cw_prev"):
+                    st.session_state.cw_level -= 1
+                    st.rerun()
+        with col3:
+            if st.session_state.cw_level < 12:
+                if st.button("Next →", key="cw_next"):
+                    st.session_state.cw_level += 1
+                    st.rerun()
+
+        lvl = CW_LEVELS[st.session_state.cw_level - 1]
+        across_clues = "\n".join([f"{n}. {c}" for n,c,_ in lvl["clues_across"]])
+        down_clues = "\n".join([f"{n}. {c}" for n,c,_ in lvl["clues_down"]])
+        all_answers = {n: a for n,c,a in lvl["clues_across"] + lvl["clues_down"]}
+        answers_json = str(all_answers).replace("'",'"')
+
+        import streamlit.components.v1 as components
+        components.html(f"""
 <style>
-.cw-wrap{text-align:center;font-family:sans-serif;padding:10px;}
-.cw-grid{display:inline-grid;gap:2px;margin:8px auto;
-grid-template-columns:repeat(9,34px);grid-template-rows:repeat(8,34px);}
-.black{background:#0f172a;width:34px;height:34px;}
-.white{background:#1e293b;border:1px solid #334155;width:34px;height:34px;
-position:relative;display:flex;align-items:center;justify-content:center;}
-.white input{width:26px;height:26px;background:transparent;border:none;
-text-align:center;font-size:13px;font-weight:bold;color:#a5b4fc;
-text-transform:uppercase;outline:none;}
-.white input.ok{color:#10b981;}
-.cnum{position:absolute;top:1px;left:2px;font-size:8px;color:#6b7280;line-height:1;}
-.cw-clues{display:grid;grid-template-columns:1fr 1fr;gap:12px;
-max-width:480px;margin:8px auto;text-align:left;}
-.clue{font-size:11px;color:#888;margin-bottom:4px;line-height:1.4;}
-.clue strong{color:#a5b4fc;}
-.cw-btn{padding:5px 12px;border-radius:6px;border:none;cursor:pointer;
-background:#4f46e5;color:white;font-size:11px;font-weight:bold;margin:3px;}
-#cw-msg{font-size:12px;color:#34d399;min-height:18px;margin:4px;}
-h4{color:#a5b4fc;font-size:12px;margin:0 0 6px;}
+body{{margin:0;background:#0f172a;font-family:sans-serif;color:white;padding:8px;}}
+.cw-wrap{{max-width:560px;margin:0 auto;text-align:center;}}
+.cw-clues{{display:grid;grid-template-columns:1fr 1fr;gap:12px;max-width:520px;margin:8px auto;text-align:left;}}
+.clue-section h4{{color:#a5b4fc;font-size:12px;margin:0 0 6px;}}
+.clue{{font-size:11px;color:#888;margin-bottom:4px;line-height:1.4;}}
+.clue strong{{color:#a5b4fc;}}
+.input-area{{max-width:520px;margin:8px auto;}}
+.ans-row{{display:flex;align-items:center;gap:8px;margin:5px 0;}}
+.ans-label{{font-size:11px;color:#a5b4fc;font-weight:bold;min-width:60px;}}
+.ans-input{{flex:1;background:#1e293b;border:1px solid #334155;border-radius:6px;
+color:#a5b4fc;font-size:12px;padding:5px 8px;text-transform:uppercase;outline:none;}}
+.ans-input.correct{{border-color:#10b981;color:#10b981;}}
+.ans-input.wrong{{border-color:#ef4444;color:#ef4444;}}
+.cw-btn{{padding:6px 14px;border-radius:6px;border:none;cursor:pointer;
+background:#4f46e5;color:white;font-size:11px;font-weight:bold;margin:3px;}}
+#cw-msg{{font-size:12px;color:#34d399;min-height:18px;margin:5px;}}
 </style>
 <div class="cw-wrap">
-<div id="cw-msg">Type letters in the white boxes!</div>
-<div class="cw-grid" id="cwg"></div>
-<button class="cw-btn" onclick="chkCW()">Check Answers</button>
-<button class="cw-btn" onclick="revCW()">Reveal All</button>
+<div style="font-size:13px;font-weight:bold;color:#a5b4fc;margin-bottom:6px;">
+Level {lvl["level"]} — {lvl["desc"]}</div>
+<div id="cw-msg">Type your answers below!</div>
+<div class="input-area" id="inputs"></div>
+<button class="cw-btn" onclick="checkAll()">Check Answers</button>
+<button class="cw-btn" onclick="revealAll()">Reveal All</button>
 <div class="cw-clues">
-<div><h4>ACROSS</h4>
-<div class="clue"><strong>1.</strong> NIST key exchange standard (5)</div>
-<div class="clue"><strong>4.</strong> Keeping messages secret (6)</div>
-<div class="clue"><strong>6.</strong> US agency that approved PQC (4)</div>
+<div class="clue-section">
+<h4>ACROSS</h4>
+{"".join(f'<div class="clue"><strong>{n}.</strong> {c}</div>' for n,c,_ in lvl["clues_across"])}
 </div>
-<div><h4>DOWN</h4>
-<div class="clue"><strong>1.</strong> Math grid that stumps quantum computers (7)</div>
-<div class="clue"><strong>2.</strong> Type of computer that breaks RSA (7)</div>
-<div class="clue"><strong>3.</strong> ML-DSA signature algorithm (9)</div>
+<div class="clue-section">
+<h4>DOWN</h4>
+{"".join(f'<div class="clue"><strong>{n}.</strong> {c}</div>' for n,c,_ in lvl["clues_down"])}
 </div>
 </div>
 </div>
 <script>
-const ANS=[
-[-1,-1,-1,-1,-1,-1,-1,-1,-1],
-[-1,"K","Y","B","E","R",-1,-1,-1],
-[-1,"A",-1,-1,-1,-1,-1,-1,-1],
-[-1,"T",-1,"D",-1,-1,-1,-1,-1],
-["C","I","P","I","E","R",-1,-1,-1],
-[-1,"C",-1,"L",-1,-1,-1,-1,-1],
-[-1,"E",-1,"I","N","I","S","T",-1],
-[-1,-1,-1,"T",-1,-1,-1,-1,-1],
+const ANSWERS = {answers_json};
+const ALL_CLUES = [
+{"".join(f'{{num:"{n}",dir:"Across",clue:"{c}",ans:"{a}"}},' for n,c,a in lvl["clues_across"])}
+{"".join(f'{{num:"{n}",dir:"Down",clue:"{c}",ans:"{a}"}},' for n,c,a in lvl["clues_down"])}
 ];
-const NMS={"1,1":"1","4,0":"4","6,4":"6"};
-let ug=Array.from({length:8},(_,r)=>Array.from({length:9},(_,c)=>ANS[r][c]===-1?-1:""));
-function buildCW(){
-const el=document.getElementById("cwg");el.innerHTML="";
-for(let r=0;r<8;r++)for(let c=0;c<9;c++){
-const div=document.createElement("div");
-if(ANS[r][c]===-1){div.className="black";}
-else{div.className="white";
-const k=r+","+c;
-if(NMS[k]){const n=document.createElement("div");n.className="cnum";n.textContent=NMS[k];div.appendChild(n);}
-const inp=document.createElement("input");inp.maxLength=1;
-inp.dataset.r=r;inp.dataset.c=c;inp.value=ug[r][c];
-inp.oninput=e=>{ug[r][c]=e.target.value.toUpperCase();e.target.value=e.target.value.toUpperCase();};
-div.appendChild(inp);}
-el.appendChild(div);}
-}
-function chkCW(){
-let ok=0,tot=0;
-for(let r=0;r<8;r++)for(let c=0;c<9;c++){
-if(ANS[r][c]!==-1){tot++;
-const inp=document.querySelector("input[data-r='"+r+"'][data-c='"+c+"']");
-if(inp){if(ug[r][c]===ANS[r][c]){ok++;inp.classList.add("ok");}else inp.classList.remove("ok");}}}
-const p=Math.round(ok/tot*100);
-document.getElementById("cw-msg").textContent=p===100?"Perfect! You know PQC!":ok+"/"+tot+" correct ("+p+"%)";
-}
-function revCW(){
-for(let r=0;r<8;r++)for(let c=0;c<9;c++){
-if(ANS[r][c]!==-1){ug[r][c]=ANS[r][c];
-const inp=document.querySelector("input[data-r='"+r+"'][data-c='"+c+"']");
-if(inp){inp.value=ANS[r][c];inp.classList.add("ok");}}}
-document.getElementById("cw-msg").textContent="Answers revealed!";}
-buildCW();
+const inputs = document.getElementById("inputs");
+ALL_CLUES.forEach(item=>{{
+const row=document.createElement("div");row.className="ans-row";
+const label=document.createElement("div");label.className="ans-label";
+label.textContent=item.num+". "+item.dir+":";
+const inp=document.createElement("input");inp.className="ans-input";
+inp.maxLength=item.ans.length+2;inp.placeholder=item.ans.length+" letters";
+inp.dataset.ans=item.ans;inp.dataset.num=item.num;
+row.appendChild(label);row.appendChild(inp);inputs.appendChild(row);
+}});
+function checkAll(){{
+let ok=0,tot=ALL_CLUES.length;
+document.querySelectorAll(".ans-input").forEach(inp=>{{
+const val=inp.value.toUpperCase().trim();
+if(val===inp.dataset.ans){{inp.className="ans-input correct";ok++;}}
+else if(val){{inp.className="ans-input wrong";}}
+}});
+const pct=Math.round(ok/tot*100);
+document.getElementById("cw-msg").textContent=
+ok===tot?"Perfect! You know your PQC!":ok+"/"+tot+" correct ("+pct+"%) — keep trying!";
+}}
+function revealAll(){{
+document.querySelectorAll(".ans-input").forEach(inp=>{{
+inp.value=inp.dataset.ans;inp.className="ans-input correct";
+}});
+document.getElementById("cw-msg").textContent="Answers revealed — study them for next time!";
+}}
 </script>
 """, height=580)
+
+        if f"cw_complete_{lvl['level']}" not in st.session_state:
+            if st.button(f"Mark Level {lvl['level']} Complete! +{lvl['level']*8} XP", key=f"cw_done_{lvl['level']}"):
+                st.session_state[f"cw_complete_{lvl['level']}"] = True
+                st.session_state.xp += lvl['level'] * 8
+                st.success(f"Level {lvl['level']} complete! +{lvl['level']*8} XP earned!")
+                if st.session_state.cw_level < 12:
+                    st.session_state.cw_level += 1
+                    st.rerun()
+        else:
+            st.success(f"Level {lvl['level']} already completed!")
+
