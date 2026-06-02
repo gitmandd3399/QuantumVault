@@ -24,6 +24,7 @@ from modules.world_map import render_world_map
 from modules.explainers import render_explainers_page
 from modules.crypto_lab import render_crypto_lab
 from modules.research_journal import render_research_journal
+from modules.weekly_email import render_weekly_email
 # ── Page config ───────────────────────────────────────────────────────────────
 st.set_page_config(
     page_title="QuantumVault Academy",
@@ -104,6 +105,7 @@ def sidebar():
             "📺 Explainers",
             "🧪 Crypto Lab",
             "📖 Research Journal",
+            "📧 Weekly Report",
 
         ],
     )
@@ -436,6 +438,8 @@ def main():
         render_crypto_lab()
     elif "Research Journal" in level:
         render_research_journal()
+    elif "Weekly Report" in level:
+        render_weekly_email()
     elif "AI Tutor" in level:
         if st.session_state.get("plan_type", "free") == "free":
             st.title("🤖 AI Tutor")
