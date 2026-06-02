@@ -17,6 +17,7 @@ from modules.progress_tracker import render_full_progress_page, mark_complete, r
 from modules.payments import render_pricing_page
 from modules.ai_tutor import render_ai_tutor
 from modules.trading_cards import render_trading_cards
+from modules.daily_challenge import render_daily_challenge
 # ── Page config ───────────────────────────────────────────────────────────────
 st.set_page_config(
     page_title="QuantumVault Academy",
@@ -90,6 +91,7 @@ def sidebar():
             "💎 Pricing & Plans",
             "🤖 AI Tutor",
             "🃏 Trading Cards",
+            "🎯 Daily Challenge",
 
         ],
     )
@@ -408,6 +410,8 @@ def main():
         render_pricing_page()
     elif "Trading Cards" in level:
         render_trading_cards()
+    elif "Daily Challenge" in level:
+        render_daily_challenge()
     elif "AI Tutor" in level:
         if st.session_state.get("plan_type", "free") == "free":
             st.title("🤖 AI Tutor")
