@@ -558,9 +558,7 @@ border-radius:12px;padding:24px;text-align:center;display:none;}}
         </div>
 
         <div style="text-align:center;">
-            <button onclick="document.getElementById('start-screen').style.display='none';
-                document.getElementById('qbox').style.display='block';loadQuestion();"
-                style="padding:12px 32px;border-radius:8px;border:none;cursor:pointer;
+            <button id="start-btn" style="padding:12px 32px;border-radius:8px;border:none;cursor:pointer;
                 background:#4f46e5;color:white;font-size:15px;font-weight:bold;">
                 ▶ Start Challenge
             </button>
@@ -1026,6 +1024,12 @@ function restartLevel() {{
 // Show start screen first
 document.getElementById("qbox").style.display="none";
 document.getElementById("start-screen").style.display="block";
+
+document.getElementById("start-btn").addEventListener("click", function() {{
+    document.getElementById("start-screen").style.display="none";
+    document.getElementById("qbox").style.display="block";
+    loadQuestion();
+}});
 </script>
 </body>
 </html>
