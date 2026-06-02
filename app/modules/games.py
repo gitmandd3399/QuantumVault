@@ -117,6 +117,25 @@ let shield=false, slowActive=false, doubleActive=false;
 let shieldTimer=0, slowTimer=0, doubleTimer=0;
 let bossWave=false;
 
+const LEVEL_CONFIG = [
+    {level:1,  name:"Recruit",        dropRate:80, speed:2.0, bossEvery:0, lives:5, desc:"Learn the basics!"},
+    {level:2,  name:"Cadet",          dropRate:75, speed:2.3, bossEvery:0, lives:5, desc:"Getting faster!"},
+    {level:3,  name:"Agent",          dropRate:70, speed:2.6, bossEvery:3, lives:4, desc:"First boss wave!"},
+    {level:4,  name:"Specialist",     dropRate:65, speed:2.9, bossEvery:3, lives:4, desc:"More unsafe blocks!"},
+    {level:5,  name:"Cipher Corps",   dropRate:60, speed:3.2, bossEvery:3, lives:4, desc:"Power-ups appear!"},
+    {level:6,  name:"Crypto Guard",   dropRate:55, speed:3.5, bossEvery:2, lives:3, desc:"Boss every 2 levels!"},
+    {level:7,  name:"Lattice Knight", dropRate:50, speed:3.8, bossEvery:2, lives:3, desc:"Super fast!"},
+    {level:8,  name:"Key Master",     dropRate:45, speed:4.1, bossEvery:2, lives:3, desc:"Almost expert!"},
+    {level:9,  name:"Quantum Sage",   dropRate:40, speed:4.4, bossEvery:2, lives:3, desc:"Expert territory!"},
+    {level:10, name:"NIST Scholar",   dropRate:35, speed:4.7, bossEvery:1, lives:2, desc:"Boss every level!"},
+    {level:11, name:"PQC Champion",   dropRate:30, speed:5.0, bossEvery:1, lives:2, desc:"Near impossible!"},
+    {level:12, name:"Quantum Guardian",dropRate:25,speed:5.5, bossEvery:1, lives:2, desc:"Master level!"},
+];
+
+function getLevelConfig() {
+    return LEVEL_CONFIG[Math.min(level-1, LEVEL_CONFIG.length-1)];
+}
+
 // Generate stars
 for(let i=0;i<50;i++) stars.push({x:Math.random()*W,y:Math.random()*H,r:Math.random()*1.5+0.3,twinkle:Math.random()*Math.PI*2});
 
