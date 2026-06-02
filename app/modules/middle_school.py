@@ -630,7 +630,8 @@ async function updateHash() {
         sizes = [a["key_kb"] for a in ALGOS]
         colors_list = [a["color"] for a in ALGOS]
         sel_idx = next(i for i, a in enumerate(ALGOS) if a["name"] == selected)
-        bar_colors = [c + "ff" if i == sel_idx else c + "66" for i, c in enumerate(colors_list)]
+        bar_colors = [c if i == sel_idx else c + "80" for i, c in enumerate(colors_list)]
+        bar_colors = ["rgba(" + str(int(c[1:3],16)) + "," + str(int(c[3:5],16)) + "," + str(int(c[5:7],16)) + "," + ("1.0" if i == sel_idx else "0.4") + ")" for i, c in enumerate(colors_list)]
 
         fig = go.Figure()
         fig.add_trace(go.Bar(
