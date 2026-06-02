@@ -21,6 +21,23 @@ def get_stripe_key():
 
 
 PLANS = {
+    "free": {
+        "name": "Free Trial",
+        "price": 0,
+        "price_display": "$0",
+        "period": "forever",
+        "description": "Try QuantumVault with one grade level",
+        "features": [
+            "1 grade level module (your choice)",
+            "Up to 10 students",
+            "All mini games",
+            "Leaderboard access",
+            "No credit card required",
+        ],
+        "color": "#6b7280",
+        "emoji": "🆓",
+        "popular": False,
+    },
     "classroom": {
         "name": "Classroom",
         "price": 49900,
@@ -157,6 +174,25 @@ def render_pricing_page():
         "The **only K-12 platform** teaching NIST post-quantum cryptography standards. "
         "All plans include a 30-day free trial. No credit card required."
     )
+
+    # ── Free tier quick signup ───────────────────────────────────────────
+    if st.session_state.get("plan_type", "free") == "free" and not st.session_state.get("free_module"):
+        st.success("🆓 **Start for free — no credit card required!**")
+        col1, col2 = st.columns([2,1])
+        with col1:
+            free_mod = st.selectbox(
+                "Choose your free grade level module:",
+                ["🟢 Elementary (K-5)", "🟡 Middle School (6-8)", "🔴 High School (9-12)"],
+                key="free_mod_select"
+            )
+        with col2:
+            st.markdown("<br>", unsafe_allow_html=True)
+            if st.button("Start Free", type="primary", key="start_free"):
+                st.session_state.free_module = free_mod
+                st.session_state.plan_type = "free"
+                st.success("Free plan activated! Enjoy your free module.")
+                st.rerun()
+        st.markdown("---")
 
     # ── Trust bar ─────────────────────────────────────────────────────────
     t1, t2, t3, t4 = st.columns(4)

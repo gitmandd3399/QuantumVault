@@ -35,6 +35,10 @@ if "badges" not in st.session_state:
     st.session_state.badges = []
 if "xp" not in st.session_state:
     st.session_state.xp = 0
+if "plan_type" not in st.session_state:
+    st.session_state.plan_type = "free"
+if "free_module" not in st.session_state:
+    st.session_state.free_module = None
 if "streak_days" not in st.session_state:
     st.session_state.streak_days = 0
 if "last_visit" not in st.session_state:
@@ -104,6 +108,26 @@ def sidebar():
     bar_visual = "🟦" * bar_filled + "⬜" * bar_empty
     st.sidebar.markdown(f"{bar_visual}")
     st.sidebar.caption(f"⭐ {xp} XP — {next_xp - xp} XP to next rank")
+
+    # ── Plan badge ────────────────────────────────────────────────────────
+    plan = st.session_state.get("plan_type", "free")
+    if plan == "free":
+        st.sidebar.markdown(
+            "<div style='background:#6b728015;border:1px solid #6b728040;"
+            "border-radius:8px;padding:6px 12px;margin:4px 0;text-align:center;'>"
+            "<span style='font-size:0.75rem;color:#9ca3af'>🆓 Free Plan — </span>"
+            "<span style='font-size:0.75rem;color:#4f46e5;font-weight:bold;'>"
+            "Upgrade for full access</span></div>",
+            unsafe_allow_html=True
+        )
+    else:
+        st.sidebar.markdown(
+            "<div style='background:#10b98115;border:1px solid #10b98140;"
+            "border-radius:8px;padding:6px 12px;margin:4px 0;text-align:center;'>"
+            "<span style='font-size:0.75rem;color:#10b981;font-weight:bold;'>"
+            "✅ Pro Plan — Full Access</span></div>",
+            unsafe_allow_html=True
+        )
 
     # ── Streak display ────────────────────────────────────────────────────
     streak = st.session_state.streak_days
@@ -198,19 +222,44 @@ def main():
     elif "Middle" in level:
         render_middle_school()
     elif "High School" in level:
-        render_high_school()
+        plan = st.session_state.get("plan_type", "free")
+        free_mod = st.session_state.get("free_module", "")
+        if plan == "free" and free_mod and "High" not in free_mod:
+            st.warning("Your free plan includes: " + free_mod)
+            st.markdown("Upgrade to access all three grade levels!")
+            if st.button("Upgrade Now", type="primary", key="upg_hs"):
+                st.session_state.level = "💎 Pricing & Plans"
+                st.rerun()
+        else:
+            render_high_school()
     elif "Leaderboard" in level:
         render_leaderboard()
     elif "Mission Map" in level:
         render_mission_map()
     elif "Teacher Dashboard" in level:
-        render_teacher_dashboard()
+        if st.session_state.get("plan_type", "free") == "free":
+            st.title("👨‍🏫 Teacher Dashboard")
+            st.warning("The Teacher Dashboard is available on paid plans.")
+            st.markdown("Upgrade to unlock class analytics, XP charts, and CSV export.")
+            if st.button("🚀 Upgrade Now", type="primary", key="upgrade_teacher"):
+                st.session_state.level = "💎 Pricing & Plans"
+                st.rerun()
+        else:
+            render_teacher_dashboard()
     elif "My Progress" in level:
         render_full_progress_page()
     elif "Pricing" in level:
         render_pricing_page()
     elif "AI Tutor" in level:
-        render_ai_tutor()
+        if st.session_state.get("plan_type", "free") == "free":
+            st.title("🤖 AI Tutor")
+            st.warning("The AI Tutor is available on paid plans.")
+            st.markdown("Upgrade to unlock grade-adaptive AI tutoring powered by Claude AI.")
+            if st.button("🚀 Upgrade Now", type="primary", key="upgrade_tutor"):
+                st.session_state.level = "💎 Pricing & Plans"
+                st.rerun()
+        else:
+            render_ai_tutor()
 
 if __name__ == "__main__":
     main()
