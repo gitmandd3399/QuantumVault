@@ -19,6 +19,7 @@ from modules.ai_tutor import render_ai_tutor
 from modules.trading_cards import render_trading_cards
 from modules.daily_challenge import render_daily_challenge
 from modules.share_cards import render_share_page
+from modules.character import render_character_page
 # ── Page config ───────────────────────────────────────────────────────────────
 st.set_page_config(
     page_title="QuantumVault Academy",
@@ -94,6 +95,7 @@ def sidebar():
             "🃏 Trading Cards",
             "🎯 Daily Challenge",
             "📸 Share Achievement",
+            "🎨 My Character",
 
         ],
     )
@@ -416,6 +418,8 @@ def main():
         render_daily_challenge()
     elif "Share Achievement" in level:
         render_share_page()
+    elif "My Character" in level:
+        render_character_page()
     elif "AI Tutor" in level:
         if st.session_state.get("plan_type", "free") == "free":
             st.title("🤖 AI Tutor")
