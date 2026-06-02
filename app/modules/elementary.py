@@ -579,34 +579,32 @@ resetWS();
 
     with tab7:
         st.subheader("✏️ PQC Crossword Puzzle — 12 Levels!")
-        st.markdown("Fill in the crossword! Each level adds new PQC vocabulary.")
+        st.markdown("Fill in the crossword grid! Click a white square and type your answer.")
 
         if "cw_level" not in st.session_state:
             st.session_state.cw_level = 1
 
-        CW_LEVELS = [
-            {"level":1, "desc":"Beginner", "clues_across":[("1","NIST key exchange standard (5)","KYBER"),("4","Keeping messages secret (6)","CIPHER")], "clues_down":[("1","Math grid stumping quantum computers (7)","LATTICE"),("2","Type of computer that breaks RSA (7)","QUANTUM")],"grid_size":8},
-            {"level":2, "desc":"Easy",     "clues_across":[("1","NIST key exchange standard (5)","KYBER"),("4","US agency that approved PQC (4)","NIST")],   "clues_down":[("1","Math grid stumping quantum computers (7)","LATTICE"),("2","Digital signature algorithm (9)","DILITHIUM")],"grid_size":9},
-            {"level":3, "desc":"Easy",     "clues_across":[("1","ML-KEM standard (5)","KYBER"),("3","Unique message fingerprint (4)","HASH"),("5","NIST approved PQC in 2024 (4)","FIPS")], "clues_down":[("1","Lattice math problem (3)","LWE"),("2","Quantum algorithm breaking RSA (4)","SHOR")],"grid_size":9},
-            {"level":4, "desc":"Medium",   "clues_across":[("1","ML-KEM FIPS 203 (5)","KYBER"),("4","Keeps data secret (7)","ENCRYPT"),("6","US PQC standards agency (4)","NIST")], "clues_down":[("1","Quantum-safe math grid (7)","LATTICE"),("2","Hash-based signature (7)","SPHINCS")],"grid_size":10},
-            {"level":5, "desc":"Medium",   "clues_across":[("1","Key encapsulation standard (5)","KYBER"),("4","Secret scrambling (7)","ENCRYPT"),("6","Quantum speedup algorithm (6)","GROVER")], "clues_down":[("1","Math grid (7)","LATTICE"),("2","Breaks RSA (4)","SHOR"),("3","Signature size unit (3)","BIT")],"grid_size":10},
-            {"level":6, "desc":"Medium",   "clues_across":[("1","FIPS 203 standard (5)","KYBER"),("4","Encryption scrambling (7)","ENCRYPT"),("6","Prime number math (7)","MODULAR")], "clues_down":[("1","LWE math structure (7)","LATTICE"),("2","Quantum computer threat (4)","SHOR"),("3","Signature algorithm (9)","DILITHIUM")],"grid_size":11},
-            {"level":7, "desc":"Hard",     "clues_across":[("1","ML-KEM (5)","KYBER"),("4","ML-DSA (9)","DILITHIUM"),("7","Secure standard code (4)","FIPS")], "clues_down":[("1","Quantum-safe grid math (7)","LATTICE"),("2","Hash fingerprint (4)","HASH"),("3","Quantum search speedup (6)","GROVER")],"grid_size":11},
-            {"level":8, "desc":"Hard",     "clues_across":[("1","FIPS 203 (5)","KYBER"),("4","FIPS 204 (9)","DILITHIUM"),("7","Learning With Errors (3)","LWE")], "clues_down":[("1","Grid math (7)","LATTICE"),("2","Hash-based FIPS 205 (7)","SPHINCS"),("3","Breaking algorithm (4)","SHOR")],"grid_size":12},
-            {"level":9, "desc":"Expert",   "clues_across":[("1","Key encapsulation (5)","KYBER"),("4","Digital signature (9)","DILITHIUM"),("7","Federal standard (4)","FIPS"),("9","Secret number (5)","PRIME")], "clues_down":[("1","Lattice problem (7)","LATTICE"),("2","Hash signature (7)","SPHINCS"),("3","Quantum break (4)","SHOR"),("5","Encryption process (7)","ENCRYPT")],"grid_size":12},
-            {"level":10,"desc":"Expert",   "clues_across":[("1","ML-KEM (5)","KYBER"),("4","ML-DSA (9)","DILITHIUM"),("7","FIPS number (4)","FIPS"),("9","Number theory (7)","MODULAR")], "clues_down":[("1","Grid math (7)","LATTICE"),("2","SLH-DSA (7)","SPHINCS"),("3","RSA breaker (4)","SHOR"),("5","Message fingerprint (4)","HASH")],"grid_size":13},
-            {"level":11,"desc":"Master",   "clues_across":[("1","FIPS 203 (5)","KYBER"),("4","FIPS 204 (9)","DILITHIUM"),("7","Standard code (4)","FIPS"),("9","Arithmetic type (7)","MODULAR"),("11","FN-DSA (6)","FALCON")], "clues_down":[("1","LWE grid (7)","LATTICE"),("2","FIPS 205 (7)","SPHINCS"),("3","Shor target (4)","SHOR"),("5","Data scramble (7)","ENCRYPT")],"grid_size":13},
-            {"level":12,"desc":"Master",   "clues_across":[("1","FIPS 203 (5)","KYBER"),("4","FIPS 204 (9)","DILITHIUM"),("7","Standard (4)","FIPS"),("9","Clock math (7)","MODULAR"),("11","FIPS 206 (6)","FALCON"),("13","Secure hash (4)","HASH")], "clues_down":[("1","Quantum-safe grid (7)","LATTICE"),("2","FIPS 205 (7)","SPHINCS"),("3","RSA breaker (4)","SHOR"),("5","Scramble data (7)","ENCRYPT"),("8","LWE short form (3)","LWE")],"grid_size":14},
-        ]
-
         col1, col2, col3 = st.columns([2,1,1])
         with col1:
-            cw_names = [f"Level {l['level']} — {l['desc']}" for l in CW_LEVELS]
+            cw_names = [
+                "Level 1 — Beginner (4 words)",
+                "Level 2 — Beginner (5 words)",
+                "Level 3 — Easy (5 words)",
+                "Level 4 — Easy (6 words)",
+                "Level 5 — Medium (6 words)",
+                "Level 6 — Medium (7 words)",
+                "Level 7 — Hard (7 words)",
+                "Level 8 — Hard (8 words)",
+                "Level 9 — Expert (8 words)",
+                "Level 10 — Expert (9 words)",
+                "Level 11 — Master (9 words)",
+                "Level 12 — Master (10 words)",
+            ]
             cw_sel = st.selectbox("Choose level:", cw_names, index=st.session_state.cw_level-1, key="cw_lvl_sel")
             st.session_state.cw_level = int(cw_sel.split()[1])
         with col2:
             if st.session_state.cw_level > 1:
-                if st.button("← Previous", key="cw_prev"):
+                if st.button("← Prev", key="cw_prev"):
                     st.session_state.cw_level -= 1
                     st.rerun()
         with col3:
@@ -615,94 +613,378 @@ resetWS();
                     st.session_state.cw_level += 1
                     st.rerun()
 
-        lvl = CW_LEVELS[st.session_state.cw_level - 1]
-        across_clues = "\n".join([f"{n}. {c}" for n,c,_ in lvl["clues_across"]])
-        down_clues = "\n".join([f"{n}. {c}" for n,c,_ in lvl["clues_down"]])
-        all_answers = {n: a for n,c,a in lvl["clues_across"] + lvl["clues_down"]}
-        answers_json = str(all_answers).replace("'",'"')
+        level = st.session_state.cw_level
 
         import streamlit.components.v1 as components
         components.html(f"""
+<!DOCTYPE html>
+<html>
+<head>
 <style>
 body{{margin:0;background:#0f172a;font-family:sans-serif;color:white;padding:8px;}}
-.cw-wrap{{max-width:560px;margin:0 auto;text-align:center;}}
-.cw-clues{{display:grid;grid-template-columns:1fr 1fr;gap:12px;max-width:520px;margin:8px auto;text-align:left;}}
-.clue-section h4{{color:#a5b4fc;font-size:12px;margin:0 0 6px;}}
-.clue{{font-size:11px;color:#888;margin-bottom:4px;line-height:1.4;}}
+.wrap{{max-width:560px;margin:0 auto;}}
+.cw-grid{{display:inline-grid;gap:2px;margin:8px auto;}}
+.black{{background:#0f172a;}}
+.white{{background:#1e293b;border:1px solid #334155;position:relative;
+display:flex;align-items:center;justify-content:center;}}
+.white input{{width:100%;height:100%;background:transparent;border:none;
+text-align:center;font-size:14px;font-weight:bold;color:#a5b4fc;
+text-transform:uppercase;outline:none;cursor:pointer;}}
+.white input.ok{{color:#10b981;}}
+.white input.bad{{color:#ef4444;}}
+.cnum{{position:absolute;top:1px;left:2px;font-size:7px;color:#6b7280;line-height:1;}}
+.clues{{display:grid;grid-template-columns:1fr 1fr;gap:10px;max-width:540px;
+margin:8px auto;text-align:left;}}
+.clue-sec h4{{color:#a5b4fc;font-size:12px;margin:0 0 5px;}}
+.clue{{font-size:11px;color:#888;margin-bottom:3px;line-height:1.4;}}
 .clue strong{{color:#a5b4fc;}}
-.input-area{{max-width:520px;margin:8px auto;}}
-.ans-row{{display:flex;align-items:center;gap:8px;margin:5px 0;}}
-.ans-label{{font-size:11px;color:#a5b4fc;font-weight:bold;min-width:60px;}}
-.ans-input{{flex:1;background:#1e293b;border:1px solid #334155;border-radius:6px;
-color:#a5b4fc;font-size:12px;padding:5px 8px;text-transform:uppercase;outline:none;}}
-.ans-input.correct{{border-color:#10b981;color:#10b981;}}
-.ans-input.wrong{{border-color:#ef4444;color:#ef4444;}}
-.cw-btn{{padding:6px 14px;border-radius:6px;border:none;cursor:pointer;
+.btn{{padding:6px 12px;border-radius:6px;border:none;cursor:pointer;
 background:#4f46e5;color:white;font-size:11px;font-weight:bold;margin:3px;}}
-#cw-msg{{font-size:12px;color:#34d399;min-height:18px;margin:5px;}}
+#msg{{font-size:12px;color:#34d399;min-height:18px;margin:5px;text-align:center;}}
 </style>
-<div class="cw-wrap">
-<div style="font-size:13px;font-weight:bold;color:#a5b4fc;margin-bottom:6px;">
-Level {lvl["level"]} — {lvl["desc"]}</div>
-<div id="cw-msg">Type your answers below!</div>
-<div class="input-area" id="inputs"></div>
-<button class="cw-btn" onclick="checkAll()">Check Answers</button>
-<button class="cw-btn" onclick="revealAll()">Reveal All</button>
-<div class="cw-clues">
-<div class="clue-section">
-<h4>ACROSS</h4>
-{"".join(f'<div class="clue"><strong>{n}.</strong> {c}</div>' for n,c,_ in lvl["clues_across"])}
+</head>
+<body>
+<div class="wrap">
+<div id="msg">Click a white square and type your answer!</div>
+<div style="text-align:center">
+<div class="cw-grid" id="grid"></div>
 </div>
-<div class="clue-section">
-<h4>DOWN</h4>
-{"".join(f'<div class="clue"><strong>{n}.</strong> {c}</div>' for n,c,_ in lvl["clues_down"])}
+<div style="text-align:center;margin:6px;">
+<button class="btn" onclick="checkAll()">Check Answers</button>
+<button class="btn" onclick="revealAll()">Reveal All</button>
+<button class="btn" onclick="clearAll()">Clear</button>
 </div>
-</div>
+<div class="clues" id="clues"></div>
 </div>
 <script>
-const ANSWERS = {answers_json};
-const ALL_CLUES = [
-{"".join(f'{{num:"{n}",dir:"Across",clue:"{c}",ans:"{a}"}},' for n,c,a in lvl["clues_across"])}
-{"".join(f'{{num:"{n}",dir:"Down",clue:"{c}",ans:"{a}"}},' for n,c,a in lvl["clues_down"])}
-];
-const inputs = document.getElementById("inputs");
-ALL_CLUES.forEach(item=>{{
-const row=document.createElement("div");row.className="ans-row";
-const label=document.createElement("div");label.className="ans-label";
-label.textContent=item.num+". "+item.dir+":";
-const inp=document.createElement("input");inp.className="ans-input";
-inp.maxLength=item.ans.length+2;inp.placeholder=item.ans.length+" letters";
-inp.dataset.ans=item.ans;inp.dataset.num=item.num;
-row.appendChild(label);row.appendChild(inp);inputs.appendChild(row);
-}});
-function checkAll(){{
-let ok=0,tot=ALL_CLUES.length;
-document.querySelectorAll(".ans-input").forEach(inp=>{{
-const val=inp.value.toUpperCase().trim();
-if(val===inp.dataset.ans){{inp.className="ans-input correct";ok++;}}
-else if(val){{inp.className="ans-input wrong";}}
-}});
-const pct=Math.round(ok/tot*100);
-document.getElementById("cw-msg").textContent=
-ok===tot?"Perfect! You know your PQC!":ok+"/"+tot+" correct ("+pct+"%) — keep trying!";
-}}
-function revealAll(){{
-document.querySelectorAll(".ans-input").forEach(inp=>{{
-inp.value=inp.dataset.ans;inp.className="ans-input correct";
-}});
-document.getElementById("cw-msg").textContent="Answers revealed — study them for next time!";
-}}
-</script>
-""", height=580)
+const LEVEL = {level};
 
-        if f"cw_complete_{lvl['level']}" not in st.session_state:
-            if st.button(f"Mark Level {lvl['level']} Complete! +{lvl['level']*8} XP", key=f"cw_done_{lvl['level']}"):
-                st.session_state[f"cw_complete_{lvl['level']}"] = True
-                st.session_state.xp += lvl['level'] * 8
-                st.success(f"Level {lvl['level']} complete! +{lvl['level']*8} XP earned!")
+// Each level: grid layout where each cell is [row,col,letter,clue_num,is_across_start,is_down_start]
+// ANS[r][c] = letter or null for black
+// NUMS[r+","+c] = clue number
+
+const LEVELS = {{
+  1: {{
+    size: 7,
+    ans: [
+      [null,null,null,null,null,null,null],
+      [null,"K","Y","B","E","R",null],
+      [null,"A",null,null,null,null,null],
+      [null,"T",null,null,null,null,null],
+      ["C","I","P","H","E","R",null],
+      [null,"C",null,null,null,null,null],
+      [null,"E",null,null,null,null,null],
+    ],
+    nums: {{"1,1":"1","4,0":"2"}},
+    across: [{{"n":"2","clue":"Keeping messages secret (6)","ans":"CIPHER"}}],
+    down:   [{{"n":"1","clue":"NIST key exchange standard ML-KEM (5)","ans":"KYBER"}},{{"n":"1a","clue":"Math grid that stumps quantum computers (7)","ans":"LATTICE","num":"1","col":1}}],
+    acrossClues: [{{"n":"2","clue":"Keeping messages secret (6)"}}],
+    downClues:   [{{"n":"1","clue":"ML-KEM key standard (5)"}},{{"n":"1","clue":"Quantum-safe math grid (7)","num":"1b"}}],
+  }},
+  2: {{
+    size: 8,
+    ans: [
+      [null,null,null,null,null,null,null,null],
+      [null,"K","Y","B","E","R",null,null],
+      [null,"A",null,null,null,null,null,null],
+      [null,"T",null,null,null,null,null,null],
+      ["C","I","P","H","E","R",null,null],
+      [null,"C",null,null,null,null,null,null],
+      [null,"E","N","I","S","T",null,null],
+      [null,null,null,null,null,null,null,null],
+    ],
+    nums: {{"1,1":"1","4,0":"4","6,1":"6"}},
+    acrossClues: [{{"n":"4","clue":"Keeping messages secret (6)"}},{{"n":"6","clue":"US agency that approved PQC 2024 (4)"}}],
+    downClues:   [{{"n":"1","clue":"ML-KEM key standard (5)"}},{{"n":"1","clue":"Quantum-safe math grid (7)","num":"1b"}}],
+  }},
+  3: {{
+    size: 9,
+    ans: [
+      [null,null,null,null,null,null,null,null,null],
+      [null,"K","Y","B","E","R",null,null,null],
+      [null,"A",null,null,null,null,null,null,null],
+      [null,"T",null,"S","H","O","R",null,null],
+      ["C","I","P","H","E","R",null,null,null],
+      [null,"C",null,null,null,null,null,null,null],
+      [null,"E","N","I","S","T",null,null,null],
+      [null,null,null,"H",null,null,null,null,null],
+      [null,null,null,"A",null,null,null,null,null],
+    ],
+    nums: {{"1,1":"1","3,3":"3","4,0":"4","6,1":"6"}},
+    acrossClues: [{{"n":"3","clue":"Algorithm that breaks RSA (4)"}},{{"n":"4","clue":"Keeping messages secret (6)"}},{{"n":"6","clue":"US PQC standards agency (4)"}}],
+    downClues:   [{{"n":"1","clue":"ML-KEM standard (5)"}},{{"n":"1","clue":"Quantum-safe math grid (7)","num":"1b"}},{{"n":"3","clue":"Creates unique fingerprints (4)","num":"3b"}}],
+  }},
+  4: {{
+    size: 10,
+    ans: [
+      [null,null,null,null,null,null,null,null,null,null],
+      [null,"K","Y","B","E","R",null,null,null,null],
+      [null,"A",null,null,null,null,null,null,null,null],
+      [null,"T",null,"S","H","O","R",null,null,null],
+      ["C","I","P","H","E","R",null,null,null,null],
+      [null,"C",null,"A",null,null,null,null,null,null],
+      [null,"E","N","I","S","T",null,null,null,null],
+      [null,null,null,"S",null,null,null,null,null,null],
+      ["H","A","S","H",null,null,null,null,null,null],
+      [null,null,null,null,null,null,null,null,null,null],
+    ],
+    nums: {{"1,1":"1","3,3":"3","4,0":"4","6,1":"6","8,0":"8"}},
+    acrossClues: [{{"n":"3","clue":"Quantum algorithm breaking RSA (4)"}},{{"n":"4","clue":"Secret scrambling method (6)"}},{{"n":"6","clue":"US PQC agency (4)"}},{{"n":"8","clue":"Message fingerprint (4)"}}],
+    downClues:   [{{"n":"1","clue":"FIPS 203 key standard (5)"}},{{"n":"1","clue":"Quantum-safe grid math (7)","num":"1b"}},{{"n":"3","clue":"FIPS 205 hash signature (6)","num":"3b"}}],
+  }},
+  5: {{
+    size: 10,
+    ans: [
+      [null,null,null,null,null,null,null,null,null,null],
+      [null,"K","Y","B","E","R",null,null,null,null],
+      [null,"A",null,null,null,null,null,null,null,null],
+      [null,"T",null,"S","H","O","R",null,null,null],
+      ["C","I","P","H","E","R",null,null,null,null],
+      [null,"C",null,"A",null,null,null,null,null,null],
+      [null,"E","N","I","S","T",null,null,null,null],
+      ["F","A","L","C","O","N",null,null,null,null],
+      ["H","A","S","H",null,null,null,null,null,null],
+      [null,null,null,null,null,null,null,null,null,null],
+    ],
+    nums: {{"1,1":"1","3,3":"3","4,0":"4","6,1":"6","7,0":"7","8,0":"8"}},
+    acrossClues: [{{"n":"3","clue":"Quantum RSA breaker (4)"}},{{"n":"4","clue":"Secret scrambling (6)"}},{{"n":"6","clue":"US PQC agency (4)"}},{{"n":"7","clue":"FN-DSA FIPS 206 (6)"}},{{"n":"8","clue":"SHA-3 fingerprint (4)"}}],
+    downClues:   [{{"n":"1","clue":"FIPS 203 standard (5)"}},{{"n":"1","clue":"Grid math (7)","num":"1b"}},{{"n":"3","clue":"Hash signature FIPS 205 (6)","num":"3b"}}],
+  }},
+  6: {{
+    size: 11,
+    ans: [
+      [null,null,null,null,null,null,null,null,null,null,null],
+      [null,"K","Y","B","E","R",null,null,null,null,null],
+      [null,"A",null,null,null,null,null,null,null,null,null],
+      [null,"T",null,"S","H","O","R",null,null,null,null],
+      ["C","I","P","H","E","R",null,null,null,null,null],
+      [null,"C",null,"A",null,null,null,null,null,null,null],
+      [null,"E","N","I","S","T",null,null,null,null,null],
+      ["F","A","L","C","O","N",null,null,null,null,null],
+      ["H","A","S","H",null,null,null,null,null,null,null],
+      [null,null,null,"E",null,null,null,null,null,null,null],
+      [null,null,null,"S",null,null,null,null,null,null,null],
+    ],
+    nums: {{"1,1":"1","3,3":"3","4,0":"4","6,1":"6","7,0":"7","8,0":"8"}},
+    acrossClues: [{{"n":"3","clue":"Breaks RSA on quantum (4)"}},{{"n":"4","clue":"Secret scrambling (6)"}},{{"n":"6","clue":"US PQC standards body (4)"}},{{"n":"7","clue":"Smallest quantum-safe signature (6)"}},{{"n":"8","clue":"Message fingerprint (4)"}}],
+    downClues:   [{{"n":"1","clue":"FIPS 203 key standard (5)"}},{{"n":"1","clue":"Quantum-safe math grid (7)","num":"1b"}},{{"n":"3","clue":"Hash-based FIPS 205 signature (7)","num":"3b"}}],
+  }},
+  7: {{
+    size: 12,
+    ans: [
+      [null,null,null,null,null,null,null,null,null,null,null,null],
+      [null,"K","Y","B","E","R",null,null,null,null,null,null],
+      [null,"A",null,null,null,null,null,null,null,null,null,null],
+      [null,"T",null,"S","H","O","R",null,null,null,null,null],
+      ["C","I","P","H","E","R",null,null,null,null,null,null],
+      [null,"C",null,"A",null,null,null,null,null,null,null,null],
+      [null,"E","N","I","S","T",null,null,null,null,null,null],
+      ["F","A","L","C","O","N",null,null,null,null,null,null],
+      ["H","A","S","H",null,null,null,null,null,null,null,null],
+      [null,null,null,"E",null,null,null,null,null,null,null,null],
+      ["E","N","C","R","Y","P","T",null,null,null,null,null],
+      [null,null,null,"S",null,null,null,null,null,null,null,null],
+    ],
+    nums: {{"1,1":"1","3,3":"3","4,0":"4","6,1":"6","7,0":"7","8,0":"8","10,0":"10"}},
+    acrossClues: [{{"n":"3","clue":"RSA quantum breaker (4)"}},{{"n":"4","clue":"Secret scrambling (6)"}},{{"n":"6","clue":"US PQC agency 2024 (4)"}},{{"n":"7","clue":"FN-DSA compact signature (6)"}},{{"n":"8","clue":"SHA-3 fingerprint (4)"}},{{"n":"10","clue":"Process of scrambling data (7)"}}],
+    downClues:   [{{"n":"1","clue":"FIPS 203 (5)"}},{{"n":"1","clue":"LWE grid math (7)","num":"1b"}},{{"n":"3","clue":"SLH-DSA FIPS 205 (7)","num":"3b"}}],
+  }},
+  8: {{
+    size: 12,
+    ans: [
+      [null,null,null,null,null,null,null,null,null,null,null,null],
+      [null,"K","Y","B","E","R",null,null,null,null,null,null],
+      [null,"A",null,null,null,null,null,null,null,null,null,null],
+      [null,"T",null,"S","H","O","R",null,null,null,null,null],
+      ["C","I","P","H","E","R",null,null,null,null,null,null],
+      [null,"C",null,"A",null,null,null,null,null,null,null,null],
+      [null,"E","N","I","S","T",null,null,null,null,null,null],
+      ["F","A","L","C","O","N",null,null,null,null,null,null],
+      ["H","A","S","H",null,null,null,null,null,null,null,null],
+      [null,null,null,"E",null,null,null,null,null,null,null,null],
+      ["E","N","C","R","Y","P","T",null,null,null,null,null],
+      ["P","R","I","M","E",null,null,null,null,null,null,null],
+    ],
+    nums: {{"1,1":"1","3,3":"3","4,0":"4","6,1":"6","7,0":"7","8,0":"8","10,0":"10","11,0":"11"}},
+    acrossClues: [{{"n":"3","clue":"RSA quantum breaker (4)"}},{{"n":"4","clue":"Scramble data (6)"}},{{"n":"6","clue":"PQC standards body (4)"}},{{"n":"7","clue":"FIPS 206 compact (6)"}},{{"n":"8","clue":"SHA-3 output (4)"}},{{"n":"10","clue":"Data scrambling process (7)"}},{{"n":"11","clue":"RSA uses these numbers (5)"}}],
+    downClues:   [{{"n":"1","clue":"FIPS 203 (5)"}},{{"n":"1","clue":"LWE math grid (7)","num":"1b"}},{{"n":"3","clue":"FIPS 205 hash sig (7)","num":"3b"}}],
+  }},
+  9: {{
+    size: 13,
+    ans: [
+      [null,null,null,null,null,null,null,null,null,null,null,null,null],
+      [null,"K","Y","B","E","R",null,null,null,null,null,null,null],
+      [null,"A",null,null,null,null,null,null,null,null,null,null,null],
+      [null,"T",null,"S","H","O","R",null,null,null,null,null,null],
+      ["C","I","P","H","E","R",null,null,null,null,null,null,null],
+      [null,"C",null,"A",null,null,null,null,null,null,null,null,null],
+      [null,"E","N","I","S","T",null,null,null,null,null,null,null],
+      ["F","A","L","C","O","N",null,null,null,null,null,null,null],
+      ["H","A","S","H",null,null,null,null,null,null,null,null,null],
+      [null,null,null,"E",null,null,null,null,null,null,null,null,null],
+      ["E","N","C","R","Y","P","T",null,null,null,null,null,null],
+      ["P","R","I","M","E",null,null,null,null,null,null,null,null],
+      ["M","O","D","U","L","A","R",null,null,null,null,null,null],
+    ],
+    nums: {{"1,1":"1","3,3":"3","4,0":"4","6,1":"6","7,0":"7","8,0":"8","10,0":"10","11,0":"11","12,0":"12"}},
+    acrossClues: [{{"n":"3","clue":"RSA quantum breaker (4)"}},{{"n":"4","clue":"Scramble secret data (6)"}},{{"n":"6","clue":"US PQC agency (4)"}},{{"n":"7","clue":"Smallest PQC signature (6)"}},{{"n":"8","clue":"SHA-3 fingerprint (4)"}},{{"n":"10","clue":"Scrambling process (7)"}},{{"n":"11","clue":"RSA foundation numbers (5)"}},{{"n":"12","clue":"Clock math in crypto (7)"}}],
+    downClues:   [{{"n":"1","clue":"FIPS 203 (5)"}},{{"n":"1","clue":"LWE grid (7)","num":"1b"}},{{"n":"3","clue":"FIPS 205 hash sig (7)","num":"3b"}}],
+  }},
+  10: {{
+    size: 13,
+    ans: [
+      [null,null,null,null,null,null,null,null,null,null,null,null,null],
+      [null,"K","Y","B","E","R",null,null,null,null,null,null,null],
+      [null,"A",null,"F",null,null,null,null,null,null,null,null,null],
+      [null,"T",null,"I","P","S",null,null,null,null,null,null,null],
+      ["C","I","P","H","E","R",null,null,null,null,null,null,null],
+      [null,"C",null,"A",null,null,null,null,null,null,null,null,null],
+      [null,"E","N","I","S","T",null,null,null,null,null,null,null],
+      ["F","A","L","C","O","N",null,null,null,null,null,null,null],
+      ["H","A","S","H",null,null,null,null,null,null,null,null,null],
+      [null,null,null,"E",null,null,null,null,null,null,null,null,null],
+      ["E","N","C","R","Y","P","T",null,null,null,null,null,null],
+      ["P","R","I","M","E",null,null,null,null,null,null,null,null],
+      ["M","O","D","U","L","A","R",null,null,null,null,null,null],
+    ],
+    nums: {{"1,1":"1","3,1":"3f","3,2":"3","4,0":"4","6,1":"6","7,0":"7","8,0":"8","10,0":"10","11,0":"11","12,0":"12"}},
+    acrossClues: [{{"n":"3","clue":"Federal standard code (4)"}},{{"n":"4","clue":"Scramble secret data (6)"}},{{"n":"6","clue":"US PQC agency (4)"}},{{"n":"7","clue":"Smallest PQC sig FIPS 206 (6)"}},{{"n":"8","clue":"SHA-3 fingerprint (4)"}},{{"n":"10","clue":"Scrambling process (7)"}},{{"n":"11","clue":"RSA foundation (5)"}},{{"n":"12","clue":"Clock math (7)"}}],
+    downClues:   [{{"n":"1","clue":"FIPS 203 (5)"}},{{"n":"1","clue":"LWE grid (7)","num":"1b"}},{{"n":"3","clue":"FIPS 205 hash sig (7)","num":"3b"}}],
+  }},
+  11: {{
+    size: 14,
+    ans: [
+      [null,null,null,null,null,null,null,null,null,null,null,null,null,null],
+      [null,"K","Y","B","E","R",null,null,null,null,null,null,null,null],
+      [null,"A",null,"F",null,null,null,null,null,null,null,null,null,null],
+      [null,"T",null,"I","P","S",null,null,null,null,null,null,null,null],
+      ["C","I","P","H","E","R",null,null,null,null,null,null,null,null],
+      [null,"C",null,"A",null,null,null,null,null,null,null,null,null,null],
+      [null,"E","N","I","S","T",null,null,null,null,null,null,null,null],
+      ["F","A","L","C","O","N",null,null,null,null,null,null,null,null],
+      ["H","A","S","H",null,null,null,null,null,null,null,null,null,null],
+      [null,null,"L","E",null,null,null,null,null,null,null,null,null,null],
+      ["E","N","C","R","Y","P","T",null,null,null,null,null,null,null],
+      ["P","R","I","M","E",null,null,null,null,null,null,null,null,null],
+      ["M","O","D","U","L","A","R",null,null,null,null,null,null,null],
+      [null,null,null,null,null,null,null,null,null,null,null,null,null,null],
+    ],
+    nums: {{"1,1":"1","3,2":"3","3,3":"3f","4,0":"4","6,1":"6","7,0":"7","8,0":"8","9,2":"9","10,0":"10","11,0":"11","12,0":"12"}},
+    acrossClues: [{{"n":"3f","clue":"Federal standard code (4)"}},{{"n":"4","clue":"Scramble secret data (6)"}},{{"n":"6","clue":"US PQC agency (4)"}},{{"n":"7","clue":"Compact FIPS 206 sig (6)"}},{{"n":"8","clue":"SHA-3 fingerprint (4)"}},{{"n":"9","clue":"Learning With Errors short (3)"}},{{"n":"10","clue":"Scrambling process (7)"}},{{"n":"11","clue":"RSA foundation (5)"}},{{"n":"12","clue":"Clock math (7)"}}],
+    downClues:   [{{"n":"1","clue":"FIPS 203 (5)"}},{{"n":"1","clue":"LWE grid (7)","num":"1b"}},{{"n":"3","clue":"FIPS 205 hash sig (7)"}},{{"n":"3f","clue":"SHA-3 fingerprint (4)","num":"3fb"}}],
+  }},
+  12: {{
+    size: 14,
+    ans: [
+      [null,null,null,null,null,null,null,null,null,null,null,null,null,null],
+      [null,"K","Y","B","E","R",null,null,null,null,null,null,null,null],
+      [null,"A",null,"F",null,"H",null,null,null,null,null,null,null,null],
+      [null,"T",null,"I","P","S",null,null,null,null,null,null,null,null],
+      ["C","I","P","H","E","R",null,null,null,null,null,null,null,null],
+      [null,"C",null,"A",null,"C",null,null,null,null,null,null,null,null],
+      [null,"E","N","I","S","T",null,null,null,null,null,null,null,null],
+      ["F","A","L","C","O","N",null,null,null,null,null,null,null,null],
+      ["H","A","S","H",null,"S",null,null,null,null,null,null,null,null],
+      ["G","R","O","V","E","R",null,null,null,null,null,null,null,null],
+      ["E","N","C","R","Y","P","T",null,null,null,null,null,null,null],
+      ["P","R","I","M","E",null,null,null,null,null,null,null,null,null],
+      ["M","O","D","U","L","A","R",null,null,null,null,null,null,null],
+      [null,null,null,null,null,null,null,null,null,null,null,null,null,null],
+    ],
+    nums: {{"1,1":"1","3,2":"3f","3,3":"3","4,0":"4","6,1":"6","7,0":"7","8,0":"8","9,0":"9","10,0":"10","11,0":"11","12,0":"12"}},
+    acrossClues: [{{"n":"3","clue":"Federal standard code (4)"}},{{"n":"4","clue":"Scramble secret data (6)"}},{{"n":"6","clue":"US PQC agency (4)"}},{{"n":"7","clue":"FN-DSA FIPS 206 (6)"}},{{"n":"8","clue":"SHA-3 fingerprint (4)"}},{{"n":"9","clue":"Quantum search speedup (6)"}},{{"n":"10","clue":"Scrambling process (7)"}},{{"n":"11","clue":"RSA foundation numbers (5)"}},{{"n":"12","clue":"Clock math in crypto (7)"}}],
+    downClues:   [{{"n":"1","clue":"FIPS 203 key standard (5)"}},{{"n":"1","clue":"LWE quantum-safe grid (7)","num":"1b"}},{{"n":"3","clue":"FIPS 205 hash signature (7)"}},{{"n":"3f","clue":"SHA-3 fingerprint (4)"}}],
+  }},
+}};
+
+const ldata = LEVELS[LEVEL];
+const SIZE = ldata.size;
+const ANS = ldata.ans;
+const NUMS = ldata.nums;
+
+function buildGrid() {{
+    const el = document.getElementById("grid");
+    el.style.gridTemplateColumns = "repeat("+SIZE+", 34px)";
+    el.style.gridTemplateRows = "repeat("+SIZE+", 34px)";
+    el.innerHTML = "";
+    for(let r=0;r<SIZE;r++) {{
+        for(let c=0;c<SIZE;c++) {{
+            const div = document.createElement("div");
+            if(!ANS[r] || ANS[r][c]===null || ANS[r][c]===undefined) {{
+                div.className="black";
+                div.style.width="34px";div.style.height="34px";
+            }} else {{
+                div.className="white";
+                div.style.width="34px";div.style.height="34px";
+                const key = r+","+c;
+                if(NUMS[key]) {{
+                    const n=document.createElement("div");
+                    n.className="cnum";n.textContent=NUMS[key];
+                    div.appendChild(n);
+                }}
+                const inp=document.createElement("input");
+                inp.maxLength=1;inp.dataset.r=r;inp.dataset.c=c;
+                inp.dataset.ans=ANS[r][c];
+                inp.oninput=e=>{{
+                    e.target.value=e.target.value.toUpperCase();
+                    e.target.className="";
+                }};
+                div.appendChild(inp);
+            }}
+            el.appendChild(div);
+        }}
+    }}
+    buildClues();
+}}
+
+function buildClues() {{
+    const el = document.getElementById("clues");
+    const across = ldata.acrossClues.map(c=>"<div class='clue'><strong>"+c.n+".</strong> "+c.clue+"</div>").join("");
+    const down = ldata.downClues.map(c=>"<div class='clue'><strong>"+c.n+".</strong> "+c.clue+"</div>").join("");
+    el.innerHTML = "<div class='clue-sec'><h4>ACROSS</h4>"+across+"</div>"+
+                   "<div class='clue-sec'><h4>DOWN</h4>"+down+"</div>";
+}}
+
+function checkAll() {{
+    let ok=0,tot=0;
+    document.querySelectorAll(".white input").forEach(inp=>{{
+        tot++;
+        const val=inp.value.toUpperCase();
+        if(val===inp.dataset.ans){{ok++;inp.className="ok";}}
+        else if(val){{inp.className="bad";}}
+    }});
+    const pct=tot>0?Math.round(ok/tot*100):0;
+    document.getElementById("msg").textContent=
+        ok===tot&&tot>0?"Perfect score! You know your PQC!":ok+"/"+tot+" correct ("+pct+"%)";
+}}
+
+function revealAll() {{
+    document.querySelectorAll(".white input").forEach(inp=>{{
+        inp.value=inp.dataset.ans;inp.className="ok";
+    }});
+    document.getElementById("msg").textContent="Answers revealed — study them!";
+}}
+
+function clearAll() {{
+    document.querySelectorAll(".white input").forEach(inp=>{{
+        inp.value="";inp.className="";
+    }});
+    document.getElementById("msg").textContent="Cleared! Try again!";
+}}
+
+buildGrid();
+</script>
+</body>
+</html>
+""", height=700)
+
+        if f"cw_complete_{level}" not in st.session_state:
+            if st.button(f"Mark Level {level} Complete! +{level*8} XP", key=f"cw_done_{level}"):
+                st.session_state[f"cw_complete_{level}"] = True
+                st.session_state.xp += level * 8
+                st.success(f"Level {level} complete! +{level*8} XP earned!")
                 if st.session_state.cw_level < 12:
                     st.session_state.cw_level += 1
                     st.rerun()
         else:
-            st.success(f"Level {lvl['level']} already completed!")
-
+            st.success(f"Level {level} already completed! +{level*8} XP")
