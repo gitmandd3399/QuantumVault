@@ -132,7 +132,7 @@ function showMsg(msg){document.getElementById("fb-msg").textContent=msg;}
 function updateHUD(){
     document.getElementById("score").textContent=score;
     document.getElementById("lives").textContent="❤️".repeat(Math.max(0,lives));
-    document.getElementById("level").textContent=level;
+    document.getElementById("level").textContent=level+"/12";
     document.getElementById("caught").textContent=caught;
     document.getElementById("wave").textContent=bossWave?"👾 BOSS!":"Normal";
 
@@ -144,8 +144,8 @@ function updateHUD(){
 
 function startGame(){
     blocks=[];particles=[];
-    score=0;lives=3;level=1;caught=0;running=true;
-    frameCount=0;dropRate=80;bossWave=false;
+    score=0;lives=LEVEL_CONFIG[0].lives;level=1;caught=0;running=true;
+    frameCount=0;dropRate=LEVEL_CONFIG[0].dropRate;bossWave=false;
     shield=false;slowActive=false;doubleActive=false;
     basket.x=W/2-basket.w/2;
     updateHUD();
@@ -179,7 +179,7 @@ function spawnBlock(){
     blocks.push({
         x:Math.floor(Math.random()*(W-80))+10,
         y:-40, w:80, h:34,
-        speed:(2+level*0.3)*(slowActive?0.4:1)*(isBoss?1.5:1),
+        speed:getLevelConfig().speed*(slowActive?0.4:1)*(isBoss?1.5:1),
         ...blockType
     });
 }
@@ -197,12 +197,14 @@ function gameLoop(){
     const effectiveRate=Math.max(25,dropRate-(level-1)*5);
     if(frameCount%effectiveRate===0) spawnBlock();
 
-    // Boss wave check
-    if(level%5===0&&!bossWave){
+    // Boss wave check using level config
+    const cfg = getLevelConfig();
+    const bossEvery = cfg.bossEvery;
+    if(bossEvery>0 && level%bossEvery===0&&!bossWave){
         bossWave=true;
-        showMsg("👾 BOSS WAVE! Quantum computers attacking!");
+        showMsg("👾 BOSS WAVE " + cfg.name + "! Quantum computers attacking!");
         document.getElementById("wave").textContent="👾 BOSS!";
-    } else if(level%5!==0&&bossWave){
+    } else if(!(bossEvery>0&&level%bossEvery===0)&&bossWave){
         bossWave=false;
     }
 
@@ -235,10 +237,14 @@ function gameLoop(){
                 score+=pts;caught++;
                 showMsg("✅ Caught "+b.label+"! +"+pts+(doubleActive?" (2x!)":""));
                 showFact(b.fact);
-                // Level up
-                if(caught%(10+level*2)===0){
+                // Level up every 8 catches
+                if(caught%8===0 && level<12){
                     level++;
-                    showMsg("🎉 Level "+level+"! Blocks falling faster!");
+                    const newCfg = getLevelConfig();
+                    dropRate = newCfg.dropRate;
+                    showMsg("🎉 Level "+level+": "+newCfg.name+"! "+newCfg.desc);
+                } else if(level>=12 && caught%8===0){
+                    showMsg("🏆 MAX LEVEL! Quantum Guardian achieved! Score: "+score);
                 }
                 // Green sparkle
                 for(let i=0;i<8;i++) particles.push({
@@ -508,7 +514,20 @@ const ENEMY_TYPES = [
 ];
 
 const MAZES = [
-    // Level 1 - Simple
+    // Level 1 - Very Simple
+    [
+        [1,1,1,1,1,1,1,1,1,1,1],
+        [1,0,0,0,0,0,0,0,0,0,1],
+        [1,0,1,1,1,0,1,1,1,0,1],
+        [1,0,1,0,0,0,0,0,1,0,1],
+        [1,0,1,0,1,1,1,0,1,0,1],
+        [1,0,0,0,0,0,0,0,0,0,1],
+        [1,0,1,1,1,0,1,1,1,0,1],
+        [1,0,0,0,0,0,0,0,0,0,1],
+        [1,0,1,1,1,1,1,1,1,0,1],
+        [1,1,1,1,1,1,1,1,1,1,1],
+    ],
+    // Level 2 - Simple
     [
         [1,1,1,1,1,1,1,1,1,1,1],
         [1,0,0,0,1,0,0,0,0,0,1],
@@ -521,7 +540,7 @@ const MAZES = [
         [1,0,1,1,1,1,1,1,1,0,1],
         [1,1,1,1,1,1,1,1,1,1,1],
     ],
-    // Level 2 - Medium
+    // Level 3 - Easy with 2 enemies
     [
         [1,1,1,1,1,1,1,1,1,1,1],
         [1,0,0,0,0,0,1,0,0,0,1],
@@ -534,17 +553,121 @@ const MAZES = [
         [1,0,1,1,1,1,1,0,1,0,1],
         [1,1,1,1,1,1,1,1,1,1,1],
     ],
-    // Level 3 - Hard with boss
+    // Level 4 - Medium
     [
         [1,1,1,1,1,1,1,1,1,1,1],
         [1,0,0,0,1,0,0,0,1,0,1],
         [1,1,1,0,1,0,1,0,1,0,1],
         [1,0,0,0,0,0,1,0,0,0,1],
+        [1,0,1,1,1,0,1,1,1,0,1],
+        [1,0,0,0,1,0,0,0,1,0,1],
+        [1,1,1,0,1,1,1,0,1,0,1],
+        [1,0,0,0,0,0,0,0,0,0,1],
         [1,0,1,1,1,1,1,1,1,0,1],
+        [1,1,1,1,1,1,1,1,1,1,1],
+    ],
+    // Level 5 - Medium with boss
+    [
+        [1,1,1,1,1,1,1,1,1,1,1],
+        [1,0,0,0,1,0,0,0,1,0,1],
+        [1,0,1,0,1,0,1,0,1,0,1],
+        [1,0,1,0,0,0,1,0,0,0,1],
+        [1,0,1,1,1,0,1,1,1,0,1],
         [1,0,0,0,0,0,0,0,1,0,1],
-        [1,1,1,1,1,0,1,0,1,0,1],
+        [1,1,1,1,0,1,0,0,1,0,1],
+        [1,0,0,0,0,1,0,1,0,0,1],
+        [1,0,1,1,0,0,0,1,1,0,1],
+        [1,1,1,1,1,1,1,1,1,1,1],
+    ],
+    // Level 6 - Hard
+    [
+        [1,1,1,1,1,1,1,1,1,1,1],
+        [1,0,1,0,0,0,1,0,0,0,1],
+        [1,0,1,0,1,0,1,0,1,0,1],
+        [1,0,0,0,1,0,0,0,1,0,1],
+        [1,1,1,0,1,1,1,0,1,1,1],
+        [1,0,0,0,0,0,0,0,0,0,1],
+        [1,0,1,1,1,0,1,1,1,0,1],
+        [1,0,0,0,1,0,0,0,1,0,1],
+        [1,1,1,0,1,1,1,0,0,0,1],
+        [1,1,1,1,1,1,1,1,1,1,1],
+    ],
+    // Level 7 - Hard with 3 enemies
+    [
+        [1,1,1,1,1,1,1,1,1,1,1],
         [1,0,0,0,1,0,1,0,0,0,1],
-        [1,0,1,0,0,0,1,1,1,0,1],
+        [1,0,1,0,1,0,1,0,1,0,1],
+        [1,0,1,0,0,0,0,0,1,0,1],
+        [1,0,1,1,1,1,1,0,1,0,1],
+        [1,0,0,0,0,0,1,0,0,0,1],
+        [1,1,0,1,0,0,1,1,1,0,1],
+        [1,0,0,1,0,1,0,0,0,0,1],
+        [1,0,1,1,0,1,0,1,1,0,1],
+        [1,1,1,1,1,1,1,1,1,1,1],
+    ],
+    // Level 8 - Expert
+    [
+        [1,1,1,1,1,1,1,1,1,1,1],
+        [1,0,1,0,0,0,0,0,1,0,1],
+        [1,0,1,0,1,1,1,0,1,0,1],
+        [1,0,0,0,1,0,0,0,0,0,1],
+        [1,1,1,0,1,0,1,1,1,1,1],
+        [1,0,0,0,0,0,1,0,0,0,1],
+        [1,0,1,1,1,0,1,0,1,0,1],
+        [1,0,0,0,1,0,0,0,1,0,1],
+        [1,1,1,0,1,1,1,0,0,0,1],
+        [1,1,1,1,1,1,1,1,1,1,1],
+    ],
+    // Level 9 - Expert with boss
+    [
+        [1,1,1,1,1,1,1,1,1,1,1],
+        [1,0,0,0,1,0,0,0,0,0,1],
+        [1,1,1,0,1,1,1,1,1,0,1],
+        [1,0,0,0,0,0,0,0,1,0,1],
+        [1,0,1,1,1,1,1,0,1,0,1],
+        [1,0,1,0,0,0,1,0,0,0,1],
+        [1,0,1,0,1,0,1,1,1,0,1],
+        [1,0,0,0,1,0,0,0,0,0,1],
+        [1,1,1,0,1,1,1,1,1,0,1],
+        [1,1,1,1,1,1,1,1,1,1,1],
+    ],
+    // Level 10 - Master
+    [
+        [1,1,1,1,1,1,1,1,1,1,1],
+        [1,0,1,0,1,0,1,0,1,0,1],
+        [1,0,1,0,1,0,1,0,1,0,1],
+        [1,0,0,0,0,0,0,0,0,0,1],
+        [1,1,1,1,0,1,0,1,1,1,1],
+        [1,0,0,0,0,1,0,0,0,0,1],
+        [1,0,1,1,0,1,0,1,1,0,1],
+        [1,0,0,1,0,0,0,1,0,0,1],
+        [1,1,0,1,1,1,0,1,0,0,1],
+        [1,1,1,1,1,1,1,1,1,1,1],
+    ],
+    // Level 11 - Master with 4 enemies
+    [
+        [1,1,1,1,1,1,1,1,1,1,1],
+        [1,0,0,0,0,1,0,0,0,0,1],
+        [1,0,1,1,0,1,0,1,1,0,1],
+        [1,0,1,0,0,0,0,0,1,0,1],
+        [1,0,1,0,1,1,1,0,1,0,1],
+        [1,0,0,0,1,0,1,0,0,0,1],
+        [1,1,0,0,1,0,1,0,0,1,1],
+        [1,0,0,1,0,0,0,1,0,0,1],
+        [1,0,0,1,1,1,0,1,0,0,1],
+        [1,1,1,1,1,1,1,1,1,1,1],
+    ],
+    // Level 12 - Grandmaster boss
+    [
+        [1,1,1,1,1,1,1,1,1,1,1],
+        [1,0,0,1,0,0,0,1,0,0,1],
+        [1,0,1,1,0,1,0,1,1,0,1],
+        [1,0,0,0,0,1,0,0,0,0,1],
+        [1,1,1,0,1,1,1,0,1,1,1],
+        [1,0,0,0,0,0,0,0,0,0,1],
+        [1,0,1,0,1,0,1,0,1,0,1],
+        [1,0,1,0,1,0,1,0,1,0,1],
+        [1,0,0,0,0,0,0,0,0,0,1],
         [1,1,1,1,1,1,1,1,1,1,1],
     ],
 ];
@@ -588,8 +711,8 @@ function loadLevel() {
     particles = [];
     collected = 0;
 
-    // Place keys based on level
-    const keyCount = 3 + (level-1);
+    // Place keys based on level — more keys at higher levels
+    const keyCount = Math.min(3 + Math.floor(level/2), 7);
     keys = [];
     const keyTypes = KEY_FACTS.slice(0, Math.min(level+1, KEY_FACTS.length));
     const positions = [{x:8,y:1},{x:5,y:3},{x:8,y:7},{x:3,y:7},{x:9,y:5}];
@@ -598,9 +721,9 @@ function loadLevel() {
         keys.push({...positions[i], collected:false, ...kType});
     }
 
-    // Spawn enemies based on level
-    const enemyCount = 1 + Math.floor(level/2);
-    const hasBoss = level >= 3;
+    // Spawn enemies based on level (more per level)
+    const enemyCount = Math.min(1 + Math.floor(level/2), 5);
+    const hasBoss = level >= 3 && level % 2 === 1;
     for(let i=0;i<enemyCount;i++){
         const eType = i===0 && hasBoss ? ENEMY_TYPES[3] : ENEMY_TYPES[Math.floor(Math.random()*3)];
         enemies.push({
@@ -663,8 +786,9 @@ function checkCollect() {
             if(collected===keys.length) {
                 running=false;
                 showMsg("🎉 Level " + level + " complete! Score: " + score);
-                document.getElementById("next-btn").disabled = false;
-                if(level>=3) showMsg("🏆 Master achieved! Score: " + score);
+                document.getElementById("next-btn").disabled = level >= 12;
+                if(level>=12) showMsg("🏆 GRANDMASTER! All 12 levels complete! Score: " + score);
+                else if(level>=9) showMsg("🔥 Expert level! Score: " + score);
             }
         }
     });
@@ -1385,9 +1509,29 @@ const ZOMBIES = [
     {{label:"MD5💥",   emoji:"🧟",   color:"#ec4899", hp:{int(diff['hp']*0.6)}, pts:18, fact:"MD5 has dangerous collision attacks!"}},
 ];
 
-const ZOMBIE_SPEED = {diff['speed']};
-const SPAWN_RATE = {diff['rate']};
-const MAX_WAVES = {diff['waves']};
+const BASE_SPEED = {diff['speed']};
+const BASE_RATE = {diff['rate']};
+const MAX_WAVES = 12;
+
+// 12 wave configs
+const WAVE_CONFIG = [
+    {{wave:1,  speed:BASE_SPEED*0.7, rate:Math.floor(BASE_RATE*1.4), count:4,  boss:false, name:"First Wave"}},
+    {{wave:2,  speed:BASE_SPEED*0.8, rate:Math.floor(BASE_RATE*1.3), count:5,  boss:false, name:"Getting Warmer"}},
+    {{wave:3,  speed:BASE_SPEED*0.9, rate:Math.floor(BASE_RATE*1.2), count:6,  boss:true,  name:"Boss Wave!"}},
+    {{wave:4,  speed:BASE_SPEED*1.0, rate:Math.floor(BASE_RATE*1.1), count:7,  boss:false, name:"Speed Up"}},
+    {{wave:5,  speed:BASE_SPEED*1.1, rate:Math.floor(BASE_RATE*1.0), count:8,  boss:false, name:"Halfway There"}},
+    {{wave:6,  speed:BASE_SPEED*1.2, rate:Math.floor(BASE_RATE*0.9), count:9,  boss:true,  name:"Boss Strikes!"}},
+    {{wave:7,  speed:BASE_SPEED*1.3, rate:Math.floor(BASE_RATE*0.85),count:10, boss:false, name:"Expert Territory"}},
+    {{wave:8,  speed:BASE_SPEED*1.4, rate:Math.floor(BASE_RATE*0.8), count:11, boss:false, name:"Quantum Surge"}},
+    {{wave:9,  speed:BASE_SPEED*1.5, rate:Math.floor(BASE_RATE*0.75),count:12, boss:true,  name:"Super Boss!"}},
+    {{wave:10, speed:BASE_SPEED*1.6, rate:Math.floor(BASE_RATE*0.7), count:14, boss:false, name:"Almost There"}},
+    {{wave:11, speed:BASE_SPEED*1.7, rate:Math.floor(BASE_RATE*0.65),count:16, boss:true,  name:"Final Boss!"}},
+    {{wave:12, speed:BASE_SPEED*1.8, rate:Math.floor(BASE_RATE*0.6), count:18, boss:true,  name:"QUANTUM APOCALYPSE!"}},
+];
+
+function getWaveConfig() {{
+    return WAVE_CONFIG[Math.min(wave-1, WAVE_CONFIG.length-1)];
+}}
 
 let player = {{x:W/2, y:H-55, w:40, h:40, spd:6}};
 let bullets=[], zombies=[], explosions=[], stars=[];
@@ -1423,7 +1567,7 @@ function updateHUD() {{
 function startGame() {{
     bullets=[]; zombies=[]; explosions=[];
     zhp=100; score=0; wave=1; killed=0; spawnT=0; spawnCount=0;
-    waveSize=6+wave*2; running=true; player.x=W/2;
+    waveSize=WAVE_CONFIG[0].count; running=true; player.x=W/2;
     updateHUD();
     showMsg("🧟 Wave 1 incoming! Blast the quantum zombies!");
     cancelAnimationFrame(frameId);
@@ -1456,14 +1600,16 @@ document.addEventListener("keydown", e=>{{
 document.addEventListener("keyup", e=>{{keys[e.key]=false;}});
 
 function spawnZombie() {{
-    const z=ZOMBIES[Math.floor(Math.random()*ZOMBIES.length)];
-    const hpBoost=1+(wave-1)*0.2;
+    const wcfg = getWaveConfig();
+    const isBoss = wcfg.boss && zombies.length===0 && spawnCount===0;
+    const z = isBoss ? ZOMBIES[ZOMBIES.length-1] : ZOMBIES[Math.floor(Math.random()*(ZOMBIES.length-1))];
+    const hpBoost=1+(wave-1)*0.15;
     zombies.push({{
         x:Math.random()*(W-60)+30, y:-40,
-        w:38, h:38,
-        hp:Math.floor(z.hp*hpBoost),
-        maxHp:Math.floor(z.hp*hpBoost),
-        spd:ZOMBIE_SPEED+(wave-1)*0.1,
+        w:isBoss?52:38, h:isBoss?52:38,
+        hp:Math.floor(z.hp*hpBoost*(isBoss?3:1)),
+        maxHp:Math.floor(z.hp*hpBoost*(isBoss?3:1)),
+        spd:wcfg.speed,
         wobble:Math.random()*Math.PI*2,
         label:z.label, emoji:z.emoji,
         color:z.color, pts:z.pts*wave,
@@ -1549,13 +1695,14 @@ function loop() {{
     if(spawnCount>=waveSize&&zombies.length===0){{
         if(wave>=MAX_WAVES){{
             running=false;
-            showMsg("🏆 YOU WIN! All "+MAX_WAVES+" waves cleared! Score: "+score);
+            showMsg("🏆 QUANTUM GUARDIAN! All 12 waves cleared! Score: "+score);
         }} else {{
             wave++;
-            waveSize=6+wave*2;
+            const nextCfg = getWaveConfig();
+            waveSize=nextCfg.count;
             spawnCount=0; spawnT=0;
-            document.getElementById("zwave").textContent=wave;
-            showMsg("✅ Wave "+(wave-1)+" cleared! Wave "+wave+" incoming... +50 bonus bits!");
+            document.getElementById("zwave").textContent=wave+"/12";
+            showMsg("✅ Wave "+(wave-1)+" cleared! Wave "+wave+": "+nextCfg.name+" incoming!");
         }}
     }}
 
