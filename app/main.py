@@ -14,6 +14,7 @@ from modules.teacher_dashboard import render_teacher_dashboard
 from utils.security import sanitize_input, get_level, get_level_progress, get_next_level_xp
 from modules.progress_tracker import render_full_progress_page, mark_complete, render_progress_card
 from modules.payments import render_pricing_page
+from modules.ai_tutor import render_ai_tutor
 # ── Page config ───────────────────────────────────────────────────────────────
 st.set_page_config(
     page_title="QuantumVault Academy",
@@ -54,6 +55,7 @@ def sidebar():
             "👨‍🏫 Teacher Dashboard",
             "📊 My Progress",
             "💎 Pricing & Plans",
+            "🤖 AI Tutor",
 
         ],
     )
@@ -131,6 +133,8 @@ def main():
         render_full_progress_page()
     elif "Pricing" in level:
         render_pricing_page()
+    elif "AI Tutor" in level:
+        render_ai_tutor()
 
 if __name__ == "__main__":
     main()
