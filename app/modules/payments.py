@@ -23,15 +23,16 @@ def get_stripe_key():
 PLANS = {
     "classroom": {
         "name": "Classroom",
-        "price": 29900,
-        "price_display": "$299",
+        "price": 49900,
+        "price_display": "$499",
         "period": "/year",
         "description": "Single teacher, one grade level",
         "features": [
             "One grade level module",
             "Up to 35 students",
-            "All mini games",
+            "All mini games and AI Tutor",
             "Leaderboard access",
+            "Progress tracking dashboard",
             "Email support",
             "30-day free trial",
         ],
@@ -41,40 +42,80 @@ PLANS = {
     },
     "school": {
         "name": "School",
-        "price": 99900,
-        "price_display": "$999",
+        "price": 199900,
+        "price_display": "$1,999",
         "period": "/year",
         "description": "Whole school, all three grade levels",
         "features": [
-            "All three grade modules",
+            "All three grade modules (K-12)",
             "Unlimited students",
-            "All mini games",
+            "All mini games and AI Tutor",
             "School-wide leaderboard",
-            "Teacher dashboard",
+            "Teacher dashboard with analytics",
             "Priority support",
             "Custom school branding",
+            "NSA GenCyber grant eligible",
             "30-day free trial",
         ],
         "color": "#7c6dfa",
         "emoji": "🏫",
         "popular": True,
     },
+    "per_student": {
+        "name": "Per Student",
+        "price": 500,
+        "price_display": "$5",
+        "period": "/student/year",
+        "description": "Flexible per-student pricing (min 30 students)",
+        "features": [
+            "All three grade modules",
+            "All mini games and AI Tutor",
+            "School-wide leaderboard",
+            "Teacher dashboard",
+            "Minimum 30 students ($150/yr)",
+            "Scales with your school",
+            "30-day free trial",
+        ],
+        "color": "#10b981",
+        "emoji": "🎓",
+        "popular": False,
+    },
+    "grant": {
+        "name": "Grant Package",
+        "price": 249900,
+        "price_display": "$2,499",
+        "period": "/year",
+        "description": "Full school plus grant writing support",
+        "features": [
+            "Everything in School plan",
+            "Grant writing assistance letter",
+            "FERPA compliance documentation",
+            "Dedicated onboarding session",
+            "NSA GenCyber application support",
+            "Custom implementation plan",
+            "Priority dedicated support",
+        ],
+        "color": "#f59e0b",
+        "emoji": "📝",
+        "popular": False,
+    },
     "district": {
         "name": "District",
         "price": None,
-        "price_display": "Custom",
-        "period": "",
+        "price_display": "$15,000+",
+        "period": "/year",
         "description": "Multiple schools, centralized admin",
         "features": [
-            "Everything in School",
+            "Everything in Grant Package",
             "Unlimited schools",
             "District admin dashboard",
             "SSO integration",
-            "FERPA compliance docs",
+            "Custom FERPA compliance docs",
             "Dedicated account manager",
-            "Grant writing assistance",
+            "White-label option available",
+            "Custom pricing $15,000-50,000/yr",
         ],
-        "color": "#10b981",
+        "color": "#ec4899",
         "emoji": "🌐",
         "popular": False,
     },
@@ -160,11 +201,16 @@ def render_pricing_page():
     with col2:
         plan_choice = st.selectbox(
             "Select your plan",
-            ["classroom", "school"],
-            format_func=lambda x: PLANS[x]["emoji"] + " " + PLANS[x]["name"] + " — " + PLANS[x]["price_display"] + "/year",
+            ["classroom", "school", "per_student", "grant", "district"],
+            format_func=lambda x: PLANS[x]["emoji"] + " " + PLANS[x]["name"] + " — " + PLANS[x]["price_display"],
             key="payment_plan"
         )
-        st.info("District plans are custom priced. Select School and we will contact you.")
+        if plan_choice == "district":
+            st.info("District plans are custom priced at $15,000-50,000/yr. Select District and we will contact you within 24 hours.")
+        elif plan_choice == "per_student":
+            st.info("Per-student pricing: $5/student/yr with a minimum of 30 students ($150/yr minimum).")
+        elif plan_choice == "grant":
+            st.info("Grant Package includes grant writing assistance for NSA GenCyber and other cybersecurity education grants.")
 
     st.markdown("---")
 
