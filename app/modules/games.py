@@ -11,189 +11,408 @@ from utils.security import sanitize_input
 
 
 def render_falling_blocks():
-    """K-5: Falling Blocks — catch quantum-safe locks, avoid broken ones."""
-    st.subheader("🧱 Quantum Lock Drop!")
+    """K-5: Enhanced Falling Blocks with better graphics, power-ups, boss waves, PQC education."""
+    st.subheader("🧱 Quantum Lock Drop — Enhanced!")
     st.markdown(
-        "Catch the **quantum-safe locks** 🔐 and avoid the **broken locks** 💀 "
-        "Use ← → arrow keys or tap the buttons to move your basket!"
+        "Catch **quantum-safe locks** and avoid **broken crypto**! "
+        "Collect power-ups for special abilities. Boss waves every 5 levels!"
     )
 
-    components.html("""
-    <style>
-        #gameCanvas { border: 2px solid #4f46e5; border-radius: 12px; display: block; margin: 0 auto; background: #0f172a; }
-        .game-wrap { text-align: center; font-family: sans-serif; }
-        .score-bar { display: flex; justify-content: space-between; max-width: 400px; margin: 8px auto; color: #a5b4fc; font-size: 14px; font-weight: bold; }
-        .btn-row { display: flex; justify-content: center; gap: 16px; margin: 10px; }
-        .btn { padding: 10px 28px; border-radius: 8px; border: none; cursor: pointer; font-size: 18px; font-weight: bold; background: #4f46e5; color: white; }
-        .btn:active { background: #3730a3; }
-        #msg { font-size: 15px; color: #34d399; min-height: 22px; margin: 4px; }
-    </style>
-    <div class="game-wrap">
-        <div class="score-bar">
-            <span>⭐ Score: <span id="score">0</span></span>
-            <span>❤️ Lives: <span id="lives">3</span></span>
-            <span>Level: <span id="level">1</span></span>
-        </div>
-        <canvas id="gameCanvas" width="400" height="480"></canvas>
-        <div id="msg"></div>
-        <div class="btn-row">
-            <button class="btn" onclick="moveLeft()">◀</button>
-            <button class="btn" onclick="startGame()" id="startBtn">▶ Start</button>
-            <button class="btn" onclick="moveRight()">▶</button>
-        </div>
+    with st.expander("📚 What to catch vs avoid!", expanded=False):
+        col1, col2 = st.columns(2)
+        with col1:
+            st.success("✅ **CATCH THESE — Quantum Safe!**")
+            st.info("🔐 Kyber — ML-KEM FIPS 203\n✍️ Dilithium — ML-DSA FIPS 204\n🌲 SPHINCS+ — SLH-DSA FIPS 205\n🦅 Falcon — FN-DSA FIPS 206\n🏗️ Lattice — Foundation of PQC")
+        with col2:
+            st.error("❌ **AVOID THESE — Quantum Vulnerable!**")
+            st.info("💀 RSA — Broken by Shor Algorithm\n☠️ ECC — Also broken by Shor\n⚠️ DES — Classically broken 1999\n💥 MD5 — Collision attacks\n🔓 RC4 — Stream cipher broken")
+        st.warning("⚡ **POWER-UPS** — Catch these for special abilities!\n🛡️ Shield — Protect from one bad block\n⏰ Slow — Slow down all falling blocks\n💎 Double — Double points for 10 seconds")
+
+    import streamlit.components.v1 as components_fb
+    components_fb.html("""
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:#0f172a;font-family:sans-serif;color:white;}
+#fb-wrap{display:flex;flex-direction:column;align-items:center;padding:10px;}
+.fb-hud{display:flex;justify-content:space-between;width:420px;margin-bottom:8px;gap:5px;}
+.hud-box{background:#1e293b;border:1px solid #334155;border-radius:8px;
+padding:5px 8px;font-size:11px;font-weight:bold;color:#a5b4fc;flex:1;text-align:center;}
+#fbCanvas{border:2px solid #4f46e5;border-radius:12px;display:block;}
+.fb-btns{display:flex;gap:6px;margin:8px 0;justify-content:center;}
+.fb-btn{padding:8px 18px;border-radius:8px;border:none;cursor:pointer;
+font-size:13px;font-weight:bold;color:white;}
+.fb-btn:active{opacity:0.8;}
+#fb-msg{font-size:12px;color:#34d399;min-height:18px;margin:4px;text-align:center;}
+#fb-fact{background:rgba(79,70,229,0.15);border:1px solid rgba(79,70,229,0.4);
+border-radius:8px;padding:6px 12px;margin:4px;font-size:11px;color:#a5b4fc;
+max-width:420px;display:none;text-align:center;}
+.power-bar{display:flex;gap:6px;justify-content:center;margin:4px;}
+.power-slot{width:36px;height:36px;background:#1e293b;border:1px solid #334155;
+border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:18px;}
+.power-slot.active{border-color:#f59e0b;background:rgba(245,158,11,0.2);}
+</style>
+</head>
+<body>
+<div id="fb-wrap">
+    <div class="fb-hud">
+        <div class="hud-box">⭐ Score<br><span id="score">0</span></div>
+        <div class="hud-box">❤️ Lives<br><span id="lives">3</span></div>
+        <div class="hud-box">📊 Level<br><span id="level">1</span></div>
+        <div class="hud-box">🎯 Caught<br><span id="caught">0</span></div>
+        <div class="hud-box">🌊 Wave<br><span id="wave">Normal</span></div>
     </div>
-    <script>
-    const canvas = document.getElementById('gameCanvas');
-    const ctx = canvas.getContext('2d');
+    <canvas id="fbCanvas" width="420" height="480"></canvas>
+    <div id="fb-msg">Press Start to play!</div>
+    <div id="fb-fact"></div>
+    <div class="power-bar">
+        <div class="power-slot" id="pw-shield" title="Shield">🛡️</div>
+        <div class="power-slot" id="pw-slow" title="Slow">⏰</div>
+        <div class="power-slot" id="pw-double" title="Double Points">💎</div>
+    </div>
+    <div class="fb-btns">
+        <button class="fb-btn" style="background:#4f46e5" onclick="moveLeft()">◀</button>
+        <button class="fb-btn" style="background:#10b981" onclick="startGame()">▶ Start</button>
+        <button class="fb-btn" style="background:#4f46e5" onclick="moveRight()">▶</button>
+    </div>
+</div>
+<script>
+const canvas = document.getElementById("fbCanvas");
+const ctx = canvas.getContext("2d");
+const W=420, H=480;
 
-    const SAFE = [
-        {label:'Kyber🔐', color:'#10b981', safe:true},
-        {label:'Dilithium🛡️', color:'#3b82f6', safe:true},
-        {label:'SPHINCS+✅', color:'#8b5cf6', safe:true},
-        {label:'Lattice🏗️', color:'#06b6d4', safe:true},
-    ];
-    const UNSAFE = [
-        {label:'RSA💀', color:'#ef4444', safe:false},
-        {label:'ECC☠️', color:'#f97316', safe:false},
-        {label:'DES⚠️', color:'#eab308', safe:false},
-    ];
+const SAFE_BLOCKS = [
+    {label:"Kyber 🔐",   color:"#10b981", safe:true,  pts:15, fact:"ML-KEM FIPS 203 — NIST standard key encapsulation!"},
+    {label:"Dilithium ✍️",color:"#3b82f6", safe:true,  pts:20, fact:"ML-DSA FIPS 204 — Quantum-safe digital signatures!"},
+    {label:"SPHINCS+ 🌲", color:"#8b5cf6", safe:true,  pts:25, fact:"SLH-DSA FIPS 205 — Hash-based backup signature!"},
+    {label:"Falcon 🦅",   color:"#f59e0b", safe:true,  pts:30, fact:"FN-DSA FIPS 206 — Smallest quantum-safe signature!"},
+    {label:"Lattice 🏗️",  color:"#06b6d4", safe:true,  pts:20, fact:"Lattice math stumps quantum computers!"},
+];
 
-    let basket = {x: 160, y: 440, w: 80, h: 20, speed: 28};
-    let blocks = [];
-    let score = 0, lives = 3, level = 1, running = false;
-    let frameCount = 0, dropRate = 90;
+const UNSAFE_BLOCKS = [
+    {label:"RSA 💀",  color:"#ef4444", safe:false, pts:-1, fact:"RSA broken by Shor Algorithm on quantum computers!"},
+    {label:"ECC ☠️",  color:"#f97316", safe:false, pts:-1, fact:"ECC also broken by Shor Algorithm!"},
+    {label:"DES ⚠️",  color:"#eab308", safe:false, pts:-1, fact:"DES was classically broken back in 1999!"},
+    {label:"MD5 💥",  color:"#ec4899", safe:false, pts:-1, fact:"MD5 has dangerous collision attacks!"},
+    {label:"RC4 🔓",  color:"#a855f7", safe:false, pts:-1, fact:"RC4 stream cipher is completely broken!"},
+];
 
-    function startGame() {
-        score = 0; lives = 3; level = 1;
-        blocks = []; running = true; frameCount = 0; dropRate = 90;
-        basket.x = 160;
-        document.getElementById('startBtn').textContent = '🔄 Restart';
-        document.getElementById('msg').textContent = '';
-        loop();
+const POWERUPS = [
+    {label:"SHIELD 🛡️", color:"#fbbf24", type:"shield", fact:"Shield protects you from one bad block!"},
+    {label:"SLOW ⏰",    color:"#60a5fa", type:"slow",   fact:"Slow motion — more time to react!"},
+    {label:"2x 💎",     color:"#34d399", type:"double", fact:"Double points — catch quantum-safe blocks fast!"},
+];
+
+const BOSS_BLOCKS = [
+    {label:"QUANTUM 💻", color:"#dc2626", safe:false, pts:-1, boss:true, fact:"Full quantum computer — the ultimate threat to RSA!"},
+];
+
+let basket = {x:W/2-50, y:H-40, w:100, h:22, speed:30};
+let blocks=[], particles=[], stars=[];
+let score=0, lives=3, level=1, caught=0, running=false;
+let frameCount=0, dropRate=80;
+let shield=false, slowActive=false, doubleActive=false;
+let shieldTimer=0, slowTimer=0, doubleTimer=0;
+let bossWave=false;
+
+// Generate stars
+for(let i=0;i<50;i++) stars.push({x:Math.random()*W,y:Math.random()*H,r:Math.random()*1.5+0.3,twinkle:Math.random()*Math.PI*2});
+
+function showFact(fact){
+    const f=document.getElementById("fb-fact");
+    f.textContent="📚 "+fact;f.style.display="block";
+    clearTimeout(window._ft);
+    window._ft=setTimeout(()=>{f.style.display="none";},3500);
+}
+
+function showMsg(msg){document.getElementById("fb-msg").textContent=msg;}
+
+function updateHUD(){
+    document.getElementById("score").textContent=score;
+    document.getElementById("lives").textContent="❤️".repeat(Math.max(0,lives));
+    document.getElementById("level").textContent=level;
+    document.getElementById("caught").textContent=caught;
+    document.getElementById("wave").textContent=bossWave?"👾 BOSS!":"Normal";
+
+    // Power-up indicators
+    document.getElementById("pw-shield").className="power-slot"+(shield?" active":"");
+    document.getElementById("pw-slow").className="power-slot"+(slowActive?" active":"");
+    document.getElementById("pw-double").className="power-slot"+(doubleActive?" active":"");
+}
+
+function startGame(){
+    blocks=[];particles=[];
+    score=0;lives=3;level=1;caught=0;running=true;
+    frameCount=0;dropRate=80;bossWave=false;
+    shield=false;slowActive=false;doubleActive=false;
+    basket.x=W/2-basket.w/2;
+    updateHUD();
+    showMsg("Catch quantum-safe blocks! Avoid broken crypto!");
+    cancelAnimationFrame(window._fbFrame);
+    gameLoop();
+}
+
+function moveLeft(){basket.x=Math.max(0,basket.x-basket.speed);}
+function moveRight(){basket.x=Math.min(W-basket.w,basket.x+basket.speed);}
+
+document.addEventListener("keydown",e=>{
+    if(e.key==="ArrowLeft")moveLeft();
+    if(e.key==="ArrowRight")moveRight();
+});
+
+function spawnBlock(){
+    const isBoss = bossWave;
+    let blockType;
+    const r=Math.random();
+    if(isBoss){
+        blockType={...BOSS_BLOCKS[0]};
+    } else if(r<0.08){
+        blockType={...POWERUPS[Math.floor(Math.random()*POWERUPS.length)],isPowerup:true};
+    } else if(r<0.55){
+        blockType={...SAFE_BLOCKS[Math.floor(Math.random()*SAFE_BLOCKS.length)]};
+    } else {
+        blockType={...UNSAFE_BLOCKS[Math.floor(Math.random()*UNSAFE_BLOCKS.length)]};
     }
 
-    function spawnBlock() {
-        const pool = Math.random() < 0.55 ? SAFE : UNSAFE;
-        const type = pool[Math.floor(Math.random() * pool.length)];
-        blocks.push({
-            x: Math.floor(Math.random() * 340) + 10,
-            y: -30, w: 72, h: 32,
-            speed: 2 + level * 0.5,
-            label: type.label, color: type.color, safe: type.safe
-        });
-    }
-
-    function moveLeft()  { basket.x = Math.max(0, basket.x - basket.speed); }
-    function moveRight() { basket.x = Math.min(canvas.width - basket.w, basket.x + basket.speed); }
-
-    document.addEventListener('keydown', e => {
-        if (e.key === 'ArrowLeft')  moveLeft();
-        if (e.key === 'ArrowRight') moveRight();
+    blocks.push({
+        x:Math.floor(Math.random()*(W-80))+10,
+        y:-40, w:80, h:34,
+        speed:(2+level*0.3)*(slowActive?0.4:1)*(isBoss?1.5:1),
+        ...blockType
     });
+}
 
-    function loop() {
-        if (!running) return;
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+function gameLoop(){
+    window._fbFrame=requestAnimationFrame(gameLoop);
+    if(!running)return;
 
-        // Background grid
-        ctx.strokeStyle = 'rgba(79,70,229,0.08)';
-        for (let i = 0; i < canvas.width; i += 40) {
-            ctx.beginPath(); ctx.moveTo(i,0); ctx.lineTo(i,canvas.height); ctx.stroke();
-        }
-        for (let i = 0; i < canvas.height; i += 40) {
-            ctx.beginPath(); ctx.moveTo(0,i); ctx.lineTo(canvas.width,i); ctx.stroke();
-        }
+    // Power-up timers
+    if(shield&&shieldTimer-->0===false){shield=false;}
+    if(slowActive&&--slowTimer<=0){slowActive=false;}
+    if(doubleActive&&--doubleTimer<=0){doubleActive=false;}
 
-        frameCount++;
-        if (frameCount % dropRate === 0) {
-            spawnBlock();
-            if (frameCount % (dropRate * 5) === 0 && dropRate > 40) dropRate -= 5;
-        }
+    frameCount++;
+    const effectiveRate=Math.max(25,dropRate-(level-1)*5);
+    if(frameCount%effectiveRate===0) spawnBlock();
 
-        // Draw basket
-        ctx.fillStyle = '#4f46e5';
-        ctx.beginPath();
-        ctx.roundRect(basket.x, basket.y, basket.w, basket.h, 6);
-        ctx.fill();
-        ctx.fillStyle = 'white';
-        ctx.font = 'bold 11px sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText('🧺 AGENT', basket.x + basket.w/2, basket.y + 14);
+    // Boss wave check
+    if(level%5===0&&!bossWave){
+        bossWave=true;
+        showMsg("👾 BOSS WAVE! Quantum computers attacking!");
+        document.getElementById("wave").textContent="👾 BOSS!";
+    } else if(level%5!==0&&bossWave){
+        bossWave=false;
+    }
 
-        // Update and draw blocks
-        blocks = blocks.filter(b => {
-            b.y += b.speed;
+    // Update blocks
+    blocks=blocks.filter(b=>{
+        b.y+=b.speed*(slowActive?0.4:1);
 
-            // Collision with basket
-            if (b.y + b.h >= basket.y && b.y <= basket.y + basket.h &&
-                b.x + b.w >= basket.x && b.x <= basket.x + basket.w) {
-                if (b.safe) {
-                    score += 10 * level;
-                    level = Math.floor(score / 100) + 1;
-                    document.getElementById('msg').textContent = '✅ +' + (10*level) + ' Quantum Safe!';
+        // Collision with basket
+        if(b.y+b.h>=basket.y&&b.y<=basket.y+basket.h&&
+           b.x+b.w>=basket.x&&b.x<=basket.x+basket.w){
+
+            if(b.isPowerup){
+                // Collect power-up
+                if(b.type==="shield"){shield=true;shieldTimer=300;}
+                if(b.type==="slow"){slowActive=true;slowTimer=300;}
+                if(b.type==="double"){doubleActive=true;doubleTimer=300;}
+                showMsg("⚡ Power-up: "+b.label+"!");
+                showFact(b.fact);
+                // Sparkle
+                for(let i=0;i<12;i++) particles.push({
+                    x:b.x+b.w/2,y:b.y,
+                    vx:(Math.random()-0.5)*6,vy:-Math.random()*5,
+                    color:b.color,alpha:1,r:4
+                });
+                return false;
+            }
+
+            if(b.safe){
+                const pts=(b.pts||15)*(doubleActive?2:1)*Math.ceil(level/2);
+                score+=pts;caught++;
+                showMsg("✅ Caught "+b.label+"! +"+pts+(doubleActive?" (2x!)":""));
+                showFact(b.fact);
+                // Level up
+                if(caught%(10+level*2)===0){
+                    level++;
+                    showMsg("🎉 Level "+level+"! Blocks falling faster!");
+                }
+                // Green sparkle
+                for(let i=0;i<8;i++) particles.push({
+                    x:b.x+b.w/2,y:b.y,
+                    vx:(Math.random()-0.5)*5,vy:-Math.random()*4,
+                    color:"#10b981",alpha:1,r:3
+                });
+            } else {
+                if(shield){
+                    shield=false;
+                    showMsg("🛡️ Shield blocked "+b.label+"!");
+                    showFact(b.fact);
                 } else {
                     lives--;
-                    document.getElementById('msg').textContent = '💀 Ouch! ' + b.label + ' is NOT quantum safe!';
-                    if (lives <= 0) {
-                        running = false;
-                        ctx.fillStyle = 'rgba(0,0,0,0.75)';
-                        ctx.fillRect(0,0,canvas.width,canvas.height);
-                        ctx.fillStyle = '#f87171';
-                        ctx.font = 'bold 28px sans-serif';
-                        ctx.textAlign = 'center';
-                        ctx.fillText('GAME OVER', canvas.width/2, 200);
-                        ctx.fillStyle = 'white';
-                        ctx.font = '18px sans-serif';
-                        ctx.fillText('Score: ' + score, canvas.width/2, 240);
-                        ctx.fillText('Kyber & Lattice = Quantum Safe!', canvas.width/2, 280);
-                        document.getElementById('startBtn').textContent = '▶ Play Again';
-                        return false;
+                    showMsg("💀 "+b.label+" hit! "+b.fact);
+                    showFact(b.fact);
+                    // Red flash particles
+                    for(let i=0;i<10;i++) particles.push({
+                        x:b.x+b.w/2,y:b.y,
+                        vx:(Math.random()-0.5)*6,vy:-Math.random()*4,
+                        color:"#ef4444",alpha:1,r:4
+                    });
+                    if(lives<=0){
+                        running=false;
+                        showMsg("☠️ Game Over! Score: "+score+" | Level: "+level);
                     }
                 }
-                return false;
             }
+            updateHUD();
+            return false;
+        }
 
-            if (b.y > canvas.height) {
-                if (b.safe) {
-                    lives--;
-                    document.getElementById('msg').textContent = '⚠️ Missed a safe lock!';
-                    if (lives <= 0) { running = false; }
-                }
-                return false;
+        // Missed safe block
+        if(b.y>H){
+            if(b.safe&&!b.isPowerup){
+                lives--;
+                showMsg("⚠️ Missed "+b.label+"! It was quantum-safe!");
+                updateHUD();
+                if(lives<=0){running=false;showMsg("☠️ Game Over! Score: "+score);}
             }
+            return false;
+        }
+        return true;
+    });
 
-            // Draw block
-            ctx.fillStyle = b.color;
-            ctx.beginPath();
-            ctx.roundRect(b.x, b.y, b.w, b.h, 6);
-            ctx.fill();
-            ctx.fillStyle = 'white';
-            ctx.font = 'bold 10px sans-serif';
-            ctx.textAlign = 'center';
-            ctx.fillText(b.label, b.x + b.w/2, b.y + 21);
-            return true;
-        });
+    // Update particles
+    particles=particles.filter(p=>{
+        p.x+=p.vx;p.y+=p.vy;p.vy+=0.2;p.alpha-=0.04;
+        return p.alpha>0;
+    });
 
-        document.getElementById('score').textContent = score;
-        document.getElementById('lives').textContent = '❤️'.repeat(Math.max(0,lives));
-        document.getElementById('level').textContent = level;
+    updateHUD();
+    render();
+}
 
-        requestAnimationFrame(loop);
+function render(){
+    ctx.clearRect(0,0,W,H);
+
+    // Starfield background
+    const bg=ctx.createLinearGradient(0,0,0,H);
+    bg.addColorStop(0,"#0f0c29");
+    bg.addColorStop(1,"#1e1b4b");
+    ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
+
+    // Twinkling stars
+    stars.forEach(s=>{
+        s.twinkle+=0.02;
+        const alpha=0.3+Math.sin(s.twinkle)*0.3;
+        ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
+        ctx.fillStyle="rgba(255,255,255,"+alpha+")";ctx.fill();
+    });
+
+    // Grid lines
+    ctx.strokeStyle="rgba(79,70,229,0.06)";
+    for(let i=0;i<W;i+=42){ctx.beginPath();ctx.moveTo(i,0);ctx.lineTo(i,H);ctx.stroke();}
+    for(let i=0;i<H;i+=42){ctx.beginPath();ctx.moveTo(0,i);ctx.lineTo(W,i);ctx.stroke();}
+
+    // Particles
+    particles.forEach(p=>{
+        ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+        ctx.fillStyle=p.color+Math.floor(p.alpha*255).toString(16).padStart(2,"0");
+        ctx.fill();
+    });
+
+    // Blocks
+    blocks.forEach(b=>{
+        // Shadow
+        ctx.fillStyle="rgba(0,0,0,0.3)";
+        ctx.beginPath();ctx.roundRect(b.x+4,b.y+4,b.w,b.h,8);ctx.fill();
+
+        // Block body
+        const grad=ctx.createLinearGradient(b.x,b.y,b.x,b.y+b.h);
+        grad.addColorStop(0,b.color+"ee");
+        grad.addColorStop(1,b.color+"88");
+        ctx.fillStyle=grad;
+        ctx.beginPath();ctx.roundRect(b.x,b.y,b.w,b.h,8);ctx.fill();
+
+        // Border
+        ctx.strokeStyle=b.safe||b.isPowerup?"rgba(255,255,255,0.4)":"rgba(255,0,0,0.4)";
+        ctx.lineWidth=b.boss?3:1.5;
+        ctx.beginPath();ctx.roundRect(b.x,b.y,b.w,b.h,8);ctx.stroke();
+
+        // Boss pulse
+        if(b.boss){
+            ctx.beginPath();ctx.roundRect(b.x-3,b.y-3,b.w+6,b.h+6,10);
+            ctx.strokeStyle="rgba(220,38,38,"+(0.3+Math.sin(Date.now()*0.01)*0.3)+")";
+            ctx.lineWidth=2;ctx.stroke();
+        }
+
+        // Label
+        ctx.fillStyle="white";
+        ctx.font="bold 11px sans-serif";
+        ctx.textAlign="center";
+        ctx.fillText(b.label,b.x+b.w/2,b.y+b.h/2+4);
+    });
+
+    // Basket
+    const bgrad=ctx.createLinearGradient(basket.x,basket.y,basket.x,basket.y+basket.h);
+    bgrad.addColorStop(0,shield?"#fbbf24":"#4f46e5");
+    bgrad.addColorStop(1,shield?"#d97706":"#3730a3");
+    ctx.fillStyle=bgrad;
+    ctx.beginPath();ctx.roundRect(basket.x,basket.y,basket.w,basket.h,8);ctx.fill();
+
+    // Shield glow
+    if(shield){
+        ctx.beginPath();ctx.roundRect(basket.x-4,basket.y-4,basket.w+8,basket.h+8,10);
+        ctx.strokeStyle="rgba(251,191,36,0.5)";ctx.lineWidth=3;ctx.stroke();
     }
 
-    // Draw idle screen
-    ctx.fillStyle = '#1e1b4b';
-    ctx.fillRect(0,0,canvas.width,canvas.height);
-    ctx.fillStyle = '#a5b4fc';
-    ctx.font = 'bold 20px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText('🔐 Quantum Lock Drop', canvas.width/2, 200);
-    ctx.font = '14px sans-serif';
-    ctx.fillText('Catch quantum-safe locks!', canvas.width/2, 240);
-    ctx.fillText('Press ▶ Start to play', canvas.width/2, 270);
-    </script>
-    """, height=600)
+    // Basket label
+    ctx.fillStyle="white";ctx.font="bold 11px sans-serif";ctx.textAlign="center";
+    ctx.fillText(shield?"🛡️ AGENT":"🧺 AGENT",basket.x+basket.w/2,basket.y+15);
 
+    // Power-up timers overlay
+    if(slowActive){
+        ctx.fillStyle="rgba(96,165,250,0.08)";ctx.fillRect(0,0,W,H);
+        ctx.fillStyle="rgba(96,165,250,0.6)";ctx.font="bold 12px sans-serif";
+        ctx.textAlign="center";ctx.fillText("⏰ SLOW MOTION",W/2,20);
+    }
+    if(doubleActive){
+        ctx.fillStyle="rgba(52,211,153,0.5)";ctx.font="bold 12px sans-serif";
+        ctx.textAlign="center";ctx.fillText("💎 2x POINTS",W/2,doubleActive&&slowActive?36:20);
+    }
+
+    // Game over
+    if(!running&&lives<=0){
+        ctx.fillStyle="rgba(0,0,0,0.8)";ctx.fillRect(0,0,W,H);
+        ctx.fillStyle="#ef4444";ctx.font="bold 30px sans-serif";ctx.textAlign="center";
+        ctx.fillText("💀 GAME OVER",W/2,H/2-50);
+        ctx.fillStyle="white";ctx.font="18px sans-serif";
+        ctx.fillText("Score: "+score,W/2,H/2-10);
+        ctx.fillText("Level: "+level+" | Caught: "+caught,W/2,H/2+25);
+        ctx.fillStyle="#a5b4fc";ctx.font="13px sans-serif";
+        ctx.fillText("Kyber & Dilithium = Quantum Safe!",W/2,H/2+60);
+    }
+}
+
+// Idle screen
+const ibg=ctx.createLinearGradient(0,0,0,H);
+ibg.addColorStop(0,"#0f0c29");ibg.addColorStop(1,"#1e1b4b");
+ctx.fillStyle=ibg;ctx.fillRect(0,0,W,H);
+stars.forEach(s=>{ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fillStyle="rgba(255,255,255,0.4)";ctx.fill();});
+ctx.fillStyle="#a5b4fc";ctx.font="bold 22px sans-serif";ctx.textAlign="center";
+ctx.fillText("🧱 Quantum Lock Drop",W/2,H/2-70);
+ctx.fillStyle="#6b7280";ctx.font="13px sans-serif";
+ctx.fillText("Catch quantum-safe blocks!",W/2,H/2-35);
+ctx.fillText("Avoid broken crypto!",W/2,H/2-10);
+ctx.fillText("Grab power-ups for shields and slow motion!",W/2,H/2+20);
+ctx.fillStyle="#4f46e5";ctx.font="bold 15px sans-serif";
+ctx.fillText("Press ▶ Start to play!",W/2,H/2+60);
+</script>
+</body>
+</html>
+""", height=700)
 
 def render_lattice_maze():
     """6-8: Enhanced Lattice Maze with better graphics, enemies, levels and PQC content."""
