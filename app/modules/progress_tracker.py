@@ -233,6 +233,8 @@ def render_full_progress_page():
                 )
 
     st.markdown("---")
+    render_certificate_section()
+    st.markdown("---")
 
     # ── Suggestions ───────────────────────────────────────────────────────
     st.markdown("### 💡 What to do next")
@@ -267,3 +269,231 @@ def render_full_progress_page():
         st.session_state.badges = []
         st.success("Progress reset! Starting fresh.")
         st.rerun()
+
+        
+
+def generate_certificate(student_name: str, grade_level: str, completed_count: int, total_count: int) -> str:
+    """Generate a printable HTML certificate."""
+    from datetime import date
+    today = date.today().strftime("%B %d, %Y")
+    
+    grade_colors = {
+        "Elementary (K-5)": ("#10b981", "#059669", "🟢"),
+        "Middle School (6-8)": ("#7c6dfa", "#6d28d9", "🟡"),
+        "High School (9-12)": ("#f45c5c", "#dc2626", "🔴"),
+    }
+    color, dark, emoji = grade_colors.get(grade_level, ("#4f46e5", "#3730a3", "🏅"))
+    pct = round(completed_count / total_count * 100) if total_count else 0
+
+    return f"""<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400;600&display=swap');
+  * {{ margin:0;padding:0;box-sizing:border-box; }}
+  body {{ background:#0f172a;display:flex;justify-content:center;
+    align-items:center;min-height:100vh;font-family:'Inter',sans-serif; }}
+  .cert {{ background:white;width:900px;padding:60px;position:relative;
+    border-top:12px solid {color}; }}
+  .border-inner {{ border:3px solid {color}33;padding:40px;position:relative; }}
+  .corner {{ position:absolute;width:30px;height:30px;border-color:{color};border-style:solid; }}
+  .tl {{ top:-3px;left:-3px;border-width:3px 0 0 3px; }}
+  .tr {{ top:-3px;right:-3px;border-width:3px 3px 0 0; }}
+  .bl {{ bottom:-3px;left:-3px;border-width:0 0 3px 3px; }}
+  .br {{ bottom:-3px;right:-3px;border-width:0 3px 3px 0; }}
+  .logo {{ text-align:center;margin-bottom:20px; }}
+  .logo-text {{ font-size:1.1rem;font-weight:600;color:{color};letter-spacing:3px;text-transform:uppercase; }}
+  .divider {{ height:2px;background:linear-gradient(to right,transparent,{color},{color},transparent);margin:20px 0; }}
+  .title {{ text-align:center;font-family:'Playfair Display',serif;
+    font-size:3rem;color:#1e293b;margin:16px 0 8px; }}
+  .subtitle {{ text-align:center;font-size:1rem;color:#64748b;
+    letter-spacing:4px;text-transform:uppercase;margin-bottom:24px; }}
+  .presented {{ text-align:center;font-size:0.9rem;color:#94a3b8;
+    margin-bottom:8px;text-transform:uppercase;letter-spacing:2px; }}
+  .student-name {{ text-align:center;font-family:'Playfair Display',serif;
+    font-size:2.8rem;color:{color};margin:8px 0 24px;
+    border-bottom:2px solid {color}33;padding-bottom:16px; }}
+  .description {{ text-align:center;font-size:1rem;color:#475569;
+    line-height:1.7;max-width:600px;margin:0 auto 24px; }}
+  .grade-badge {{ display:inline-block;background:{color}15;border:2px solid {color};
+    border-radius:100px;padding:8px 24px;font-size:0.9rem;
+    font-weight:600;color:{color};margin-bottom:24px; }}
+  .stats {{ display:flex;justify-content:center;gap:40px;margin:24px 0; }}
+  .stat {{ text-align:center; }}
+  .stat-num {{ font-size:2rem;font-weight:700;color:{color}; }}
+  .stat-label {{ font-size:0.75rem;color:#94a3b8;text-transform:uppercase;letter-spacing:1px; }}
+  .algorithms {{ background:{color}08;border:1px solid {color}20;
+    border-radius:8px;padding:16px;margin:20px 0;text-align:center; }}
+  .algo-title {{ font-size:0.75rem;color:#94a3b8;text-transform:uppercase;
+    letter-spacing:2px;margin-bottom:8px; }}
+  .algo-tags {{ display:flex;flex-wrap:wrap;gap:8px;justify-content:center; }}
+  .algo-tag {{ background:{color}15;border:1px solid {color}30;
+    border-radius:100px;padding:4px 12px;font-size:0.78rem;color:{color};font-weight:600; }}
+  .footer {{ display:flex;justify-content:space-between;align-items:flex-end;
+    margin-top:32px;padding-top:24px;border-top:1px solid #e2e8f0; }}
+  .sig-line {{ width:200px;border-top:1px solid #94a3b8;padding-top:8px;
+    font-size:0.78rem;color:#94a3b8;text-align:center; }}
+  .date {{ font-size:0.85rem;color:#94a3b8; }}
+  .seal {{ width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,{color},{dark});
+    display:flex;align-items:center;justify-content:center;
+    font-size:2rem;box-shadow:0 4px 20px {color}40; }}
+  .nist {{ text-align:center;margin-top:16px;font-size:0.72rem;
+    color:#94a3b8;letter-spacing:1px; }}
+  @media print {{
+    body {{ background:white; }}
+    .no-print {{ display:none; }}
+  }}
+</style>
+</head>
+<body>
+<div class="cert">
+  <div class="border-inner">
+    <div class="corner tl"></div>
+    <div class="corner tr"></div>
+    <div class="corner bl"></div>
+    <div class="corner br"></div>
+
+    <div class="logo">
+      <div style="font-size:2rem">🔐</div>
+      <div class="logo-text">QuantumVault Academy</div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="title">Certificate of Achievement</div>
+    <div class="subtitle">Post-Quantum Cryptography Curriculum</div>
+
+    <div class="presented">This certifies that</div>
+    <div class="student-name">{student_name}</div>
+
+    <div style="text-align:center">
+      <span class="grade-badge">{emoji} {grade_level}</span>
+    </div>
+
+    <p class="description">
+      has successfully completed the <strong>QuantumVault Academy</strong> 
+      post-quantum cryptography curriculum, demonstrating knowledge of 
+      NIST-standardized quantum-safe algorithms and their mathematical foundations.
+    </p>
+
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-num">{completed_count}</div>
+        <div class="stat-label">Activities Completed</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">{pct}%</div>
+        <div class="stat-label">Completion Rate</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">{today.split()[2]}</div>
+        <div class="stat-label">Year</div>
+      </div>
+    </div>
+
+    <div class="algorithms">
+      <div class="algo-title">NIST PQC Standards Studied</div>
+      <div class="algo-tags">
+        <span class="algo-tag">ML-KEM (Kyber) FIPS 203</span>
+        <span class="algo-tag">ML-DSA (Dilithium) FIPS 204</span>
+        <span class="algo-tag">SLH-DSA (SPHINCS+) FIPS 205</span>
+        <span class="algo-tag">FN-DSA (Falcon) FIPS 206</span>
+      </div>
+    </div>
+
+    <div class="footer">
+      <div class="sig-line">
+        QuantumVault Academy<br>Director of Education
+      </div>
+      <div class="seal">🔐</div>
+      <div class="sig-line">
+        {today}<br>Date of Completion
+      </div>
+    </div>
+
+    <div class="nist">
+      Aligned with NIST Post-Quantum Cryptography Standards · 
+      NSA GenCyber Eligible · COPPA Compliant
+    </div>
+  </div>
+</div>
+<script>
+  window.onload = function() {{ window.print(); }}
+</script>
+</body>
+</html>"""
+
+
+def render_certificate_section():
+    """Render certificate download section in progress page."""
+    import streamlit as st
+    
+    st.markdown("### 🏆 Certificates of Completion")
+    
+    completed = getattr(st.session_state, "completed_activities", set())
+    stats = get_completion_stats()
+    
+    # Check which grade levels are complete enough for a certificate
+    GRADE_ACTIVITIES = {
+        "Elementary (K-5)": "elementary",
+        "Middle School (6-8)": "middle_school", 
+        "High School (9-12)": "high_school",
+    }
+
+    student_name = st.text_input(
+        "Enter your name for the certificate:",
+        placeholder="Your Name",
+        key="cert_name"
+    )
+
+    any_eligible = False
+    for grade_label, module_key in GRADE_ACTIVITIES.items():
+        if module_key in stats:
+            s = stats[module_key]
+            pct = s["pct"]
+            color = s["color"]
+            done = s["done"]
+            total = s["total"]
+
+            eligible = pct >= 70
+
+            st.markdown(
+                f"<div style='background:{color}10;border:1px solid {color}30;"
+                f"border-radius:10px;padding:12px;margin:8px 0;"
+                f"display:flex;justify-content:space-between;align-items:center;'>"
+                f"<div>"
+                f"<strong style='color:{color}'>{grade_label}</strong>"
+                f"<div style='font-size:0.8rem;color:#888'>{done}/{total} activities ({pct}% complete)</div>"
+                f"</div>"
+                f"<div style='font-size:1.5rem'>{'🏆' if eligible else '🔒'}</div>"
+                f"</div>",
+                unsafe_allow_html=True
+            )
+
+            if eligible:
+                any_eligible = True
+                if st.button(
+                    f"📥 Download {grade_label} Certificate",
+                    key=f"cert_{module_key}",
+                    type="primary" if pct == 100 else "secondary"
+                ):
+                    if not student_name:
+                        st.warning("Please enter your name above!")
+                    else:
+                        cert_html = generate_certificate(
+                            student_name, grade_label, done, total
+                        )
+                        st.download_button(
+                            label=f"⬇️ Save Certificate as HTML",
+                            data=cert_html,
+                            file_name=f"QuantumVault_{grade_label.replace(' ','_')}_Certificate.html",
+                            mime="text/html",
+                            key=f"dl_{module_key}"
+                        )
+                        st.success("Certificate ready! Click the button above to download, then open it in your browser and print!")
+            else:
+                st.caption(f"Complete 70% of {grade_label} activities to unlock your certificate (need {70 - pct}% more)")
+
+    if not any_eligible:
+        st.info("Complete at least 70% of any grade level to earn your certificate!")
