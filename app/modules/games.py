@@ -1113,6 +1113,22 @@ let towers=[], enemies=[], bullets=[], particles=[];
 let selTower="kyber", hp=100, score=0, bits=200, wave=0;
 let waveRunning=false, frameId, spawnQ=[], spawnTimer=0;
 
+// 12 defined wave configurations
+const WAVE_DEFS = [
+    {wave:1,  name:"First Contact",     enemies:[0,0,0,1],        count:4,  boss:false, bonusBits:60,  desc:"Easy intro wave!"},
+    {wave:2,  name:"Quantum Scouts",    enemies:[0,0,1,1,2],      count:5,  boss:false, bonusBits:70,  desc:"More enemies!"},
+    {wave:3,  name:"BOSS Wave 1",       enemies:[0,1,2,3],        count:5,  boss:true,  bonusBits:100, desc:"First boss!"},
+    {wave:4,  name:"Shor Surge",        enemies:[0,0,0,1,1,2],    count:6,  boss:false, bonusBits:80,  desc:"Faster Shor attacks!"},
+    {wave:5,  name:"Grover Storm",      enemies:[1,1,1,2,3],      count:7,  boss:false, bonusBits:90,  desc:"Grover speeders!"},
+    {wave:6,  name:"BOSS Wave 2",       enemies:[0,1,2,3,0],      count:7,  boss:true,  bonusBits:120, desc:"Stronger boss!"},
+    {wave:7,  name:"Quantum Flood",     enemies:[0,1,2,3,0,1],    count:8,  boss:false, bonusBits:100, desc:"Mixed attack!"},
+    {wave:8,  name:"QAOA Assault",      enemies:[3,3,3,0,1,2,3],  count:9,  boss:false, bonusBits:110, desc:"QAOA everywhere!"},
+    {wave:9,  name:"BOSS Wave 3",       enemies:[0,1,2,3,0,1],    count:9,  boss:true,  bonusBits:150, desc:"Mega boss!"},
+    {wave:10, name:"Full Quantum Army", enemies:[0,1,2,3,0,1,2,3],count:10, boss:false, bonusBits:120, desc:"All enemy types!"},
+    {wave:11, name:"Quantum Apocalypse",enemies:[0,1,2,3,3,0,1,2],count:12, boss:true,  bonusBits:180, desc:"Almost impossible!"},
+    {wave:12, name:"FINAL BOSS",        enemies:[0,1,2,3,0,1,2,3],count:14, boss:true,  bonusBits:300, desc:"The quantum computer!"},
+];
+
 function selT(t) {
     selTower=t;
     document.querySelectorAll(".tbtn").forEach(b=>b.classList.remove("sel"));
@@ -1152,23 +1168,37 @@ tc.addEventListener("click", e=>{
 
 function startWave() {
     if (waveRunning) return;
+    if (wave >= 12) { showMsg("🏆 All 12 waves complete! You are a Quantum Guardian!"); return; }
     wave++;
     waveRunning=true;
     spawnQ=[];
-    const isBoss = wave%3===0;
-    const count = isBoss ? 1 : 4+wave*2;
 
-    if (isBoss) {
-        showMsg("💀 BOSS WAVE "+wave+"! The full quantum computer attacks!");
-        spawnQ.push({...ENEMY_TYPES[4], delay:0});
-    } else {
-        for(let i=0;i<count;i++){
-            const eType = ENEMY_TYPES[Math.floor(Math.random()*(ENEMY_TYPES.length-1))];
-            const hpBoost = 1+(wave-1)*0.25;
-            spawnQ.push({...eType, hp:Math.floor(eType.hp*hpBoost), maxHp:Math.floor(eType.hp*hpBoost), delay:i*60});
-        }
+    const wdef = WAVE_DEFS[Math.min(wave-1, WAVE_DEFS.length-1)];
+    const hpBoost = 1+(wave-1)*0.2;
+
+    showMsg("🌊 Wave "+wave+"/12: "+wdef.name+" — "+wdef.desc);
+
+    if (wdef.boss) {
+        // Add boss at start
+        const boss = {...ENEMY_TYPES[4]};
+        boss.hp = Math.floor(boss.hp * hpBoost);
+        boss.maxHp = boss.hp;
+        spawnQ.push({...boss, delay:0});
     }
-    document.getElementById("wave").textContent=wave;
+
+    // Add regular enemies
+    for(let i=0;i<wdef.count;i++){
+        const eIdx = wdef.enemies[i % wdef.enemies.length];
+        const eType = ENEMY_TYPES[Math.min(eIdx, ENEMY_TYPES.length-2)];
+        const boosted = {...eType,
+            hp:Math.floor(eType.hp*hpBoost),
+            maxHp:Math.floor(eType.hp*hpBoost),
+            delay:(i+1)*45
+        };
+        spawnQ.push(boosted);
+    }
+
+    document.getElementById("wave").textContent=wave+"/12";
     updateUI();
     if (!frameId) gameLoop();
 }
@@ -1307,10 +1337,15 @@ function update() {
     // Check wave complete
     if(waveRunning && enemies.length===0 && spawnQ.length===0){
         waveRunning=false;
-        const bonus=50+wave*20;
+        const wdef = WAVE_DEFS[Math.min(wave-1, WAVE_DEFS.length-1)];
+        const bonus = wdef.bonusBits;
         bits+=bonus;
         updateUI();
-        showMsg("✅ Wave "+wave+" cleared! +"+bonus+" bits bonus. Ready for wave "+(wave+1)+"?");
+        if(wave>=12){
+            showMsg("🏆 ALL 12 WAVES CLEARED! Quantum Guardian! Score: "+score);
+        } else {
+            showMsg("✅ Wave "+wave+"/12 cleared! +"+bonus+" bits. Next: "+WAVE_DEFS[wave].name);
+        }
         cancelAnimationFrame(frameId); frameId=null;
     }
 }
@@ -2165,10 +2200,27 @@ const ENEMIES = [
 let mw=[], mp, me=[], minv, mscore=0, mhp=120, mdepth=1, mrare=0, mmined=0;
 let mrun=false, mk={}, mmt=0, particles=[];
 
+// 12 depth level configs
+const DEPTH_CONFIG = [
+    {depth:1,  name:"Surface",        rareChance:0.04, enemyCount:1, hasBoss:false, desc:"Safe to mine!"},
+    {depth:2,  name:"Shallow",        rareChance:0.07, enemyCount:1, hasBoss:false, desc:"Some rare ore!"},
+    {depth:3,  name:"Stone Layer",    rareChance:0.10, enemyCount:2, hasBoss:true,  desc:"First boss!"},
+    {depth:4,  name:"Iron Vein",      rareChance:0.13, enemyCount:2, hasBoss:false, desc:"More enemies!"},
+    {depth:5,  name:"Crystal Cave",   rareChance:0.16, enemyCount:3, hasBoss:false, desc:"LWE crystals!"},
+    {depth:6,  name:"Deep Rock",      rareChance:0.19, enemyCount:3, hasBoss:true,  desc:"Boss guardian!"},
+    {depth:7,  name:"Quantum Seam",   rareChance:0.22, enemyCount:3, hasBoss:false, desc:"Rare quantum ore!"},
+    {depth:8,  name:"Lattice Core",   rareChance:0.25, enemyCount:4, hasBoss:false, desc:"Dense lattice!"},
+    {depth:9,  name:"Kyber Vault",    rareChance:0.27, enemyCount:4, hasBoss:true,  desc:"Vault boss!"},
+    {depth:10, name:"Cipher Depths",  rareChance:0.29, enemyCount:5, hasBoss:false, desc:"Expert mining!"},
+    {depth:11, name:"Quantum Abyss",  rareChance:0.30, enemyCount:5, hasBoss:true,  desc:"Final guardian!"},
+    {depth:12, name:"Quantum Core",   rareChance:0.35, enemyCount:6, hasBoss:true,  desc:"Ultimate depth!"},
+];
+
 function genMines(depth) {
     mw=[];
-    const rareChance = Math.min(0.04+depth*0.035, 0.3);
-    const hasBoss = depth>=3;
+    const dcfg = DEPTH_CONFIG[Math.min(depth-1, DEPTH_CONFIG.length-1)];
+    const rareChance = dcfg.rareChance;
+    const hasBoss = dcfg.hasBoss;
 
     for(let r=0;r<ROWS;r++){
         mw[r]=[];
@@ -2274,13 +2326,17 @@ function placeMid(){
 function goDeeper(){
     if(!mrun)return;
     if(mp.x>=COLS-3&&mp.y>=ROWS-3){
+        if(mdepth>=12){
+            document.getElementById("qm-msg").textContent="🏆 MAX DEPTH REACHED! Quantum Core Miner! Score:"+mscore+" Rare:"+mrare;
+            mrun=false;
+            return;
+        }
         mdepth++;
         genMines(mdepth);mp={x:1,y:1};me=[];particles=[];
-        const enemyCount=Math.min(mdepth+1,6);
-        for(let i=0;i<enemyCount;i++)spawnEnemy();
-        document.getElementById("mdepth").textContent=mdepth;
-        const msgs=["Rarer algorithms ahead!","Boss territory!","Ultra rare LWE crystals!","Quantum Core zone!"];
-        document.getElementById("qm-msg").textContent="Depth "+mdepth+"! "+msgs[Math.min(mdepth-2,msgs.length-1)];
+        const dcfg3 = DEPTH_CONFIG[Math.min(mdepth-1, DEPTH_CONFIG.length-1)];
+        for(let i=0;i<dcfg3.enemyCount;i++)spawnEnemy();
+        document.getElementById("mdepth").textContent=mdepth+"/12";
+        document.getElementById("qm-msg").textContent="Depth "+mdepth+"/12: "+dcfg3.name+"! "+dcfg3.desc;
         updateUI();
     } else {
         document.getElementById("qm-msg").textContent="Find the ▼ ladder in the bottom-right corner!";
