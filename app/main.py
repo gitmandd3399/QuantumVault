@@ -205,54 +205,133 @@ def sidebar():
     window._qvMusicStarted = true;
 
     const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const master = ctx.createGain();
+    master.gain.setValueAtTime(0.18, ctx.currentTime);
+    master.connect(ctx.destination);
 
-    // Chiptune melody notes (frequencies in Hz)
-    const MELODY = [
-        261, 293, 329, 349, 392, 349, 329, 293,
-        261, 261, 293, 329, 261, 261, 0,   0,
-        349, 349, 392, 440, 392, 349, 329, 293,
-        261, 0,   261, 293, 329, 293, 261, 0,
+    // Add reverb for warmth
+    const convolver = ctx.createConvolver();
+    const revGain = ctx.createGain();
+    revGain.gain.setValueAtTime(0.25, ctx.currentTime);
+    convolver.connect(revGain);
+    revGain.connect(master);
+
+    // Create impulse response for reverb
+    const rate = ctx.sampleRate;
+    const length = rate * 1.5;
+    const impulse = ctx.createBuffer(2, length, rate);
+    for (let c = 0; c < 2; c++) {
+        const data = impulse.getChannelData(c);
+        for (let i = 0; i < length; i++) {
+            data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i/length, 2.5);
+        }
+    }
+    convolver.buffer = impulse;
+
+    // Smooth jazz chord progression: Cmaj7 - Am7 - Dm7 - G7
+    // Notes in Hz (jazz voicings)
+    const PROGRESSION = [
+        // Cmaj7: C E G B
+        {melody:[523,659,784,987], bass:130, dur:2.0},
+        // Am7: A C E G
+        {melody:[440,523,659,784], bass:110, dur:2.0},
+        // Dm7: D F A C
+        {melody:[587,698,880,1047],bass:146, dur:2.0},
+        // G7: G B D F
+        {melody:[784,987,587,698], bass:196, dur:2.0},
+        // Fmaj7: F A C E
+        {melody:[698,880,1047,1319],bass:174,dur:2.0},
+        // Em7: E G B D
+        {melody:[659,784,987,1174],bass:164, dur:2.0},
+        // Dm7: D F A C
+        {melody:[587,698,880,1047],bass:146, dur:2.0},
+        // G7: G B D F
+        {melody:[784,987,1174,698],bass:196, dur:2.0},
     ];
 
-    const BASS = [
-        130, 0, 130, 0, 146, 0, 146, 0,
-        130, 0, 130, 0, 116, 0, 116, 0,
-        174, 0, 174, 0, 164, 0, 164, 0,
-        130, 0, 130, 0, 146, 0, 146, 0,
+    // Walking bass line notes
+    const WALK = [
+        [130,146,164,174], [110,123,130,146],
+        [146,164,174,196], [196,220,246,261],
+        [174,196,220,246], [164,174,196,220],
+        [146,164,174,196], [196,220,246,130],
     ];
 
-    let noteIdx = 0;
-    const BPM = 120;
-    const NOTE_DUR = 60 / BPM / 2;
+    // Jazz melody riff
+    const RIFF = [
+        [784,0,659,0,523,587,0,523],
+        [440,0,523,0,587,523,0,440],
+        [587,0,698,0,784,698,0,587],
+        [784,659,0,523,0,659,784,0],
+    ];
 
-    function playNote(freq, vol, type, start, dur) {
-        if (freq === 0) return;
+    function playSmooth(freq, vol, start, dur, type="sine") {
+        if (!freq) return;
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
-        osc.connect(gain);
-        gain.connect(ctx.destination);
+        const filter = ctx.createBiquadFilter();
+        filter.type = "lowpass";
+        filter.frequency.setValueAtTime(2000, start);
+        osc.connect(filter);
+        filter.connect(gain);
+        gain.connect(master);
+        gain.connect(convolver);
         osc.type = type;
         osc.frequency.setValueAtTime(freq, start);
-        gain.gain.setValueAtTime(vol, start);
-        gain.gain.exponentialRampToValueAtTime(0.001, start + dur * 0.9);
+        // Smooth attack and release
+        gain.gain.setValueAtTime(0, start);
+        gain.gain.linearRampToValueAtTime(vol, start + 0.08);
+        gain.gain.setValueAtTime(vol, start + dur - 0.15);
+        gain.gain.linearRampToValueAtTime(0, start + dur);
         osc.start(start);
-        osc.stop(start + dur);
+        osc.stop(start + dur + 0.05);
     }
 
-    function scheduleNotes() {
+    function playChord(notes, vol, start, dur) {
+        notes.forEach((freq, i) => {
+            // Stagger notes slightly for jazz feel
+            setTimeout(() => {
+                playSmooth(freq, vol / notes.length, start, dur, "sine");
+            }, i * 30);
+        });
+    }
+
+    let progIdx = 0;
+    let riffIdx = 0;
+    let beatCount = 0;
+
+    function scheduleJazz() {
         const now = ctx.currentTime;
-        for (let i = 0; i < 8; i++) {
-            const t = now + i * NOTE_DUR;
-            const idx = (noteIdx + i) % MELODY.length;
-            playNote(MELODY[idx], 0.08, "square", t, NOTE_DUR * 0.8);
-            playNote(BASS[idx],   0.06, "triangle", t, NOTE_DUR * 0.9);
+        const chord = PROGRESSION[progIdx % PROGRESSION.length];
+        const walk = WALK[progIdx % WALK.length];
+        const riff = RIFF[riffIdx % RIFF.length];
+        const dur = chord.dur;
+
+        // Play chord (soft background)
+        playChord(chord.melody, 0.06, now, dur * 0.95);
+
+        // Walking bass
+        for (let i = 0; i < 4; i++) {
+            playSmooth(walk[i], 0.12, now + i * (dur/4), dur/4 * 0.85, "triangle");
         }
-        noteIdx = (noteIdx + 8) % MELODY.length;
+
+        // Melody riff (every other chord)
+        if (beatCount % 2 === 0) {
+            riff.forEach((freq, i) => {
+                if (freq) {
+                    playSmooth(freq, 0.05, now + i * (dur/8), dur/8 * 0.7, "sine");
+                }
+            });
+            riffIdx++;
+        }
+
+        progIdx++;
+        beatCount++;
     }
 
     ctx.resume().then(() => {
-        scheduleNotes();
-        setInterval(scheduleNotes, NOTE_DUR * 8 * 1000);
+        scheduleJazz();
+        setInterval(scheduleJazz, 2000);
     });
 })();
 </script>
