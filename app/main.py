@@ -197,7 +197,8 @@ def sidebar():
         st.caption("Music " + ("ON" if st.session_state.music_on else "OFF"))
 
     if st.session_state.music_on:
-        st.sidebar.components.v1.html("""
+        import streamlit.components.v1 as _music_comp
+        _music_comp.html("""
 <script>
 (function() {
     if (window._qvMusicStarted) return;
