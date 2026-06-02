@@ -563,7 +563,7 @@ document.getElementById("wlist").innerHTML=
 WDS.map(w=>"<div class='ws-word"+(fd.includes(w)?" found":"")+"'>"+w+"</div>").join("");}}
 resetWS();
 </script>
-""", height={min(400 + lvl["rows"] * 10, 580)})
+""", height=560)
 
         # XP reward for completing levels
         if f"ws_complete_{lvl['level']}" not in st.session_state:
