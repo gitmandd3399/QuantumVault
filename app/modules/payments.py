@@ -5,8 +5,12 @@ Stripe payment integration for QuantumVault Academy.
 """
 
 import streamlit as st
-import stripe
 import os
+try:
+    import stripe
+    STRIPE_AVAILABLE = True
+except ImportError:
+    STRIPE_AVAILABLE = False
 
 
 def get_stripe_key():
