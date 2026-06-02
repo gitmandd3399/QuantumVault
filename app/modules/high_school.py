@@ -534,6 +534,23 @@ border-radius:12px;padding:24px;text-align:center;display:none;}}
         <div class="hud-box">📊 Q<br><span id="qnum">1</span>/10</div>
     </div>
     <div class="timer-bar"><div class="timer-fill" id="timer-fill" style="width:100%"></div></div>
+    <div id="start-screen" style="background:#1e293b;border:1px solid #334155;
+        border-radius:12px;padding:32px;text-align:center;margin:10px 0;">
+        <div style="font-size:3rem;margin-bottom:12px">🧮</div>
+        <h2 style="color:#a5b4fc;margin-bottom:8px">QuantumMath Challenge</h2>
+        <p style="color:#888;font-size:13px;margin-bottom:8px">
+            10 questions · 30 seconds each · Time bonus points!
+        </p>
+        <p style="color:#6b7280;font-size:12px;margin-bottom:20px">
+            Each question shows how the math connects to real NIST PQC algorithms.
+        </p>
+        <button onclick="document.getElementById('start-screen').style.display='none';
+            document.getElementById('qbox').style.display='block';loadQuestion();"
+            style="padding:12px 32px;border-radius:8px;border:none;cursor:pointer;
+            background:#4f46e5;color:white;font-size:15px;font-weight:bold;">
+            ▶ Start Challenge
+        </button>
+    </div>
     <div class="question-box" id="qbox">
         <div class="q-text" id="q-text">Loading...</div>
         <div class="q-context" id="q-context"></div>
@@ -838,12 +855,14 @@ function restartLevel() {{
     document.getElementById("score").textContent=0;
     document.getElementById("correct").textContent=0;
     document.getElementById("wrong").textContent=0;
-    document.getElementById("qbox").style.display="block";
+    document.getElementById("qbox").style.display="none";
     document.getElementById("complete-box").style.display="none";
-    loadQuestion();
+    document.getElementById("start-screen").style.display="block";
 }}
 
-loadQuestion();
+// Show start screen first
+document.getElementById("qbox").style.display="none";
+document.getElementById("start-screen").style.display="block";
 </script>
 </body>
 </html>
