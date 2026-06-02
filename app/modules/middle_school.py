@@ -446,8 +446,7 @@ async function updateHash() {
             "Quantum Safe": ["❌" if not q else "✅" for q in quantum_safe],
             "NIST Standard": ["None","None","None","FIPS 203","FIPS 203","FIPS 203","FIPS 204","FIPS 204","FIPS 206"],
         }
-        import pandas as pd
-        st.dataframe(pd.DataFrame(data), use_container_width=True)
+        st.table(data)
 
         st.info(
             "💡 **Key insight:** Kyber keys are much smaller than RSA keys "
