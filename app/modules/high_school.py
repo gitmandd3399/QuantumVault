@@ -437,598 +437,309 @@ if __name__ == "__main__":
         else:
             render_quantumcraft_highschool()
     with tab7:
-        st.subheader("🧮 QuantumMath Challenge — Unlock All 5 Levels!")
-        st.markdown(
-            "Master the math behind post-quantum cryptography! "
-            "Each level unlocks new concepts. Earn XP to unlock harder levels!"
-        )
-
+        st.subheader("🧮 QuantumMath Challenge")
         xp = st.session_state.xp
-
         LEVELS = [
-            {"name": "Level 1 — Modular Arithmetic", "xp_required": 0,   "color": "#10b981", "emoji": "🔢"},
-            {"name": "Level 2 — Prime Numbers",       "xp_required": 50,  "color": "#3b82f6", "emoji": "🔑"},
-            {"name": "Level 3 — Matrix Math",         "xp_required": 150, "color": "#8b5cf6", "emoji": "🏗️"},
-            {"name": "Level 4 — Number Theory",       "xp_required": 300, "color": "#f59e0b", "emoji": "📐"},
-            {"name": "Level 5 — Lattice Problems",    "xp_required": 500, "color": "#ec4899", "emoji": "⚡"},
+            {"name": "Level 1 - Modular Arithmetic", "xp_required": 0,   "color": "#10b981", "emoji": "🔢"},
+            {"name": "Level 2 - Prime Numbers",       "xp_required": 50,  "color": "#3b82f6", "emoji": "🔑"},
+            {"name": "Level 3 - Matrix Math",         "xp_required": 150, "color": "#8b5cf6", "emoji": "🏗"},
+            {"name": "Level 4 - Number Theory",       "xp_required": 300, "color": "#f59e0b", "emoji": "📐"},
+            {"name": "Level 5 - Lattice Problems",    "xp_required": 500, "color": "#ec4899", "emoji": "⚡"},
         ]
-
-        # Show level unlock status
-        st.markdown("### 🔓 Your Progress")
-        level_cols = st.columns(5)
-        for i, (col, lvl) in enumerate(zip(level_cols, LEVELS)):
-            with col:
-                unlocked = xp >= lvl["xp_required"]
-                st.markdown(
-                    f"<div style='background:{lvl['color']}{'20' if unlocked else '08'};"
-                    f"border:1px solid {lvl['color']}{'60' if unlocked else '20'};"
-                    f"border-radius:8px;padding:8px;text-align:center;'>"
-                    f"<div style='font-size:1.5rem'>{lvl['emoji']}</div>"
-                    f"<div style='font-size:0.7rem;color:{'#ccc' if unlocked else '#555'};margin-top:4px'>"
-                    f"{'✅ Unlocked' if unlocked else '🔒 '+str(lvl['xp_required'])+' XP'}</div>"
-                    f"</div>",
-                    unsafe_allow_html=True
-                )
-
-        st.markdown("---")
-
-        # Level selector
         available = [l for l in LEVELS if xp >= l["xp_required"]]
         if not available:
             st.warning("Earn XP in other modules to unlock math challenges!")
         else:
-            selected_level = st.selectbox(
-                "Choose a level:",
-                [l["name"] for l in available],
-                key="math_level_select"
+            selected = st.selectbox("Choose a level:", [l["name"] for l in available], key="math_sel")
+            idx = next(i for i, l in enumerate(LEVELS) if l["name"] == selected)
+            lvl = LEVELS[idx]
+            color = lvl["color"]
+
+            BODIES = [
+                ("Modular Arithmetic - Clock Math",
+                 """**What is Modular Arithmetic?**
+
+Modular arithmetic is clock math. On a 12-hour clock, 10 + 5 = 3 not 15 because numbers wrap around.
+
+**The formula:** a mod b = the remainder when a is divided by b
+
+**Examples:**
+- 17 mod 5 = 2 because 17 = 3x5 + 2
+- 25 mod 7 = 4 because 25 = 3x7 + 4
+- 22 mod 11 = 0 wraps around perfectly
+
+**Key concepts you will be tested on:**
+- Basic mod calculations
+- Modular addition and multiplication
+- Modular inverse: find x where a times x is congruent to 1 mod n
+- Modular exponentiation: computing a to the power b mod n""",
+                 "ALL cryptography uses modular arithmetic! RSA encrypts using m^e mod n. Kyber does lattice math mod q=3329. Without mod arithmetic there is no crypto!"),
+                ("Prime Numbers - Foundation of RSA",
+                 """**What are Prime Numbers?**
+
+A prime number has exactly two factors: 1 and itself.
+Examples: 2, 3, 5, 7, 11, 13, 17, 19...
+
+The number 4 is NOT prime because 4 = 2 times 2.
+
+**Prime factorization:** Every number breaks into unique prime factors
+- 60 = 2 times 2 times 3 times 5
+- 35 = 5 times 7
+
+**The big idea:** Multiplying two primes is EASY. Finding which primes were multiplied (factoring) is HARD for large numbers!
+
+**Key concepts you will be tested on:**
+- Identifying prime numbers
+- Prime factorization
+- Fermat Little Theorem
+- Relatively prime numbers: gcd(a,b) = 1""",
+                 "RSA security depends on prime factoring being hard! RSA uses n=p times q where p and q are secret 512-digit primes. A quantum computer running Shor Algorithm factors n and breaks RSA in hours. Kyber avoids primes entirely!"),
+                ("Matrix Math - The Language of Lattices",
+                 """**What are Matrices?**
+
+A matrix is a rectangular grid of numbers. A vector is a single row or column of numbers.
+
+**Dot product:** [1,2] dot [3,4] = 1 times 3 + 2 times 4 = 11
+
+**The LWE equation:**
+b = A times s + e
+Where A is a public matrix, s is the secret vector, e is small noise.
+
+**Key concepts you will be tested on:**
+- Dot products and matrix multiplication
+- Matrix dimensions and shapes
+- Transpose: flipping rows and columns
+- Identity matrix
+- Linear independence
+- Determinants""",
+                 "Kyber public key IS a matrix! Key generation computes b = A times s + e mod q. Given A and b, finding s in 1000+ dimensions is impossible even for quantum computers. This is the LWE problem!"),
+                ("Number Theory - Deep Integer Math",
+                 """**What is Number Theory?**
+
+Number theory studies integers and their deep properties.
+
+**Euler totient phi(n):** Count of integers less than n that share no factors with n
+- phi(8) = 4 because numbers 1, 3, 5, 7 are coprime to 8
+- phi(p) = p-1 for any prime p
+
+**Abstract algebra:**
+- Group: set with one operation following specific rules
+- Ring: set with + and times like polynomial rings in Kyber
+- Field: ring where division is always possible
+
+**Key concepts you will be tested on:**
+- Euler totient function
+- Chinese Remainder Theorem
+- Discrete logarithm problem
+- Groups, rings, and fields""",
+                 "Kyber works in the polynomial ring Zq[x] divided by (x^n+1). This ring structure makes computation fast while keeping the lattice problem hard. RSA uses Euler totient phi(n)=(p-1)(q-1) computable only if you know the secret primes!"),
+                ("Lattice Problems - The Future of Crypto",
+                 """**What are Lattice Problems?**
+
+A lattice is an infinite grid of points in multi-dimensional space.
+
+**SVP (Shortest Vector Problem):** Find the shortest nonzero vector in a lattice
+- In 2D: easy to solve
+- In 1000 dimensions: computationally impossible
+
+**LWE (Learning With Errors):**
+Given noisy equations A times s + e = b, find secret s.
+The noise e makes this impossible to reverse!
+
+**Why quantum-safe?**
+- No quantum algorithm gives significant speedup on SVP
+- Grover gives at most square root speedup - not enough
+- Shor Algorithm does not help at all
+
+**Key concepts you will be tested on:**
+- SVP and CVP hardness
+- LWE and MLWE problems
+- Kyber key sizes and security levels
+- Why Grover gives only quadratic speedup""",
+                 "This IS the math behind Kyber, Dilithium, and Falcon! NIST chose lattice crypto because SVP and LWE have no known quantum speedup. Shor Algorithm does not help. Grover gives only square root speedup - not enough to break 256-bit lattice security!"),
+            ]
+
+            title, body, pqc = BODIES[idx]
+            st.markdown(
+                "<div style='background:" + color + "10;border-left:4px solid " + color + ";"
+                "border-radius:0 10px 10px 0;padding:1rem 1.5rem;margin-bottom:1rem;'>"
+                "<h3 style='color:" + color + ";margin:0'>" + lvl["emoji"] + " " + title + "</h3>"
+                "</div>",
+                unsafe_allow_html=True
             )
-            level_idx = next(i for i, l in enumerate(LEVELS) if l["name"] == selected_level)
+            st.markdown(body)
+            st.info("🔐 PQC Connection: " + pqc)
+            st.markdown("---")
+            st.markdown("### Ready to test your knowledge?")
+            st.caption("10 questions - 30 seconds each - time bonus points!")
 
-            import streamlit.components.v1 as components_math
-            components_math.html("""
-<!DOCTYPE html>
-<html>
-<head>
+            if st.button("▶ Start Challenge", key="math_start_btn", type="primary"):
+                st.session_state.math_game_active = True
+                st.session_state.math_level = idx
+                st.rerun()
+
+            if st.session_state.get("math_game_active") and st.session_state.get("math_level") == idx:
+                import streamlit.components.v1 as cmath
+                cmath.html("""
 <style>
-*{margin:0;padding:0;box-sizing:border-box;}
-body{background:#0f172a;font-family:sans-serif;color:white;padding:12px;}
-.math-wrap{max-width:560px;margin:0 auto;}
-.math-hud{display:flex;justify-content:space-between;margin-bottom:12px;gap:8px;}
-.hud-box{background:#1e293b;border:1px solid #334155;border-radius:8px;
-padding:8px 12px;font-size:12px;font-weight:bold;color:#a5b4fc;flex:1;text-align:center;}
-.question-box{background:#1e293b;border:1px solid #334155;border-radius:12px;
-padding:20px;margin:10px 0;text-align:center;}
-.q-text{font-size:1.4rem;font-weight:bold;color:white;margin-bottom:8px;}
-.q-context{font-size:0.85rem;color:#888;margin-bottom:16px;}
-.options{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0;}
-.opt-btn{padding:12px;border-radius:8px;border:2px solid #334155;
-cursor:pointer;font-size:14px;font-weight:bold;background:#1e293b;
-color:#a5b4fc;transition:all 0.15s;text-align:center;}
-.opt-btn:hover{border-color:#4f46e5;background:rgba(79,70,229,0.1);}
-.opt-btn.correct{border-color:#10b981;background:rgba(16,185,129,0.2);color:#10b981;}
-.opt-btn.wrong{border-color:#ef4444;background:rgba(239,68,68,0.2);color:#ef4444;}
-.feedback{padding:12px;border-radius:8px;margin:8px 0;font-size:13px;
-text-align:center;display:none;}
-.feedback.correct{background:rgba(16,185,129,0.15);border:1px solid #10b981;color:#10b981;}
-.feedback.wrong{background:rgba(239,68,68,0.15);border:1px solid #ef4444;color:#ef4444;}
-.pqc-fact{background:rgba(79,70,229,0.15);border:1px solid rgba(79,70,229,0.4);
-border-radius:8px;padding:10px;margin:8px 0;font-size:12px;color:#a5b4fc;
-text-align:center;display:none;}
-.next-btn{width:100%;padding:12px;border-radius:8px;border:none;
-cursor:pointer;font-size:14px;font-weight:bold;background:#4f46e5;
-color:white;margin-top:8px;display:none;}
-.next-btn:hover{background:#6d60ff;}
-.timer-bar{height:6px;background:#334155;border-radius:3px;margin:8px 0;overflow:hidden;}
-.timer-fill{height:100%;border-radius:3px;background:#10b981;transition:width 0.1s linear;}
-.complete-box{background:rgba(16,185,129,0.1);border:1px solid #10b981;
-border-radius:12px;padding:24px;text-align:center;display:none;}
+body{margin:0;background:#0f172a;font-family:sans-serif;color:white;padding:10px;}
+.wrap{max-width:540px;margin:0 auto;}
+.hud{display:flex;gap:5px;margin-bottom:8px;}
+.hb{background:#1e293b;border:1px solid #334155;border-radius:8px;
+padding:5px 8px;font-size:11px;font-weight:bold;color:#a5b4fc;flex:1;text-align:center;}
+.qbox{background:#1e293b;border:1px solid #334155;border-radius:12px;padding:16px;margin:6px 0;}
+.qt{font-size:1.2rem;font-weight:bold;color:white;margin-bottom:5px;}
+.qc{font-size:0.78rem;color:#888;margin-bottom:12px;}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin:8px 0;}
+.opt{padding:10px;border-radius:8px;border:2px solid #334155;cursor:pointer;
+font-size:12px;font-weight:bold;background:#1e293b;color:#a5b4fc;text-align:center;}
+.opt:hover{border-color:#4f46e5;}
+.opt.correct{border-color:#10b981;background:rgba(16,185,129,0.2);color:#10b981;}
+.opt.wrong{border-color:#ef4444;background:rgba(239,68,68,0.15);color:#ef4444;}
+.fb{padding:9px;border-radius:8px;margin:5px 0;font-size:12px;text-align:center;display:none;}
+.fb.ok{background:rgba(16,185,129,0.15);border:1px solid #10b981;color:#10b981;}
+.fb.bad{background:rgba(239,68,68,0.12);border:1px solid #ef4444;color:#ef4444;}
+.fc{background:rgba(79,70,229,0.12);border:1px solid rgba(79,70,229,0.35);
+border-radius:8px;padding:7px;margin:5px 0;font-size:11px;color:#a5b4fc;text-align:center;display:none;}
+.nb{width:100%;padding:11px;border-radius:8px;border:none;cursor:pointer;
+font-size:13px;font-weight:bold;background:#4f46e5;color:white;margin-top:7px;display:none;}
+.tb{height:5px;background:#334155;border-radius:3px;margin:5px 0;overflow:hidden;}
+.tf{height:100%;border-radius:3px;background:#10b981;}
+.done{background:rgba(16,185,129,0.08);border:1px solid #10b981;border-radius:12px;
+padding:20px;text-align:center;display:none;}
 </style>
-</head>
-<body>
-<div class="math-wrap">
-    <div class="math-hud">
-        <div class="hud-box">⭐ Score<br><span id="score">0</span></div>
-        <div class="hud-box">✅ Correct<br><span id="correct">0</span></div>
-        <div class="hud-box">❌ Wrong<br><span id="wrong">0</span></div>
-        <div class="hud-box">⏱️ Time<br><span id="timer">30</span>s</div>
-        <div class="hud-box">📊 Q<br><span id="qnum">1</span>/10</div>
-    </div>
-    <div class="timer-bar"><div class="timer-fill" id="timer-fill" style="width:100%"></div></div>
-    <div id="start-screen" style="background:#1e293b;border:1px solid #334155;
-        border-radius:12px;padding:24px;margin:10px 0;">
-
-        <!-- Level header -->
-        <div style="text-align:center;margin-bottom:16px;">
-            <div style="font-size:3rem;margin-bottom:8px" id="level-emoji">🧮</div>
-            <h2 style="color:#a5b4fc;margin-bottom:4px" id="level-title">QuantumMath Challenge</h2>
-            <p style="color:#888;font-size:12px;">10 questions · 30 seconds each · Time bonus points!</p>
-        </div>
-
-        <!-- Level intro explanation -->
-        <div id="level-intro" style="background:rgba(79,70,229,0.1);border:1px solid rgba(79,70,229,0.3);
-            border-radius:10px;padding:16px;margin-bottom:16px;">
-        </div>
-
-        <!-- Key concepts -->
-        <div id="level-concepts" style="margin-bottom:16px;"></div>
-
-        <!-- PQC connection -->
-        <div id="level-pqc" style="background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.25);
-            border-radius:10px;padding:12px;margin-bottom:20px;font-size:12px;color:#6ee7b7;">
-        </div>
-
-        <div style="text-align:center;">
-            <button onclick="startChallenge()" style="padding:12px 32px;border-radius:8px;border:none;cursor:pointer;background:#4f46e5;color:white;font-size:15px;font-weight:bold;">▶ Start Challenge</button>
-        </div>
-    </div>
-    <div class="question-box" id="qbox">
-        <div class="q-text" id="q-text">Loading...</div>
-        <div class="q-context" id="q-context"></div>
-        <div class="options" id="options"></div>
-        <div class="feedback" id="feedback"></div>
-        <div class="pqc-fact" id="pqc-fact"></div>
-        <button class="next-btn" id="next-btn" onclick="nextQuestion()">Next Question →</button>
-    </div>
-    <div class="complete-box" id="complete-box">
-        <div style="font-size:3rem;margin-bottom:12px">🏆</div>
-        <h2 style="color:#10b981;margin-bottom:8px">Level Complete!</h2>
-        <p id="complete-msg" style="color:#888;margin-bottom:16px"></p>
-        <button onclick="restartLevel()" style="padding:10px 24px;border-radius:8px;border:none;
-            cursor:pointer;background:#4f46e5;color:white;font-size:14px;font-weight:bold;">
-            Play Again
-        </button>
-    </div>
+<div class="wrap">
+<div class="hud">
+    <div class="hb">Score<br><b id="sc">0</b></div>
+    <div class="hb">Right<br><b id="ok">0</b></div>
+    <div class="hb">Wrong<br><b id="wr">0</b></div>
+    <div class="hb">Time<br><b id="tm">30</b>s</div>
+    <div class="hb">Q<br><b id="qn">1</b>/10</div>
+</div>
+<div class="tb"><div class="tf" id="tf" style="width:100%"></div></div>
+<div class="qbox" id="qbox">
+    <div class="qt" id="qt"></div>
+    <div class="qc" id="qc"></div>
+    <div class="opts" id="opts"></div>
+    <div class="fb" id="fb"></div>
+    <div class="fc" id="fc"></div>
+    <button class="nb" id="nb" onclick="nextQ()">Next Question</button>
+</div>
+<div class="done" id="done">
+    <div style="font-size:2.5rem">🏆</div>
+    <h2 style="color:#10b981;margin:8px 0">Level Complete!</h2>
+    <p id="dm" style="color:#888;margin:8px 0"></p>
+    <button onclick="restart()" style="padding:9px 22px;border-radius:8px;border:none;
+        cursor:pointer;background:#4f46e5;color:white;font-size:13px;font-weight:bold;">
+        Play Again
+    </button>
+</div>
 </div>
 <script>
-const LEVEL = 0; // Will be set dynamically
-
-const LEVEL_INTROS = [
-    {
-        emoji: "🔢",
-        title: "Level 1 — Modular Arithmetic",
-        color: "#10b981",
-        intro: `<h3 style="color:#a5b4fc;margin:0 0 10px;font-size:1rem;">What is Modular Arithmetic?</h3>
-            <p style="color:#ccc;font-size:13px;line-height:1.7;margin-bottom:10px;">
-                Modular arithmetic is like clock math. On a 12-hour clock, if it is 10 o'clock and you add 5 hours,
-                you get 3 o'clock — not 15! That is because 15 mod 12 = 3.
-            </p>
-            <p style="color:#ccc;font-size:13px;line-height:1.7;margin-bottom:10px;">
-                <strong style="color:#a5b4fc;">The formula:</strong> a mod b = the remainder when a is divided by b<br>
-                <strong style="color:#10b981;">Example:</strong> 17 mod 5 = 2 (because 17 = 3×5 + 2)
-            </p>
-            <p style="color:#ccc;font-size:13px;line-height:1.7;">
-                <strong style="color:#a5b4fc;">Key idea:</strong> Numbers wrap around! After reaching b, they start over at 0.
-                Think of it like a number line that forms a circle.
-            </p>`,
-        concepts: [
-            {icon:"🔄", text:"Numbers wrap around at a fixed value (the modulus)"},
-            {icon:"➗", text:"a mod b = remainder of a ÷ b"},
-            {icon:"⏰", text:"Clock arithmetic: 10 + 5 = 3 (mod 12)"},
-            {icon:"🔑", text:"Modular inverse: find x where a×x ≡ 1 (mod n)"},
-        ],
-        pqc: "🔐 PQC Connection: ALL cryptography uses modular arithmetic! RSA encrypts using m^e mod n. Kyber does lattice math mod q=3329. Even SHA-3 hashing uses modular operations internally!",
-    },
-    {
-        emoji: "🔑",
-        title: "Level 2 — Prime Numbers",
-        color: "#3b82f6",
-        intro: `<h3 style="color:#a5b4fc;margin:0 0 10px;font-size:1rem;">What are Prime Numbers?</h3>
-            <p style="color:#ccc;font-size:13px;line-height:1.7;margin-bottom:10px;">
-                A prime number has exactly two factors: 1 and itself. Examples: 2, 3, 5, 7, 11, 13, 17...
-                The number 4 is NOT prime because 4 = 2×2 (it has factors 1, 2, and 4).
-            </p>
-            <p style="color:#ccc;font-size:13px;line-height:1.7;margin-bottom:10px;">
-                <strong style="color:#a5b4fc;">Prime factorization:</strong> Every number can be broken into prime factors.<br>
-                <strong style="color:#3b82f6;">Example:</strong> 60 = 2 × 2 × 3 × 5
-            </p>
-            <p style="color:#ccc;font-size:13px;line-height:1.7;">
-                <strong style="color:#a5b4fc;">The big idea:</strong> Multiplying two primes is easy. Finding which primes
-                were multiplied together (factoring) is incredibly hard for large numbers!
-            </p>`,
-        concepts: [
-            {icon:"🎯", text:"Prime: exactly 2 factors (1 and itself)"},
-            {icon:"🔨", text:"Composite: more than 2 factors (can be broken down)"},
-            {icon:"📊", text:"Every number has a unique prime factorization"},
-            {icon:"💥", text:"Factoring large numbers is computationally hard"},
-        ],
-        pqc: "🔐 PQC Connection: RSA security depends on prime factoring being hard! RSA uses n=p×q where p and q are secret 512-digit primes. A quantum computer running Shor's Algorithm factors n and breaks RSA in hours. Kyber avoids primes entirely — it uses lattice math instead!",
-    },
-    {
-        emoji: "🏗️",
-        title: "Level 3 — Matrix Math",
-        color: "#8b5cf6",
-        intro: `<h3 style="color:#a5b4fc;margin:0 0 10px;font-size:1rem;">What are Matrices?</h3>
-            <p style="color:#ccc;font-size:13px;line-height:1.7;margin-bottom:10px;">
-                A matrix is a rectangular grid of numbers arranged in rows and columns.
-                A vector is a single row or column of numbers. Matrix math lets us work with
-                many equations at once — incredibly powerful!
-            </p>
-            <p style="color:#ccc;font-size:13px;line-height:1.7;margin-bottom:10px;">
-                <strong style="color:#a5b4fc;">Dot product:</strong> [1,2] · [3,4] = 1×3 + 2×4 = 11<br>
-                <strong style="color:#8b5cf6;">Matrix multiply:</strong> Each output cell = dot product of a row and column
-            </p>
-            <p style="color:#ccc;font-size:13px;line-height:1.7;">
-                <strong style="color:#a5b4fc;">Key idea:</strong> In LWE (Learning With Errors), the equation is
-                b = A·s + e where A is a matrix, s is the secret vector, and e is small noise.
-            </p>`,
-        concepts: [
-            {icon:"📐", text:"Matrix: grid of numbers with rows and columns"},
-            {icon:"➕", text:"Dot product: multiply matching elements and sum"},
-            {icon:"🔄", text:"Transpose: flip rows and columns"},
-            {icon:"🏗️", text:"Lattice = set of all integer combinations of basis vectors"},
-        ],
-        pqc: "🔐 PQC Connection: Kyber's public key is literally a matrix! The key generation computes b = A·s + e mod q where A is a public matrix, s is the secret, and e is small noise. The Learning With Errors (LWE) problem asks: given A and b, find s. In 1000+ dimensions this is impossible even for quantum computers!",
-    },
-    {
-        emoji: "📐",
-        title: "Level 4 — Number Theory",
-        color: "#f59e0b",
-        intro: `<h3 style="color:#a5b4fc;margin:0 0 10px;font-size:1rem;">What is Number Theory?</h3>
-            <p style="color:#ccc;font-size:13px;line-height:1.7;margin-bottom:10px;">
-                Number theory is the study of integers and their properties. It asks deep questions:
-                How many primes are there? What patterns do remainders follow? How do numbers
-                behave in groups and rings?
-            </p>
-            <p style="color:#ccc;font-size:13px;line-height:1.7;margin-bottom:10px;">
-                <strong style="color:#a5b4fc;">Euler's totient φ(n):</strong> Count of numbers less than n that share no factors with n.<br>
-                <strong style="color:#f59e0b;">Example:</strong> φ(8) = 4 (the numbers 1, 3, 5, 7 are coprime to 8)
-            </p>
-            <p style="color:#ccc;font-size:13px;line-height:1.7;">
-                <strong style="color:#a5b4fc;">Abstract algebra:</strong> Groups, rings, and fields give us the
-                mathematical structures that ALL modern cryptography is built on.
-            </p>`,
-        concepts: [
-            {icon:"φ", text:"Euler's totient: count of coprime integers less than n"},
-            {icon:"🔁", text:"Groups: sets with an operation following specific rules"},
-            {icon:"💍", text:"Rings: sets with + and × (like polynomial rings in Kyber!)"},
-            {icon:"🎯", text:"Hardness assumptions: problems believed impossible to solve fast"},
-        ],
-        pqc: "🔐 PQC Connection: Kyber works inside a polynomial ring Zq[x]/(x^n+1). This ring structure makes computations fast while keeping the lattice problem hard. RSA uses Euler's totient φ(n)=(p-1)(q-1) for key generation — computable only if you know p and q!",
-    },
-    {
-        emoji: "⚡",
-        title: "Level 5 — Lattice Problems",
-        color: "#ec4899",
-        intro: `<h3 style="color:#a5b4fc;margin:0 0 10px;font-size:1rem;">What are Lattice Problems?</h3>
-            <p style="color:#ccc;font-size:13px;line-height:1.7;margin-bottom:10px;">
-                A lattice is an infinite grid of points in multi-dimensional space. Lattice problems
-                ask: given this grid, can you find the shortest vector? Or the closest point to a
-                target? In 2D this is easy. In 1000 dimensions it is computationally impossible!
-            </p>
-            <p style="color:#ccc;font-size:13px;line-height:1.7;margin-bottom:10px;">
-                <strong style="color:#a5b4fc;">SVP (Shortest Vector Problem):</strong> Find the shortest nonzero vector in a lattice.<br>
-                <strong style="color:#ec4899;">LWE:</strong> Given noisy equations A·s + e = b, find secret s.
-                The noise e makes this impossible to reverse!
-            </p>
-            <p style="color:#ccc;font-size:13px;line-height:1.7;">
-                <strong style="color:#a5b4fc;">Why quantum-safe?</strong> No quantum algorithm gives significant speedup
-                on SVP or LWE. Grover gives at most a square root speedup — not enough to break it!
-            </p>`,
-        concepts: [
-            {icon:"🏗️", text:"SVP: find shortest nonzero vector — NP-hard in general"},
-            {icon:"🎯", text:"CVP: find closest lattice point to a target"},
-            {icon:"🧮", text:"LWE: solve A·s + e = b with small noise e"},
-            {icon:"🔐", text:"MLWE: Module LWE — used in Kyber for efficiency"},
-        ],
-        pqc: "🔐 PQC Connection: This IS the math behind Kyber (ML-KEM), Dilithium (ML-DSA), and Falcon! NIST chose lattice-based crypto because SVP and LWE have no known quantum speedup. Shor's Algorithm does not help here. Grover's Algorithm gives only square root speedup — not enough to break 256-bit lattice security!",
-    },
+var QS=[
+    {q:"What is 17 mod 5?",opts:["2","3","4","1"],ans:0,ctx:"17 = 3x5 + 2",fact:"RSA uses mod with huge primes. Kyber uses mod q=3329!"},
+    {q:"What is 25 mod 7?",opts:["3","4","2","5"],ans:1,ctx:"25 = 3x7 + 4",fact:"In Kyber all math happens mod q. This keeps numbers small!"},
+    {q:"What is (13+9) mod 11?",opts:["1","2","3","0"],ans:0,ctx:"13+9=22, 22=2x11+0",fact:"Hash functions use modular addition inside SHA-3!"},
+    {q:"Which number is prime?",opts:["97","91","87","93"],ans:0,ctx:"97 has no factors except 1 and 97",fact:"RSA uses primes with 512+ digits. Shor Algorithm breaks this!"},
+    {q:"Prime factors of 15?",opts:["3 and 5","3 and 4","5 and 7","2 and 7"],ans:0,ctx:"15 = 3 x 5",fact:"RSA multiplies two primes. Shor Algorithm factors the product!"},
+    {q:"Dot product of [1,2] and [3,4]?",opts:["11","10","12","8"],ans:0,ctx:"1x3 + 2x4 = 11",fact:"Kyber uses matrix-vector dot products for its public key!"},
+    {q:"In LWE: b = As + e, what is e?",opts:["Small noise vector","The secret","Public key","The message"],ans:0,ctx:"LWE = Learning With Errors",fact:"The noise e is what makes LWE impossible to solve!"},
+    {q:"Euler totient of prime p equals?",opts:["p-1","p","p+1","p/2"],ans:0,ctx:"All numbers 1 to p-1 are coprime to prime p",fact:"RSA uses phi(n)=(p-1)(q-1). Only computable if you know p and q!"},
+    {q:"What makes SVP hard in 1000 dimensions?",opts:["No efficient algorithm exists","Computers are too slow","The math is wrong","Quantum helps a lot"],ans:0,ctx:"SVP = Shortest Vector Problem",fact:"SVP hardness is exactly why Kyber is quantum-safe!"},
+    {q:"Grover Algorithm gives what speedup on search?",opts:["Square root speedup","Exponential speedup","No speedup","Doubles the speed"],ans:0,ctx:"Grover searches N items in sqrt(N) steps",fact:"Grover gives sqrt speedup only. Not enough to break 256-bit lattice crypto!"},
 ];
-
-const intro = LEVEL_INTROS[Math.min(LEVEL, LEVEL_INTROS.length-1)];
-document.getElementById("level-emoji").textContent = intro.emoji;
-document.getElementById("level-title").textContent = intro.title;
-document.getElementById("level-title").style.color = intro.color;
-document.getElementById("level-intro").innerHTML = intro.intro;
-document.getElementById("level-pqc").textContent = intro.pqc;
-
-// Render key concepts
-const conceptsEl = document.getElementById("level-concepts");
-conceptsEl.innerHTML = intro.concepts.map(c =>
-    `<div style="display:flex;align-items:flex-start;gap:10px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.06);">
-        <span style="font-size:1rem;min-width:24px;text-align:center;">${c.icon}</span>
-        <span style="font-size:12px;color:#ccc;line-height:1.5;">${c.text}</span>
-    </div>`
-).join("");
-
-const ALL_QUESTIONS = [
-    // Level 0 — Modular Arithmetic
-    [
-        {q:"What is 17 mod 5?", opts:["2","3","4","1"], ans:0,
-          ctx:"Modular arithmetic is the foundation of all cryptography!",
-          fact:"RSA uses mod arithmetic with huge primes. Kyber uses mod q in lattice equations!"},
-        {q:"What is 25 mod 7?", opts:["3","4","2","5"], ans:1,
-          ctx:"a mod b = remainder when a is divided by b",
-          fact:"In Kyber, all calculations happen mod q (usually 3329). This keeps numbers small!"},
-        {q:"If 3 × x ≡ 1 (mod 7), what is x?", opts:["5","3","4","2"], ans:0,
-          ctx:"Finding the modular inverse — crucial for RSA decryption!",
-          fact:"RSA decryption uses modular inverses. Kyber avoids this with lattice math instead!"},
-        {q:"What is (13 + 9) mod 11?", opts:["1","2","3","0"], ans:0,
-          ctx:"Modular addition wraps around like a clock",
-          fact:"Hash functions use modular addition internally. SHA-3 uses mod 2^64 operations!"},
-        {q:"What is 2^10 mod 1000?", opts:["24","124","24","1024"], ans:0,
-          ctx:"Modular exponentiation powers RSA encryption",
-          fact:"RSA encryption computes m^e mod n. Quantum computers can crack this with Shor's Algorithm!"},
-        {q:"What is 100 mod 13?", opts:["9","10","8","11"], ans:0,
-          ctx:"100 = 7 × 13 + 9",
-          fact:"Modular arithmetic creates groups — the mathematical structure behind all public key crypto!"},
-        {q:"Which is true: 15 ≡ ? (mod 4)", opts:["3","1","2","0"], ans:0,
-          ctx:"15 = 3×4 + 3, so 15 mod 4 = 3",
-          fact:"Congruence notation (≡) is used throughout the Kyber specification FIPS 203!"},
-        {q:"What is the additive inverse of 3 mod 7?", opts:["4","3","5","2"], ans:0,
-          ctx:"Additive inverse: what number adds to 3 to get 0 mod 7?",
-          fact:"Lattice crypto uses additive inverses constantly in its polynomial ring operations!"},
-        {q:"If p = 11, what is (p-1)/2?", opts:["5","6","4","10"], ans:0,
-          ctx:"This is a key value in number theory for prime p",
-          fact:"The value (p-1)/2 appears in quadratic residue checks used in lattice-based crypto!"},
-        {q:"What is 7^2 mod 11?", opts:["5","6","4","3"], ans:0,
-          ctx:"49 mod 11 = ?",
-          fact:"Squaring mod p is used in zero-knowledge proofs and commitment schemes in PQC!"},
-    ],
-    // Level 1 — Prime Numbers
-    [
-        {q:"Which is a prime number?", opts:["97","91","87","93"], ans:0,
-          ctx:"A prime has exactly 2 factors: 1 and itself",
-          fact:"RSA security depends on factoring large primes. A quantum computer breaks this in hours!"},
-        {q:"What are the prime factors of 15?", opts:["3 and 5","3 and 4","5 and 7","2 and 7"], ans:0,
-          ctx:"Prime factorization is the basis of RSA",
-          fact:"RSA multiplies two primes p×q. Shor's Algorithm factors this product on a quantum computer!"},
-        {q:"How many primes are less than 10?", opts:["4","3","5","2"], ans:0,
-          ctx:"List them: 2, 3, 5, 7...",
-          fact:"There are infinitely many primes — the Prime Number Theorem tells us their distribution!"},
-        {q:"Which theorem says every number has unique prime factorization?", opts:["Fundamental Theorem of Arithmetic","Fermat's Last Theorem","Euler's Theorem","Pythagorean Theorem"], ans:0,
-          ctx:"This is the foundation of RSA's security assumption",
-          fact:"Post-quantum crypto avoids prime factoring entirely! Kyber uses lattice problems instead!"},
-        {q:"If p and q are prime, is p×q always prime?", opts:["No","Yes","Sometimes","Always"], ans:0,
-          ctx:"A product of two primes has 4 factors: 1, p, q, and p×q",
-          fact:"RSA public key n = p×q where p,q are secret primes. Finding p and q from n is the hard problem!"},
-        {q:"Fermat's Little Theorem: a^(p-1) ≡ ? (mod p) for prime p", opts:["1","0","p","a"], ans:0,
-          ctx:"This works when gcd(a,p)=1",
-          fact:"Fermat's Little Theorem is used in RSA key generation and primality testing!"},
-        {q:"What is the smallest prime greater than 100?", opts:["101","103","107","109"], ans:0,
-          ctx:"Check: is 101 divisible by 2,3,5,7?",
-          fact:"RSA uses primes with 1024+ digits. Finding such primes requires probabilistic tests!"},
-        {q:"Which of these is NOT prime?", opts:["51","53","59","61"], ans:0,
-          ctx:"51 = 3 × 17",
-          fact:"Testing if large numbers are prime uses the Miller-Rabin test — a key algorithm in crypto!"},
-        {q:"What does 'relatively prime' mean?", opts:["gcd(a,b)=1","Both are prime","a<b","a divides b"], ans:0,
-          ctx:"Also called 'coprime'",
-          fact:"The RSA public exponent e must be relatively prime to φ(n). This ensures decryption works!"},
-        {q:"In RSA, if n=35, what are p and q?", opts:["5 and 7","3 and 11","7 and 9","5 and 9"], ans:0,
-          ctx:"Factor 35 into two primes",
-          fact:"Real RSA uses primes with 512+ digits each. Kyber replaces this with lattice math!"},
-    ],
-    // Level 2 — Matrix Math
-    [
-        {q:"What is [1,2] · [3,4] (dot product)?", opts:["11","10","12","8"], ans:0,
-          ctx:"1×3 + 2×4 = ?",
-          fact:"Kyber uses matrix-vector products over polynomial rings! The public key is a matrix A times secret s!"},
-        {q:"For matrix A = [[1,2],[3,4]], what is A[0][1]?", opts:["2","1","3","4"], ans:0,
-          ctx:"Row 0, Column 1 of the matrix",
-          fact:"Kyber's public key matrix A is generated from a random seed using SHA-3 — impossible to reverse!"},
-        {q:"What is the transpose of [[1,2],[3,4]]?", opts:["[[1,3],[2,4]]","[[4,3],[2,1]]","[[2,1],[4,3]]","[[1,2],[3,4]]"], ans:0,
-          ctx:"Swap rows and columns",
-          fact:"Dilithium uses matrix transposes in its signature verification algorithm!"},
-        {q:"Matrix multiplication: [[1,0],[0,1]] × [[5,6],[7,8]] = ?", opts:["[[5,6],[7,8]]","[[1,0],[0,1]]","[[6,5],[8,7]]","[[12,14],[16,18]]"], ans:0,
-          ctx:"The identity matrix times any matrix = that matrix",
-          fact:"Identity matrices appear in lattice proofs. The hard lattice problem is NOT like the identity!"},
-        {q:"If A is 2×3 and B is 3×4, what size is A×B?", opts:["2×4","3×3","2×3","3×4"], ans:0,
-          ctx:"(m×n) × (n×p) = m×p",
-          fact:"Kyber uses matrix dimensions that balance security and efficiency. Kyber-768 uses 3×3 matrices!"},
-        {q:"What does det([[2,1],[1,2]]) equal?", opts:["3","4","2","1"], ans:0,
-          ctx:"det = ad - bc for 2×2 matrix",
-          fact:"Determinants determine if a matrix is invertible — crucial in lattice math security proofs!"},
-        {q:"In LWE, we compute A·s + e. What is e?", opts:["Small noise vector","The secret","The public key","The message"], ans:0,
-          ctx:"LWE = Learning With Errors",
-          fact:"The noise e is what makes LWE hard! Without noise, solving A·s = b is easy linear algebra!"},
-        {q:"What is a vector in n dimensions?", opts:["A list of n numbers","An n×n grid","A single number","A direction only"], ans:0,
-          ctx:"Lattices are built from vectors",
-          fact:"Kyber-768 secret key s is a vector of 256 polynomial coefficients! Huge but quantum-safe!"},
-        {q:"What does 'linearly independent' mean for vectors?", opts:["No vector is a combination of others","All vectors are parallel","All vectors have length 1","Vectors are perpendicular"], ans:0,
-          ctx:"Key concept for lattice bases",
-          fact:"Lattice basis vectors must be linearly independent. The security comes from finding short vectors!"},
-        {q:"What is the Gram-Schmidt process used for?", opts:["Orthogonalizing vectors","Multiplying matrices","Finding eigenvalues","Solving equations"], ans:0,
-          ctx:"Used in lattice reduction algorithms",
-          fact:"The LLL algorithm uses Gram-Schmidt to find short lattice vectors — but fails in high dimensions!"},
-    ],
-    // Level 3 — Number Theory
-    [
-        {q:"What is Euler's totient φ(12)?", opts:["4","6","8","3"], ans:0,
-          ctx:"Count integers 1-12 that are coprime to 12",
-          fact:"RSA uses φ(n) = (p-1)(q-1). Computing this requires knowing p and q — which is secret!"},
-        {q:"Chinese Remainder Theorem: solve x≡1(mod 3), x≡2(mod 5)", opts:["7","11","4","2"], ans:0,
-          ctx:"Find the smallest positive x satisfying both",
-          fact:"Kyber uses Number Theoretic Transform (NTT) based on CRT for fast polynomial multiplication!"},
-        {q:"What is gcd(48, 18)?", opts:["6","3","9","12"], ans:0,
-          ctx:"Use Euclidean algorithm: 48=2×18+12, 18=1×12+6, 12=2×6+0",
-          fact:"Extended Euclidean Algorithm computes modular inverses used in RSA key generation!"},
-        {q:"For RSA with p=5, q=11, what is n?", opts:["55","56","50","60"], ans:0,
-          ctx:"n = p × q",
-          fact:"Real RSA n is 2048+ bits. A 2048-bit quantum computer running Shor breaks it in hours!"},
-        {q:"What is the discrete logarithm problem?", opts:["Find x given g^x mod p = y","Multiply two primes","Factor a large number","Find square roots"], ans:0,
-          ctx:"Basis of Diffie-Hellman and ECDH",
-          fact:"Discrete log is also broken by Shor's Algorithm! Kyber solves a completely different problem!"},
-        {q:"Lagrange's theorem: order of subgroup divides order of group. If group order=12, which can be subgroup order?", opts:["4","5","7","8"], ans:0,
-          ctx:"4 divides 12 evenly",
-          fact:"Group theory underlies all of abstract algebra including the ring structure in lattice crypto!"},
-        {q:"What is a ring in abstract algebra?", opts:["Set with + and × following specific rules","A circular number","Only integers","A prime number set"], ans:0,
-          ctx:"Polynomial rings are key in post-quantum crypto",
-          fact:"Kyber works in the polynomial ring Zq[x]/(x^n+1). This ring structure enables fast computation!"},
-        {q:"If φ(p) = p-1 for prime p, what is φ(7)?", opts:["6","5","7","4"], ans:0,
-          ctx:"All numbers 1 to p-1 are coprime to prime p",
-          fact:"Euler's totient function is central to RSA but NOT used in post-quantum algorithms like Kyber!"},
-        {q:"What is a quadratic residue mod p?", opts:["A perfect square mod p","A prime mod p","An even number","A negative number"], ans:0,
-          ctx:"x is QR mod p if x ≡ a² mod p for some a",
-          fact:"Quadratic residuosity is used in some PQC schemes and zero-knowledge proof systems!"},
-        {q:"What does 'hardness assumption' mean in crypto?", opts:["A problem believed computationally infeasible","A difficult exam","Physical hardness","Memory requirements"], ans:0,
-          ctx:"Security relies on unproven but widely believed assumptions",
-          fact:"Kyber's hardness assumption is MLWE — Module Learning With Errors. No quantum speedup known!"},
-    ],
-    // Level 4 — Lattice Problems
-    [
-        {q:"What is the Shortest Vector Problem (SVP)?", opts:["Find shortest nonzero vector in lattice","Sort a list","Find primes","Matrix multiplication"], ans:0,
-          ctx:"NP-hard in general — basis of lattice security",
-          fact:"SVP hardness is what makes lattice crypto quantum-safe! No quantum algorithm solves SVP efficiently!"},
-        {q:"In LWE: given (A, b=As+e), what is the secret?", opts:["s","A","b","e"], ans:0,
-          ctx:"A is public, b is public, e is small noise",
-          fact:"Finding s from (A, As+e) is computationally infeasible — this is what Kyber relies on!"},
-        {q:"What makes MLWE harder than plain LWE?", opts:["Uses polynomial rings instead of integers","Uses bigger numbers","Has more noise","Has fewer equations"], ans:0,
-          ctx:"M stands for Module",
-          fact:"Kyber uses MLWE (Module LWE) for better efficiency. Same hardness, smaller key sizes!"},
-        {q:"What is a lattice basis?", opts:["Set of linearly independent vectors spanning the lattice","The bottom row of a matrix","A fundamental constant","The lattice boundary"], ans:0,
-          ctx:"Many different bases can generate the same lattice",
-          fact:"The hard problem: given a bad basis, find a good one (short vectors). This is what crypto uses!"},
-        {q:"Kyber-512 has security level equivalent to AES-?", opts:["128","256","192","64"], ans:0,
-          ctx:"NIST security level 1",
-          fact:"Kyber-512: 128-bit security. Kyber-768: 192-bit. Kyber-1024: 256-bit. Choose based on need!"},
-        {q:"What is the noise distribution in Kyber?", opts:["Centered binomial distribution","Uniform random","Gaussian","Binary"], ans:0,
-          ctx:"Small errors sampled from a specific distribution",
-          fact:"Kyber uses centered binomial distribution η for noise — efficient to sample and provably secure!"},
-        {q:"How does Kyber key encapsulation work (simplified)?", opts:["Encrypt random seed with recipient public key","Sign a message","Hash a password","Generate prime numbers"], ans:0,
-          ctx:"Kyber = ML-KEM = key encapsulation mechanism",
-          fact:"Kyber: Alice encrypts random seed r using Bob's public key → shared secret = Hash(r). Quantum safe!"},
-        {q:"What is the rejection sampling technique used for in Dilithium?", opts:["Make signatures independent of secret key","Speed up computation","Reduce key size","Generate primes"], ans:0,
-          ctx:"Critical security feature in Dilithium signing",
-          fact:"Without rejection sampling, Dilithium signatures would leak the secret key over multiple uses!"},
-        {q:"What is NTRU? (used by Falcon)", opts:["Nth degree TRUncated polynomial ring","A network protocol","A hash function","A prime number type"], ans:0,
-          ctx:"Falcon uses NTRU lattices for compact signatures",
-          fact:"Falcon uses NTRU lattices — produces signatures 5x smaller than Dilithium for same security!"},
-        {q:"If Grover's algorithm gives quadratic speedup, a 256-bit hash has effective security of?", opts:["128 bits","256 bits","64 bits","512 bits"], ans:0,
-          ctx:"Square root speedup: 2^256 operations becomes 2^128",
-          fact:"SHA-256 gives 128-bit post-quantum security. SHA-3-256 is NIST recommended for PQC systems!"},
-    ],
-];
-
-const questions = ALL_QUESTIONS[Math.min(LEVEL, ALL_QUESTIONS.length-1)];
-let qIdx=0, score=0, correct=0, wrong=0, answered=false;
-let timeLeft=30, timerInterval;
-
-function startTimer() {
-    clearInterval(timerInterval);
-    timeLeft=30;
-    timerInterval=setInterval(()=>{
-        timeLeft--;
-        document.getElementById("timer").textContent=timeLeft;
-        const pct=(timeLeft/30)*100;
-        const fill=document.getElementById("timer-fill");
-        fill.style.width=pct+"%";
-        fill.style.background=timeLeft>15?"#10b981":timeLeft>8?"#f59e0b":"#ef4444";
-        if(timeLeft<=0){
-            clearInterval(timerInterval);
-            if(!answered) timeUp();
-        }
+var qi=0,sc=0,ok=0,wr=0,answered=false,tl=30,ti;
+function loadQ(){
+    answered=false;
+    var q=QS[qi];
+    document.getElementById("qt").textContent=q.q;
+    document.getElementById("qc").textContent=q.ctx;
+    document.getElementById("qn").textContent=(qi+1);
+    document.getElementById("fb").style.display="none";
+    document.getElementById("fc").style.display="none";
+    document.getElementById("nb").style.display="none";
+    var od=document.getElementById("opts");
+    od.innerHTML="";
+    for(var i=0;i<q.opts.length;i++){
+        var b=document.createElement("button");
+        b.className="opt";
+        b.textContent=q.opts[i];
+        b.setAttribute("data-i",i);
+        b.onclick=function(){answer(parseInt(this.getAttribute("data-i")));};
+        od.appendChild(b);
+    }
+    clearInterval(ti);
+    tl=30;
+    ti=setInterval(function(){
+        tl--;
+        document.getElementById("tm").textContent=tl;
+        var pct=(tl/30)*100;
+        var f=document.getElementById("tf");
+        f.style.width=pct+"%";
+        f.style.background=tl>15?"#10b981":tl>8?"#f59e0b":"#ef4444";
+        if(tl<=0){clearInterval(ti);if(!answered)timeUp();}
     },1000);
 }
-
-function timeUp() {
+function timeUp(){
+    answered=true;wr++;
+    var q=QS[qi];
+    var btns=document.querySelectorAll(".opt");
+    btns[q.ans].className="opt correct";
+    var f=document.getElementById("fb");
+    f.textContent="Time up! Answer: "+q.opts[q.ans];
+    f.className="fb bad";f.style.display="block";
+    document.getElementById("wr").textContent=wr;
+    document.getElementById("nb").style.display="block";
+}
+function answer(i){
+    if(answered)return;
     answered=true;
-    const q=questions[qIdx];
-    document.querySelectorAll(".opt-btn").forEach((b,i)=>{
-        if(i===q.ans) b.className="opt-btn correct";
-    });
-    showFeedback(false,"⏰ Time's up! The answer was: "+q.opts[q.ans]);
-    wrong++;
-    document.getElementById("wrong").textContent=wrong;
-    document.getElementById("next-btn").style.display="block";
-}
-
-function loadQuestion() {
-    answered=false;
-    const q=questions[qIdx];
-    document.getElementById("q-text").textContent=q.q;
-    document.getElementById("q-context").textContent=q.ctx;
-    document.getElementById("qnum").textContent=(qIdx+1);
-    document.getElementById("feedback").style.display="none";
-    document.getElementById("pqc-fact").style.display="none";
-    document.getElementById("next-btn").style.display="none";
-
-    const opts=document.getElementById("options");
-    opts.innerHTML="";
-    q.opts.forEach((opt,i)=>{
-        const btn=document.createElement("button");
-        btn.className="opt-btn";
-        btn.textContent=opt;
-        btn.onclick=()=>answer(i);
-        opts.appendChild(btn);
-    });
-
-    startTimer();
-}
-
-function answer(i) {
-    if(answered) return;
-    answered=true;
-    clearInterval(timerInterval);
-    const q=questions[qIdx];
-    const btns=document.querySelectorAll(".opt-btn");
-    btns[q.ans].className="opt-btn correct";
-    if(i!==q.ans) btns[i].className="opt-btn wrong";
-
-    const isCorrect=i===q.ans;
-    const timeBonus=Math.floor(timeLeft/3);
-    const pts=isCorrect?100+timeBonus:0;
-    score+=pts;
-    if(isCorrect){correct++;}else{wrong++;}
-
-    document.getElementById("score").textContent=score;
-    document.getElementById("correct").textContent=correct;
-    document.getElementById("wrong").textContent=wrong;
-
-    showFeedback(isCorrect,
-        isCorrect?"✅ Correct! +"+(pts)+" points (+"+(timeBonus)+" time bonus!)":
-        "❌ Wrong! Correct answer: "+q.opts[q.ans]);
-
-    // Show PQC fact
-    const fact=document.getElementById("pqc-fact");
-    fact.textContent="🔐 PQC Connection: "+q.fact;
-    fact.style.display="block";
-
-    document.getElementById("next-btn").style.display="block";
-}
-
-function showFeedback(isCorrect,msg) {
-    const fb=document.getElementById("feedback");
-    fb.textContent=msg;
-    fb.className="feedback "+(isCorrect?"correct":"wrong");
+    clearInterval(ti);
+    var q=QS[qi];
+    var btns=document.querySelectorAll(".opt");
+    btns[q.ans].className="opt correct";
+    if(i!==q.ans)btns[i].className="opt wrong";
+    var correct=i===q.ans;
+    var bonus=Math.floor(tl/3);
+    var pts=correct?100+bonus:0;
+    sc+=pts;
+    if(correct)ok++;else wr++;
+    document.getElementById("sc").textContent=sc;
+    document.getElementById("ok").textContent=ok;
+    document.getElementById("wr").textContent=wr;
+    var fb=document.getElementById("fb");
+    fb.textContent=correct?"Correct! +"+pts+" pts (time bonus +"+bonus+")":"Wrong! Answer: "+q.opts[q.ans];
+    fb.className="fb "+(correct?"ok":"bad");
     fb.style.display="block";
+    var fc=document.getElementById("fc");
+    fc.textContent="PQC: "+q.fact;
+    fc.style.display="block";
+    document.getElementById("nb").style.display="block";
 }
-
-function nextQuestion() {
-    qIdx++;
-    if(qIdx>=questions.length){
-        // Level complete!
-        clearInterval(timerInterval);
+function nextQ(){
+    qi++;
+    if(qi>=QS.length){
+        clearInterval(ti);
         document.getElementById("qbox").style.display="none";
-        const cb=document.getElementById("complete-box");
-        cb.style.display="block";
-        const pct=Math.round(correct/questions.length*100);
-        document.getElementById("complete-msg").textContent=
-            "Score: "+score+" | Accuracy: "+pct+"% | "+correct+"/"+questions.length+" correct";
+        document.getElementById("done").style.display="block";
+        var pct=Math.round(ok/QS.length*100);
+        document.getElementById("dm").textContent="Score: "+sc+" | Accuracy: "+pct+"% | "+ok+"/10 correct";
     } else {
-        loadQuestion();
+        loadQ();
     }
 }
-
-function restartLevel() {
-    qIdx=0;score=0;correct=0;wrong=0;
-    document.getElementById("score").textContent=0;
-    document.getElementById("correct").textContent=0;
-    document.getElementById("wrong").textContent=0;
-    document.getElementById("qbox").style.display="none";
-    document.getElementById("complete-box").style.display="none";
-    document.getElementById("start-screen").style.display="block";
-}
-
-// Show start screen first
-document.getElementById("qbox").style.display="none";
-document.getElementById("start-screen").style.display="block";
-
-function startChallenge() {
-    document.getElementById("start-screen").style.display="none";
+function restart(){
+    qi=0;sc=0;ok=0;wr=0;
+    document.getElementById("sc").textContent=0;
+    document.getElementById("ok").textContent=0;
+    document.getElementById("wr").textContent=0;
     document.getElementById("qbox").style.display="block";
-    loadQuestion();
+    document.getElementById("done").style.display="none";
+    loadQ();
 }
-document.getElementById("start-btn").onclick = startChallenge;
+loadQ();
 </script>
-</body>
-</html>
-""", height=620)
+""", height=600)
+                if st.button("Back to Intro", key="math_back"):
+                    st.session_state.math_game_active = False
+                    st.rerun()
