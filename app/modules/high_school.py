@@ -535,21 +535,36 @@ border-radius:12px;padding:24px;text-align:center;display:none;}}
     </div>
     <div class="timer-bar"><div class="timer-fill" id="timer-fill" style="width:100%"></div></div>
     <div id="start-screen" style="background:#1e293b;border:1px solid #334155;
-        border-radius:12px;padding:32px;text-align:center;margin:10px 0;">
-        <div style="font-size:3rem;margin-bottom:12px">🧮</div>
-        <h2 style="color:#a5b4fc;margin-bottom:8px">QuantumMath Challenge</h2>
-        <p style="color:#888;font-size:13px;margin-bottom:8px">
-            10 questions · 30 seconds each · Time bonus points!
-        </p>
-        <p style="color:#6b7280;font-size:12px;margin-bottom:20px">
-            Each question shows how the math connects to real NIST PQC algorithms.
-        </p>
-        <button onclick="document.getElementById('start-screen').style.display='none';
-            document.getElementById('qbox').style.display='block';loadQuestion();"
-            style="padding:12px 32px;border-radius:8px;border:none;cursor:pointer;
-            background:#4f46e5;color:white;font-size:15px;font-weight:bold;">
-            ▶ Start Challenge
-        </button>
+        border-radius:12px;padding:24px;margin:10px 0;">
+
+        <!-- Level header -->
+        <div style="text-align:center;margin-bottom:16px;">
+            <div style="font-size:3rem;margin-bottom:8px" id="level-emoji">🧮</div>
+            <h2 style="color:#a5b4fc;margin-bottom:4px" id="level-title">QuantumMath Challenge</h2>
+            <p style="color:#888;font-size:12px;">10 questions · 30 seconds each · Time bonus points!</p>
+        </div>
+
+        <!-- Level intro explanation -->
+        <div id="level-intro" style="background:rgba(79,70,229,0.1);border:1px solid rgba(79,70,229,0.3);
+            border-radius:10px;padding:16px;margin-bottom:16px;">
+        </div>
+
+        <!-- Key concepts -->
+        <div id="level-concepts" style="margin-bottom:16px;"></div>
+
+        <!-- PQC connection -->
+        <div id="level-pqc" style="background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.25);
+            border-radius:10px;padding:12px;margin-bottom:20px;font-size:12px;color:#6ee7b7;">
+        </div>
+
+        <div style="text-align:center;">
+            <button onclick="document.getElementById('start-screen').style.display='none';
+                document.getElementById('qbox').style.display='block';loadQuestion();"
+                style="padding:12px 32px;border-radius:8px;border:none;cursor:pointer;
+                background:#4f46e5;color:white;font-size:15px;font-weight:bold;">
+                ▶ Start Challenge
+            </button>
+        </div>
     </div>
     <div class="question-box" id="qbox">
         <div class="q-text" id="q-text">Loading...</div>
@@ -571,6 +586,154 @@ border-radius:12px;padding:24px;text-align:center;display:none;}}
 </div>
 <script>
 const LEVEL = {level_idx};
+
+const LEVEL_INTROS = [
+    {{
+        emoji: "🔢",
+        title: "Level 1 — Modular Arithmetic",
+        color: "#10b981",
+        intro: `<h3 style="color:#a5b4fc;margin:0 0 10px;font-size:1rem;">What is Modular Arithmetic?</h3>
+            <p style="color:#ccc;font-size:13px;line-height:1.7;margin-bottom:10px;">
+                Modular arithmetic is like clock math. On a 12-hour clock, if it is 10 o'clock and you add 5 hours,
+                you get 3 o'clock — not 15! That is because 15 mod 12 = 3.
+            </p>
+            <p style="color:#ccc;font-size:13px;line-height:1.7;margin-bottom:10px;">
+                <strong style="color:#a5b4fc;">The formula:</strong> a mod b = the remainder when a is divided by b<br>
+                <strong style="color:#10b981;">Example:</strong> 17 mod 5 = 2 (because 17 = 3×5 + 2)
+            </p>
+            <p style="color:#ccc;font-size:13px;line-height:1.7;">
+                <strong style="color:#a5b4fc;">Key idea:</strong> Numbers wrap around! After reaching b, they start over at 0.
+                Think of it like a number line that forms a circle.
+            </p>`,
+        concepts: [
+            {{icon:"🔄", text:"Numbers wrap around at a fixed value (the modulus)"}},
+            {{icon:"➗", text:"a mod b = remainder of a ÷ b"}},
+            {{icon:"⏰", text:"Clock arithmetic: 10 + 5 = 3 (mod 12)"}},
+            {{icon:"🔑", text:"Modular inverse: find x where a×x ≡ 1 (mod n)"}},
+        ],
+        pqc: "🔐 PQC Connection: ALL cryptography uses modular arithmetic! RSA encrypts using m^e mod n. Kyber does lattice math mod q=3329. Even SHA-3 hashing uses modular operations internally!",
+    }},
+    {{
+        emoji: "🔑",
+        title: "Level 2 — Prime Numbers",
+        color: "#3b82f6",
+        intro: `<h3 style="color:#a5b4fc;margin:0 0 10px;font-size:1rem;">What are Prime Numbers?</h3>
+            <p style="color:#ccc;font-size:13px;line-height:1.7;margin-bottom:10px;">
+                A prime number has exactly two factors: 1 and itself. Examples: 2, 3, 5, 7, 11, 13, 17...
+                The number 4 is NOT prime because 4 = 2×2 (it has factors 1, 2, and 4).
+            </p>
+            <p style="color:#ccc;font-size:13px;line-height:1.7;margin-bottom:10px;">
+                <strong style="color:#a5b4fc;">Prime factorization:</strong> Every number can be broken into prime factors.<br>
+                <strong style="color:#3b82f6;">Example:</strong> 60 = 2 × 2 × 3 × 5
+            </p>
+            <p style="color:#ccc;font-size:13px;line-height:1.7;">
+                <strong style="color:#a5b4fc;">The big idea:</strong> Multiplying two primes is easy. Finding which primes
+                were multiplied together (factoring) is incredibly hard for large numbers!
+            </p>`,
+        concepts: [
+            {{icon:"🎯", text:"Prime: exactly 2 factors (1 and itself)"}},
+            {{icon:"🔨", text:"Composite: more than 2 factors (can be broken down)"}},
+            {{icon:"📊", text:"Every number has a unique prime factorization"}},
+            {{icon:"💥", text:"Factoring large numbers is computationally hard"}},
+        ],
+        pqc: "🔐 PQC Connection: RSA security depends on prime factoring being hard! RSA uses n=p×q where p and q are secret 512-digit primes. A quantum computer running Shor's Algorithm factors n and breaks RSA in hours. Kyber avoids primes entirely — it uses lattice math instead!",
+    }},
+    {{
+        emoji: "🏗️",
+        title: "Level 3 — Matrix Math",
+        color: "#8b5cf6",
+        intro: `<h3 style="color:#a5b4fc;margin:0 0 10px;font-size:1rem;">What are Matrices?</h3>
+            <p style="color:#ccc;font-size:13px;line-height:1.7;margin-bottom:10px;">
+                A matrix is a rectangular grid of numbers arranged in rows and columns.
+                A vector is a single row or column of numbers. Matrix math lets us work with
+                many equations at once — incredibly powerful!
+            </p>
+            <p style="color:#ccc;font-size:13px;line-height:1.7;margin-bottom:10px;">
+                <strong style="color:#a5b4fc;">Dot product:</strong> [1,2] · [3,4] = 1×3 + 2×4 = 11<br>
+                <strong style="color:#8b5cf6;">Matrix multiply:</strong> Each output cell = dot product of a row and column
+            </p>
+            <p style="color:#ccc;font-size:13px;line-height:1.7;">
+                <strong style="color:#a5b4fc;">Key idea:</strong> In LWE (Learning With Errors), the equation is
+                b = A·s + e where A is a matrix, s is the secret vector, and e is small noise.
+            </p>`,
+        concepts: [
+            {{icon:"📐", text:"Matrix: grid of numbers with rows and columns"}},
+            {{icon:"➕", text:"Dot product: multiply matching elements and sum"}},
+            {{icon:"🔄", text:"Transpose: flip rows and columns"}},
+            {{icon:"🏗️", text:"Lattice = set of all integer combinations of basis vectors"}},
+        ],
+        pqc: "🔐 PQC Connection: Kyber's public key is literally a matrix! The key generation computes b = A·s + e mod q where A is a public matrix, s is the secret, and e is small noise. The Learning With Errors (LWE) problem asks: given A and b, find s. In 1000+ dimensions this is impossible even for quantum computers!",
+    }},
+    {{
+        emoji: "📐",
+        title: "Level 4 — Number Theory",
+        color: "#f59e0b",
+        intro: `<h3 style="color:#a5b4fc;margin:0 0 10px;font-size:1rem;">What is Number Theory?</h3>
+            <p style="color:#ccc;font-size:13px;line-height:1.7;margin-bottom:10px;">
+                Number theory is the study of integers and their properties. It asks deep questions:
+                How many primes are there? What patterns do remainders follow? How do numbers
+                behave in groups and rings?
+            </p>
+            <p style="color:#ccc;font-size:13px;line-height:1.7;margin-bottom:10px;">
+                <strong style="color:#a5b4fc;">Euler's totient φ(n):</strong> Count of numbers less than n that share no factors with n.<br>
+                <strong style="color:#f59e0b;">Example:</strong> φ(8) = 4 (the numbers 1, 3, 5, 7 are coprime to 8)
+            </p>
+            <p style="color:#ccc;font-size:13px;line-height:1.7;">
+                <strong style="color:#a5b4fc;">Abstract algebra:</strong> Groups, rings, and fields give us the
+                mathematical structures that ALL modern cryptography is built on.
+            </p>`,
+        concepts: [
+            {{icon:"φ", text:"Euler's totient: count of coprime integers less than n"}},
+            {{icon:"🔁", text:"Groups: sets with an operation following specific rules"}},
+            {{icon:"💍", text:"Rings: sets with + and × (like polynomial rings in Kyber!)"}},
+            {{icon:"🎯", text:"Hardness assumptions: problems believed impossible to solve fast"}},
+        ],
+        pqc: "🔐 PQC Connection: Kyber works inside a polynomial ring Zq[x]/(x^n+1). This ring structure makes computations fast while keeping the lattice problem hard. RSA uses Euler's totient φ(n)=(p-1)(q-1) for key generation — computable only if you know p and q!",
+    }},
+    {{
+        emoji: "⚡",
+        title: "Level 5 — Lattice Problems",
+        color: "#ec4899",
+        intro: `<h3 style="color:#a5b4fc;margin:0 0 10px;font-size:1rem;">What are Lattice Problems?</h3>
+            <p style="color:#ccc;font-size:13px;line-height:1.7;margin-bottom:10px;">
+                A lattice is an infinite grid of points in multi-dimensional space. Lattice problems
+                ask: given this grid, can you find the shortest vector? Or the closest point to a
+                target? In 2D this is easy. In 1000 dimensions it is computationally impossible!
+            </p>
+            <p style="color:#ccc;font-size:13px;line-height:1.7;margin-bottom:10px;">
+                <strong style="color:#a5b4fc;">SVP (Shortest Vector Problem):</strong> Find the shortest nonzero vector in a lattice.<br>
+                <strong style="color:#ec4899;">LWE:</strong> Given noisy equations A·s + e = b, find secret s.
+                The noise e makes this impossible to reverse!
+            </p>
+            <p style="color:#ccc;font-size:13px;line-height:1.7;">
+                <strong style="color:#a5b4fc;">Why quantum-safe?</strong> No quantum algorithm gives significant speedup
+                on SVP or LWE. Grover gives at most a square root speedup — not enough to break it!
+            </p>`,
+        concepts: [
+            {{icon:"🏗️", text:"SVP: find shortest nonzero vector — NP-hard in general"}},
+            {{icon:"🎯", text:"CVP: find closest lattice point to a target"}},
+            {{icon:"🧮", text:"LWE: solve A·s + e = b with small noise e"}},
+            {{icon:"🔐", text:"MLWE: Module LWE — used in Kyber for efficiency"}},
+        ],
+        pqc: "🔐 PQC Connection: This IS the math behind Kyber (ML-KEM), Dilithium (ML-DSA), and Falcon! NIST chose lattice-based crypto because SVP and LWE have no known quantum speedup. Shor's Algorithm does not help here. Grover's Algorithm gives only square root speedup — not enough to break 256-bit lattice security!",
+    }},
+];
+
+const intro = LEVEL_INTROS[Math.min(LEVEL, LEVEL_INTROS.length-1)];
+document.getElementById("level-emoji").textContent = intro.emoji;
+document.getElementById("level-title").textContent = intro.title;
+document.getElementById("level-title").style.color = intro.color;
+document.getElementById("level-intro").innerHTML = intro.intro;
+document.getElementById("level-pqc").textContent = intro.pqc;
+
+// Render key concepts
+const conceptsEl = document.getElementById("level-concepts");
+conceptsEl.innerHTML = intro.concepts.map(c =>
+    `<div style="display:flex;align-items:flex-start;gap:10px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.06);">
+        <span style="font-size:1rem;min-width:24px;text-align:center;">${{c.icon}}</span>
+        <span style="font-size:12px;color:#ccc;line-height:1.5;">${{c.text}}</span>
+    </div>`
+).join("");
 
 const ALL_QUESTIONS = [
     // Level 0 — Modular Arithmetic
