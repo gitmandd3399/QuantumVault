@@ -199,8 +199,9 @@ def render_middle_school():
             else:
                 st.success("Story Complete!")
                 if st.button("Claim Badge!", key="ms_story_badge"):
-                    from modules.elementary import award_badge
-                    award_badge("📖 Code Cadet Story", xp=10)
+                    import streamlit as _st
+                    _st.session_state.xp = _st.session_state.get("xp", 0) + 10
+                    _st.session_state.badges = _st.session_state.get("badges", []) + ["📖 Code Cadet Story"]
 
     with tab2:
         st.subheader("🏗️ Lattice Maze Explorer")
