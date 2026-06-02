@@ -558,10 +558,7 @@ border-radius:12px;padding:24px;text-align:center;display:none;}}
         </div>
 
         <div style="text-align:center;">
-            <button id="start-btn" style="padding:12px 32px;border-radius:8px;border:none;cursor:pointer;
-                background:#4f46e5;color:white;font-size:15px;font-weight:bold;">
-                ▶ Start Challenge
-            </button>
+            <button onclick="startChallenge()" style="padding:12px 32px;border-radius:8px;border:none;cursor:pointer;background:#4f46e5;color:white;font-size:15px;font-weight:bold;">▶ Start Challenge</button>
         </div>
     </div>
     <div class="question-box" id="qbox">
