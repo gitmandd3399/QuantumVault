@@ -159,8 +159,10 @@ def render_pricing_page():
     )
     st.markdown("---")
 
-    col1, col2, col3 = st.columns(3)
-    cols = [col1, col2, col3]
+    col1, col2 = st.columns(2)
+    col3, col4 = st.columns(2)
+    col5, _ = st.columns(2)
+    cols = [col1, col2, col3, col4, col5]
 
     for i, (plan_key, plan) in enumerate(PLANS.items()):
         with cols[i]:
