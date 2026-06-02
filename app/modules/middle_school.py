@@ -636,8 +636,6 @@ async function updateHash() {
         fig.add_trace(go.Bar(
             x=names, y=sizes,
             marker_color=bar_colors,
-            marker_line_color=["white" if i == sel_idx else "transparent" for i in range(len(ALGOS))],
-            marker_line_width=[2 if i == sel_idx else 0 for i in range(len(ALGOS))],
             text=[str(s) + " KB" for s in sizes],
             textposition="outside",
         ))
