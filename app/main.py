@@ -16,6 +16,7 @@ from utils.security import sanitize_input, get_level, get_level_progress, get_ne
 from modules.progress_tracker import render_full_progress_page, mark_complete, render_progress_card
 from modules.payments import render_pricing_page
 from modules.ai_tutor import render_ai_tutor
+from modules.trading_cards import render_trading_cards
 # ── Page config ───────────────────────────────────────────────────────────────
 st.set_page_config(
     page_title="QuantumVault Academy",
@@ -88,6 +89,7 @@ def sidebar():
             "📊 My Progress",
             "💎 Pricing & Plans",
             "🤖 AI Tutor",
+            "🃏 Trading Cards",
 
         ],
     )
@@ -404,6 +406,8 @@ def main():
         render_full_progress_page()
     elif "Pricing" in level:
         render_pricing_page()
+    elif "Trading Cards" in level:
+        render_trading_cards()
     elif "AI Tutor" in level:
         if st.session_state.get("plan_type", "free") == "free":
             st.title("🤖 AI Tutor")
