@@ -3,3 +3,4 @@ bleach==6.1.0
 python-dotenv==1.2.2
 plotly==5.22.0
 stripe==7.9.0
+anthropic==0.40.0
