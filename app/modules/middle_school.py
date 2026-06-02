@@ -303,7 +303,7 @@ def render_middle_school():
             )
             award_badge("🔑 Key Crafter", xp=25)
 
-    with tab5:
+    with tab6:
         from modules.games import render_lattice_maze, render_zombie_blast, render_quantumcraft_middle
         game_choice = st.radio("Pick a game:", ["🌀 Lattice Maze", "🧟 Zombie Blast", "⛏️ QuantumCraft Mines"], horizontal=True)
         if game_choice == "🌀 Lattice Maze":
