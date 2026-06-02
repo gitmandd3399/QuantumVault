@@ -196,182 +196,474 @@ def render_falling_blocks():
 
 
 def render_lattice_maze():
-    """6-8: Lattice Maze — navigate grid avoiding quantum attackers."""
-    st.subheader("🌀 Lattice Maze Escape!")
+    """6-8: Enhanced Lattice Maze with better graphics, enemies, levels and PQC content."""
+    st.subheader("🌀 Lattice Maze Escape — Enhanced!")
     st.markdown(
-        "Navigate the **lattice grid** to reach the 🔐 Kyber Key! "
-        "Avoid the ☠️ quantum attackers. Use arrow keys or WASD to move."
+        "Navigate the **quantum lattice grid** to collect all Kyber Keys! "
+        "Avoid quantum attackers. Arrow keys or WASD to move. "
+        "Each level gets harder — boss enemies appear on level 3+!"
     )
 
-    components.html("""
-    <style>
-        #mazeCanvas { border: 2px solid #4f46e5; border-radius: 12px; display: block; margin: 0 auto; background: #0f172a; }
-        .maze-wrap { text-align: center; font-family: sans-serif; }
-        .maze-score { display: flex; justify-content: space-between; max-width: 420px; margin: 8px auto; color: #a5b4fc; font-size: 13px; font-weight: bold; }
-        #maze-msg { font-size: 14px; color: #34d399; min-height: 20px; margin: 4px; }
-        .maze-btn { padding: 8px 20px; border-radius: 8px; border: none; cursor: pointer; font-size: 14px; font-weight: bold; background: #4f46e5; color: white; margin: 4px; }
-    </style>
-    <div class="maze-wrap">
-        <div class="maze-score">
-            <span>⭐ Score: <span id="mscore">0</span></span>
-            <span>❤️ Lives: <span id="mlives">3</span></span>
-            <span>🔑 Keys: <span id="mkeys">0</span>/3</span>
-        </div>
-        <canvas id="mazeCanvas" width="420" height="420"></canvas>
-        <div id="maze-msg">Press Start to play!</div>
-        <button class="maze-btn" onclick="startMaze()">▶ Start</button>
-        <button class="maze-btn" onclick="mazeUp()">▲</button>
-        <button class="maze-btn" onclick="mazeDown()">▼</button>
-        <button class="maze-btn" onclick="mazeLeft()">◀</button>
-        <button class="maze-btn" onclick="mazeRight()">▶</button>
+    with st.expander("📚 Why Lattice Math?", expanded=False):
+        st.info(
+            "A lattice is a regular grid of points in space. "
+            "The hard problem: given a noisy point near the grid, find the CLOSEST grid point. "
+            "In 1000 dimensions this stumps quantum computers — that is why Kyber is safe! "
+            "This maze represents navigating a 2D lattice to find the Kyber keys (solutions)."
+        )
+
+    import streamlit.components.v1 as components_lm
+    components_lm.html("""
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:#0f172a;font-family:sans-serif;color:white;}
+#lm-wrap{display:flex;flex-direction:column;align-items:center;padding:10px;}
+.lm-hud{display:flex;justify-content:space-between;width:460px;margin-bottom:8px;gap:5px;}
+.hud-box{background:#1e293b;border:1px solid #334155;border-radius:8px;
+padding:5px 8px;font-size:12px;font-weight:bold;color:#a5b4fc;flex:1;text-align:center;}
+#mazeCanvas{border:2px solid #4f46e5;border-radius:12px;display:block;}
+.lm-btns{display:flex;gap:6px;margin:8px 0;flex-wrap:wrap;justify-content:center;}
+.lm-btn{padding:8px 16px;border-radius:8px;border:none;cursor:pointer;
+font-size:13px;font-weight:bold;background:#4f46e5;color:white;}
+.lm-btn:active{background:#3730a3;}
+#lm-msg{font-size:12px;color:#34d399;min-height:18px;margin:4px;text-align:center;}
+#lm-fact{background:rgba(79,70,229,0.15);border:1px solid rgba(79,70,229,0.4);
+border-radius:8px;padding:6px 12px;margin:4px;font-size:11px;color:#a5b4fc;
+max-width:460px;display:none;text-align:center;}
+.dir-pad{display:grid;grid-template-columns:repeat(3,40px);gap:4px;margin:4px;}
+.dir-btn{width:40px;height:40px;border-radius:8px;border:none;cursor:pointer;
+background:#1e293b;color:#a5b4fc;font-size:16px;font-weight:bold;
+border:1px solid #334155;}
+.dir-btn:active{background:#4f46e5;color:white;}
+</style>
+</head>
+<body>
+<div id="lm-wrap">
+    <div class="lm-hud">
+        <div class="hud-box">❤️ Lives<br><span id="mlives">3</span></div>
+        <div class="hud-box">🔑 Keys<br><span id="mkeys">0</span>/<span id="mtotal">3</span></div>
+        <div class="hud-box">⭐ Score<br><span id="mscore">0</span></div>
+        <div class="hud-box">🌊 Level<br><span id="mlevel">1</span></div>
+        <div class="hud-box">👾 Enemies<br><span id="menemies">0</span></div>
     </div>
-    <script>
-    const mc = document.getElementById('mazeCanvas');
-    const mx = mc.getContext('2d');
-    const CELL = 42, COLS = 10, ROWS = 10;
+    <canvas id="mazeCanvas" width="460" height="420"></canvas>
+    <div id="lm-msg">Press Start to play!</div>
+    <div id="lm-fact"></div>
+    <div class="lm-btns">
+        <button class="lm-btn" style="background:#10b981" onclick="startMaze()">▶ Start</button>
+        <button class="lm-btn" style="background:#4f46e5" onclick="nextLevel()" id="next-btn" disabled>Next Level →</button>
+    </div>
+    <div class="dir-pad">
+        <div></div>
+        <button class="dir-btn" onclick="move(0,-1)">▲</button>
+        <div></div>
+        <button class="dir-btn" onclick="move(-1,0)">◀</button>
+        <button class="dir-btn" onclick="startMaze()">⟳</button>
+        <button class="dir-btn" onclick="move(1,0)">▶</button>
+        <div></div>
+        <button class="dir-btn" onclick="move(0,1)">▼</button>
+        <div></div>
+    </div>
+</div>
+<script>
+const mc = document.getElementById("mazeCanvas");
+const mx = mc.getContext("2d");
+const CELL = 40, COLS = 11, ROWS = 10;
 
-    let player, enemies, keys, score, lives, running, collected;
+const KEY_FACTS = [
+    {item:"🔐", name:"Kyber Key",    fact:"ML-KEM FIPS 203 — Quantum-safe key encapsulation!",     color:"#10b981", pts:50},
+    {item:"✍️", name:"Dilithium",    fact:"ML-DSA FIPS 204 — Quantum-safe digital signatures!",    color:"#3b82f6", pts:75},
+    {item:"🌲", name:"SPHINCS+",     fact:"SLH-DSA FIPS 205 — Hash-based backup signature!",       color:"#8b5cf6", pts:100},
+    {item:"🦅", name:"Falcon",       fact:"FN-DSA FIPS 206 — Smallest quantum-safe signature!",    color:"#f59e0b", pts:125},
+    {item:"🧮", name:"LWE Crystal",  fact:"Learning With Errors — The hardest PQC math problem!",  color:"#ec4899", pts:150},
+];
 
-    // Simple maze walls — 1 = wall, 0 = open
-    const MAZE = [
-        [1,1,1,1,1,1,1,1,1,1],
-        [1,0,0,0,1,0,0,0,0,1],
-        [1,0,1,0,1,0,1,1,0,1],
-        [1,0,1,0,0,0,0,1,0,1],
-        [1,0,1,1,1,1,0,1,0,1],
-        [1,0,0,0,0,1,0,0,0,1],
-        [1,1,1,0,1,1,1,1,0,1],
-        [1,0,0,0,0,0,0,1,0,1],
-        [1,0,1,1,1,1,0,0,0,1],
-        [1,1,1,1,1,1,1,1,1,1],
-    ];
+const ENEMY_TYPES = [
+    {emoji:"☠️", name:"Shor",   spd:1, color:"#ef4444", fact:"Shor Algorithm breaks RSA!",      boss:false},
+    {emoji:"🌀", name:"Grover", spd:2, color:"#f97316", fact:"Grover speeds up brute force!",    boss:false},
+    {emoji:"👾", name:"HHL",    spd:1, color:"#a855f7", fact:"HHL attacks linear algebra!",      boss:false},
+    {emoji:"💀", name:"Q-BOSS", spd:1, color:"#dc2626", fact:"Full quantum computer attack!",    boss:true},
+];
 
-    function startMaze() {
-        player = {x:1, y:1};
-        enemies = [{x:8,y:1,dx:0,dy:1},{x:1,y:7,dx:1,dy:0}];
-        keys = [{x:3,y:3,collected:false},{x:7,y:5,collected:false},{x:5,y:8,collected:false}];
-        score = 0; lives = 3; running = true; collected = 0;
-        document.getElementById('maze-msg').textContent = 'Collect all 3 Kyber Keys!';
-        drawMaze();
-        setInterval(moveEnemies, 700);
+const MAZES = [
+    // Level 1 - Simple
+    [
+        [1,1,1,1,1,1,1,1,1,1,1],
+        [1,0,0,0,1,0,0,0,0,0,1],
+        [1,0,1,0,1,0,1,1,1,0,1],
+        [1,0,1,0,0,0,0,0,1,0,1],
+        [1,0,1,1,1,1,1,0,1,0,1],
+        [1,0,0,0,0,0,1,0,0,0,1],
+        [1,1,1,1,0,1,1,1,1,0,1],
+        [1,0,0,0,0,0,0,0,0,0,1],
+        [1,0,1,1,1,1,1,1,1,0,1],
+        [1,1,1,1,1,1,1,1,1,1,1],
+    ],
+    // Level 2 - Medium
+    [
+        [1,1,1,1,1,1,1,1,1,1,1],
+        [1,0,0,0,0,0,1,0,0,0,1],
+        [1,0,1,1,1,0,1,0,1,0,1],
+        [1,0,1,0,0,0,0,0,1,0,1],
+        [1,0,1,0,1,1,1,1,1,0,1],
+        [1,0,0,0,1,0,0,0,0,0,1],
+        [1,1,1,0,1,0,1,1,1,1,1],
+        [1,0,0,0,0,0,1,0,0,0,1],
+        [1,0,1,1,1,1,1,0,1,0,1],
+        [1,1,1,1,1,1,1,1,1,1,1],
+    ],
+    // Level 3 - Hard with boss
+    [
+        [1,1,1,1,1,1,1,1,1,1,1],
+        [1,0,0,0,1,0,0,0,1,0,1],
+        [1,1,1,0,1,0,1,0,1,0,1],
+        [1,0,0,0,0,0,1,0,0,0,1],
+        [1,0,1,1,1,1,1,1,1,0,1],
+        [1,0,0,0,0,0,0,0,1,0,1],
+        [1,1,1,1,1,0,1,0,1,0,1],
+        [1,0,0,0,1,0,1,0,0,0,1],
+        [1,0,1,0,0,0,1,1,1,0,1],
+        [1,1,1,1,1,1,1,1,1,1,1],
+    ],
+];
+
+let player, enemies, keys, score, lives, level, running, collected, maze, animFrame;
+let particles = [];
+
+function showFact(fact, color) {
+    const f = document.getElementById("lm-fact");
+    f.textContent = "📚 " + fact;
+    f.style.display = "block";
+    f.style.borderColor = color + "60";
+    clearTimeout(window._ft);
+    window._ft = setTimeout(()=>{f.style.display="none";}, 4000);
+}
+
+function showMsg(msg) { document.getElementById("lm-msg").textContent = msg; }
+
+function updateHUD() {
+    document.getElementById("mlives").textContent = "❤️".repeat(Math.max(0,lives));
+    document.getElementById("mkeys").textContent = collected;
+    document.getElementById("mtotal").textContent = keys.length;
+    document.getElementById("mscore").textContent = score;
+    document.getElementById("mlevel").textContent = level;
+    document.getElementById("menemies").textContent = enemies.length;
+}
+
+function startMaze() {
+    level = 1;
+    score = 0;
+    lives = 3;
+    document.getElementById("next-btn").disabled = true;
+    loadLevel();
+}
+
+function loadLevel() {
+    const mIdx = Math.min(level-1, MAZES.length-1);
+    maze = MAZES[mIdx].map(r=>[...r]);
+    player = {x:1, y:1};
+    enemies = [];
+    particles = [];
+    collected = 0;
+
+    // Place keys based on level
+    const keyCount = 3 + (level-1);
+    keys = [];
+    const keyTypes = KEY_FACTS.slice(0, Math.min(level+1, KEY_FACTS.length));
+    const positions = [{x:8,y:1},{x:5,y:3},{x:8,y:7},{x:3,y:7},{x:9,y:5}];
+    for(let i=0;i<Math.min(keyCount,positions.length);i++){
+        const kType = keyTypes[i % keyTypes.length];
+        keys.push({...positions[i], collected:false, ...kType});
     }
 
-    function canMove(x, y) {
-        return x >= 0 && y >= 0 && x < COLS && y < ROWS && MAZE[y][x] === 0;
-    }
-
-    function mazeUp()    { if(running && canMove(player.x, player.y-1)) { player.y--; checkCollect(); checkEnemy(); drawMaze(); }}
-    function mazeDown()  { if(running && canMove(player.x, player.y+1)) { player.y++; checkCollect(); checkEnemy(); drawMaze(); }}
-    function mazeLeft()  { if(running && canMove(player.x-1, player.y)) { player.x--; checkCollect(); checkEnemy(); drawMaze(); }}
-    function mazeRight() { if(running && canMove(player.x+1, player.y)) { player.x++; checkCollect(); checkEnemy(); drawMaze(); }}
-
-    document.addEventListener('keydown', e => {
-        if (e.key==='ArrowUp'||e.key==='w')    mazeUp();
-        if (e.key==='ArrowDown'||e.key==='s')  mazeDown();
-        if (e.key==='ArrowLeft'||e.key==='a')  mazeLeft();
-        if (e.key==='ArrowRight'||e.key==='d') mazeRight();
-    });
-
-    function checkCollect() {
-        keys.forEach(k => {
-            if (!k.collected && k.x === player.x && k.y === player.y) {
-                k.collected = true; collected++; score += 50;
-                document.getElementById('maze-msg').textContent = '🔑 Kyber Key collected! +50 XP';
-                document.getElementById('mkeys').textContent = collected;
-                document.getElementById('mscore').textContent = score;
-                if (collected === 3) {
-                    running = false;
-                    document.getElementById('maze-msg').textContent = '🎉 You escaped! All keys collected!';
-                }
-            }
+    // Spawn enemies based on level
+    const enemyCount = 1 + Math.floor(level/2);
+    const hasBoss = level >= 3;
+    for(let i=0;i<enemyCount;i++){
+        const eType = i===0 && hasBoss ? ENEMY_TYPES[3] : ENEMY_TYPES[Math.floor(Math.random()*3)];
+        enemies.push({
+            x: 9, y: 7-i*2,
+            type: eType,
+            timer: 0,
+            rate: eType.boss ? 60 : 30+Math.floor(Math.random()*30),
+            stunned: 0,
         });
     }
 
-    function checkEnemy() {
-        enemies.forEach(e => {
-            if (e.x === player.x && e.y === player.y) {
-                lives--;
-                document.getElementById('mlives').textContent = '❤️'.repeat(Math.max(0,lives));
-                document.getElementById('maze-msg').textContent = '💀 Caught by quantum attacker! -1 life';
-                player = {x:1, y:1};
-                if (lives <= 0) {
-                    running = false;
-                    document.getElementById('maze-msg').textContent = '☠️ Game Over! Quantum won this round.';
-                }
-            }
-        });
-    }
+    running = true;
+    updateHUD();
+    showMsg("Level " + level + "! Collect all " + keys.length + " keys!");
+    cancelAnimationFrame(animFrame);
+    gameLoop();
+}
 
-    function moveEnemies() {
-        if (!running) return;
-        enemies.forEach(e => {
-            const dirs = [{dx:0,dy:-1},{dx:0,dy:1},{dx:-1,dy:0},{dx:1,dy:0}];
-            const valid = dirs.filter(d => canMove(e.x+d.dx, e.y+d.dy));
-            if (valid.length > 0) {
-                // Prefer moving toward player
-                valid.sort((a,b) => {
-                    const da = Math.abs((e.x+a.dx)-player.x) + Math.abs((e.y+a.dy)-player.y);
-                    const db = Math.abs((e.x+b.dx)-player.x) + Math.abs((e.y+b.dy)-player.y);
-                    return da - db;
-                });
-                const move = Math.random() < 0.6 ? valid[0] : valid[Math.floor(Math.random()*valid.length)];
-                e.x += move.dx; e.y += move.dy;
-            }
-        });
+function nextLevel() {
+    level++;
+    document.getElementById("next-btn").disabled = true;
+    loadLevel();
+}
+
+function canMove(x, y) {
+    if(x<0||y<0||x>=COLS||y>=ROWS) return false;
+    return maze[y][x] === 0;
+}
+
+function move(dx, dy) {
+    if(!running) return;
+    const nx = player.x+dx, ny = player.y+dy;
+    if(canMove(nx,ny)) {
+        player.x=nx; player.y=ny;
+        checkCollect();
         checkEnemy();
-        drawMaze();
     }
+}
 
-    function drawMaze() {
-        mx.clearRect(0,0,mc.width,mc.height);
-        for (let r=0; r<ROWS; r++) {
-            for (let c=0; c<COLS; c++) {
-                if (MAZE[r][c]===1) {
-                    mx.fillStyle='#1e1b4b';
-                    mx.fillRect(c*CELL, r*CELL, CELL, CELL);
-                    mx.strokeStyle='#4f46e5';
-                    mx.strokeRect(c*CELL, r*CELL, CELL, CELL);
-                } else {
-                    mx.fillStyle='#0f172a';
-                    mx.fillRect(c*CELL, r*CELL, CELL, CELL);
-                    mx.strokeStyle='rgba(79,70,229,0.15)';
-                    mx.strokeRect(c*CELL, r*CELL, CELL, CELL);
-                }
+document.addEventListener("keydown", e=>{
+    if(e.key==="ArrowUp"||e.key==="w")    {e.preventDefault();move(0,-1);}
+    if(e.key==="ArrowDown"||e.key==="s")  {e.preventDefault();move(0,1);}
+    if(e.key==="ArrowLeft"||e.key==="a")  move(-1,0);
+    if(e.key==="ArrowRight"||e.key==="d") move(1,0);
+});
+
+function checkCollect() {
+    keys.forEach(k=>{
+        if(!k.collected && k.x===player.x && k.y===player.y) {
+            k.collected=true; collected++; score+=k.pts;
+            showFact(k.fact, k.color);
+            showMsg("Collected " + k.name + "! +" + k.pts + " pts");
+            // Sparkle particles
+            for(let i=0;i<10;i++) particles.push({
+                x:k.x*CELL+CELL/2, y:k.y*CELL+CELL/2,
+                vx:(Math.random()-0.5)*5, vy:(Math.random()-0.5)*5,
+                color:k.color, alpha:1, r:3
+            });
+            updateHUD();
+            if(collected===keys.length) {
+                running=false;
+                showMsg("🎉 Level " + level + " complete! Score: " + score);
+                document.getElementById("next-btn").disabled = false;
+                if(level>=3) showMsg("🏆 Master achieved! Score: " + score);
             }
         }
-        // Draw keys
-        keys.forEach(k => {
-            if (!k.collected) {
-                mx.font='22px sans-serif';
-                mx.textAlign='center';
-                mx.fillText('🔑', k.x*CELL+CELL/2, k.y*CELL+CELL/1.4);
+    });
+}
+
+function checkEnemy() {
+    enemies.forEach((e,i)=>{
+        if(e.x===player.x&&e.y===player.y) {
+            lives--;
+            player={x:1,y:1};
+            showMsg("💀 " + e.type.name + " caught you! " + e.type.fact);
+            showFact(e.type.fact, e.type.color);
+            updateHUD();
+            if(lives<=0){running=false;showMsg("☠️ Game Over! Score: "+score);}
+        }
+    });
+}
+
+function moveEnemies() {
+    if(!running) return;
+    enemies.forEach(e=>{
+        e.timer++;
+        if(e.timer < e.rate) return;
+        e.timer=0;
+        if(e.stunned>0){e.stunned--;return;}
+
+        const dirs=[{dx:0,dy:-1},{dx:0,dy:1},{dx:-1,dy:0},{dx:1,dy:0}];
+        const valid=dirs.filter(d=>canMove(e.x+d.dx,e.y+d.dy));
+        if(valid.length===0) return;
+
+        // Smart pathfinding toward player
+        valid.sort((a,b)=>{
+            const da=Math.abs((e.x+a.dx)-player.x)+Math.abs((e.y+a.dy)-player.y);
+            const db=Math.abs((e.x+b.dx)-player.x)+Math.abs((e.y+b.dy)-player.y);
+            return da-db;
+        });
+
+        // Boss always goes toward player, others sometimes random
+        const move2 = e.type.boss||Math.random()<0.7 ? valid[0] : valid[Math.floor(Math.random()*valid.length)];
+        e.x+=move2.dx; e.y+=move2.dy;
+        checkEnemy();
+    });
+}
+
+function gameLoop() {
+    animFrame=requestAnimationFrame(gameLoop);
+
+    // Move enemies periodically
+    moveEnemies();
+
+    // Update particles
+    particles=particles.filter(p=>{
+        p.x+=p.vx; p.y+=p.vy; p.alpha-=0.04;
+        p.vx*=0.95; p.vy*=0.95;
+        return p.alpha>0;
+    });
+
+    draw();
+}
+
+function draw() {
+    mx.clearRect(0,0,mc.width,mc.height);
+
+    // Background gradient
+    const bg=mx.createLinearGradient(0,0,0,mc.height);
+    bg.addColorStop(0,"#0f0c29");
+    bg.addColorStop(1,"#1e1b4b");
+    mx.fillStyle=bg;
+    mx.fillRect(0,0,mc.width,mc.height);
+
+    // Draw maze
+    for(let r=0;r<ROWS;r++){
+        for(let c=0;c<COLS;c++){
+            if(maze[r][c]===1){
+                // Wall with gradient
+                const wg=mx.createLinearGradient(c*CELL,r*CELL,(c+1)*CELL,(r+1)*CELL);
+                wg.addColorStop(0,"#1e1b4b");
+                wg.addColorStop(1,"#0f172a");
+                mx.fillStyle=wg;
+                mx.fillRect(c*CELL,r*CELL,CELL,CELL);
+                // Wall border glow
+                mx.strokeStyle="rgba(79,70,229,0.4)";
+                mx.lineWidth=1;
+                mx.strokeRect(c*CELL,r*CELL,CELL,CELL);
+            } else {
+                mx.fillStyle="rgba(15,23,42,0.8)";
+                mx.fillRect(c*CELL,r*CELL,CELL,CELL);
+                mx.strokeStyle="rgba(79,70,229,0.1)";
+                mx.lineWidth=0.5;
+                mx.strokeRect(c*CELL,r*CELL,CELL,CELL);
             }
-        });
-        // Draw enemies
-        enemies.forEach(e => {
-            mx.font='22px sans-serif';
-            mx.textAlign='center';
-            mx.fillText('☠️', e.x*CELL+CELL/2, e.y*CELL+CELL/1.4);
-        });
-        // Draw player
-        mx.font='22px sans-serif';
-        mx.textAlign='center';
-        mx.fillText('🕵️', player.x*CELL+CELL/2, player.y*CELL+CELL/1.4);
+        }
     }
 
-    // Idle screen
-    mx.fillStyle='#0f172a';
-    mx.fillRect(0,0,mc.width,mc.height);
-    mx.fillStyle='#a5b4fc';
-    mx.font='bold 18px sans-serif';
-    mx.textAlign='center';
-    mx.fillText('🌀 Lattice Maze Escape', mc.width/2, 180);
-    mx.font='13px sans-serif';
-    mx.fillText('Collect Kyber Keys, avoid quantum attackers', mc.width/2, 215);
-    mx.fillText('Press ▶ Start to play', mc.width/2, 245);
-    </script>
-    """, height=560)
+    // Draw lattice dots on open cells
+    for(let r=0;r<ROWS;r++){
+        for(let c=0;c<COLS;c++){
+            if(maze[r][c]===0){
+                mx.beginPath();
+                mx.arc(c*CELL+CELL/2,r*CELL+CELL/2,2,0,Math.PI*2);
+                mx.fillStyle="rgba(79,70,229,0.3)";
+                mx.fill();
+            }
+        }
+    }
 
+    // Draw keys with glow
+    keys.forEach(k=>{
+        if(k.collected) return;
+        // Glow
+        mx.beginPath();
+        mx.arc(k.x*CELL+CELL/2,k.y*CELL+CELL/2,18,0,Math.PI*2);
+        mx.fillStyle=k.color+"22";
+        mx.fill();
+        // Key emoji
+        mx.font="22px sans-serif";
+        mx.textAlign="center";
+        mx.fillText(k.item,k.x*CELL+CELL/2,k.y*CELL+CELL/1.4);
+        // Label
+        mx.font="7px sans-serif";
+        mx.fillStyle=k.color;
+        mx.fillText(k.name,k.x*CELL+CELL/2,k.y*CELL+CELL-4);
+    });
+
+    // Draw particles
+    particles.forEach(p=>{
+        mx.beginPath();
+        mx.arc(p.x,p.y,p.r,0,Math.PI*2);
+        mx.fillStyle=p.color+Math.floor(p.alpha*255).toString(16).padStart(2,"0");
+        mx.fill();
+    });
+
+    // Draw enemies
+    enemies.forEach(e=>{
+        const size = e.type.boss ? 28 : 22;
+        // Boss pulse effect
+        if(e.type.boss){
+            mx.beginPath();
+            mx.arc(e.x*CELL+CELL/2,e.y*CELL+CELL/2,20+Math.sin(Date.now()*0.005)*4,0,Math.PI*2);
+            mx.fillStyle="rgba(220,38,38,0.2)";
+            mx.fill();
+        }
+        mx.font=size+"px sans-serif";
+        mx.textAlign="center";
+        mx.fillText(e.type.emoji,e.x*CELL+CELL/2,e.y*CELL+CELL/1.3);
+        // Enemy label
+        mx.font="7px sans-serif";
+        mx.fillStyle=e.type.color;
+        mx.fillText(e.type.name,e.x*CELL+CELL/2,e.y*CELL+2);
+    });
+
+    // Draw player with glow
+    mx.beginPath();
+    mx.arc(player.x*CELL+CELL/2,player.y*CELL+CELL/2,16,0,Math.PI*2);
+    mx.fillStyle="rgba(16,185,129,0.2)";
+    mx.fill();
+    mx.font="24px sans-serif";
+    mx.textAlign="center";
+    mx.fillText("🕵️",player.x*CELL+CELL/2,player.y*CELL+CELL/1.35);
+
+    // Player highlight
+    mx.strokeStyle="#10b981";
+    mx.lineWidth=2;
+    mx.strokeRect(player.x*CELL+2,player.y*CELL+2,CELL-4,CELL-4);
+
+    // Game over overlay
+    if(!running&&lives<=0){
+        mx.fillStyle="rgba(0,0,0,0.8)";
+        mx.fillRect(0,0,mc.width,mc.height);
+        mx.fillStyle="#ef4444";
+        mx.font="bold 28px sans-serif";
+        mx.textAlign="center";
+        mx.fillText("☠️ QUANTUM WIN!",mc.width/2,mc.height/2-30);
+        mx.fillStyle="white";
+        mx.font="16px sans-serif";
+        mx.fillText("Score: "+score,mc.width/2,mc.height/2+10);
+        mx.fillStyle="#a5b4fc";
+        mx.font="12px sans-serif";
+        mx.fillText("Kyber lattice math beats quantum attackers!",mc.width/2,mc.height/2+40);
+    }
+
+    // Win overlay
+    if(!running&&lives>0&&collected===keys.length){
+        mx.fillStyle="rgba(0,0,0,0.7)";
+        mx.fillRect(0,0,mc.width,mc.height);
+        mx.fillStyle="#10b981";
+        mx.font="bold 26px sans-serif";
+        mx.textAlign="center";
+        mx.fillText("🎉 LEVEL "+level+" COMPLETE!",mc.width/2,mc.height/2-30);
+        mx.fillStyle="white";
+        mx.font="15px sans-serif";
+        mx.fillText("Score: "+score,mc.width/2,mc.height/2+10);
+        if(level<3){
+            mx.fillStyle="#a5b4fc";
+            mx.font="13px sans-serif";
+            mx.fillText("Press Next Level →",mc.width/2,mc.height/2+40);
+        }
+    }
+}
+
+// Idle screen
+mx.fillStyle="#0f0c29";
+mx.fillRect(0,0,mc.width,mc.height);
+mx.fillStyle="#a5b4fc";
+mx.font="bold 20px sans-serif";
+mx.textAlign="center";
+mx.fillText("🌀 Lattice Maze Escape",mc.width/2,mc.height/2-50);
+mx.fillStyle="#6b7280";
+mx.font="13px sans-serif";
+mx.fillText("Collect Kyber keys, avoid quantum attackers",mc.width/2,mc.height/2-15);
+mx.fillText("3 levels with increasing difficulty!",mc.width/2,mc.height/2+15);
+mx.fillStyle="#4f46e5";
+mx.font="bold 14px sans-serif";
+mx.fillText("Press ▶ Start to play!",mc.width/2,mc.height/2+50);
+</script>
+</body>
+</html>
+""", height=680)
 
 def render_tower_defense():
     """9-12: Improved PQC Tower Defense with more towers, enemies, bosses and education."""
@@ -1397,186 +1689,449 @@ def render_quantumcraft_elementary():
 
 
 def render_quantumcraft_middle():
-    """6-8: QuantumCraft — Lattice Mines."""
-    st.subheader("⛏️ QuantumCraft — Lattice Mines!")
+    """6-8: Enhanced QuantumCraft Lattice Mines with better graphics, enemies, boss levels."""
+    st.subheader("⛏️ QuantumCraft — Lattice Mines Enhanced!")
     st.markdown(
-        "Dig deep into the **lattice mines** to find rare Kyber ore! "
-        "WASD to move, E to mine, F to place. Go deeper for rarer algorithms!"
+        "Dig deep into the **quantum lattice mines**! "
+        "Mine rare PQC algorithms, avoid quantum creepers, find the ladder to go deeper. "
+        "Boss enemies appear at depth 3+! WASD to move, E to mine, F to place walls."
     )
-    components.html("""
-    <style>
-        #qmCanvas{border:2px solid #3b82f6;border-radius:12px;display:block;margin:0 auto;}
-        .qm-wrap{text-align:center;font-family:sans-serif;}
-        .qm-bar{display:flex;justify-content:space-between;max-width:520px;margin:6px auto;color:#a5b4fc;font-size:12px;font-weight:bold;}
-        .qm-inv{display:flex;justify-content:center;gap:5px;margin:5px;flex-wrap:wrap;}
-        .qm-slot{background:#1e293b;border:2px solid #3b82f6;border-radius:6px;padding:3px 7px;font-size:11px;color:white;}
-        #qm-msg{font-size:12px;color:#60a5fa;min-height:18px;margin:3px;}
-        .qm-btn{padding:6px 12px;border-radius:8px;border:none;cursor:pointer;font-size:12px;font-weight:bold;background:#3b82f6;color:white;margin:3px;}
-    </style>
-    <div class="qm-wrap">
-        <div class="qm-bar">
-            <span>HP:<span id="mhp">120</span></span>
-            <span>Score:<span id="mscore2">0</span></span>
-            <span>Depth:<span id="mdepth">1</span></span>
-            <span>Rare:<span id="mrare">0</span></span>
-        </div>
-        <canvas id="qmCanvas" width="520" height="420"></canvas>
-        <div id="qm-msg">Mine deeper to find rarer crypto ore!</div>
-        <div class="qm-inv">
-            <div class="qm-slot" id="m-kyber">Kyber:0</div>
-            <div class="qm-slot" id="m-dilithium">Dilithium:0</div>
-            <div class="qm-slot" id="m-sphincs">SPHINCS:0</div>
-            <div class="qm-slot" id="m-falcon">Falcon:0</div>
-            <div class="qm-slot" id="m-lwe">LWE:0</div>
-        </div>
-        <button class="qm-btn" onclick="startMines()">Start</button>
-        <button class="qm-btn" onclick="mineMid()">Mine(E)</button>
-        <button class="qm-btn" onclick="placeMid()">Place(F)</button>
-        <button class="qm-btn" onclick="goDeeper()">Deeper</button>
-    </div>
-    <script>
-    const mc2=document.getElementById('qmCanvas');
-    const mx2=mc2.getContext('2d');
-    const CELL2=40,COLS2=13,ROWS2=10;
-    const MB={
-        empty:{color:'#0f172a',emoji:'',solid:false,mineable:false},
-        stone:{color:'#374151',emoji:'',solid:true,mineable:true,item:null,pts:2},
-        kyber:{color:'#10b981',emoji:'K',solid:true,mineable:true,item:'kyber',pts:20},
-        dilithium:{color:'#3b82f6',emoji:'D',solid:true,mineable:true,item:'dilithium',pts:30},
-        sphincs:{color:'#8b5cf6',emoji:'S',solid:true,mineable:true,item:'sphincs',pts:35},
-        falcon:{color:'#f59e0b',emoji:'F',solid:true,mineable:true,item:'falcon',pts:50},
-        lwe:{color:'#ec4899',emoji:'L',solid:true,mineable:true,item:'lwe',pts:60},
-        wall:{color:'#111827',emoji:'',solid:true,mineable:false},
-        ladder:{color:'#78350f',emoji:'^',solid:false,mineable:false},
-        placed:{color:'#1d4ed8',emoji:'',solid:true,mineable:false},
-    };
-    let mw=[],mp,me2,mi,ms2=0,mh=120,md=1,mr=0,mrun=false,mk={},mmt=0;
-    function genMines(depth){
-        mw=[];
-        const rc=Math.min(0.05+depth*0.03,0.25);
-        for(let r=0;r<ROWS2;r++){mw[r]=[];for(let c=0;c<COLS2;c++){
-            if(r===0||r===ROWS2-1||c===0||c===COLS2-1){mw[r][c]='wall';continue;}
-            const rn=Math.random();
-            if(rn<rc*0.3)mw[r][c]='lwe';
-            else if(rn<rc*0.6)mw[r][c]='falcon';
-            else if(rn<rc*0.9)mw[r][c]='sphincs';
-            else if(rn<rc*1.5)mw[r][c]='dilithium';
-            else if(rn<rc*2.5)mw[r][c]='kyber';
-            else if(rn<0.40)mw[r][c]='stone';
-            else mw[r][c]='empty';
-        }}
-        mw[1][1]='empty';mw[1][2]='empty';mw[2][1]='empty';
-        mw[ROWS2-2][COLS2-2]='ladder';
-    }
-    function startMines(){
-        md=1;ms2=0;mh=120;mr=0;mi={kyber:0,dilithium:0,sphincs:0,falcon:0,lwe:0};
-        genMines(1);mp={x:1,y:1};me2=[];
-        for(let i=0;i<2;i++)spawnME();
-        mrun=true;updateMUI();cancelAnimationFrame(window._mF);mLoop();
-    }
-    function spawnME(){
-        const x=Math.floor(Math.random()*(COLS2-4))+COLS2-5;
-        const y=Math.floor(Math.random()*(ROWS2-3))+2;
-        if(mw[y]&&mw[y][x]==='empty')me2.push({x,y,timer:0,rate:35});
-    }
-    function mCW(x,y){
-        if(x<0||y<0||x>=COLS2||y>=ROWS2)return false;
-        const b=MB[mw[y][x]];return b&&!b.solid;
-    }
-    function mineMid(){
-        if(!mrun)return;
-        const dirs=[{dx:0,dy:-1},{dx:0,dy:1},{dx:-1,dy:0},{dx:1,dy:0}];
-        for(const d of dirs){
-            const nx=mp.x+d.dx,ny=mp.y+d.dy;
-            if(nx>=0&&ny>=0&&nx<COLS2&&ny<ROWS2){
-                const bt=mw[ny][nx],b=MB[bt];
-                if(b&&b.mineable){
-                    if(b.item){mi[b.item]=(mi[b.item]||0)+1;if(['falcon','lwe','sphincs'].includes(b.item))mr++;}
-                    ms2+=b.pts;mw[ny][nx]='empty';
-                    document.getElementById('qm-msg').textContent='Mined '+bt+'! +'+b.pts;
-                    updateMUI();return;
-                }
-            }
-        }
-    }
-    function placeMid(){
-        if(!mrun||mi.kyber<=0){document.getElementById('qm-msg').textContent='Need Kyber!';return;}
-        const dirs=[{dx:0,dy:-1},{dx:1,dy:0},{dx:-1,dy:0},{dx:0,dy:1}];
-        for(const d of dirs){
-            const nx=mp.x+d.dx,ny=mp.y+d.dy;
-            if(nx>=0&&ny>=0&&nx<COLS2&&ny<ROWS2&&mw[ny][nx]==='empty'){
-                mi.kyber--;mw[ny][nx]='placed';
-                document.getElementById('qm-msg').textContent='Kyber wall placed!';
-                updateMUI();return;
-            }
-        }
-    }
-    function goDeeper(){
-        if(!mrun)return;
-        if(mp.x>=COLS2-3&&mp.y>=ROWS2-3){
-            md++;genMines(md);mp={x:1,y:1};me2=[];
-            for(let i=0;i<Math.min(md+1,6);i++)spawnME();
-            document.getElementById('mdepth').textContent=md;
-            document.getElementById('qm-msg').textContent='Depth '+md+'! Rarer ore ahead!';
-        } else {
-            document.getElementById('qm-msg').textContent='Find the ladder ^ in bottom-right!';
-        }
-    }
-    function updateMUI(){
-        document.getElementById('mscore2').textContent=ms2;
-        document.getElementById('mhp').textContent=Math.max(0,mh);
-        document.getElementById('mrare').textContent=mr;
-        document.getElementById('m-kyber').textContent='Kyber:'+mi.kyber;
-        document.getElementById('m-dilithium').textContent='Dilithium:'+mi.dilithium;
-        document.getElementById('m-sphincs').textContent='SPHINCS:'+mi.sphincs;
-        document.getElementById('m-falcon').textContent='Falcon:'+mi.falcon;
-        document.getElementById('m-lwe').textContent='LWE:'+mi.lwe;
-    }
-    document.addEventListener('keydown',e=>{mk[e.key]=true;if(e.key==='e'||e.key==='E')mineMid();if(e.key==='f'||e.key==='F')placeMid();});
-    document.addEventListener('keyup',e=>{mk[e.key]=false;});
-    function mLoop(){
-        window._mF=requestAnimationFrame(mLoop);mmt++;
-        if(mmt>=8){mmt=0;if(!mrun)return;
-            let nx=mp.x,ny=mp.y;
-            if(mk['ArrowUp']||mk['w'])ny--;if(mk['ArrowDown']||mk['s'])ny++;
-            if(mk['ArrowLeft']||mk['a'])nx--;if(mk['ArrowRight']||mk['d'])nx++;
-            if(mCW(nx,ny)||mw[ny]&&mw[ny][nx]==='ladder'){mp.x=nx;mp.y=ny;}
-            me2.forEach((e,i)=>{
-                e.timer++;if(e.timer<e.rate)return;e.timer=0;
-                const dx=mp.x-e.x,dy=mp.y-e.y;const moves=[];
-                if(dx>0&&mCW(e.x+1,e.y))moves.push({x:e.x+1,y:e.y});
-                if(dx<0&&mCW(e.x-1,e.y))moves.push({x:e.x-1,y:e.y});
-                if(dy>0&&mCW(e.x,e.y+1))moves.push({x:e.x,y:e.y+1});
-                if(dy<0&&mCW(e.x,e.y-1))moves.push({x:e.x,y:e.y-1});
-                if(moves.length>0){const m=moves[0];e.x=m.x;e.y=m.y;}
-                if(e.x===mp.x&&e.y===mp.y){
-                    mh-=20;updateMUI();me2.splice(i,1);
-                    if(mh<=0){mrun=false;mx2.fillStyle='rgba(0,0,0,0.85)';mx2.fillRect(0,0,520,420);mx2.fillStyle='#ef4444';mx2.font='bold 24px sans-serif';mx2.textAlign='center';mx2.fillText('Mine Collapsed! Score:'+ms2,260,210);}
-                }
-            });
-        }
-        mDraw();
-    }
-    function mDraw(){
-        mx2.clearRect(0,0,520,420);
-        for(let r=0;r<ROWS2;r++)for(let c=0;c<COLS2;c++){
-            const b=MB[mw[r][c]];if(!b)continue;
-            mx2.fillStyle=b.color;mx2.fillRect(c*CELL2,r*CELL2,CELL2,CELL2);
-            mx2.strokeStyle='rgba(255,255,255,0.04)';mx2.strokeRect(c*CELL2,r*CELL2,CELL2,CELL2);
-            if(b.emoji){mx2.font='16px sans-serif';mx2.textAlign='center';mx2.fillStyle='white';mx2.fillText(b.emoji,c*CELL2+20,r*CELL2+26);}
-            if(b.mineable&&b.item){mx2.strokeStyle='rgba(255,255,255,0.25)';mx2.lineWidth=1;mx2.strokeRect(c*CELL2+2,r*CELL2+2,CELL2-4,CELL2-4);}
-        }
-        me2.forEach(e=>{mx2.font='18px sans-serif';mx2.textAlign='center';mx2.fillStyle='#ef4444';mx2.fillText('Q',e.x*CELL2+20,e.y*CELL2+26);});
-        mx2.font='20px sans-serif';mx2.textAlign='center';mx2.fillStyle='white';mx2.fillText('P',mp.x*CELL2+20,mp.y*CELL2+26);
-        mx2.strokeStyle='#3b82f6';mx2.lineWidth=2;mx2.strokeRect(mp.x*CELL2+2,mp.y*CELL2+2,CELL2-4,CELL2-4);
-    }
-    mx2.fillStyle='#0f172a';mx2.fillRect(0,0,520,420);
-    mx2.fillStyle='#3b82f6';mx2.font='bold 18px sans-serif';mx2.textAlign='center';
-    mx2.fillText('QuantumCraft - Lattice Mines',260,190);
-    mx2.fillStyle='white';mx2.font='14px sans-serif';mx2.fillText('Press Start to play!',260,230);
-    </script>
-    """, height=620)
 
+    with st.expander("📚 Mining Guide — PQC Algorithms by Depth", expanded=False):
+        cols = st.columns(3)
+        with cols[0]:
+            st.success("**Surface (Depth 1-2)**")
+            st.info("🔐 Kyber — ML-KEM FIPS 203\n✍️ Dilithium — ML-DSA FIPS 204")
+        with cols[1]:
+            st.warning("**Deep (Depth 3-4)**")
+            st.info("🌲 SPHINCS+ — SLH-DSA FIPS 205\n🦅 Falcon — FN-DSA FIPS 206")
+        with cols[2]:
+            st.error("**Ultra Deep (Depth 5+)**")
+            st.info("🧮 LWE Crystal — Hardest PQC math!\n💎 Quantum Core — Ultimate find!")
+
+    import streamlit.components.v1 as components_qcm
+    components_qcm.html("""
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:#0f172a;font-family:sans-serif;color:white;}
+#qm-wrap{display:flex;flex-direction:column;align-items:center;padding:10px;}
+.qm-hud{display:flex;justify-content:space-between;width:540px;margin-bottom:8px;gap:5px;}
+.hud-box{background:#1e293b;border:1px solid #334155;border-radius:8px;
+padding:5px 8px;font-size:11px;font-weight:bold;color:#a5b4fc;flex:1;text-align:center;}
+#qmCanvas{border:2px solid #3b82f6;border-radius:12px;display:block;}
+.qm-inv{display:flex;gap:5px;margin:6px 0;flex-wrap:wrap;justify-content:center;}
+.inv-slot{background:#1e293b;border:1px solid #334155;border-radius:6px;
+padding:3px 8px;font-size:11px;color:#a5b4fc;}
+.qm-btns{display:flex;gap:5px;margin:4px 0;flex-wrap:wrap;justify-content:center;}
+.qm-btn{padding:7px 12px;border-radius:8px;border:none;cursor:pointer;
+font-size:12px;font-weight:bold;color:white;}
+.qm-btn:active{opacity:0.8;}
+#qm-msg{font-size:12px;color:#60a5fa;min-height:18px;margin:4px;text-align:center;}
+#qm-fact{background:rgba(59,130,246,0.15);border:1px solid rgba(59,130,246,0.4);
+border-radius:8px;padding:6px 12px;margin:4px;font-size:11px;color:#a5b4fc;
+max-width:540px;display:none;text-align:center;}
+</style>
+</head>
+<body>
+<div id="qm-wrap">
+    <div class="qm-hud">
+        <div class="hud-box">❤️ HP<br><span id="mhp">120</span></div>
+        <div class="hud-box">⭐ Score<br><span id="mscore">0</span></div>
+        <div class="hud-box">⬇️ Depth<br><span id="mdepth">1</span></div>
+        <div class="hud-box">💎 Rare<br><span id="mrare">0</span></div>
+        <div class="hud-box">⛏️ Mined<br><span id="mmined">0</span></div>
+    </div>
+    <canvas id="qmCanvas" width="540" height="420"></canvas>
+    <div id="qm-msg">Press Start to begin mining!</div>
+    <div id="qm-fact"></div>
+    <div class="qm-inv">
+        <div class="inv-slot" id="m-kyber">🔐 Kyber: 0</div>
+        <div class="inv-slot" id="m-dilithium">✍️ Dilithium: 0</div>
+        <div class="inv-slot" id="m-sphincs">🌲 SPHINCS: 0</div>
+        <div class="inv-slot" id="m-falcon">🦅 Falcon: 0</div>
+        <div class="inv-slot" id="m-lwe">🧮 LWE: 0</div>
+        <div class="inv-slot" id="m-qcore">💎 QCore: 0</div>
+    </div>
+    <div class="qm-btns">
+        <button class="qm-btn" style="background:#10b981" onclick="startMines()">▶ Start</button>
+        <button class="qm-btn" style="background:#3b82f6" onclick="mineMid()">⛏️ Mine (E)</button>
+        <button class="qm-btn" style="background:#4f46e5" onclick="placeMid()">🧱 Place (F)</button>
+        <button class="qm-btn" style="background:#f59e0b" onclick="goDeeper()">⬇️ Deeper</button>
+        <button class="qm-btn" style="background:#374151" onclick="startMines()">🔄 Reset</button>
+    </div>
+</div>
+<script>
+const mc = document.getElementById("qmCanvas");
+const mx = mc.getContext("2d");
+const CELL=40, COLS=13, ROWS=10;
+
+const BLOCKS = {
+    empty:     {color:"#0f172a",    label:"",  solid:false, mineable:false},
+    stone:     {color:"#374151",    label:"🪨", solid:true,  mineable:true,  item:null,       pts:2,  rare:false},
+    kyber:     {color:"#10b981",    label:"K",  solid:true,  mineable:true,  item:"kyber",    pts:20, rare:false,
+                fact:"ML-KEM FIPS 203 — NIST standard key encapsulation!"},
+    dilithium: {color:"#3b82f6",    label:"D",  solid:true,  mineable:true,  item:"dilithium",pts:30, rare:false,
+                fact:"ML-DSA FIPS 204 — Quantum-safe digital signatures!"},
+    sphincs:   {color:"#8b5cf6",    label:"S",  solid:true,  mineable:true,  item:"sphincs",  pts:40, rare:true,
+                fact:"SLH-DSA FIPS 205 — Hash-based backup signature standard!"},
+    falcon:    {color:"#f59e0b",    label:"F",  solid:true,  mineable:true,  item:"falcon",   pts:55, rare:true,
+                fact:"FN-DSA FIPS 206 — Smallest quantum-safe signature ever!"},
+    lwe:       {color:"#ec4899",    label:"L",  solid:true,  mineable:true,  item:"lwe",      pts:70, rare:true,
+                fact:"Learning With Errors — The hardest PQC math problem!"},
+    qcore:     {color:"#fbbf24",    label:"Q",  solid:true,  mineable:true,  item:"qcore",    pts:150,rare:true,
+                fact:"Quantum Core — Master all NIST PQC standards to protect the world!"},
+    wall:      {color:"#111827",    label:"",   solid:true,  mineable:false},
+    ladder:    {color:"#78350f",    label:"▼",  solid:false, mineable:false, special:"deeper"},
+    placed:    {color:"#1d4ed8",    label:"■",  solid:true,  mineable:false},
+    boss_wall: {color:"#7f1d1d",    label:"☠",  solid:true,  mineable:false},
+};
+
+const ENEMIES = [
+    {emoji:"☠️", name:"Shor",    color:"#ef4444", fact:"Shor breaks RSA and ECC!",           boss:false, dmg:15},
+    {emoji:"🌀", name:"Grover",  color:"#f97316", fact:"Grover speeds up brute force attacks!",boss:false, dmg:10},
+    {emoji:"👾", name:"HHL",     color:"#a855f7", fact:"HHL attacks linear algebra problems!", boss:false, dmg:12},
+    {emoji:"💀", name:"Q-BOSS",  color:"#dc2626", fact:"Full quantum computer — ultimate threat!",boss:true, dmg:30},
+];
+
+let mw=[], mp, me=[], minv, mscore=0, mhp=120, mdepth=1, mrare=0, mmined=0;
+let mrun=false, mk={}, mmt=0, particles=[];
+
+function genMines(depth) {
+    mw=[];
+    const rareChance = Math.min(0.04+depth*0.035, 0.3);
+    const hasBoss = depth>=3;
+
+    for(let r=0;r<ROWS;r++){
+        mw[r]=[];
+        for(let c=0;c<COLS;c++){
+            if(r===0||r===ROWS-1||c===0||c===COLS-1){mw[r][c]="wall";continue;}
+            const rn=Math.random();
+            if(depth>=5&&rn<0.02)      mw[r][c]="qcore";
+            else if(rn<rareChance*0.25) mw[r][c]="lwe";
+            else if(rn<rareChance*0.5)  mw[r][c]="falcon";
+            else if(rn<rareChance*0.75) mw[r][c]="sphincs";
+            else if(rn<rareChance*1.2)  mw[r][c]="dilithium";
+            else if(rn<rareChance*2.0)  mw[r][c]="kyber";
+            else if(rn<0.45)            mw[r][c]="stone";
+            else                        mw[r][c]="empty";
+        }
+    }
+    // Clear spawn area
+    mw[1][1]="empty";mw[1][2]="empty";mw[2][1]="empty";mw[2][2]="empty";
+    // Add ladder
+    mw[ROWS-2][COLS-2]="ladder";
+    // Boss area at depth 3+
+    if(hasBoss){
+        mw[ROWS-2][COLS-4]="boss_wall";
+        mw[ROWS-3][COLS-4]="boss_wall";
+    }
+}
+
+function startMines(){
+    mdepth=1;mscore=0;mhp=120;mrare=0;mmined=0;
+    minv={kyber:0,dilithium:0,sphincs:0,falcon:0,lwe:0,qcore:0};
+    genMines(1);mp={x:1,y:1};me=[];particles=[];
+    for(let i=0;i<2;i++)spawnEnemy();
+    mrun=true;updateUI();
+    cancelAnimationFrame(window._mF);mLoop();
+}
+
+function spawnEnemy(){
+    const x=Math.floor(Math.random()*(COLS-5))+COLS-6;
+    const y=Math.floor(Math.random()*(ROWS-4))+2;
+    if(mw[y]&&mw[y][x]==="empty"){
+        const isBoss = mdepth>=3&&Math.random()<0.3;
+        const eType = isBoss ? ENEMIES[3] : ENEMIES[Math.floor(Math.random()*3)];
+        me.push({x,y,timer:0,rate:isBoss?80:25+Math.floor(Math.random()*35),...eType});
+    }
+}
+
+function mCanWalk(x,y){
+    if(x<0||y<0||x>=COLS||y>=ROWS)return false;
+    const b=BLOCKS[mw[y][x]];
+    return b&&!b.solid;
+}
+
+function showFact(fact){
+    const f=document.getElementById("qm-fact");
+    f.textContent="📚 "+fact;f.style.display="block";
+    clearTimeout(window._ft);
+    window._ft=setTimeout(()=>{f.style.display="none";},4000);
+}
+
+function mineMid(){
+    if(!mrun)return;
+    const dirs=[{dx:0,dy:-1},{dx:0,dy:1},{dx:-1,dy:0},{dx:1,dy:0}];
+    for(const d of dirs){
+        const nx=mp.x+d.dx,ny=mp.y+d.dy;
+        if(nx>=0&&ny>=0&&nx<COLS&&ny<ROWS){
+            const bt=mw[ny][nx],b=BLOCKS[bt];
+            if(b&&b.mineable){
+                if(b.item){
+                    minv[b.item]=(minv[b.item]||0)+1;
+                    if(b.rare)mrare++;
+                    showFact(b.fact);
+                    // Sparkle
+                    for(let i=0;i<8;i++) particles.push({
+                        x:nx*CELL+CELL/2,y:ny*CELL+CELL/2,
+                        vx:(Math.random()-0.5)*5,vy:(Math.random()-0.5)*5,
+                        color:BLOCKS[bt].color,alpha:1,r:3
+                    });
+                }
+                mscore+=b.pts;mmined++;mw[ny][nx]="empty";
+                document.getElementById("qm-msg").textContent="Mined "+bt+"! +"+b.pts+" pts";
+                updateUI();return;
+            }
+        }
+    }
+    document.getElementById("qm-msg").textContent="Nothing to mine here — move next to a glowing block!";
+}
+
+function placeMid(){
+    if(!mrun||minv.kyber<=0){
+        document.getElementById("qm-msg").textContent="Need Kyber blocks to build walls!";return;
+    }
+    const dirs=[{dx:0,dy:-1},{dx:1,dy:0},{dx:-1,dy:0},{dx:0,dy:1}];
+    for(const d of dirs){
+        const nx=mp.x+d.dx,ny=mp.y+d.dy;
+        if(nx>=0&&ny>=0&&nx<COLS&&ny<ROWS&&mw[ny][nx]==="empty"){
+            minv.kyber--;mw[ny][nx]="placed";
+            document.getElementById("qm-msg").textContent="Kyber wall placed! Blocks quantum creepers!";
+            updateUI();return;
+        }
+    }
+}
+
+function goDeeper(){
+    if(!mrun)return;
+    if(mp.x>=COLS-3&&mp.y>=ROWS-3){
+        mdepth++;
+        genMines(mdepth);mp={x:1,y:1};me=[];particles=[];
+        const enemyCount=Math.min(mdepth+1,6);
+        for(let i=0;i<enemyCount;i++)spawnEnemy();
+        document.getElementById("mdepth").textContent=mdepth;
+        const msgs=["Rarer algorithms ahead!","Boss territory!","Ultra rare LWE crystals!","Quantum Core zone!"];
+        document.getElementById("qm-msg").textContent="Depth "+mdepth+"! "+msgs[Math.min(mdepth-2,msgs.length-1)];
+        updateUI();
+    } else {
+        document.getElementById("qm-msg").textContent="Find the ▼ ladder in the bottom-right corner!";
+    }
+}
+
+function updateUI(){
+    document.getElementById("mscore").textContent=mscore;
+    document.getElementById("mhp").textContent=Math.max(0,mhp);
+    document.getElementById("mdepth").textContent=mdepth;
+    document.getElementById("mrare").textContent=mrare;
+    document.getElementById("mmined").textContent=mmined;
+    document.getElementById("m-kyber").textContent="🔐 Kyber:"+minv.kyber;
+    document.getElementById("m-dilithium").textContent="✍️ Dilithium:"+minv.dilithium;
+    document.getElementById("m-sphincs").textContent="🌲 SPHINCS:"+minv.sphincs;
+    document.getElementById("m-falcon").textContent="🦅 Falcon:"+minv.falcon;
+    document.getElementById("m-lwe").textContent="🧮 LWE:"+minv.lwe;
+    document.getElementById("m-qcore").textContent="💎 QCore:"+minv.qcore;
+}
+
+document.addEventListener("keydown",e=>{
+    mk[e.key]=true;
+    if(e.key==="e"||e.key==="E")mineMid();
+    if(e.key==="f"||e.key==="F")placeMid();
+});
+document.addEventListener("keyup",e=>{mk[e.key]=false;});
+
+function mLoop(){
+    window._mF=requestAnimationFrame(mLoop);
+    mmt++;
+    if(mmt>=8){
+        mmt=0;if(!mrun)return;
+        let nx=mp.x,ny=mp.y;
+        if(mk["ArrowUp"]||mk["w"])ny--;
+        if(mk["ArrowDown"]||mk["s"])ny++;
+        if(mk["ArrowLeft"]||mk["a"])nx--;
+        if(mk["ArrowRight"]||mk["d"])nx++;
+        if(mCanWalk(nx,ny)||(mw[ny]&&mw[ny][nx]==="ladder")){mp.x=nx;mp.y=ny;}
+
+        // Move enemies
+        me.forEach((e,i)=>{
+            e.timer++;if(e.timer<e.rate)return;e.timer=0;
+            const dx=mp.x-e.x,dy=mp.y-e.y;const moves=[];
+            if(dx>0&&mCanWalk(e.x+1,e.y))moves.push({x:e.x+1,y:e.y});
+            if(dx<0&&mCanWalk(e.x-1,e.y))moves.push({x:e.x-1,y:e.y});
+            if(dy>0&&mCanWalk(e.x,e.y+1))moves.push({x:e.x,y:e.y+1});
+            if(dy<0&&mCanWalk(e.x,e.y-1))moves.push({x:e.x,y:e.y-1});
+            if(moves.length>0){
+                moves.sort((a,b)=>
+                    Math.hypot(a.x-mp.x,a.y-mp.y)-Math.hypot(b.x-mp.x,b.y-mp.y)
+                );
+                const mv=e.boss||Math.random()<0.7?moves[0]:moves[Math.floor(Math.random()*moves.length)];
+                e.x=mv.x;e.y=mv.y;
+            }
+            if(e.x===mp.x&&e.y===mp.y){
+                mhp-=e.dmg;updateUI();me.splice(i,1);
+                showFact(e.fact);
+                document.getElementById("qm-msg").textContent=
+                    (e.boss?"💀 BOSS hit!":"☠️ "+e.name+" hit!")+" -"+e.dmg+" HP! "+e.fact;
+                if(mhp<=0){
+                    mrun=false;
+                    document.getElementById("qm-msg").textContent="Mine collapsed! Score:"+mscore+" Rare:"+mrare;
+                }
+            }
+        });
+    }
+
+    // Update particles
+    particles=particles.filter(p=>{
+        p.x+=p.vx;p.y+=p.vy;p.alpha-=0.05;
+        p.vx*=0.9;p.vy*=0.9;
+        return p.alpha>0;
+    });
+
+    mDraw();
+}
+
+function mDraw(){
+    mx.clearRect(0,0,mc.width,mc.height);
+
+    // Background gradient
+    const bg=mx.createLinearGradient(0,0,0,mc.height);
+    bg.addColorStop(0,"#0f172a");
+    bg.addColorStop(1,"#1a0a2e");
+    mx.fillStyle=bg;mx.fillRect(0,0,mc.width,mc.height);
+
+    // Draw blocks
+    for(let r=0;r<ROWS;r++){
+        for(let c=0;c<COLS;c++){
+            const bt=mw[r][c],b=BLOCKS[bt];if(!b)continue;
+            mx.fillStyle=b.color;mx.fillRect(c*CELL,r*CELL,CELL,CELL);
+            mx.strokeStyle="rgba(255,255,255,0.04)";
+            mx.lineWidth=0.5;
+            mx.strokeRect(c*CELL,r*CELL,CELL,CELL);
+
+            // Block label
+            if(b.label){
+                mx.font=b.label.length>1?"18px sans-serif":"bold 14px sans-serif";
+                mx.fillStyle="rgba(255,255,255,0.9)";
+                mx.textAlign="center";
+                mx.fillText(b.label,c*CELL+CELL/2,r*CELL+CELL/1.5);
+            }
+
+            // Glow for rare blocks
+            if(b.mineable&&b.rare){
+                mx.strokeStyle=b.color+"88";
+                mx.lineWidth=2;
+                mx.strokeRect(c*CELL+1,r*CELL+1,CELL-2,CELL-2);
+            } else if(b.mineable&&b.item){
+                mx.strokeStyle="rgba(255,255,255,0.2)";
+                mx.lineWidth=1;
+                mx.strokeRect(c*CELL+2,r*CELL+2,CELL-4,CELL-4);
+            }
+
+            // Depth indicator for ladder
+            if(bt==="ladder"){
+                mx.fillStyle="#f59e0b";
+                mx.font="10px sans-serif";
+                mx.textAlign="center";
+                mx.fillText("DEEPER",c*CELL+CELL/2,r*CELL+CELL-4);
+            }
+        }
+    }
+
+    // Draw particles
+    particles.forEach(p=>{
+        mx.beginPath();
+        mx.arc(p.x,p.y,p.r,0,Math.PI*2);
+        mx.fillStyle=p.color+Math.floor(p.alpha*255).toString(16).padStart(2,"0");
+        mx.fill();
+    });
+
+    // Draw enemies
+    me.forEach(e=>{
+        const size=e.boss?28:22;
+        if(e.boss){
+            mx.beginPath();
+            mx.arc(e.x*CELL+CELL/2,e.y*CELL+CELL/2,20+Math.sin(Date.now()*0.005)*3,0,Math.PI*2);
+            mx.fillStyle="rgba(220,38,38,0.25)";
+            mx.fill();
+        }
+        mx.font=size+"px sans-serif";
+        mx.textAlign="center";
+        mx.fillText(e.emoji,e.x*CELL+CELL/2,e.y*CELL+CELL/1.35);
+        if(e.boss){
+            mx.fillStyle="#dc2626";
+            mx.font="bold 8px sans-serif";
+            mx.fillText("BOSS",e.x*CELL+CELL/2,e.y*CELL+4);
+        }
+    });
+
+    // Draw player with glow
+    mx.beginPath();
+    mx.arc(mp.x*CELL+CELL/2,mp.y*CELL+CELL/2,16,0,Math.PI*2);
+    mx.fillStyle="rgba(59,130,246,0.2)";
+    mx.fill();
+    mx.font="24px sans-serif";
+    mx.textAlign="center";
+    mx.fillText("⛏️",mp.x*CELL+CELL/2,mp.y*CELL+CELL/1.35);
+    mx.strokeStyle="#3b82f6";
+    mx.lineWidth=2;
+    mx.strokeRect(mp.x*CELL+2,mp.y*CELL+2,CELL-4,CELL-4);
+
+    // Depth HUD corner
+    mx.fillStyle="rgba(15,23,42,0.8)";
+    mx.beginPath();
+    mx.roundRect(8,mc.height-30,160,22,4);
+    mx.fill();
+    mx.fillStyle="#3b82f6";
+    mx.font="bold 11px sans-serif";
+    mx.textAlign="left";
+    mx.fillText("⬇️ Depth "+mdepth+" — "+
+        (mdepth<3?"Surface":"mdepth"<5?"Deep Zone":"Ultra Deep!"),12,mc.height-15);
+
+    // HP bar
+    const hw=100;
+    mx.fillStyle="rgba(15,23,42,0.8)";
+    mx.beginPath();mx.roundRect(mc.width-hw-12,mc.height-30,hw+4,22,4);mx.fill();
+    mx.fillStyle="#374151";
+    mx.fillRect(mc.width-hw-8,mc.height-24,hw,10);
+    const hpPct=Math.max(0,mhp/120);
+    mx.fillStyle=hpPct>0.5?"#10b981":hpPct>0.25?"#f59e0b":"#ef4444";
+    mx.fillRect(mc.width-hw-8,mc.height-24,hw*hpPct,10);
+
+    // Game over overlay
+    if(!mrun){
+        mx.fillStyle="rgba(0,0,0,0.85)";
+        mx.fillRect(0,0,mc.width,mc.height);
+        mx.fillStyle=mhp<=0?"#ef4444":"#10b981";
+        mx.font="bold 26px sans-serif";
+        mx.textAlign="center";
+        mx.fillText(mhp<=0?"💥 Mine Collapsed!":"⛏️ Keep Mining!",mc.width/2,mc.height/2-30);
+        mx.fillStyle="white";
+        mx.font="15px sans-serif";
+        mx.fillText("Score: "+mscore+" | Rare: "+mrare+" | Depth: "+mdepth,mc.width/2,mc.height/2+10);
+        mx.fillStyle="#a5b4fc";
+        mx.font="12px sans-serif";
+        mx.fillText("Kyber, Dilithium, SPHINCS+, Falcon — all NIST approved!",mc.width/2,mc.height/2+40);
+    }
+}
+
+// Idle screen
+mx.fillStyle="#0f172a";mx.fillRect(0,0,mc.width,mc.height);
+const idBg=mx.createLinearGradient(0,0,0,mc.height);
+idBg.addColorStop(0,"#0f172a");idBg.addColorStop(1,"#1a0a2e");
+mx.fillStyle=idBg;mx.fillRect(0,0,mc.width,mc.height);
+mx.fillStyle="#3b82f6";mx.font="bold 20px sans-serif";mx.textAlign="center";
+mx.fillText("⛏️ QuantumCraft — Lattice Mines",mc.width/2,mc.height/2-55);
+mx.fillStyle="#a5b4fc";mx.font="13px sans-serif";
+mx.fillText("Mine 🔐 Kyber  ✍️ Dilithium  🌲 SPHINCS+  🦅 Falcon  🧮 LWE  💎 QCore",mc.width/2,mc.height/2-20);
+mx.fillText("Go deeper for rarer algorithms!  Boss enemies at depth 3+!",mc.width/2,mc.height/2+10);
+mx.fillStyle="white";mx.font="bold 14px sans-serif";
+mx.fillText("Press ▶ Start to mine!",mc.width/2,mc.height/2+50);
+</script>
+</body>
+</html>
+""", height=680)
 
 def render_quantumcraft_highschool():
     """9-12: QuantumCraft — Cipher Ruins side-scrolling platformer."""
