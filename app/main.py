@@ -22,6 +22,7 @@ from modules.share_cards import render_share_page
 from modules.character import render_character_page
 from modules.world_map import render_world_map
 from modules.explainers import render_explainers_page
+from modules.crypto_lab import render_crypto_lab
 # ── Page config ───────────────────────────────────────────────────────────────
 st.set_page_config(
     page_title="QuantumVault Academy",
@@ -100,6 +101,7 @@ def sidebar():
             "🎨 My Character",
             "🌍 World Map",
             "📺 Explainers",
+            "🧪 Crypto Lab",
 
         ],
     )
@@ -428,6 +430,8 @@ def main():
         render_world_map()
     elif "Explainers" in level:
         render_explainers_page()
+    elif "Crypto Lab" in level:
+        render_crypto_lab()
     elif "AI Tutor" in level:
         if st.session_state.get("plan_type", "free") == "free":
             st.title("🤖 AI Tutor")
