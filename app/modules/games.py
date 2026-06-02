@@ -1544,25 +1544,27 @@ const ZOMBIES = [
     {{label:"MD5💥",   emoji:"🧟",   color:"#ec4899", hp:{int(diff['hp']*0.6)}, pts:18, fact:"MD5 has dangerous collision attacks!"}},
 ];
 
-const BASE_SPEED = {diff['speed']};
-const BASE_RATE = {diff['rate']};
 const MAX_WAVES = 12;
 
-// 12 wave configs
-const WAVE_CONFIG = [
-    {{wave:1,  speed:BASE_SPEED*0.7, rate:Math.floor(BASE_RATE*1.4), count:4,  boss:false, name:"First Wave"}},
-    {{wave:2,  speed:BASE_SPEED*0.8, rate:Math.floor(BASE_RATE*1.3), count:5,  boss:false, name:"Getting Warmer"}},
-    {{wave:3,  speed:BASE_SPEED*0.9, rate:Math.floor(BASE_RATE*1.2), count:6,  boss:true,  name:"Boss Wave!"}},
-    {{wave:4,  speed:BASE_SPEED*1.0, rate:Math.floor(BASE_RATE*1.1), count:7,  boss:false, name:"Speed Up"}},
-    {{wave:5,  speed:BASE_SPEED*1.1, rate:Math.floor(BASE_RATE*1.0), count:8,  boss:false, name:"Halfway There"}},
-    {{wave:6,  speed:BASE_SPEED*1.2, rate:Math.floor(BASE_RATE*0.9), count:9,  boss:true,  name:"Boss Strikes!"}},
-    {{wave:7,  speed:BASE_SPEED*1.3, rate:Math.floor(BASE_RATE*0.85),count:10, boss:false, name:"Expert Territory"}},
-    {{wave:8,  speed:BASE_SPEED*1.4, rate:Math.floor(BASE_RATE*0.8), count:11, boss:false, name:"Quantum Surge"}},
-    {{wave:9,  speed:BASE_SPEED*1.5, rate:Math.floor(BASE_RATE*0.75),count:12, boss:true,  name:"Super Boss!"}},
-    {{wave:10, speed:BASE_SPEED*1.6, rate:Math.floor(BASE_RATE*0.7), count:14, boss:false, name:"Almost There"}},
-    {{wave:11, speed:BASE_SPEED*1.7, rate:Math.floor(BASE_RATE*0.65),count:16, boss:true,  name:"Final Boss!"}},
-    {{wave:12, speed:BASE_SPEED*1.8, rate:Math.floor(BASE_RATE*0.6), count:18, boss:true,  name:"QUANTUM APOCALYPSE!"}},
-];
+// 12 wave configs with speed and rate baked in per difficulty
+const WAVE_CONFIG = (function() {{
+    const s = {diff['speed']};
+    const r = {diff['rate']};
+    return [
+        {{wave:1,  speed:s*0.7, rate:Math.floor(r*1.4), count:4,  boss:false, name:"First Contact"}},
+        {{wave:2,  speed:s*0.8, rate:Math.floor(r*1.3), count:5,  boss:false, name:"Quantum Scouts"}},
+        {{wave:3,  speed:s*0.9, rate:Math.floor(r*1.2), count:6,  boss:true,  name:"Boss Wave 1"}},
+        {{wave:4,  speed:s*1.0, rate:Math.floor(r*1.1), count:7,  boss:false, name:"Shor Surge"}},
+        {{wave:5,  speed:s*1.1, rate:Math.floor(r*1.0), count:8,  boss:false, name:"Grover Storm"}},
+        {{wave:6,  speed:s*1.2, rate:Math.floor(r*0.9), count:9,  boss:true,  name:"Boss Wave 2"}},
+        {{wave:7,  speed:s*1.3, rate:Math.floor(r*0.85),count:10, boss:false, name:"Quantum Flood"}},
+        {{wave:8,  speed:s*1.4, rate:Math.floor(r*0.8), count:11, boss:false, name:"QAOA Assault"}},
+        {{wave:9,  speed:s*1.5, rate:Math.floor(r*0.75),count:12, boss:true,  name:"Boss Wave 3"}},
+        {{wave:10, speed:s*1.6, rate:Math.floor(r*0.7), count:14, boss:false, name:"Full Quantum Army"}},
+        {{wave:11, speed:s*1.7, rate:Math.floor(r*0.65),count:16, boss:true,  name:"Quantum Apocalypse"}},
+        {{wave:12, speed:s*1.8, rate:Math.floor(r*0.6), count:18, boss:true,  name:"FINAL BOSS"}},
+    ];
+}})();
 
 function getWaveConfig() {{
     return WAVE_CONFIG[Math.min(wave-1, WAVE_CONFIG.length-1)];
