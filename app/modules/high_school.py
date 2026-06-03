@@ -440,28 +440,35 @@ if __name__ == "__main__":
         st.subheader("🧮 QuantumMath Challenge")
         xp = st.session_state.xp
         LEVELS = [
-            {"name": "Level 1 - Modular Arithmetic",  "xp_required": 0,    "color": "#10b981", "emoji": "🔢"},
-            {"name": "Level 2 - Prime Numbers",        "xp_required": 50,   "color": "#3b82f6", "emoji": "🔑"},
-            {"name": "Level 3 - Matrix Math",          "xp_required": 150,  "color": "#8b5cf6", "emoji": "🏗"},
-            {"name": "Level 4 - Number Theory",        "xp_required": 300,  "color": "#f59e0b", "emoji": "📐"},
-            {"name": "Level 5 - Lattice Problems",     "xp_required": 500,  "color": "#ec4899", "emoji": "⚡"},
-            {"name": "Level 6 - Hash Functions",       "xp_required": 700,  "color": "#06b6d4", "emoji": "🔢"},
-            {"name": "Level 7 - Digital Signatures",   "xp_required": 900,  "color": "#f97316", "emoji": "✍️"},
-            {"name": "Level 8 - Kyber Deep Dive",      "xp_required": 1100, "color": "#a855f7", "emoji": "🔐"},
-            {"name": "Level 9 - Quantum Algorithms",   "xp_required": 1300, "color": "#ef4444", "emoji": "⚛️"},
-            {"name": "Level 10 - Advanced LWE",        "xp_required": 1500, "color": "#14b8a6", "emoji": "🧮"},
-            {"name": "Level 11 - NIST Standards",      "xp_required": 1800, "color": "#eab308", "emoji": "🏛️"},
-            {"name": "Level 12 - Grandmaster PQC",     "xp_required": 2000, "color": "#4f46e5", "emoji": "🛡️"},
+            {"name": "Level 1 - Modular Arithmetic",  "xp_required": 0,   "color": "#10b981", "emoji": "🔢"},
+            {"name": "Level 2 - Prime Numbers",        "xp_required": 0,   "color": "#3b82f6", "emoji": "🔑"},
+            {"name": "Level 3 - Matrix Math",          "xp_required": 0,   "color": "#8b5cf6", "emoji": "🏗"},
+            {"name": "Level 4 - Number Theory",        "xp_required": 50,  "color": "#f59e0b", "emoji": "📐"},
+            {"name": "Level 5 - Lattice Problems",     "xp_required": 100, "color": "#ec4899", "emoji": "⚡"},
+            {"name": "Level 6 - Hash Functions",       "xp_required": 150, "color": "#06b6d4", "emoji": "🔢"},
+            {"name": "Level 7 - Digital Signatures",   "xp_required": 200, "color": "#f97316", "emoji": "✍️"},
+            {"name": "Level 8 - Kyber Deep Dive",      "xp_required": 250, "color": "#a855f7", "emoji": "🔐"},
+            {"name": "Level 9 - Quantum Algorithms",   "xp_required": 300, "color": "#ef4444", "emoji": "⚛️"},
+            {"name": "Level 10 - Advanced LWE",        "xp_required": 400, "color": "#14b8a6", "emoji": "🧮"},
+            {"name": "Level 11 - NIST Standards",      "xp_required": 500, "color": "#eab308", "emoji": "🏛️"},
+            {"name": "Level 12 - Grandmaster PQC",     "xp_required": 600, "color": "#4f46e5", "emoji": "🛡️"},
         ]
-        available = [l for l in LEVELS if xp >= l["xp_required"]]
-        if not available:
-            st.warning("Earn XP in other modules to unlock math challenges!")
+        # Show all levels — locked ones shown greyed out
+        level_names = []
+        for l in LEVELS:
+            if xp >= l["xp_required"]:
+                level_names.append(l["emoji"] + " " + l["name"])
+            else:
+                level_names.append("🔒 " + l["name"] + f" ({l['xp_required']} XP needed)")
+        available = LEVELS  # Show all
+        selected_name = st.selectbox("Choose a level:", level_names, key="math_sel")
+        idx = level_names.index(selected_name)
+        lvl = LEVELS[idx]
+        color = lvl["color"]
+        if xp < lvl["xp_required"]:
+            st.warning(f"🔒 You need {lvl['xp_required']} XP to unlock this level! You have {xp} XP.")
+            st.info("Complete activities in other modules to earn XP!")
         else:
-            selected = st.selectbox("Choose a level:", [l["name"] for l in available], key="math_sel")
-            idx = next(i for i, l in enumerate(LEVELS) if l["name"] == selected)
-            lvl = LEVELS[idx]
-            color = lvl["color"]
-
             BODIES = [
                 ("Modular Arithmetic - Clock Math",
                  """**What is Modular Arithmetic?**
