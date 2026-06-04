@@ -1,31 +1,31 @@
-/* QuantumVault Academy — Cyber Teal Theme */
+/* QuantumVault Academy — Quantum Gold Theme */
 
 /* ── Fonts ── */
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;600;700&family=Fira+Code:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Fira+Code:wght@400;500&display=swap');
 
 /* ── Brand Colors ── */
 :root {
-    --teal:        #0d9488;
-    --teal-light:  #2dd4bf;
-    --teal-bright: #5eead4;
-    --teal-dim:    #0f766e;
-    --cyan:        #06b6d4;
-    --cyan-light:  #67e8f9;
-    --navy:        #020d14;
-    --navy-2:      #071520;
-    --navy-3:      #0c1f2e;
-    --navy-4:      #122334;
-    --slate:       #1e3a4a;
-    --border:      #164154;
-    --text-bright: #f0fdfa;
-    --text-main:   #ccfbf1;
-    --text-muted:  #5eead4;
-    --text-dim:    #2dd4bf80;
+    --gold:         #f59e0b;
+    --gold-light:   #fcd34d;
+    --gold-bright:  #fde68a;
+    --gold-dim:     #d97706;
+    --amber:        #f97316;
+    --amber-light:  #fdba74;
+    --navy:         #050b18;
+    --navy-2:       #080f1f;
+    --navy-3:       #0d1526;
+    --navy-4:       #111d2e;
+    --slate:        #1a2540;
+    --border:       #1e2f4a;
+    --text-bright:  #fffbeb;
+    --text-main:    #fef3c7;
+    --text-muted:   #fcd34d80;
+    --text-dim:     #92400e60;
 }
 
 /* ── Base ── */
 html, body, [class*="css"] {
-    font-family: 'Plus Jakarta Sans', 'Space Grotesk', sans-serif !important;
+    font-family: 'Plus Jakarta Sans', sans-serif !important;
     font-size: 16px;
     line-height: 1.7;
     -webkit-font-smoothing: antialiased;
@@ -40,7 +40,7 @@ h1, .stMarkdown h1 {
     font-weight: 800 !important;
     letter-spacing: -0.5px !important;
     line-height: 1.2 !important;
-    background: linear-gradient(135deg, var(--teal-bright), var(--cyan-light)) !important;
+    background: linear-gradient(135deg, var(--gold-light), var(--amber-light)) !important;
     -webkit-background-clip: text !important;
     -webkit-text-fill-color: transparent !important;
     background-clip: text !important;
@@ -50,7 +50,7 @@ h2, .stMarkdown h2 {
     font-family: 'Plus Jakarta Sans', sans-serif !important;
     font-size: 1.8rem !important;
     font-weight: 700 !important;
-    color: var(--teal-bright) !important;
+    color: var(--gold-light) !important;
     letter-spacing: -0.3px !important;
     margin-top: 1.5rem !important;
 }
@@ -59,33 +59,33 @@ h3, .stMarkdown h3 {
     font-family: 'Plus Jakarta Sans', sans-serif !important;
     font-size: 1.25rem !important;
     font-weight: 700 !important;
-    color: var(--cyan-light) !important;
+    color: var(--gold-bright) !important;
 }
 
 h4, .stMarkdown h4 {
     font-family: 'Plus Jakarta Sans', sans-serif !important;
     font-size: 1.05rem !important;
     font-weight: 600 !important;
-    color: var(--teal-light) !important;
+    color: var(--amber-light) !important;
 }
 
 /* ── Body text ── */
 p, .stMarkdown p, li, .stMarkdown li {
     font-size: 1.05rem !important;
     line-height: 1.8 !important;
-    color: #94d9d0 !important;
+    color: #fde68a99 !important;
 }
 
 .stCaption, small {
     font-size: 0.85rem !important;
-    color: #2dd4bf60 !important;
+    color: #fcd34d50 !important;
 }
 
 label, .stSelectbox label, .stTextInput label,
 .stTextArea label, .stSlider label, .stRadio label {
     font-size: 0.95rem !important;
     font-weight: 600 !important;
-    color: var(--teal-light) !important;
+    color: var(--gold-light) !important;
     letter-spacing: 0.3px !important;
 }
 
@@ -103,21 +103,20 @@ section[data-testid="stSidebar"] {
 }
 
 section[data-testid="stSidebar"] .stMarkdown {
-    color: var(--teal-light) !important;
+    color: var(--gold-light) !important;
 }
 
 section[data-testid="stSidebar"] h1 {
     font-size: 1.35rem !important;
     font-weight: 800 !important;
-    background: linear-gradient(135deg, var(--teal-bright), var(--cyan)) !important;
+    background: linear-gradient(135deg, var(--gold-bright), var(--amber)) !important;
     -webkit-background-clip: text !important;
     -webkit-text-fill-color: transparent !important;
-    background-clip: text !important;
 }
 
 section[data-testid="stSidebar"] p {
     font-size: 0.85rem !important;
-    color: #2dd4bf50 !important;
+    color: #fcd34d40 !important;
 }
 
 section[data-testid="stSidebar"] .stButton > button {
@@ -127,7 +126,7 @@ section[data-testid="stSidebar"] .stButton > button {
     text-align: left !important;
     border-radius: 8px !important;
     background: transparent !important;
-    color: #5eead4 !important;
+    color: #fcd34d90 !important;
     border: 1px solid transparent !important;
     box-shadow: none !important;
     transition: all 0.15s ease !important;
@@ -135,97 +134,97 @@ section[data-testid="stSidebar"] .stButton > button {
 }
 
 section[data-testid="stSidebar"] .stButton > button:hover {
-    background: rgba(13,148,136,0.12) !important;
-    color: var(--teal-bright) !important;
-    border-color: rgba(13,148,136,0.3) !important;
+    background: rgba(245,158,11,0.1) !important;
+    color: var(--gold-bright) !important;
+    border-color: rgba(245,158,11,0.25) !important;
     transform: translateX(3px) !important;
     box-shadow: none !important;
 }
 
 /* ── Main Buttons ── */
 .stButton > button {
-    background: linear-gradient(135deg, var(--teal-dim), var(--teal)) !important;
-    color: var(--text-bright) !important;
+    background: linear-gradient(135deg, var(--gold-dim), var(--gold)) !important;
+    color: var(--navy) !important;
     border: none !important;
     border-radius: 10px !important;
     font-family: 'Plus Jakarta Sans', sans-serif !important;
-    font-weight: 600 !important;
+    font-weight: 700 !important;
     font-size: 0.95rem !important;
     padding: 0.55rem 1.5rem !important;
     transition: all 0.2s ease !important;
-    box-shadow: 0 4px 14px rgba(13,148,136,0.35) !important;
-    letter-spacing: 0.2px !important;
+    box-shadow: 0 4px 14px rgba(245,158,11,0.3) !important;
 }
 
 .stButton > button:hover {
     transform: translateY(-2px) !important;
-    box-shadow: 0 8px 24px rgba(45,212,191,0.4) !important;
-    background: linear-gradient(135deg, var(--teal), var(--teal-light)) !important;
-    color: var(--navy) !important;
+    box-shadow: 0 8px 24px rgba(245,158,11,0.45) !important;
+    background: linear-gradient(135deg, var(--gold), var(--gold-light)) !important;
 }
 
 .stButton > button[kind="primary"] {
-    background: linear-gradient(135deg, var(--teal), var(--cyan)) !important;
+    background: linear-gradient(135deg, var(--gold-dim), var(--amber)) !important;
     font-size: 1rem !important;
     padding: 0.65rem 2rem !important;
-    box-shadow: 0 4px 20px rgba(6,182,212,0.4) !important;
+    box-shadow: 0 4px 20px rgba(249,115,22,0.4) !important;
 }
 
 .stButton > button[kind="primary"]:hover {
-    color: var(--navy) !important;
-    box-shadow: 0 8px 30px rgba(6,182,212,0.6) !important;
+    box-shadow: 0 8px 30px rgba(249,115,22,0.55) !important;
+    background: linear-gradient(135deg, var(--amber), var(--gold-light)) !important;
 }
 
 /* ── Glassmorphism Cards ── */
 [data-testid="stMetric"] {
-    background: rgba(13,148,136,0.08) !important;
+    background: rgba(245,158,11,0.07) !important;
     backdrop-filter: blur(16px) !important;
     -webkit-backdrop-filter: blur(16px) !important;
     border-radius: 16px !important;
     padding: 1.2rem !important;
-    border: 1px solid rgba(45,212,191,0.15) !important;
-    box-shadow: 0 4px 24px rgba(0,0,0,0.3), inset 0 1px 0 rgba(45,212,191,0.1) !important;
+    border: 1px solid rgba(245,158,11,0.15) !important;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.3),
+                inset 0 1px 0 rgba(253,230,138,0.08) !important;
     transition: transform 0.2s, box-shadow 0.2s !important;
 }
 
 [data-testid="stMetric"]:hover {
     transform: translateY(-3px) !important;
-    box-shadow: 0 8px 32px rgba(13,148,136,0.25), inset 0 1px 0 rgba(45,212,191,0.15) !important;
+    box-shadow: 0 8px 32px rgba(245,158,11,0.2),
+                inset 0 1px 0 rgba(253,230,138,0.12) !important;
 }
 
 [data-testid="stMetricValue"] {
     font-family: 'Plus Jakarta Sans', sans-serif !important;
     font-size: 2.1rem !important;
     font-weight: 800 !important;
-    color: var(--teal-bright) !important;
+    color: var(--gold-light) !important;
 }
 
 [data-testid="stMetricLabel"] {
     font-size: 0.78rem !important;
     font-weight: 700 !important;
-    color: #2dd4bf80 !important;
+    color: #fcd34d60 !important;
     letter-spacing: 1px !important;
     text-transform: uppercase !important;
 }
 
-/* ── Glassmorphism Expanders ── */
+/* ── Expanders ── */
 .streamlit-expanderHeader {
     font-family: 'Plus Jakarta Sans', sans-serif !important;
     font-size: 1rem !important;
     font-weight: 600 !important;
-    color: var(--teal-bright) !important;
-    background: rgba(13,148,136,0.06) !important;
+    color: var(--gold-light) !important;
+    background: rgba(245,158,11,0.06) !important;
     border-radius: 10px !important;
-    border: 1px solid rgba(45,212,191,0.12) !important;
+    border: 1px solid rgba(245,158,11,0.12) !important;
 }
 
 /* ── Tabs ── */
 .stTabs [data-baseweb="tab-list"] {
     gap: 4px !important;
-    background: rgba(13,148,136,0.06) !important;
+    background: rgba(245,158,11,0.05) !important;
     border-radius: 12px !important;
     padding: 4px !important;
-    border: 1px solid rgba(45,212,191,0.1) !important;
+    border: 1px solid rgba(245,158,11,0.1) !important;
 }
 
 .stTabs [data-baseweb="tab"] {
@@ -234,19 +233,19 @@ section[data-testid="stSidebar"] .stButton > button:hover {
     font-weight: 600 !important;
     font-size: 0.92rem !important;
     padding: 0.55rem 1.1rem !important;
-    color: #2dd4bf80 !important;
+    color: #fcd34d60 !important;
     transition: all 0.2s !important;
 }
 
 .stTabs [data-baseweb="tab"]:hover {
-    color: var(--teal-bright) !important;
-    background: rgba(13,148,136,0.1) !important;
+    color: var(--gold-light) !important;
+    background: rgba(245,158,11,0.08) !important;
 }
 
 .stTabs [aria-selected="true"] {
-    background: rgba(13,148,136,0.2) !important;
-    color: var(--teal-bright) !important;
-    box-shadow: 0 2px 8px rgba(13,148,136,0.2) !important;
+    background: rgba(245,158,11,0.15) !important;
+    color: var(--gold-light) !important;
+    box-shadow: 0 2px 8px rgba(245,158,11,0.15) !important;
 }
 
 /* ── Inputs ── */
@@ -264,8 +263,8 @@ section[data-testid="stSidebar"] .stButton > button:hover {
 
 .stTextInput > div > div > input:focus,
 .stTextArea > div > div > textarea:focus {
-    border-color: var(--teal) !important;
-    box-shadow: 0 0 0 3px rgba(13,148,136,0.2) !important;
+    border-color: var(--gold) !important;
+    box-shadow: 0 0 0 3px rgba(245,158,11,0.18) !important;
 }
 
 /* ── Selectbox ── */
@@ -279,9 +278,9 @@ section[data-testid="stSidebar"] .stButton > button:hover {
 
 /* ── Alerts ── */
 .stSuccess {
-    border-left: 4px solid var(--teal) !important;
+    border-left: 4px solid #10b981 !important;
     border-radius: 10px !important;
-    background: rgba(13,148,136,0.08) !important;
+    background: rgba(16,185,129,0.06) !important;
     font-size: 0.95rem !important;
 }
 .stError {
@@ -290,20 +289,20 @@ section[data-testid="stSidebar"] .stButton > button:hover {
     font-size: 0.95rem !important;
 }
 .stInfo {
-    border-left: 4px solid var(--cyan) !important;
+    border-left: 4px solid var(--gold) !important;
     border-radius: 10px !important;
-    background: rgba(6,182,212,0.06) !important;
+    background: rgba(245,158,11,0.06) !important;
     font-size: 0.95rem !important;
 }
 .stWarning {
-    border-left: 4px solid #f59e0b !important;
+    border-left: 4px solid var(--amber) !important;
     border-radius: 10px !important;
     font-size: 0.95rem !important;
 }
 
 /* ── Progress bar ── */
 .stProgress > div > div > div {
-    background: linear-gradient(90deg, var(--teal), var(--cyan)) !important;
+    background: linear-gradient(90deg, var(--gold-dim), var(--gold-light)) !important;
     border-radius: 100px !important;
 }
 
@@ -316,57 +315,10 @@ section[data-testid="stSidebar"] .stButton > button:hover {
     background: var(--navy-2) !important;
 }
 
-/* ── Hero ── */
-.hero {
-    background: linear-gradient(135deg, var(--navy-2), var(--navy-3), var(--slate));
-    border-radius: 18px;
-    padding: 3rem 2rem;
-    margin-bottom: 2rem;
-    text-align: center;
-    box-shadow: 0 8px 40px rgba(0,0,0,0.5);
-    border: 1px solid rgba(45,212,191,0.12);
-    position: relative;
-    overflow: hidden;
-}
-
-.hero::before {
-    content: '';
-    position: absolute;
-    top: -80px; left: -80px;
-    width: 300px; height: 300px;
-    background: radial-gradient(circle, rgba(13,148,136,0.15), transparent);
-    border-radius: 50%;
-}
-
-.hero::after {
-    content: '';
-    position: absolute;
-    bottom: -80px; right: -80px;
-    width: 300px; height: 300px;
-    background: radial-gradient(circle, rgba(6,182,212,0.12), transparent);
-    border-radius: 50%;
-}
-
-.hero h1 {
-    color: var(--teal-bright) !important;
-    font-size: 3rem !important;
-    font-weight: 800 !important;
-    text-shadow: 0 0 40px rgba(45,212,191,0.3) !important;
-    -webkit-text-fill-color: initial !important;
-}
-
-.hero .subtitle {
-    color: var(--teal-light);
-    font-size: 1.2rem;
-    max-width: 600px;
-    margin: 0 auto;
-    line-height: 1.8;
-}
-
 /* ── Radio ── */
 .stRadio label {
     font-size: 0.95rem !important;
-    color: #94d9d0 !important;
+    color: #fde68a90 !important;
     font-weight: 500 !important;
 }
 
@@ -377,62 +329,89 @@ section[data-testid="stSidebar"] .stButton > button:hover {
     border: 1px solid var(--border) !important;
 }
 
+/* ── Hero ── */
+.hero {
+    background: linear-gradient(135deg, var(--navy-2), var(--navy-3), var(--slate));
+    border-radius: 18px;
+    padding: 3rem 2rem;
+    margin-bottom: 2rem;
+    text-align: center;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+    border: 1px solid rgba(245,158,11,0.12);
+    position: relative;
+    overflow: hidden;
+}
+
+.hero::before {
+    content: '';
+    position: absolute;
+    top: -80px; left: -80px;
+    width: 300px; height: 300px;
+    background: radial-gradient(circle, rgba(245,158,11,0.12), transparent);
+    border-radius: 50%;
+}
+
+.hero::after {
+    content: '';
+    position: absolute;
+    bottom: -80px; right: -80px;
+    width: 300px; height: 300px;
+    background: radial-gradient(circle, rgba(249,115,22,0.1), transparent);
+    border-radius: 50%;
+}
+
+.hero h1 {
+    font-size: 3rem !important;
+    font-weight: 800 !important;
+    -webkit-text-fill-color: initial !important;
+    color: var(--gold-light) !important;
+    text-shadow: 0 0 40px rgba(245,158,11,0.25) !important;
+}
+
+.hero .subtitle {
+    color: var(--amber-light);
+    font-size: 1.2rem;
+    max-width: 600px;
+    margin: 0 auto;
+    line-height: 1.8;
+}
+
 /* ── Scrollbar ── */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: var(--navy); }
-::-webkit-scrollbar-thumb { background: var(--teal-dim); border-radius: 100px; }
-::-webkit-scrollbar-thumb:hover { background: var(--teal); }
+::-webkit-scrollbar-thumb { background: var(--gold-dim); border-radius: 100px; }
+::-webkit-scrollbar-thumb:hover { background: var(--gold); }
 
 /* ── Dividers ── */
 hr {
-    border-color: rgba(45,212,191,0.1) !important;
+    border-color: rgba(245,158,11,0.1) !important;
     margin: 1.5rem 0 !important;
 }
 
+/* ── Grade-specific accent colors ── */
+/* Elementary - warm green */
+.elementary-accent { color: #34d399 !important; }
+/* Middle - sky blue */
+.middle-accent { color: #38bdf8 !important; }
+/* High School - gold */
+.highschool-accent { color: var(--gold-light) !important; }
+
 /* ── Mobile Responsive ── */
 @media (max-width: 768px) {
-    html, body, [class*="css"] {
-        font-size: 15px !important;
-    }
-    h1, .stMarkdown h1 {
-        font-size: 1.8rem !important;
-    }
-    h2, .stMarkdown h2 {
-        font-size: 1.4rem !important;
-    }
-    h3, .stMarkdown h3 {
-        font-size: 1.15rem !important;
-    }
-    .main .block-container {
-        padding: 1rem 0.75rem !important;
-    }
-    .stButton > button {
-        font-size: 0.9rem !important;
-        padding: 0.5rem 1rem !important;
-    }
-    .stTabs [data-baseweb="tab"] {
-        font-size: 0.78rem !important;
-        padding: 0.4rem 0.6rem !important;
-    }
-    [data-testid="stMetricValue"] {
-        font-size: 1.6rem !important;
-    }
-    .hero h1 {
-        font-size: 2rem !important;
-    }
-    .hero .subtitle {
-        font-size: 1rem !important;
-    }
+    html, body, [class*="css"] { font-size: 15px !important; }
+    h1, .stMarkdown h1 { font-size: 1.8rem !important; }
+    h2, .stMarkdown h2 { font-size: 1.4rem !important; }
+    h3, .stMarkdown h3 { font-size: 1.15rem !important; }
+    .main .block-container { padding: 1rem 0.75rem !important; }
+    .stButton > button { font-size: 0.9rem !important; padding: 0.5rem 1rem !important; }
+    .stTabs [data-baseweb="tab"] { font-size: 0.78rem !important; padding: 0.4rem 0.6rem !important; }
+    [data-testid="stMetricValue"] { font-size: 1.6rem !important; }
+    .hero h1 { font-size: 2rem !important; }
 }
 
 @media (max-width: 480px) {
-    h1, .stMarkdown h1 {
-        font-size: 1.5rem !important;
-    }
-    .stTabs [data-baseweb="tab"] {
-        font-size: 0.72rem !important;
-        padding: 0.35rem 0.5rem !important;
-    }
+    h1, .stMarkdown h1 { font-size: 1.5rem !important; }
+    .stTabs [data-baseweb="tab"] { font-size: 0.7rem !important; padding: 0.35rem 0.45rem !important; }
 }
 
 /* ── Animations ── */
@@ -442,25 +421,21 @@ hr {
     100% { transform: scale(1.0); opacity: 1; }
 }
 @keyframes flash-green {
-    0%   { background-color: rgba(13,148,136,0);   }
-    30%  { background-color: rgba(13,148,136,0.2); }
-    100% { background-color: rgba(13,148,136,0);   }
+    0%   { background-color: rgba(16,185,129,0);   }
+    30%  { background-color: rgba(16,185,129,0.2); }
+    100% { background-color: rgba(16,185,129,0);   }
 }
 @keyframes flash-red {
     0%   { background-color: rgba(239,68,68,0);    }
     30%  { background-color: rgba(239,68,68,0.15); }
     100% { background-color: rgba(239,68,68,0);    }
 }
-@keyframes teal-glow {
-    0%, 100% { box-shadow: 0 0 8px rgba(13,148,136,0.3);  }
-    50%       { box-shadow: 0 0 24px rgba(45,212,191,0.6); }
-}
-@keyframes cyber-scan {
-    0%   { background-position: 0% 0%; }
-    100% { background-position: 0% 100%; }
+@keyframes gold-glow {
+    0%, 100% { box-shadow: 0 0 8px rgba(245,158,11,0.3);  }
+    50%       { box-shadow: 0 0 28px rgba(253,230,138,0.5); }
 }
 
-.badge-pop     { animation: badge-pop  0.4s ease-out forwards; display: inline-block; font-size: 2rem; }
+.badge-pop     { animation: badge-pop   0.4s ease-out forwards; display: inline-block; font-size: 2rem; }
 .flash-correct { animation: flash-green 0.6s ease-out forwards; border-radius: 12px; padding: 8px; }
 .flash-wrong   { animation: flash-red   0.6s ease-out forwards; border-radius: 12px; padding: 8px; }
-.teal-glow     { animation: teal-glow   2s ease-in-out infinite; }
+.gold-glow     { animation: gold-glow   2s ease-in-out infinite; }
