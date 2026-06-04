@@ -26,6 +26,12 @@ from modules.crypto_lab import render_crypto_lab
 from modules.research_journal import render_research_journal
 from modules.weekly_email import render_weekly_email
 from modules.school_leaderboard import render_school_leaderboard
+from modules.cipher_decoder import render_cipher_decoder
+from modules.escape_room import render_escape_room
+from modules.tls_simulator import render_tls_simulator
+from modules.threat_thermometer import render_threat_thermometer
+from modules.algo_battle import render_algo_battle
+from modules.career_explorer import render_career_explorer
 # ── Page config ───────────────────────────────────────────────────────────────
 st.set_page_config(
     page_title="QuantumVault Academy",
@@ -108,6 +114,12 @@ def sidebar():
             "📖 Research Journal",
             "📧 Weekly Report",
             "🏫 School Rankings",
+            "🧩 Cipher Decoder",
+            "🏃 Escape Room",
+            "📡 TLS Simulator",
+            "🌡️ Threat Thermometer",
+            "🃏 Algo Battle",
+            "🗺️ Career Explorer",
 
         ],
     )
@@ -444,6 +456,18 @@ def main():
         render_weekly_email()
     elif "School Rankings" in level:
         render_school_leaderboard()
+    elif "Cipher Decoder" in level:
+        render_cipher_decoder()
+    elif "Escape Room" in level:
+        render_escape_room()
+    elif "TLS Simulator" in level:
+        render_tls_simulator()
+    elif "Threat Thermometer" in level:
+        render_threat_thermometer()
+    elif "Algo Battle" in level:
+        render_algo_battle()
+    elif "Career Explorer" in level:
+        render_career_explorer()
     elif "AI Tutor" in level:
         if st.session_state.get("plan_type", "free") == "free":
             st.title("🤖 AI Tutor")
