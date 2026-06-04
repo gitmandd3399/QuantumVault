@@ -52,9 +52,16 @@ if "badges" not in st.session_state:
 if "xp" not in st.session_state:
     st.session_state.xp = 0
 if "plan_type" not in st.session_state:
-    st.session_state.plan_type = "free"
+    st.session_state.plan_type = "paid"
 if "free_module" not in st.session_state:
     st.session_state.free_module = None
+
+# ── Developer override ────────────────────────────────────────────────────────
+_dev_password = st.secrets.get("DEV_PASSWORD", "")
+if _dev_password:
+    if st.sidebar.text_input("Dev unlock:", type="password", key="dev_unlock") == _dev_password:
+        st.session_state.plan_type = "paid"
+        st.session_state.free_module = None
 if "streak_days" not in st.session_state:
     st.session_state.streak_days = 0
 if "last_visit" not in st.session_state:
