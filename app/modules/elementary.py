@@ -647,7 +647,7 @@ body{{margin:0;background:#0f172a;font-family:sans-serif;}}
             # Quiz mode
             import random
             if "vocab_q" not in st.session_state:
-                st.session_state.vocab_q = random.randint(0, len(VOCAB)-1)
+                st.session_state.vocab_q = random.randint(0, len(VOCAB)-1)  # nosec B311
                 st.session_state.vocab_q_answered = False
 
             card = VOCAB[st.session_state.vocab_q]
@@ -683,7 +683,7 @@ body{{margin:0;background:#0f172a;font-family:sans-serif;}}
                             st.session_state.vocab_q_answered = True
             else:
                 if st.button("➡️ Next Question! +10 XP", key="vocab_next_q", type="primary", use_container_width=True):
-                    st.session_state.vocab_q = random.randint(0, len(VOCAB)-1)
+                    st.session_state.vocab_q = random.randint(0, len(VOCAB)-1)  # nosec B311
                     st.session_state.vocab_q_answered = False
                     st.rerun()
 

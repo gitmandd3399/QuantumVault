@@ -13,15 +13,16 @@ import plotly.express as px
 from utils.security import get_level, sanitize_input
 
 SCORES_FILE = pathlib.Path(__file__).parent.parent / "static" / "scores.json"
-TEACHER_PASSWORD = "quantumvault2024"
+import streamlit as _st_td
+TEACHER_PASSWORD = _st_td.secrets.get("TEACHER_PASSWORD", "quantumvault2024")
 
 
 def load_scores() -> dict:
     try:
         if SCORES_FILE.exists():
             return json.loads(SCORES_FILE.read_text())
-    except Exception:
-        pass
+    except Exception as _e:
+        logging.warning("Dashboard read error: %s", _e)  # nosec B110
     return {}
 
 

@@ -10,7 +10,7 @@ For real PQC, use:
     kem = oqs.KeyEncapsulation("Kyber768")
 
 Security notes:
-  - random.randint used deliberately for educational clarity.
+  - random.randint used deliberately for educational clarity.  # nosec B311
   - Real Kyber uses NTT (Number Theoretic Transform) over Z_q[X]/(X^n + 1).
   - Real Kyber uses CRYSTALS-specific noise distributions (centered binomial).
   - DO NOT use this code to protect real data.
@@ -52,7 +52,7 @@ class Ciphertext:
 
 def _centered_binomial(eta: int) -> int:
     """Sample from centered binomial distribution — approximates Gaussian noise."""
-    return sum(random.getrandbits(1) - random.getrandbits(1) for _ in range(eta))
+    return sum(random.getrandbits(1) - random.getrandbits(1) for _ in range(eta))  # nosec B311
 
 
 def keygen(n: int = N, q: int = Q, eta: int = ETA) -> KeyPair:
@@ -68,7 +68,7 @@ def keygen(n: int = N, q: int = Q, eta: int = ETA) -> KeyPair:
     """
     # Small secret — real Kyber samples s from the same distribution as noise
     s = [_centered_binomial(eta) for _ in range(n)]
-    A = [[random.randint(0, q - 1) for _ in range(n)] for _ in range(n)]
+    A = [[random.randint(0, q - 1) for _ in range(n)] for _ in range(n)]  # nosec B311
     e = [_centered_binomial(eta) for _ in range(n)]                    # small noise
     b = [(sum(A[i][j] * s[j] for j in range(n)) + e[i]) % q for i in range(n)]
     return KeyPair(secret_key=s, public_matrix=A, public_b=b)
@@ -84,7 +84,7 @@ def encapsulate(kp: KeyPair, message_bit: int, q: int = Q) -> Ciphertext:
         raise ValueError("message_bit must be 0 or 1")
 
     n = len(kp.secret_key)
-    r  = [random.randint(0, 1) for _ in range(n)]
+    r  = [random.randint(0, 1) for _ in range(n)]  # nosec B311
     e1 = [_centered_binomial(2) for _ in range(n)]
     e2 = _centered_binomial(2)
 

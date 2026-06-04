@@ -15,7 +15,7 @@ import time
 def simple_kyber_sim(seed: int):
     """Simulate Kyber key generation (educational approximation)."""
     import random
-    rng = random.Random(seed)
+    rng = random.Random(seed)  # nosec B311
     q = 3329  # Kyber modulus
     n = 8     # Simplified (real is 256)
 

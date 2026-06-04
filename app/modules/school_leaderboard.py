@@ -32,8 +32,8 @@ def get_schools() -> list:
         stored = st.session_state.get("school_lb_data")
         if stored:
             return json.loads(stored)
-    except Exception:
-        pass
+    except Exception as _e:
+        logging.warning("School lb read error: %s", _e)  # nosec B110
     return SEED_SCHOOLS.copy()
 
 

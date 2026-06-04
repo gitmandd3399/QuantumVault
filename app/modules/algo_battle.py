@@ -52,7 +52,7 @@ def render_algo_battle():
     if "battle_result" not in st.session_state:
         st.session_state.battle_result = None
     if "battle_enemy" not in st.session_state:
-        st.session_state.battle_enemy = random.choice(ENEMY_CARDS)
+        st.session_state.battle_enemy = random.choice(ENEMY_CARDS)  # nosec B311
 
     # HUD
     col1, col2, col3 = st.columns(3)
@@ -89,7 +89,7 @@ def render_algo_battle():
             st.session_state.battle_round = 1
             st.session_state.battle_hp = 100
             st.session_state.battle_result = None
-            st.session_state.battle_enemy = random.choice(ENEMY_CARDS)
+            st.session_state.battle_enemy = random.choice(ENEMY_CARDS)  # nosec B311
             st.rerun()
         return
 
@@ -121,7 +121,7 @@ def render_algo_battle():
         )
         if st.button("⚔️ Next Round!", key="battle_next", type="primary"):
             st.session_state.battle_result = None
-            st.session_state.battle_enemy = random.choice(ENEMY_CARDS)
+            st.session_state.battle_enemy = random.choice(ENEMY_CARDS)  # nosec B311
             st.session_state.battle_round += 1
             st.rerun()
     else:

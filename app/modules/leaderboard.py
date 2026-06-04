@@ -18,8 +18,8 @@ def load_scores() -> dict:
     try:
         if SCORES_FILE.exists():
             return json.loads(SCORES_FILE.read_text())
-    except Exception:
-        pass
+    except Exception as _e:
+        logging.warning("Leaderboard read error: %s", _e)  # nosec B110
     return {}
 
 
@@ -27,8 +27,8 @@ def save_scores(scores: dict):
     """Save scores to JSON file safely."""
     try:
         SCORES_FILE.write_text(json.dumps(scores, indent=2))
-    except Exception:
-        pass
+    except Exception as _e:
+        import logging; logging.warning("Leaderboard write error: %s", _e)  # nosec B110
 
 
 def render_leaderboard():

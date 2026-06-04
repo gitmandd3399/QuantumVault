@@ -66,8 +66,8 @@ def load_progress() -> dict:
     try:
         if PROGRESS_FILE.exists():
             return json.loads(PROGRESS_FILE.read_text())
-    except Exception:
-        pass
+    except Exception as _e:
+        logging.warning("Progress read error: %s", _e)  # nosec B110
     return {}
 
 
@@ -75,8 +75,8 @@ def save_progress(data: dict):
     """Save all student progress to file."""
     try:
         PROGRESS_FILE.write_text(json.dumps(data, indent=2))
-    except Exception:
-        pass
+    except Exception as _e:
+        import logging; logging.warning("Progress write error: %s", _e)  # nosec B110
 
 
 def mark_complete(activity_key: str):

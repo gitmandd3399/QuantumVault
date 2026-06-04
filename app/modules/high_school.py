@@ -393,20 +393,20 @@ def render_high_school():
             "N   = 4   # Kyber uses 256\n"
             "\n"
             "def gen_secret(n, mod):\n"
-            "    return [random.randint(0, mod-1) for _ in range(n)]\n"
+            "    return [random.randint(0, mod-1) for _ in range(n)]\n"  # nosec B311
             "\n"
             "def gen_public_key(s, mod):\n"
             "    n = len(s)\n"
-            "    A = [[random.randint(0, mod-1) for _ in range(n)] for _ in range(n)]\n"
-            "    e = [random.randint(-2, 2) for _ in range(n)]\n"
+            "    A = [[random.randint(0, mod-1) for _ in range(n)] for _ in range(n)]\n"  # nosec B311
+            "    e = [random.randint(-2, 2) for _ in range(n)]\n"  # nosec B311
             "    b = [(sum(A[i][j]*s[j] for j in range(n))+e[i])%mod for i in range(n)]\n"
             "    return A, b\n"
             "\n"
             "def encrypt(A, b, bit, mod):\n"
             "    n = len(b)\n"
-            "    r  = [random.randint(0, 1) for _ in range(n)]\n"
-            "    e1 = [random.randint(-1, 1) for _ in range(n)]\n"
-            "    e2 = random.randint(-1, 1)\n"
+            "    r  = [random.randint(0, 1) for _ in range(n)]\n"  # nosec B311
+            "    e1 = [random.randint(-1, 1) for _ in range(n)]\n"  # nosec B311
+            "    e2 = random.randint(-1, 1)\n"  # nosec B311
             "    u = [(sum(A[j][i]*r[j] for j in range(n))+e1[i])%mod for i in range(n)]\n"
             "    v = (sum(b[i]*r[i] for i in range(n))+e2+(mod//2)*bit)%mod\n"
             "    return u, v\n"
@@ -458,18 +458,18 @@ def render_high_school():
             MOD_L, N_L = 97, 4
             import random as _r
 
-            def _gen_s(n, mod): return [_r.randint(0, mod-1) for _ in range(n)]
+            def _gen_s(n, mod): return [_r.randint(0, mod-1) for _ in range(n)]  # nosec B311
             def _gen_pk(s, mod):
                 n = len(s)
-                A = [[_r.randint(0, mod-1) for _ in range(n)] for _ in range(n)]
-                e = [_r.randint(-2, 2) for _ in range(n)]
+                A = [[_r.randint(0, mod-1) for _ in range(n)] for _ in range(n)]  # nosec B311
+                e = [_r.randint(-2, 2) for _ in range(n)]  # nosec B311
                 b = [(sum(A[i][j]*s[j] for j in range(n))+e[i])%mod for i in range(n)]
                 return A, b, e
             def _enc(A, b, m, mod):
                 n = len(b)
-                r  = [_r.randint(0,1) for _ in range(n)]
-                e1 = [_r.randint(-1,1) for _ in range(n)]
-                e2 = _r.randint(-1,1)
+                r  = [_r.randint(0,1) for _ in range(n)]  # nosec B311
+                e1 = [_r.randint(-1,1) for _ in range(n)]  # nosec B311
+                e2 = _r.randint(-1,1)  # nosec B311
                 u = [(sum(A[j][i]*r[j] for j in range(n))+e1[i])%mod for i in range(n)]
                 v = (sum(b[i]*r[i] for i in range(n))+e2+(mod//2)*m)%mod
                 return u, v
@@ -537,17 +537,17 @@ def render_high_school():
         if st.button("🔬 Run Experiment", key="noise_run"):
             import random as _r2
             MOD_E, N_E = 97, 4
-            sk2 = [_r2.randint(0, MOD_E-1) for _ in range(N_E)]
-            A2 = [[_r2.randint(0, MOD_E-1) for _ in range(N_E)] for _ in range(N_E)]
-            e2 = [_r2.randint(-noise_level, noise_level) for _ in range(N_E)]
+            sk2 = [_r2.randint(0, MOD_E-1) for _ in range(N_E)]  # nosec B311
+            A2 = [[_r2.randint(0, MOD_E-1) for _ in range(N_E)] for _ in range(N_E)]  # nosec B311
+            e2 = [_r2.randint(-noise_level, noise_level) for _ in range(N_E)]  # nosec B311
             b2 = [(sum(A2[i][j]*sk2[j] for j in range(N_E))+e2[i])%MOD_E for i in range(N_E)]
 
             successes = 0
             for _ in range(10):
-                bit = _r2.randint(0,1)
-                r2 = [_r2.randint(0,1) for _ in range(N_E)]
-                e1_2 = [_r2.randint(-noise_level, noise_level) for _ in range(N_E)]
-                e2_2 = _r2.randint(-noise_level, noise_level)
+                bit = _r2.randint(0,1)  # nosec B311
+                r2 = [_r2.randint(0,1) for _ in range(N_E)]  # nosec B311
+                e1_2 = [_r2.randint(-noise_level, noise_level) for _ in range(N_E)]  # nosec B311
+                e2_2 = _r2.randint(-noise_level, noise_level)  # nosec B311
                 u2 = [(sum(A2[j][i]*r2[j] for j in range(N_E))+e1_2[i])%MOD_E for i in range(N_E)]
                 v2 = (sum(b2[i]*r2[i] for i in range(N_E))+e2_2+(MOD_E//2)*bit)%MOD_E
                 noisy2 = (v2 - sum(sk2[i]*u2[i] for i in range(N_E)))%MOD_E
@@ -726,7 +726,7 @@ def render_high_school():
             st.session_state.hs_journal = []
         if "hs_prompt_idx" not in st.session_state:
             import random as _rp
-            st.session_state.hs_prompt_idx = _rp.randint(0, len(PROMPTS)-1)
+            st.session_state.hs_prompt_idx = _rp.randint(0, len(PROMPTS)-1)  # nosec B311
 
         col1, col2 = st.columns([3,1])
         with col1:
@@ -742,7 +742,7 @@ def render_high_school():
             st.markdown("<br>", unsafe_allow_html=True)
             if st.button("🎲 New Prompt", key="new_prompt_hs"):
                 import random as _rp2
-                st.session_state.hs_prompt_idx = _rp2.randint(0, len(PROMPTS)-1)
+                st.session_state.hs_prompt_idx = _rp2.randint(0, len(PROMPTS)-1)  # nosec B311
                 st.rerun()
 
         topic = st.text_input("Entry title:", placeholder="e.g. Why Kyber resists Shor's Algorithm", max_chars=80, key="hs_journal_topic")

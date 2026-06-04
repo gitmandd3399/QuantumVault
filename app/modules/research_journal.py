@@ -96,12 +96,12 @@ def render_research_journal():
         # Random prompt suggestion
         import random
         if "current_prompt" not in st.session_state:
-            st.session_state.current_prompt = random.choice(PROMPTS)
+            st.session_state.current_prompt = random.choice(PROMPTS)  # nosec B311
 
         st.info(f"💡 **Prompt suggestion:** {st.session_state.current_prompt}")
 
         if st.button("🎲 New Prompt", key="new_prompt"):
-            st.session_state.current_prompt = random.choice(PROMPTS)
+            st.session_state.current_prompt = random.choice(PROMPTS)  # nosec B311
             st.rerun()
 
     with col2:
@@ -178,7 +178,7 @@ def render_research_journal():
 
             # New prompt for next entry
             import random
-            st.session_state.current_prompt = random.choice(PROMPTS)
+            st.session_state.current_prompt = random.choice(PROMPTS)  # nosec B311
             st.balloons()
 
     st.markdown("---")

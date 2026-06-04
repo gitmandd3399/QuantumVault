@@ -248,7 +248,7 @@ def render_middle_school():
 
         import random
         if "lattice_s" not in st.session_state:
-            st.session_state.lattice_s = random.randint(2, 9)
+            st.session_state.lattice_s = random.randint(2, 9)  # nosec B311
             st.session_state.lattice_attempts = 0
 
         s = st.session_state.lattice_s
@@ -256,8 +256,8 @@ def render_middle_school():
 
         equations = []
         for _ in range(4):
-            a = random.randint(1, 10)
-            e = random.choice([-1, 0, 1])
+            a = random.randint(1, 10)  # nosec B311
+            e = random.choice([-1, 0, 1])  # nosec B311
             b = (a * s + e) % mod
             equations.append((a, b, e))
 
@@ -291,7 +291,7 @@ def render_middle_school():
                     st.session_state.xp = st.session_state.get("xp", 0) + 20
                     award_badge("🏗️ Lattice Solver", xp=20)
                     mark_complete("lattice_visualizer")
-                    st.session_state.lattice_s = random.randint(2, 9)
+                    st.session_state.lattice_s = random.randint(2, 9)  # nosec B311
                     st.session_state.lattice_attempts = 0
                 else:
                     diff = abs(guess - s)
@@ -599,9 +599,9 @@ def render_middle_school():
         st.markdown("### 🎮 Try It Yourself!")
 
         if st.button("🎲 Generate Random Keypair!", key="keygen", type="primary"):
-            s = _rand.randint(1, mod-1)
-            A = _rand.randint(2, mod-1)
-            e = _rand.choice([-1, 0, 1])
+            s = _rand.randint(1, mod-1)  # nosec B311
+            A = _rand.randint(2, mod-1)  # nosec B311
+            e = _rand.choice([-1, 0, 1])  # nosec B311
             b = (A * s + e) % mod
             st.session_state.ms_s = s
             st.session_state.ms_A = A
