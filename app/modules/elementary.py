@@ -247,29 +247,40 @@ def render_elementary():
 
     # ── Tab 2: Color Mixing Key Exchange ──────────────────────────────────────
     with tab2:
-        st.subheader("🎨 Secret Color Mixing")
-        st.markdown(
-            """
-            Here's a fun way to understand how two friends can agree on a secret
-            without anyone else figuring it out — using **colors**!
+        import streamlit.components.v1 as _tab2_comp
 
-            1. Everyone can see a **public color** (yellow).
-            2. Each friend picks a **secret color** nobody else knows.
-            3. They mix their secret color with the public color and swap.
-            4. Both friends end up with the **same final color** — their shared secret!
-            """
+        st.subheader("🎨 Secret Color Mixing Adventure!")
+        st.markdown(
+            "🕵️ **Agent Pixel needs your help!** She and her friend Byte want to share a "
+            "secret color — but the Quantum Monster is watching! Can you help them?"
         )
 
-        col1, col2 = st.columns(2)
-        with col1:
-            alice_color = st.color_picker("🧑 Alice's secret color", "#FF6B6B")
-        with col2:
-            bob_color = st.color_picker("👦 Bob's secret color", "#4ECDC4")
+        # Step by step story reveal
+        if "color_step" not in st.session_state:
+            st.session_state.color_step = 1
 
-        public_color = "#FFD700"  # Gold — "public"
-        st.markdown(f"🌍 **Public color (everyone sees this):** `{public_color}` 🟡")
+        steps = [
+            ("🌍 Step 1 — The Public Color", "Everyone in the world can see this color — even the Quantum Monster! That's OK because it's just the START."),
+            ("🔴 Step 2 — Alice's Secret Color", "Alice picks a SECRET color that ONLY SHE knows. She mixes it with the public color and sends the result to Byte!"),
+            ("🔵 Step 3 — Byte's Secret Color", "Byte picks HIS own secret color. He mixes it with the public color and sends it back to Alice!"),
+            ("🎉 Step 4 — The Shared Secret!", "Now BOTH Alice and Byte mix the OTHER person's result with their OWN secret color. They get THE SAME COLOR! The Quantum Monster never figured it out! 🛡️"),
+        ]
 
-        # Simple hex blending for visual effect
+        step = st.session_state.color_step
+        for i, (title, desc) in enumerate(steps):
+            done = i + 1 <= step
+            st.markdown(
+                f"<div style='background:{'#1e293b' if done else '#0f172a'};"
+                f"border:{'2px solid #10b981' if done else '1px solid #334155'};"
+                f"border-radius:12px;padding:12px 16px;margin:6px 0;opacity:{'1' if done else '0.4'}'>"
+                f"<div style='font-weight:bold;color:{'#10b981' if done else '#888'}'>{title}</div>"
+                f"<div style='font-size:0.85rem;color:#ccc;margin-top:4px'>{desc if done else '???'}</div>"
+                f"</div>",
+                unsafe_allow_html=True
+            )
+
+        st.markdown("---")
+
         def blend_hex(c1: str, c2: str) -> str:
             c1, c2 = c1.lstrip("#"), c2.lstrip("#")
             r = (int(c1[0:2], 16) + int(c2[0:2], 16)) // 2
@@ -277,117 +288,421 @@ def render_elementary():
             b = (int(c1[4:6], 16) + int(c2[4:6], 16)) // 2
             return f"#{r:02X}{g:02X}{b:02X}"
 
+        public_color = "#FFD700"
+
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.markdown(
+                f"<div style='background:{public_color};border-radius:10px;padding:14px;"
+                f"text-align:center;color:#333;font-weight:bold;font-size:0.9rem'>"
+                f"🌍 Public Color<br>(Everyone sees!)</div>",
+                unsafe_allow_html=True
+            )
+        with col2:
+            alice_color = st.color_picker("🧑 Alice's secret:", "#FF6B6B", key="alice_clr")
+            st.markdown(
+                f"<div style='background:{alice_color};border-radius:8px;padding:8px;"
+                f"text-align:center;color:white;font-size:0.8rem'>Alice's Secret 🔒</div>",
+                unsafe_allow_html=True
+            )
+        with col3:
+            bob_color = st.color_picker("🤖 Byte's secret:", "#4ECDC4", key="bob_clr")
+            st.markdown(
+                f"<div style='background:{bob_color};border-radius:8px;padding:8px;"
+                f"text-align:center;color:white;font-size:0.8rem'>Byte's Secret 🔒</div>",
+                unsafe_allow_html=True
+            )
+
         alice_mix = blend_hex(alice_color, public_color)
         bob_mix = blend_hex(bob_color, public_color)
         shared_secret = blend_hex(alice_mix, bob_mix)
+        shared_from_bob = blend_hex(bob_mix, alice_color)
 
-        st.markdown("---")
-        st.markdown(f"Alice sends Bob: `{alice_mix}` &nbsp; Bob sends Alice: `{bob_mix}`")
+        st.markdown("### 📬 What they share:")
+        col1, col2 = st.columns(2)
+        with col1:
+            st.markdown(
+                f"<div style='background:{alice_mix};border-radius:10px;padding:12px;"
+                f"text-align:center;color:white;font-weight:bold'>"
+                f"📨 Alice sends Byte<br><small>(public + Alice's secret)</small></div>",
+                unsafe_allow_html=True
+            )
+        with col2:
+            st.markdown(
+                f"<div style='background:{bob_mix};border-radius:10px;padding:12px;"
+                f"text-align:center;color:white;font-weight:bold'>"
+                f"📨 Byte sends Alice<br><small>(public + Byte's secret)</small></div>",
+                unsafe_allow_html=True
+            )
+
+        st.markdown("### 🎉 The Shared Secret!")
         st.markdown(
-            f"<div style='background:{shared_secret};padding:20px;border-radius:12px;"
-            f"text-align:center;color:white;font-weight:bold;font-size:1.2em'>"
-            f"🎉 Shared Secret Color: {shared_secret}</div>",
-            unsafe_allow_html=True,
+            f"<div style='background:{shared_secret};border:3px solid #10b981;"
+            f"border-radius:16px;padding:24px;text-align:center;"
+            f"color:white;font-weight:bold;font-size:1.3rem;margin:10px 0'>"
+            f"🔐 Both Alice AND Byte get this SAME color!<br>"
+            f"<small style='font-size:0.8rem;opacity:0.8'>The Quantum Monster only saw mixed colors — "
+            f"it can NEVER figure out the secret! 🛡️</small>"
+            f"</div>",
+            unsafe_allow_html=True
         )
-        st.caption("An eavesdropper who only sees the mixed colors can't figure out the secret!")
 
-        if st.button("🎨 I learned about color keys!", key="color_done"):
-            award_badge("🎨 Color Cryptographer", xp=10)
+        # Fun quiz
+        st.markdown("### 🧠 Quick Check!")
+        q_ans = st.radio(
+            "Why can't the Quantum Monster figure out the secret?",
+            [
+                "Because it doesn't have eyes 👀",
+                "Because it only sees the MIXED colors, not the secret colors! 🎨",
+                "Because the colors disappear 💨",
+                "Because Alice runs away 🏃",
+            ],
+            key="color_quiz"
+        )
+        if st.button("Check my answer! 🎯", key="color_check"):
+            if "MIXED colors" in q_ans:
+                st.balloons()
+                st.success("🎉 CORRECT! The Quantum Monster only sees Alice+Public and Byte+Public — never the secret colors alone!")
+                award_badge("🎨 Color Cryptographer", xp=15)
+                st.session_state.color_step = 4
+            else:
+                st.error("Not quite! Think about what the Quantum Monster actually gets to see... 🤔")
+                st.session_state.color_step = max(st.session_state.color_step, 2)
 
     # ── Tab 3: Lock Puzzle ────────────────────────────────────────────────────
-    
-    with tab3:
-        st.subheader("🔒 Which Lock is Quantum-Safe?")
-        st.markdown("Help Agent Pixel choose the right lock! Tap the quantum-safe one:")
 
-        # ── Timer setup ───────────────────────────────────────────────────
+    with tab3:
         import time
+        import streamlit.components.v1 as _lock_comp
+
+        st.subheader("🔒 Agent Pixel's Lock Challenge!")
+        st.markdown(
+            "🚨 **EMERGENCY!** The Quantum Monster is trying to break into the Secret Vault! "
+            "Agent Pixel needs the RIGHT lock — one that even a quantum computer can't crack! "
+            "**Help her choose!**"
+        )
+
+        _lock_comp.html("""
+<style>
+body{margin:0;background:#0f172a;font-family:sans-serif;padding:8px;text-align:center;}
+.monster{font-size:3rem;animation:shake 0.4s infinite;}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.pixel{font-size:2.5rem;animation:bounce 0.8s infinite;}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.label{font-size:0.75rem;font-weight:bold;margin:3px 0;}
+.row{display:flex;justify-content:center;align-items:center;gap:20px;margin:6px 0;}
+</style>
+<div>
+<div class="monster">👾</div>
+<div style="color:#ef4444;font-size:0.75rem;font-weight:bold">QUANTUM MONSTER ATTACKING!</div>
+<div style="font-size:2.5rem;margin:4px 0">⚡ ➡️ 🔐 ⬅️ 🕵️</div>
+<div class="label" style="color:#a5b4fc">Quantum Monster &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Secret Vault &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Agent Pixel</div>
+<div style="color:#f59e0b;font-size:0.8rem;margin-top:6px;font-weight:bold">Pick the right lock to stop the monster! 🛡️</div>
+</div>
+""", height=160)
+
+        st.markdown("### 🔑 Choose Agent Pixel's Lock:")
+        st.caption("Only ONE lock can stop a quantum computer — read the clues carefully!")
+
         if "quiz_start" not in st.session_state:
             st.session_state.quiz_start = time.time()
+        if "lock_attempts" not in st.session_state:
+            st.session_state.lock_attempts = 0
+        if "lock_solved" not in st.session_state:
+            st.session_state.lock_solved = False
 
         elapsed = int(time.time() - st.session_state.quiz_start)
-        remaining = max(0, 30 - elapsed)
 
-        if remaining > 0:
-            st.info(f"⏱️ Time remaining: **{remaining} seconds**")
-        else:
-            st.warning("⏰ Time's up! Try again.")
-            st.session_state.quiz_start = time.time()
+        if not st.session_state.lock_solved:
+            time_color = "#10b981" if elapsed < 10 else "#f59e0b" if elapsed < 20 else "#ef4444"
+            st.markdown(
+                f"<div style='background:{time_color}20;border:1px solid {time_color};"
+                f"border-radius:8px;padding:6px 12px;text-align:center;"
+                f"font-size:0.85rem;font-weight:bold;color:{time_color};margin-bottom:10px'>"
+                f"⏱️ {elapsed} seconds {' — ⚡ Speed bonus if you solve it!' if elapsed < 10 else ''}"
+                f"</div>",
+                unsafe_allow_html=True
+            )
 
-        options = {
-            "🔑 RSA Lock — math with big numbers": False,
-            "🌐 Lattice Lock — tangled grid math": True,
-            "🔓 Padlock — just a key": False,
-            "🧮 ECC Lock — elliptic curves": False,
-        }
+        LOCKS = [
+            {"emoji": "🔑", "name": "RSA Lock", "color": "#ef4444",
+             "clue": "Uses BIG numbers — hard to split apart... unless you have a quantum computer! 😬",
+             "correct": False, "wrong_msg": "❌ Uh oh! The Quantum Monster knows Shor's trick to break RSA!"},
+            {"emoji": "🏗️", "name": "Lattice Lock", "color": "#10b981",
+             "clue": "Uses a SUPER tangled grid of dots. Finding the secret path is IMPOSSIBLE — even for quantum computers!",
+             "correct": True, "wrong_msg": ""},
+            {"emoji": "🔓", "name": "Old Padlock", "color": "#6b7280",
+             "clue": "Just a plain metal lock. A toddler could figure this one out! 😂",
+             "correct": False, "wrong_msg": "❌ Even a regular computer breaks this in seconds!"},
+            {"emoji": "🌀", "name": "ECC Lock", "color": "#f59e0b",
+             "clue": "Uses squiggly curve math. Smart... but the Quantum Monster has a trick for this too!",
+             "correct": False, "wrong_msg": "❌ Shor Algorithm breaks ECC too — not safe from quantum!"},
+        ]
 
-        options = {
-            "🔑 RSA Lock — math with big numbers": False,
-            "🌐 Lattice Lock — tangled grid math": True,
-            "🔓 Padlock — just a key": False,
-            "🧮 ECC Lock — elliptic curves": False,
-        }
+        cols = st.columns(2)
+        for i, lock in enumerate(LOCKS):
+            with cols[i % 2]:
+                st.markdown(
+                    f"<div style='background:{lock['color']}12;border:2px solid {lock['color']}50;"
+                    f"border-radius:14px;padding:14px;margin:6px 0;text-align:center;min-height:120px'>"
+                    f"<div style='font-size:2.5rem;margin-bottom:4px'>{lock['emoji']}</div>"
+                    f"<div style='font-weight:bold;color:{lock['color']};font-size:0.95rem'>{lock['name']}</div>"
+                    f"<div style='font-size:0.78rem;color:#aaa;margin:6px 0;line-height:1.4'>{lock['clue']}</div>"
+                    f"</div>",
+                    unsafe_allow_html=True
+                )
+                if not st.session_state.lock_solved:
+                    if st.button(f"{lock['emoji']} Use {lock['name']}!", key=f"lock_{i}", use_container_width=True):
+                        if not check_rate_limit("lock_puzzle", st.session_state):
+                            st.warning("Slow down, agent! Try again in a moment.")
+                        else:
+                            st.session_state.lock_attempts += 1
+                            if lock["correct"]:
+                                st.session_state.lock_solved = True
+                                mark_complete("lock_puzzle")
+                                xp_bonus = 25 if elapsed < 10 else 20 if elapsed < 20 else 15
+                                st.session_state.xp += xp_bonus
+                                award_badge("🔒 Lock Expert", xp=xp_bonus)
+                            else:
+                                st.error(lock["wrong_msg"] + " Try again! 🤔")
 
-        if "lock_answered" not in st.session_state:
-            st.session_state.lock_answered = False
+        if st.session_state.lock_solved:
+            st.balloons()
+            elapsed_final = int(time.time() - st.session_state.quiz_start)
+            xp_earned = 25 if elapsed_final < 10 else 20 if elapsed_final < 20 else 15
+            st.markdown(
+                f"<div style='background:#10b98120;border:3px solid #10b981;"
+                f"border-radius:16px;padding:20px;text-align:center;margin:10px 0'>"
+                f"<div style='font-size:3rem'>🎉</div>"
+                f"<h2 style='color:#10b981;margin:8px 0'>VAULT SAVED! YOU DID IT!</h2>"
+                f"<p style='color:#ccc'>The Lattice Lock stopped the Quantum Monster cold! "
+                f"The tangled grid is impossible to solve — even for quantum computers!</p>"
+                f"<div style='font-size:1.2rem;font-weight:bold;color:#f59e0b;margin:8px 0'>"
+                f"+{xp_earned} XP {'⚡ Speed Bonus!' if elapsed_final < 10 else '🌟 Great job!'}</div>"
+                f"<p style='font-size:0.8rem;color:#888'>"
+                f"Solved in {elapsed_final}s with {st.session_state.lock_attempts} attempt(s)</p>"
+                f"</div>",
+                unsafe_allow_html=True
+            )
+            if st.button("🔄 Play Again!", key="lock_reset"):
+                st.session_state.lock_solved = False
+                st.session_state.lock_attempts = 0
+                st.session_state.quiz_start = time.time()
+                st.rerun()
 
-        for label, is_correct in options.items():
-            if st.button(label, key=f"lock_{label}"):
-                if not check_rate_limit("lock_puzzle", st.session_state):
-                    st.warning("Slow down, agent! Try again in a moment.")
-                else:
-                    st.session_state.lock_answered = True
-                    if is_correct:
-                        mark_complete("lock_puzzle")
-                        from utils import play_sound
-                        st.markdown(play_sound("correct"), unsafe_allow_html=True)
-                        st.markdown(
-                            '<div class="flash-correct">✅ Correct! '
-                            'The Lattice Lock stumps quantum monsters!</div>',
-                            unsafe_allow_html=True
-                        )
-                        if elapsed < 10:
-                            st.balloons()
-                            st.success("⚡ Speed bonus! +15 XP")
-                            st.session_state.xp += 15
-                        award_badge("🔒 Lock Expert", xp=15)
-                        st.session_state.quiz_start = time.time()
-                    else:
-                        from utils import play_sound
-                        st.markdown(play_sound("wrong"), unsafe_allow_html=True)
-                        st.markdown(
-                            '<div class="flash-wrong">❌ Not quite! '
-                            f"You've tried {st.session_state.lattice_attempts} time(s). "
-                            'The noise makes it tricky, right? That\'s the whole point!</div>',
-                            unsafe_allow_html=True
-                        )
+        st.markdown("---")
+        st.info(
+            "💡 **Why the Lattice Lock wins:** Imagine hiding a needle in a grid of "
+            "one TRILLION dots spread across 1000 dimensions. That's what the lattice math does! "
+            "Even the fastest quantum computer gets completely lost. That's why NIST chose "
+            "**Kyber (the Lattice Lock)** to protect the internet! 🏗️🔐"
+        )
 
     # ── Tab 4: Vocabulary Cards ───────────────────────────────────────────────
     with tab4:
-        st.subheader("📝 Vocabulary Flashcards")
-        vocab = {
-            "Cryptography": "The science of writing secret messages so only the right person can read them.",
-            "Quantum Computer": "A super-powerful computer that uses tiny particles to solve some math problems VERY fast.",
-            "Lattice": "A tangled grid of dots — used in new, quantum-safe math puzzles.",
-            "Key": "A secret piece of information used to lock or unlock a message.",
-            "Encryption": "Scrambling a message so only someone with the key can unscramble it.",
-            "Post-Quantum Cryptography": "New types of secret codes that even quantum computers can't break!",
-        }
+        import streamlit.components.v1 as _vocab_comp
 
-        word = st.selectbox("Pick a vocab word:", list(vocab.keys()))
-        st.info(f"**{word}:** {vocab[word]}")
+        st.subheader("📝 PQC Vocabulary Adventure!")
+        st.markdown(
+            "🕵️ **Agent Pixel's Secret Dictionary!** Learn the words that keep the world safe. "
+            "Click a word to flip the card, then test yourself!"
+        )
 
-        answer = st.text_input("Try to explain it in your own words:", key="vocab_answer")
-        if st.button("Submit my explanation", key="vocab_submit"):
-            if not check_rate_limit("vocab_submit", st.session_state):
-                st.warning("Take a breath — try again in a moment!")
+        VOCAB = [
+            {"word": "Cryptography", "emoji": "🔐",
+             "simple": "Writing secret messages so only YOUR friend can read them!",
+             "full": "The science of creating codes and ciphers to protect information from people who should not see it.",
+             "example": "When you pass a secret note in class — that is cryptography!",
+             "color": "#10b981"},
+            {"word": "Quantum Computer", "emoji": "⚛️",
+             "simple": "A SUPER powerful computer that uses magic tiny particles!",
+             "full": "A computer that uses quantum mechanics — qubits that can be 0 AND 1 at the same time — to solve some problems exponentially faster.",
+             "example": "Like having a million calculators all working at the same time!",
+             "color": "#8b5cf6"},
+            {"word": "Lattice", "emoji": "🏗️",
+             "simple": "A giant grid of dots with a secret hidden inside!",
+             "full": "A mathematical structure — a regular grid of points in space. In 1000 dimensions, finding the secret dot is impossible even for quantum computers.",
+             "example": "Like a huge 3D puzzle where pieces are spread across 1000 dimensions!",
+             "color": "#3b82f6"},
+            {"word": "Encryption", "emoji": "🔒",
+             "simple": "Scrambling a message so it looks like nonsense!",
+             "full": "The process of encoding information so only the person with the correct key can understand it. Used for emails, texts, and websites.",
+             "example": "Hello → #$@!kX9 (only your friend with the key can turn it back!)",
+             "color": "#f59e0b"},
+            {"word": "Kyber", "emoji": "💎",
+             "simple": "The new super-lock that quantum computers CANNOT break!",
+             "full": "ML-KEM FIPS 203 — the NIST approved post-quantum key exchange algorithm. Uses lattice math based on the Module-LWE problem.",
+             "example": "Kyber is like a lock with a trillion trillion trillion possible combinations!",
+             "color": "#10b981"},
+            {"word": "Shor's Algorithm", "emoji": "💥",
+             "simple": "The quantum monster's secret weapon against old locks!",
+             "full": "A quantum algorithm created by Peter Shor in 1994 that can factor large numbers exponentially faster than classical computers, breaking RSA.",
+             "example": "Like having a cheat code that instantly solves the old RSA math puzzle!",
+             "color": "#ef4444"},
+            {"word": "Post-Quantum Cryptography", "emoji": "🛡️",
+             "simple": "NEW secret codes that EVEN quantum computers cannot crack!",
+             "full": "Cryptographic algorithms designed to be secure against both classical and quantum computers. NIST approved 4 standards in 2024.",
+             "example": "Kyber, Dilithium, SPHINCS+, and Falcon are the four new quantum-safe heroes!",
+             "color": "#4f46e5"},
+            {"word": "NIST", "emoji": "🏛️",
+             "simple": "The US government team that picks the BEST secret codes!",
+             "full": "National Institute of Standards and Technology — a US federal agency that runs competitions to find the best cryptographic algorithms.",
+             "example": "NIST tested 69 algorithms for 6 years and picked 4 winners in 2024!",
+             "color": "#f97316"},
+        ]
+
+        if "vocab_card_idx" not in st.session_state:
+            st.session_state.vocab_card_idx = 0
+        if "vocab_flipped" not in st.session_state:
+            st.session_state.vocab_flipped = False
+        if "vocab_mastered" not in st.session_state:
+            st.session_state.vocab_mastered = set()
+        if "vocab_quiz_mode" not in st.session_state:
+            st.session_state.vocab_quiz_mode = False
+
+        # Progress bar
+        mastered = len(st.session_state.vocab_mastered)
+        st.progress(mastered / len(VOCAB))
+        st.caption(f"🌟 {mastered}/{len(VOCAB)} words mastered!")
+
+        mode_col1, mode_col2 = st.columns(2)
+        with mode_col1:
+            if st.button("📖 Flashcard Mode" if st.session_state.vocab_quiz_mode else "✅ Flashcard Mode (Active)", use_container_width=True):
+                st.session_state.vocab_quiz_mode = False
+                st.rerun()
+        with mode_col2:
+            if st.button("🎯 Quiz Mode" if not st.session_state.vocab_quiz_mode else "✅ Quiz Mode (Active)", use_container_width=True):
+                st.session_state.vocab_quiz_mode = True
+                st.rerun()
+
+        st.markdown("---")
+
+        if not st.session_state.vocab_quiz_mode:
+            # Flashcard mode
+            card = VOCAB[st.session_state.vocab_card_idx]
+            color = card["color"]
+
+            _vocab_comp.html(f"""
+<style>
+body{{margin:0;background:#0f172a;font-family:sans-serif;}}
+.card-container{{perspective:800px;width:100%;max-width:420px;margin:0 auto;height:220px;cursor:pointer;}}
+.card{{width:100%;height:100%;position:relative;transform-style:preserve-3d;transition:transform 0.6s;}}
+.card.flipped{{transform:rotateY(180deg);}}
+.face{{position:absolute;width:100%;height:100%;backface-visibility:hidden;border-radius:16px;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;box-sizing:border-box;}}
+.front{{background:linear-gradient(135deg,{color}30,{color}10);border:2px solid {color}60;}}
+.back{{background:linear-gradient(135deg,#1e293b,#0f172a);border:2px solid {color};transform:rotateY(180deg);}}
+.emoji{{font-size:3.5rem;margin-bottom:8px;}}
+.word{{font-size:1.4rem;font-weight:bold;color:white;text-align:center;}}
+.hint{{font-size:0.78rem;color:#888;margin-top:8px;}}
+.simple{{font-size:0.95rem;color:{color};font-weight:bold;text-align:center;line-height:1.4;}}
+.example{{font-size:0.78rem;color:#888;text-align:center;margin-top:8px;font-style:italic;}}
+</style>
+<div class="card-container" onclick="this.querySelector('.card').classList.toggle('flipped')">
+<div class="card" id="card">
+<div class="face front">
+    <div class="emoji">{card['emoji']}</div>
+    <div class="word">{card['word']}</div>
+    <div class="hint">👆 Click to see what it means!</div>
+</div>
+<div class="face back">
+    <div class="simple">"{card['simple']}"</div>
+    <div class="example">💡 {card['example']}</div>
+</div>
+</div>
+</div>
+""", height=240)
+
+            col1, col2, col3 = st.columns([1, 2, 1])
+            with col1:
+                if st.button("⬅️ Prev", key="vocab_prev", use_container_width=True):
+                    st.session_state.vocab_card_idx = (st.session_state.vocab_card_idx - 1) % len(VOCAB)
+                    st.session_state.vocab_flipped = False
+                    st.rerun()
+            with col2:
+                if st.button(f"{'✅ Already Mastered!' if st.session_state.vocab_card_idx in st.session_state.vocab_mastered else '⭐ I Got It! Mark Mastered'}", key="vocab_master", use_container_width=True, type="primary"):
+                    st.session_state.vocab_mastered.add(st.session_state.vocab_card_idx)
+                    st.session_state.xp = st.session_state.get("xp", 0) + 5
+                    if len(st.session_state.vocab_mastered) == len(VOCAB):
+                        award_badge("📚 Vocab Master", xp=20)
+                        st.balloons()
+                    st.session_state.vocab_card_idx = (st.session_state.vocab_card_idx + 1) % len(VOCAB)
+                    st.rerun()
+            with col3:
+                if st.button("Next ➡️", key="vocab_next", use_container_width=True):
+                    st.session_state.vocab_card_idx = (st.session_state.vocab_card_idx + 1) % len(VOCAB)
+                    st.session_state.vocab_flipped = False
+                    st.rerun()
+
+            st.caption(f"Card {st.session_state.vocab_card_idx + 1} of {len(VOCAB)} — {card['word']}")
+
+            # Full definition
+            with st.expander("📖 See the full definition"):
+                st.markdown(f"**{card['word']}** {card['emoji']}")
+                st.markdown(f"*Simple:* {card['simple']}")
+                st.markdown(f"*Full:* {card['full']}")
+                st.markdown(f"*Example:* {card['example']}")
+
+        else:
+            # Quiz mode
+            import random
+            if "vocab_q" not in st.session_state:
+                st.session_state.vocab_q = random.randint(0, len(VOCAB)-1)
+                st.session_state.vocab_q_answered = False
+
+            card = VOCAB[st.session_state.vocab_q]
+            color = card["color"]
+
+            st.markdown(
+                f"<div style='background:{color}15;border:2px solid {color}50;"
+                f"border-radius:14px;padding:16px;text-align:center;margin:8px 0'>"
+                f"<div style='font-size:3rem;margin-bottom:6px'>{card['emoji']}</div>"
+                f"<div style='font-size:1.1rem;color:#888;margin-bottom:4px'>What does this mean?</div>"
+                f"<div style='font-size:1.5rem;font-weight:bold;color:white'>{card['word']}</div>"
+                f"</div>",
+                unsafe_allow_html=True
+            )
+
+            # Generate wrong answers
+            wrong_pool = [v["simple"] for v in VOCAB if v["word"] != card["word"]]
+            random.shuffle(wrong_pool)
+            options = [card["simple"]] + wrong_pool[:3]
+            random.shuffle(options)
+
+            if not st.session_state.vocab_q_answered:
+                for opt in options:
+                    if st.button(opt[:80] + "..." if len(opt) > 80 else opt, key=f"vq_{opt[:20]}", use_container_width=True):
+                        if opt == card["simple"]:
+                            st.success(f"🎉 CORRECT! {card['emoji']} {card['word']} = {card['simple']}")
+                            st.session_state.vocab_mastered.add(st.session_state.vocab_q)
+                            st.session_state.xp = st.session_state.get("xp", 0) + 10
+                            st.session_state.vocab_q_answered = True
+                            award_badge("📚 Vocab Vault", xp=10)
+                        else:
+                            st.error(f"❌ Not quite! The answer was: **{card['simple']}**")
+                            st.session_state.vocab_q_answered = True
             else:
-                clean = sanitize_input(answer)
-                if len(clean) > 10:
-                    st.success(f"Great job! You wrote: *\"{clean}\"* 🌟")
-                    award_badge("📚 Vocab Vault", xp=5)
-                else:
-                    st.warning("Tell me a little more — you've got this!")
+                if st.button("➡️ Next Question! +10 XP", key="vocab_next_q", type="primary", use_container_width=True):
+                    st.session_state.vocab_q = random.randint(0, len(VOCAB)-1)
+                    st.session_state.vocab_q_answered = False
+                    st.rerun()
+
+        st.markdown("---")
+        st.markdown("### 🌟 All Vocab Words")
+        cols = st.columns(4)
+        for i, v in enumerate(VOCAB):
+            with cols[i % 4]:
+                mastered_this = i in st.session_state.vocab_mastered
+                st.markdown(
+                    f"<div style='text-align:center;padding:8px;border-radius:8px;"
+                    f"background:{'#10b98120' if mastered_this else '#1e293b'};"
+                    f"border:1px solid {'#10b981' if mastered_this else '#334155'};margin:3px'>"
+                    f"<div>{v['emoji']}</div>"
+                    f"<div style='font-size:0.7rem;color:{'#10b981' if mastered_this else '#888'}'>"
+                    f"{'✅ ' if mastered_this else ''}{v['word'][:10]}</div>"
+                    f"</div>",
+                    unsafe_allow_html=True
+                )
 
     with tab5:
         from modules.games import render_falling_blocks, render_zombie_blast, render_quantumcraft_elementary
