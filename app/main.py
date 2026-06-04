@@ -91,47 +91,85 @@ def sidebar():
         "🔒 **Privacy:** This app collects no personal data. Safe for all ages."
     )
 
-    grade = st.sidebar.selectbox(
-        "📍 Navigate:",
-        [
-            "",
-            "─── 📚 LEARN ───────────────",
-            "🟢 Elementary (K–5)",
-            "🟡 Middle School (6–8)",
-            "🔴 High School (9–12)",
-            "─── 🎮 GAMES & CHALLENGES ──",
-            "🧩 Cipher Decoder",
-            "🏃 Escape Room",
-            "🃏 Algo Battle",
-            "🎯 Daily Challenge",
-            "─── 🔬 LABS & TOOLS ────────",
-            "🧪 Crypto Lab",
-            "📡 TLS Simulator",
-            "🌡️ Threat Thermometer",
-            "📺 Explainers",
-            "─── 👤 MY PROFILE ──────────",
-            "📊 My Progress",
-            "🎨 My Character",
-            "🃏 Trading Cards",
-            "📸 Share Achievement",
-            "─── 🏆 COMMUNITY ───────────",
-            "🏆 Leaderboard",
-            "🏫 School Rankings",
-            "🗺️ Mission Map",
-            "🌍 World Map",
-            "─── 📖 RESOURCES ───────────",
-            "🤖 AI Tutor",
-            "📖 Research Journal",
-            "🗺️ Career Explorer",
-            "📧 Weekly Report",
-            "─── ⚙️ ACCOUNT ─────────────",
-            "👨‍🏫 Teacher Dashboard",
-            "💎 Pricing & Plans",
-        ],
-    )
+    # ── Custom styled navigation ─────────────────────────────────────────
+    SECTIONS = [
+        {"label": "📚 LEARN", "color": "#10b981", "items": [
+            ("🟢", "Elementary (K-5)",    "🟢 Elementary (K–5)"),
+            ("🟡", "Middle School (6-8)", "🟡 Middle School (6–8)"),
+            ("🔴", "High School (9-12)",  "🔴 High School (9–12)"),
+        ]},
+        {"label": "🎮 GAMES", "color": "#f59e0b", "items": [
+            ("🧩", "Cipher Decoder",   "🧩 Cipher Decoder"),
+            ("🏃", "Escape Room",      "🏃 Escape Room"),
+            ("🃏", "Algo Battle",      "🃏 Algo Battle"),
+            ("🎯", "Daily Challenge",  "🎯 Daily Challenge"),
+        ]},
+        {"label": "🔬 LABS", "color": "#8b5cf6", "items": [
+            ("🧪", "Crypto Lab",         "🧪 Crypto Lab"),
+            ("📡", "TLS Simulator",      "📡 TLS Simulator"),
+            ("🌡️", "Threat Thermometer", "🌡️ Threat Thermometer"),
+            ("📺", "Explainers",         "📺 Explainers"),
+        ]},
+        {"label": "👤 PROFILE", "color": "#3b82f6", "items": [
+            ("📊", "My Progress",       "📊 My Progress"),
+            ("🎨", "My Character",      "🎨 My Character"),
+            ("🃏", "Trading Cards",     "🃏 Trading Cards"),
+            ("📸", "Share Achievement", "📸 Share Achievement"),
+        ]},
+        {"label": "🏆 COMMUNITY", "color": "#ec4899", "items": [
+            ("🏆", "Leaderboard",     "🏆 Leaderboard"),
+            ("🏫", "School Rankings", "🏫 School Rankings"),
+            ("🗺️", "Mission Map",     "🗺️ Mission Map"),
+            ("🌍", "World Map",       "🌍 World Map"),
+        ]},
+        {"label": "📖 RESOURCES", "color": "#06b6d4", "items": [
+            ("🤖", "AI Tutor",          "🤖 AI Tutor"),
+            ("📖", "Research Journal",  "📖 Research Journal"),
+            ("🗺️", "Career Explorer",   "🗺️ Career Explorer"),
+            ("📧", "Weekly Report",     "📧 Weekly Report"),
+        ]},
+        {"label": "⚙️ ACCOUNT", "color": "#6b7280", "items": [
+            ("👨‍🏫", "Teacher Dashboard", "👨‍🏫 Teacher Dashboard"),
+            ("💎", "Pricing & Plans",    "💎 Pricing & Plans"),
+        ]},
+    ]
 
-    if grade:
-        st.session_state.level = grade
+    current = st.session_state.get("level", "")
+    for sec in SECTIONS:
+        c = sec["color"]
+        st.sidebar.markdown(
+            f"<div style='background:{c}18;border-left:3px solid {c};"
+            f"border-radius:0 6px 6px 0;padding:4px 10px;margin:8px 0 2px'>"
+            f"<span style='font-size:0.68rem;font-weight:bold;color:{c};"
+            f"letter-spacing:1.5px;text-transform:uppercase'>{sec['label']}</span>"
+            f"</div>",
+            unsafe_allow_html=True
+        )
+        for emoji, label, route in sec["items"]:
+            is_active = current == route
+            if is_active:
+                st.sidebar.markdown(
+                    f"<div style='background:{c}25;border:1px solid {c}50;"
+                    f"border-radius:8px;padding:5px 10px;margin:2px 0;"
+                    f"font-size:0.82rem;color:white;font-weight:bold'>"
+                    f"{emoji} {label}</div>",
+                    unsafe_allow_html=True
+                )
+                # invisible button to allow reselection
+                st.sidebar.button(
+                    f"{emoji} {label}", key=f"nav_{route}",
+                    use_container_width=True,
+                    help=label, disabled=True,
+                    label_visibility="collapsed"
+                )
+            else:
+                if st.sidebar.button(
+                    f"{emoji} {label}", key=f"nav_{route}",
+                    use_container_width=True, help=label,
+                ):
+                    st.session_state.level = route
+                    st.rerun()
+
 
     st.sidebar.markdown("---")
 
