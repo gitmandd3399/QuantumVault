@@ -92,35 +92,41 @@ def sidebar():
     )
 
     grade = st.sidebar.selectbox(
-        "Choose your grade level:",
+        "📍 Navigate:",
         [
             "",
+            "─── 📚 LEARN ───────────────",
             "🟢 Elementary (K–5)",
             "🟡 Middle School (6–8)",
             "🔴 High School (9–12)",
-            "🏆 Leaderboard",
-            "🗺️ Mission Map",
-            "👨‍🏫 Teacher Dashboard",
-            "📊 My Progress",
-            "💎 Pricing & Plans",
-            "🤖 AI Tutor",
-            "🃏 Trading Cards",
-            "🎯 Daily Challenge",
-            "📸 Share Achievement",
-            "🎨 My Character",
-            "🌍 World Map",
-            "📺 Explainers",
-            "🧪 Crypto Lab",
-            "📖 Research Journal",
-            "📧 Weekly Report",
-            "🏫 School Rankings",
+            "─── 🎮 GAMES & CHALLENGES ──",
             "🧩 Cipher Decoder",
             "🏃 Escape Room",
+            "🃏 Algo Battle",
+            "🎯 Daily Challenge",
+            "─── 🔬 LABS & TOOLS ────────",
+            "🧪 Crypto Lab",
             "📡 TLS Simulator",
             "🌡️ Threat Thermometer",
-            "🃏 Algo Battle",
+            "📺 Explainers",
+            "─── 👤 MY PROFILE ──────────",
+            "📊 My Progress",
+            "🎨 My Character",
+            "🃏 Trading Cards",
+            "📸 Share Achievement",
+            "─── 🏆 COMMUNITY ───────────",
+            "🏆 Leaderboard",
+            "🏫 School Rankings",
+            "🗺️ Mission Map",
+            "🌍 World Map",
+            "─── 📖 RESOURCES ───────────",
+            "🤖 AI Tutor",
+            "📖 Research Journal",
             "🗺️ Career Explorer",
-
+            "📧 Weekly Report",
+            "─── ⚙️ ACCOUNT ─────────────",
+            "👨‍🏫 Teacher Dashboard",
+            "💎 Pricing & Plans",
         ],
     )
 
@@ -403,6 +409,16 @@ def main():
         return
 
     level = st.session_state.level
+    if not level or level.startswith("─"):
+        st.markdown(
+            "<div style='text-align:center;padding:60px 20px'>"
+            "<div style='font-size:4rem'>🔐</div>"
+            "<h2 style='color:#a5b4fc'>Welcome to QuantumVault Academy!</h2>"
+            "<p style='color:#888'>Select a section from the dropdown in the sidebar to get started!</p>"
+            "</div>",
+            unsafe_allow_html=True
+        )
+        st.stop()
     if "Elementary" in level:
         render_elementary()
     elif "Middle" in level:
