@@ -813,309 +813,368 @@ def render_high_school():
         else:
             render_quantumcraft_highschool()
     with tab7:
-        st.subheader("🧮 QuantumMath Challenge")
-        xp = st.session_state.xp
+        import streamlit.components.v1 as _math_comp
+        import json as _json
+
+        st.subheader("🧮 QuantumMath Challenge — 12 Levels!")
+        st.markdown(
+            "🔥 **120 unique questions across 12 levels.** "
+            "Start at Beginner and work up to Grandmaster PQC. "
+            "Speed bonuses, streak multipliers, and letter grades!"
+        )
+
+        xp = st.session_state.get("xp", 0)
+
         LEVELS = [
-            {"name": "Level 1 - Modular Arithmetic", "xp_required": 0,   "color": "#10b981", "emoji": "🔢"},
-            {"name": "Level 2 - Prime Numbers",       "xp_required": 50,  "color": "#3b82f6", "emoji": "🔑"},
-            {"name": "Level 3 - Matrix Math",         "xp_required": 150, "color": "#8b5cf6", "emoji": "🏗"},
-            {"name": "Level 4 - Number Theory",       "xp_required": 300, "color": "#f59e0b", "emoji": "📐"},
-            {"name": "Level 5 - Lattice Problems",    "xp_required": 500, "color": "#ec4899", "emoji": "⚡"},
+            {"name":"Level 1", "topic":"Modular Arithmetic", "xp_req":0,   "color":"#10b981","emoji":"🔢","grade":"Beginner"},
+            {"name":"Level 2", "topic":"Prime Numbers",       "xp_req":0,   "color":"#10b981","emoji":"🔑","grade":"Beginner"},
+            {"name":"Level 3", "topic":"Matrix Math",         "xp_req":0,   "color":"#3b82f6","emoji":"🏗️","grade":"Intermediate"},
+            {"name":"Level 4", "topic":"Number Theory",       "xp_req":50,  "color":"#3b82f6","emoji":"📐","grade":"Intermediate"},
+            {"name":"Level 5", "topic":"Lattice Problems",    "xp_req":100, "color":"#8b5cf6","emoji":"⚡","grade":"Advanced"},
+            {"name":"Level 6", "topic":"Hash Functions",      "xp_req":150, "color":"#8b5cf6","emoji":"🌊","grade":"Advanced"},
+            {"name":"Level 7", "topic":"Digital Signatures",  "xp_req":200, "color":"#f59e0b","emoji":"✍️","grade":"Expert"},
+            {"name":"Level 8", "topic":"Kyber Internals",     "xp_req":250, "color":"#f59e0b","emoji":"🔐","grade":"Expert"},
+            {"name":"Level 9", "topic":"Quantum Algorithms",  "xp_req":300, "color":"#ef4444","emoji":"⚛️","grade":"Master"},
+            {"name":"Level 10","topic":"Advanced LWE",        "xp_req":400, "color":"#ef4444","emoji":"🧮","grade":"Master"},
+            {"name":"Level 11","topic":"NIST Standards",      "xp_req":500, "color":"#4f46e5","emoji":"🏛️","grade":"Grandmaster"},
+            {"name":"Level 12","topic":"Grandmaster PQC",     "xp_req":600, "color":"#4f46e5","emoji":"🛡️","grade":"Grandmaster"},
         ]
-        available = [l for l in LEVELS if xp >= l["xp_required"]]
-        if not available:
-            st.warning("Earn XP in other modules to unlock math challenges!")
+
+        ALL_QS = [
+            [
+                {"q":"17 mod 5 = ?","opts":["2","3","4","1"],"ans":0,"f":"RSA uses mod with huge primes. Kyber uses mod q=3329!"},
+                {"q":"25 mod 7 = ?","opts":["3","4","2","5"],"ans":1,"f":"In Kyber all polynomial math happens mod q=3329!"},
+                {"q":"(13+9) mod 11 = ?","opts":["0","2","3","1"],"ans":0,"f":"Modular addition wraps around just like a clock!"},
+                {"q":"100 mod 13 = ?","opts":["9","10","11","8"],"ans":0,"f":"100 = 7x13 + 9. Modular reduction keeps numbers small!"},
+                {"q":"(7x8) mod 5 = ?","opts":["1","2","3","4"],"ans":0,"f":"56 mod 5 = 1. Kyber multiplies polynomials mod 3329!"},
+                {"q":"15 mod 15 = ?","opts":["0","1","15","5"],"ans":0,"f":"Any number mod itself = 0. Important for Kyber!"},
+                {"q":"2^10 mod 7 = ?","opts":["2","3","4","1"],"ans":0,"f":"1024 mod 7 = 2. Modular exponentiation powers RSA!"},
+                {"q":"(-3) mod 7 = ?","opts":["4","3","1","5"],"ans":0,"f":"Add modulus until positive: -3+7=4. Used in lattice math!"},
+                {"q":"Kyber modulus q equals?","opts":["3329","3999","4096","2048"],"ans":0,"f":"q=3329 is prime and NTT-friendly — perfect for Kyber!"},
+                {"q":"(5x6) mod 11 = ?","opts":["8","7","9","6"],"ans":0,"f":"30 mod 11 = 8. Modular multiplication is in every crypto op!"},
+            ],
+            [
+                {"q":"Which is prime?","opts":["97","91","87","93"],"ans":0,"f":"97 has no factors except 1 and 97!"},
+                {"q":"Prime factors of 15?","opts":["3 and 5","3 and 4","5 and 7","2 and 7"],"ans":0,"f":"15=3x5. RSA multiplies primes — Shor factors them back!"},
+                {"q":"gcd(12,8) = ?","opts":["4","3","2","6"],"ans":0,"f":"gcd is used in RSA key generation!"},
+                {"q":"Which is NOT prime?","opts":["51","53","59","61"],"ans":0,"f":"51=3x17. Composite numbers break prime security!"},
+                {"q":"a^p mod p = ? (p prime, Fermat)","opts":["a","1","0","p"],"ans":0,"f":"Fermat Little Theorem: a^p ≡ a mod p. Foundation of RSA!"},
+                {"q":"Primes less than 10?","opts":["4","3","5","6"],"ans":0,"f":"2, 3, 5, 7 — four primes below 10!"},
+                {"q":"Largest prime factor of 84?","opts":["7","6","4","3"],"ans":0,"f":"84=2x2x3x7. Factoring IS the RSA hard problem!"},
+                {"q":"p=11, q=13, n=p*q = ?","opts":["143","134","141","131"],"ans":0,"f":"In RSA n=p*q is the public modulus. Shor factors n!"},
+                {"q":"Euler phi(7) = ?","opts":["6","7","5","4"],"ans":0,"f":"phi(p)=p-1. RSA private key uses phi(n)!"},
+                {"q":"Which breaks RSA by factoring?","opts":["Shor","Grover","Kyber","Dilithium"],"ans":0,"f":"Shor Algorithm factors n in polynomial quantum time!"},
+            ],
+            [
+                {"q":"[1,2].[3,4] = ?","opts":["11","10","12","8"],"ans":0,"f":"1x3+2x4=11. Kyber uses matrix-vector products!"},
+                {"q":"[[1,2],[3,4]] x [1,1] = ?","opts":["[3,7]","[1,4]","[2,6]","[4,8]"],"ans":0,"f":"[1+2,3+4]=[3,7]. This IS Kyber key generation: t=As+e!"},
+                {"q":"Transpose of [[1,2],[3,4]]?","opts":["[[1,3],[2,4]]","[[4,3],[2,1]]","[[2,1],[4,3]]","[[1,2],[3,4]]"],"ans":0,"f":"Transpose swaps rows/cols. Kyber encapsulation uses A^T!"},
+                {"q":"Kyber-512 matrix A dimension?","opts":["2x2","3x3","4x4","1x1"],"ans":0,"f":"Kyber-512 uses k=2, so A is 2x2 matrix of polynomials!"},
+                {"q":"A=[[2,1],[1,3]], s=[1,2], As=?","opts":["[4,7]","[3,6]","[5,8]","[2,4]"],"ans":0,"f":"[2+2,1+6]=[4,7]. Kyber key gen: b=As+e mod q!"},
+                {"q":"NTT speeds up what in Kyber?","opts":["Polynomial mult","Matrix inversion","Hash computation","Key storage"],"ans":0,"f":"NTT: O(n^2) to O(n log n). Makes Kyber 100x faster!"},
+                {"q":"Norm of vector [3,4] = ?","opts":["5","7","12","25"],"ans":0,"f":"sqrt(9+16)=5. Short vector norms are central to SVP!"},
+                {"q":"(x+1)(x+2) = ?","opts":["x^2+3x+2","x^2+2x+2","x^2+3x+1","x^2+x+2"],"ans":0,"f":"Kyber works with polynomial ring Rq=Zq[x]/(x^n+1)!"},
+                {"q":"Kyber polynomial degree n = ?","opts":["256","128","512","1024"],"ans":0,"f":"All Kyber variants use n=256 coefficient polynomials!"},
+                {"q":"Matrix mult AB: A is 2x3, B must start with?","opts":["3","2","1","4"],"ans":0,"f":"Inner dimensions must match: (2x3)(3xN)=2xN!"},
+            ],
+            [
+                {"q":"Euler phi(prime p) = ?","opts":["p-1","p","p+1","p/2"],"ans":0,"f":"phi(p)=p-1. RSA uses phi(n)=(p-1)(q-1)!"},
+                {"q":"gcd(35,14) = ?","opts":["7","5","14","2"],"ans":0,"f":"35=5x7, 14=2x7, gcd=7. Euclidean algorithm!"},
+                {"q":"Modular inverse of 3 mod 7?","opts":["5","4","6","2"],"ans":0,"f":"3x5=15=2x7+1, so 3^(-1)=5 mod 7!"},
+                {"q":"CRT solves?","opts":["Simultaneous modular equations","Prime factorization","Matrix inversion","Hash collisions"],"ans":0,"f":"Chinese Remainder Theorem — used in NTT for Kyber!"},
+                {"q":"Euler phi(15) = ?","opts":["8","6","10","4"],"ans":0,"f":"phi(15)=phi(3)xphi(5)=2x4=8!"},
+                {"q":"Extended Euclidean computes?","opts":["gcd and Bezout coefficients","Only gcd","Modular inverse only","Prime factors"],"ans":0,"f":"Bezout: gcd(a,b)=ax+by. Used for RSA private keys!"},
+                {"q":"Multiplicative order of 2 mod 7?","opts":["3","6","7","2"],"ans":0,"f":"2^3=8 mod 7=1. Order relates to Shor period-finding!"},
+                {"q":"DLP: given g^x mod p, find x. Hard because?","opts":["No efficient classical algorithm","Computers too slow","Numbers too big","Wrong math"],"ans":0,"f":"DLP is basis of Diffie-Hellman — broken by Shor!"},
+                {"q":"phi(n) for RSA n=p*q equals?","opts":["(p-1)(q-1)","p*q-1","p+q","(p+q)/2"],"ans":0,"f":"RSA private key d = e^(-1) mod (p-1)(q-1)!"},
+                {"q":"Modular inverse exists when?","opts":["gcd(a,n)=1","a is prime","n is prime","a<n"],"ans":0,"f":"a has inverse mod n only if gcd(a,n)=1 (coprime)!"},
+            ],
+            [
+                {"q":"SVP stands for?","opts":["Shortest Vector Problem","Secure Vault Protocol","Symmetric Vector Product","Signature Verification Process"],"ans":0,"f":"SVP is NP-hard — foundation of lattice crypto security!"},
+                {"q":"LWE: b=As+e. What is e?","opts":["Small noise vector","The secret","Public key","The message"],"ans":0,"f":"Noise e hides secret s — impossible to remove without s!"},
+                {"q":"Kyber security reduces to?","opts":["Module-LWE","RSA factoring","Discrete log","SAT problem"],"ans":0,"f":"Breaking Kyber requires solving the hardest lattice problems!"},
+                {"q":"CVP stands for?","opts":["Closest Vector Problem","Cipher Vault Protocol","Compressed Vector Product","Cryptographic Validation Process"],"ans":0,"f":"CVP: find closest lattice point to target. NP-hard!"},
+                {"q":"Grover speedup on lattice SVP?","opts":["Minimal — still exponential","Square root","Exponential","Polynomial"],"ans":0,"f":"No quantum speedup on SVP! That is why lattice crypto is safe!"},
+                {"q":"LWE noise distribution in Kyber?","opts":["Centered binomial","Uniform random","Gaussian","Binary"],"ans":0,"f":"CBD(eta) gives small coefficients — allows correct decryption!"},
+                {"q":"Module-LWE uses what structure?","opts":["Polynomial rings","Integer matrices","Binary fields","Complex numbers"],"ans":0,"f":"MLWE uses ring Rq=Zq[x]/(x^256+1) for efficiency!"},
+                {"q":"BKZ algorithm does what?","opts":["Lattice basis reduction","Hash computation","Key derivation","Polynomial mult"],"ans":0,"f":"BKZ is best known SVP approximation — Kyber params resist it!"},
+                {"q":"SIS stands for?","opts":["Short Integer Solution","Secure Integer Scheme","Symmetric Integer System","Standard Integer Signature"],"ans":0,"f":"SIS hardness underlies Dilithium signature security!"},
+                {"q":"Dimension of Kyber-768 lattice?","opts":["768","256","512","1024"],"ans":0,"f":"k=3, n=256, total 768-dimensional lattice!"},
+            ],
+            [
+                {"q":"SHA-3 based on which construction?","opts":["Keccak sponge","Merkle-Damgard","Davies-Meyer","Matyas-Meyer"],"ans":0,"f":"Keccak won NIST hash competition in 2012!"},
+                {"q":"Changing 1 bit changes ~what% of SHA-3 output?","opts":["50%","1%","100%","25%"],"ans":0,"f":"Avalanche effect: ~50% bits flip from one input bit!"},
+                {"q":"SHA3-256 output size?","opts":["256 bits","512 bits","128 bits","384 bits"],"ans":0,"f":"The number in the name tells you the output size!"},
+                {"q":"Hash collision means?","opts":["Two inputs same hash","Hash runs slowly","Hash is reversible","Output all zeros"],"ans":0,"f":"SHA-3 is collision resistant — no known practical collisions!"},
+                {"q":"SHA-3 internal state size?","opts":["1600 bits","512 bits","256 bits","1024 bits"],"ans":0,"f":"5x5x64 bit state = 1600 bits total!"},
+                {"q":"SPHINCS+ uses hash functions because?","opts":["Security does not depend on lattices","Hashes are faster","Default quantum safe","Smaller signatures"],"ans":0,"f":"If lattices are broken, SPHINCS+ backup is pure hash-based!"},
+                {"q":"Grover reduces SHA3-256 security to?","opts":["128 bits","64 bits","256 bits","32 bits"],"ans":0,"f":"2^256 to 2^128 quantum. 128-bit still secure for 30+ years!"},
+                {"q":"Which FIPS uses only hash functions?","opts":["FIPS 205 (SPHINCS+)","FIPS 203 (Kyber)","FIPS 204 (Dilithium)","FIPS 206 (Falcon)"],"ans":0,"f":"SPHINCS+ relies only on SHA-3 — no lattice math needed!"},
+                {"q":"Merkle tree root proves?","opts":["Integrity of all leaves","Single file correct","Hash is correct","Key is valid"],"ans":0,"f":"SPHINCS+ uses Merkle trees internally for its signature!"},
+                {"q":"SHA-3 absorption phase does?","opts":["XORs input into state","Outputs hash","Generates keys","Computes modular inverse"],"ans":0,"f":"Keccak absorbs input blocks via XOR then permutes 24 rounds!"},
+            ],
+            [
+                {"q":"Digital signature proves?","opts":["Authenticity and integrity","Only authenticity","Only integrity","File size"],"ans":0,"f":"Signatures prove WHO sent it AND it was not modified!"},
+                {"q":"Dilithium based on?","opts":["Module-LWE","RSA factoring","SHA-3 preimage","Discrete log"],"ans":0,"f":"ML-DSA (Dilithium) = Module Lattice Digital Signature!"},
+                {"q":"Rejection sampling in Dilithium prevents?","opts":["Secret key leakage","Slow signing","Large signatures","Quantum attacks"],"ans":0,"f":"Without rejection sampling each signature leaks bits of key s!"},
+                {"q":"Falcon signatures vs Dilithium: Falcon is?","opts":["Much smaller","Much larger","Same size","Faster to verify"],"ans":0,"f":"Falcon-512: 666 bytes vs Dilithium2: 2420 bytes!"},
+                {"q":"Which NIST standard for IoT signatures?","opts":["FIPS 206 (Falcon)","FIPS 204 (Dilithium)","FIPS 205 (SPHINCS+)","FIPS 203 (Kyber)"],"ans":0,"f":"Smallest signatures = Falcon = best for constrained devices!"},
+                {"q":"Fiat-Shamir transform converts?","opts":["Interactive proof to signature","Hash to key","Lattice to matrix","Prime to polynomial"],"ans":0,"f":"Dilithium uses Fiat-Shamir with Aborts (FSwA)!"},
+                {"q":"To verify Dilithium signature you need?","opts":["Public key and message","Private key only","Hash of message","Secret noise"],"ans":0,"f":"Anyone can verify but only private key holder can sign!"},
+                {"q":"SPHINCS+ backup standard because?","opts":["Very large signatures","Lower security","Slower keygen","Less tested"],"ans":0,"f":"8-50KB signatures are fine for infrequent CA certs!"},
+                {"q":"Kyber is NOT a signature scheme because?","opts":["It is a KEM not signature","Too slow","Wrong math","NIST rejected it"],"ans":0,"f":"Use Kyber for key exchange AND Dilithium for signatures!"},
+                {"q":"SLH-DSA in FIPS 205 stands for?","opts":["Stateless Hash-based Digital Signature","Symmetric Lattice Hash DSA","Secure Lightweight Hash DSA","Standard LWE Hash DSA"],"ans":0,"f":"SPHINCS+ = Stateless Hash-based Digital Signature Algorithm!"},
+            ],
+            [
+                {"q":"Kyber-768 security level?","opts":["192 bits","128 bits","256 bits","512 bits"],"ans":0,"f":"Kyber-512=128, Kyber-768=192, Kyber-1024=256 bit security!"},
+                {"q":"NTT reduces polynomial mult from?","opts":["O(n^2) to O(n log n)","O(n) to O(log n)","O(n^3) to O(n^2)","O(2^n) to O(n)"],"ans":0,"f":"NTT makes Kyber 100x faster than naive polynomial mult!"},
+                {"q":"Kyber public key t = ?","opts":["As + e","A + s","A * e","s + e mod q"],"ans":0,"f":"t=As+e: matrix times secret plus noise mod q=3329!"},
+                {"q":"Kyber secret s coefficients from?","opts":["Centered binomial CBD","Uniform [0,q)","Gaussian","Binary {0,1}"],"ans":0,"f":"Small CBD coefficients allow correct decryption after noise!"},
+                {"q":"In Kyber encapsulation, client sends?","opts":["Ciphertext (u,v)","Private key","Random seed","Hash of message"],"ans":0,"f":"Ciphertext c=(u,v) encapsulates the shared secret!"},
+                {"q":"Kyber is IND-CCA2 secure meaning?","opts":["Secure vs adaptive chosen ciphertext","Only vs passive attacks","Timing attack secure","Post-quantum only"],"ans":0,"f":"IND-CCA2 is required for real protocols like TLS!"},
+                {"q":"Compress function in Kyber does?","opts":["Reduces ciphertext size","Increases security","Speeds NTT","Generates randomness"],"ans":0,"f":"Compression trades tiny security margin for smaller ciphertext!"},
+                {"q":"Kyber polynomial ring is?","opts":["Zq[x]/(x^256+1)","Z[x]/(x^256-1)","Zq[x]/x^256","Z2[x]/(x^256+1)"],"ans":0,"f":"x^256+1 is chosen for efficient NTT computation!"},
+                {"q":"Decapsulation uses which key?","opts":["Kyber private key s","Alice public key","Random seed","Matrix A"],"ans":0,"f":"Only the private key s can recover the shared secret!"},
+                {"q":"CBD(eta=2) produces values in range?","opts":["[-2,2]","[0,q)","[-q/2,q/2]","{0,1}"],"ans":0,"f":"CBD(2) gives very small noise — essential for Kyber correctness!"},
+            ],
+            [
+                {"q":"Shor solves what in polynomial time?","opts":["Integer factorization","SVP","SHA-3 preimage","LWE"],"ans":0,"f":"RSA-2048 falls in hours to Shor on a large quantum computer!"},
+                {"q":"Grover speedup is?","opts":["Quadratic sqrt(N)","Exponential","Linear","Logarithmic"],"ans":0,"f":"sqrt speedup is not enough to break 256-bit keys!"},
+                {"q":"Qubit can be?","opts":["0 and 1 simultaneously","Only 0","Only 1","0 or 1 sequentially"],"ans":0,"f":"Superposition: qubit = alpha|0> + beta|1>!"},
+                {"q":"Shor uses QFT to find?","opts":["Period of modular exponentiation","Shortest lattice vector","Hash preimage","Prime factors directly"],"ans":0,"f":"Period r of f(x)=a^x mod n then GCD gives factors!"},
+                {"q":"Logical qubits to break RSA-2048?","opts":["~4000","~100","~1 million","~20"],"ans":0,"f":"~4000 error-corrected logical qubits needed — not yet!"},
+                {"q":"Harvest-now-decrypt-later means?","opts":["Collect encrypted data now, decrypt later with quantum","Decrypt in real time with AI","Store quantum states","Break encryption immediately"],"ans":0,"f":"Nation states may already be collecting encrypted data TODAY!"},
+                {"q":"Which NIST algo is immune to Shor?","opts":["Kyber (ML-KEM)","RSA-4096","ECDH-521","Diffie-Hellman"],"ans":0,"f":"Shor only attacks factoring and discrete log — not lattices!"},
+                {"q":"Quantum entanglement enables?","opts":["Correlated qubit measurements","Independent operations","Classical speedup","Parallel memory"],"ans":0,"f":"Entanglement is essential for quantum error correction!"},
+                {"q":"Post-quantum crypto protects against?","opts":["Both classical and quantum","Only quantum","Only classical","Side channel only"],"ans":0,"f":"NIST standards must be secure against ALL computers!"},
+                {"q":"Grover reduces AES-256 security to?","opts":["128 bits","64 bits","256 bits","32 bits"],"ans":0,"f":"2^256 to 2^128 quantum. AES-256 remains safe!"},
+            ],
+            [
+                {"q":"MLWE vs LWE: MLWE is?","opts":["More efficient same security","Less secure but faster","Harder to implement","NIST only"],"ans":0,"f":"MLWE gives O(n) key sizes vs O(n^2) for LWE!"},
+                {"q":"LWR differs from LWE by?","opts":["Rounding replaces random noise","Using matrices not vectors","Adding more noise","Removing secret"],"ans":0,"f":"LWR: b=round(As/p) mod q — deterministic noise!"},
+                {"q":"LWE worst-case to average-case proved by?","opts":["Regev 2005","Shor 1994","Diffie-Hellman","NIST"],"ans":0,"f":"Regev proved LWE hardness reduces to worst-case SVP!"},
+                {"q":"MLWE security increases when?","opts":["k (matrix dimension) increases","Noise decreases","q decreases","n decreases"],"ans":0,"f":"Kyber-1024 uses k=4 vs Kyber-512 k=2 for more security!"},
+                {"q":"x^n+1 chosen for?","opts":["NTT efficiency","Better security","Smaller keys","NIST requirement"],"ans":0,"f":"x^256+1 makes NTT maximally efficient for Kyber!"},
+                {"q":"LWE decryption fails when?","opts":["Noise too large to round off","Key gen fails","Matrix A wrong","Ciphertext corrupted"],"ans":0,"f":"Kyber params ensure failure probability below 2^-139!"},
+                {"q":"Module-SIS underlies security of?","opts":["Dilithium","Kyber","SPHINCS+","Falcon"],"ans":0,"f":"SIS: find short vector in lattice kernel — Dilithium uses it!"},
+                {"q":"Converting LWE to RLWE gains?","opts":["Smaller keys faster ops","Higher security","Simpler implementation","Quantum resistance"],"ans":0,"f":"RLWE keys are O(n) vs LWE O(n^2) — massive efficiency gain!"},
+                {"q":"Higher CBD eta means?","opts":["Larger noise harder to invert","Smaller noise","Same noise","Better correctness"],"ans":0,"f":"Higher eta = larger noise = harder LWE = more security!"},
+                {"q":"Kyber q=3329 chosen because?","opts":["Prime and NTT-friendly","Largest prime below 4096","NIST random choice","Easy to compute"],"ans":0,"f":"3329 = 2^8 * 13 + 1, allowing efficient NTT in Z_3329!"},
+            ],
+            [
+                {"q":"NIST PQC final standards published?","opts":["August 2024","June 2022","January 2023","December 2025"],"ans":0,"f":"FIPS 203/204/205/206 published August 2024 — history!"},
+                {"q":"How many algorithms initially evaluated?","opts":["69","44","12","100"],"ans":0,"f":"69 submitted 2017, reduced through 3 rounds to 4 standards!"},
+                {"q":"FIPS 203 is for?","opts":["ML-KEM (Kyber)","ML-DSA (Dilithium)","SLH-DSA (SPHINCS+)","FN-DSA (Falcon)"],"ans":0,"f":"FIPS 203 = ML-KEM = Kyber = key encapsulation!"},
+                {"q":"NSM-10 requires migration by?","opts":["2035","2030","2040","2028"],"ans":0,"f":"National Security Memorandum 10 sets 2035 federal deadline!"},
+                {"q":"Best standard for CA certificates?","opts":["FIPS 205 (SPHINCS+)","FIPS 203 (Kyber)","FIPS 204 (Dilithium)","FIPS 206 (Falcon)"],"ans":0,"f":"SPHINCS+ large signatures fine for infrequent CA certs!"},
+                {"q":"Crypto-agility means?","opts":["Systems can swap algorithms easily","Use multiple algos simultaneously","Avoid standardization","Test continuously"],"ans":0,"f":"Crypto-agile systems can adopt future PQC updates easily!"},
+                {"q":"FIPS 206 (Falcon) based on?","opts":["NTRU lattices","Module-LWE","Hash chains","Ring-SIS"],"ans":0,"f":"FN-DSA = Fast-Fourier lattice-based compact signature from NTRU!"},
+                {"q":"Hybrid PQC combines classical + PQC to?","opts":["Maintain security if either breaks","Double speed","Reduce key size","Simplify impl"],"ans":0,"f":"NIST recommends hybrid during transition period!"},
+                {"q":"Dilithium-2 signature size?","opts":["2420 bytes","666 bytes","8080 bytes","512 bytes"],"ans":0,"f":"Dilithium-2: 2420B sig, 1312B pubkey, 2528B privkey!"},
+                {"q":"Which algo NOT selected as NIST primary?","opts":["NTRU","Kyber","Dilithium","SPHINCS+"],"ans":0,"f":"NTRU was finalist but NIST preferred Kyber for KEM!"},
+            ],
+            [
+                {"q":"Kyber security reduction chain?","opts":["MLWE to SVP","RSA to factoring","DLP to Shor","Hash to collision"],"ans":0,"f":"Breaking Kyber requires solving worst-case SVP — provably!"},
+                {"q":"Dilithium rejection threshold uses?","opts":["Infinity norm of z","Euclidean norm of s","SHA-3 of message","Matrix A norm"],"ans":0,"f":"If |z|_inf >= gamma1-beta, reject — prevents key leakage!"},
+                {"q":"Falcon requires float precision because?","opts":["Gaussian sampling over NTRU lattice","NTT computation","Hash computation","Key compression"],"ans":0,"f":"Gaussian sampling needs 64-bit floats — hard to implement safely!"},
+                {"q":"Kyber-768 claims 180-bit not 192-bit security why?","opts":["BKZ attacks reduce below theory","Grover reduces it","Shor partially applies","Parameter error"],"ans":0,"f":"BKZ provides asymptotic advantage — always slightly below theoretical!"},
+                {"q":"FSwA ensures?","opts":["Zero-knowledge without s leakage","Faster signing","Smaller keys","RSA compatibility"],"ans":0,"f":"Zero-knowledge: attackers learn NOTHING about s from signatures!"},
+                {"q":"SPHINCS+ hypertree structure?","opts":["Tree of XMSS trees signing WOTS+ keys","Single Merkle tree","Binary hash tree","Lattice tree"],"ans":0,"f":"Hypertree allows stateless signing unlike plain XMSS!"},
+                {"q":"PQC TLS 1.3 handshake with Kyber?","opts":["1 encapsulation + 1 decapsulation","2 encapsulations","1 encapsulation only","4 total ops"],"ans":0,"f":"Client encapsulates, server decapsulates — one KEM op!"},
+                {"q":"CRYSTALS stands for?","opts":["Cryptographic Suite for Algebraic Lattices","Compressed Reactive Algebra TLS System","Cross-Ring Algorithmic Torsion Lattice Solution","Nothing"],"ans":0,"f":"Kyber and Dilithium are both CRYSTALS family algorithms!"},
+                {"q":"Quantum with 1M logical qubits breaks RSA-2048 in?","opts":["Hours","Centuries","Milliseconds","Years"],"ans":0,"f":"Shor runs in polynomial time — just needs enough stable qubits!"},
+                {"q":"Module-SIS + Module-LWE together underlie?","opts":["Dilithium (FIPS 204)","Kyber (FIPS 203)","SPHINCS+ (FIPS 205)","Falcon (FIPS 206)"],"ans":0,"f":"Dilithium uses both MLWE for keys AND MSIS for signatures!"},
+            ],
+        ]
+
+        st.markdown("---")
+        level_cols = st.columns(6)
+        for i, lvl in enumerate(LEVELS):
+            with level_cols[i % 6]:
+                unlocked = xp >= lvl["xp_req"]
+                completed = st.session_state.get(f"math_done_{i}", False)
+                c = lvl["color"]
+                st.markdown(
+                    f"<div style='background:{\'%s20\' % c if completed else \'#1e293b\'};"
+                    f"border:{\'2px solid \' + c if unlocked else \'1px solid #334155\'};"
+                    f"border-radius:10px;padding:8px 4px;text-align:center;margin:3px'>"
+                    f"<div style='font-size:1.2rem'>{lvl['emoji'] if unlocked else '🔒'}</div>"
+                    f"<div style='font-size:0.65rem;font-weight:bold;"
+                    f"color:{\'%s\' % c if unlocked else \'#888\'}\'>{lvl['name']}</div>"
+                    f"<div style='font-size:0.6rem;color:#888'>"
+                    f"{'✅' if completed else lvl['grade']}</div>"
+                    f"</div>",
+                    unsafe_allow_html=True
+                )
+
+        st.markdown("---")
+
+        level_names = []
+        for i, lvl in enumerate(LEVELS):
+            unlocked = xp >= lvl["xp_req"]
+            if unlocked:
+                level_names.append(f"{lvl['emoji']} {lvl['name']}: {lvl['topic']}")
+            else:
+                level_names.append(f"🔒 {lvl['name']} — needs {lvl['xp_req']} XP (you have {xp})")
+
+        sel = st.selectbox("Choose your level:", level_names, key="math_sel")
+        sel_idx = level_names.index(sel)
+        sel_lvl = LEVELS[sel_idx]
+        color = sel_lvl["color"]
+
+        if xp < sel_lvl["xp_req"]:
+            st.warning(f"🔒 Need {sel_lvl['xp_req']} XP to unlock {sel_lvl['name']}!")
         else:
-            selected = st.selectbox("Choose a level:", [l["name"] for l in available], key="math_sel")
-            idx = next(i for i, l in enumerate(LEVELS) if l["name"] == selected)
-            lvl = LEVELS[idx]
-            color = lvl["color"]
-
-            BODIES = [
-                ("Modular Arithmetic - Clock Math",
-                 """**What is Modular Arithmetic?**
-
-Modular arithmetic is clock math. On a 12-hour clock, 10 + 5 = 3 not 15 because numbers wrap around.
-
-**The formula:** a mod b = the remainder when a is divided by b
-
-**Examples:**
-- 17 mod 5 = 2 because 17 = 3x5 + 2
-- 25 mod 7 = 4 because 25 = 3x7 + 4
-- 22 mod 11 = 0 wraps around perfectly
-
-**Key concepts you will be tested on:**
-- Basic mod calculations
-- Modular addition and multiplication
-- Modular inverse: find x where a times x is congruent to 1 mod n
-- Modular exponentiation: computing a to the power b mod n""",
-                 "ALL cryptography uses modular arithmetic! RSA encrypts using m^e mod n. Kyber does lattice math mod q=3329. Without mod arithmetic there is no crypto!"),
-                ("Prime Numbers - Foundation of RSA",
-                 """**What are Prime Numbers?**
-
-A prime number has exactly two factors: 1 and itself.
-Examples: 2, 3, 5, 7, 11, 13, 17, 19...
-
-The number 4 is NOT prime because 4 = 2 times 2.
-
-**Prime factorization:** Every number breaks into unique prime factors
-- 60 = 2 times 2 times 3 times 5
-- 35 = 5 times 7
-
-**The big idea:** Multiplying two primes is EASY. Finding which primes were multiplied (factoring) is HARD for large numbers!
-
-**Key concepts you will be tested on:**
-- Identifying prime numbers
-- Prime factorization
-- Fermat Little Theorem
-- Relatively prime numbers: gcd(a,b) = 1""",
-                 "RSA security depends on prime factoring being hard! RSA uses n=p times q where p and q are secret 512-digit primes. A quantum computer running Shor Algorithm factors n and breaks RSA in hours. Kyber avoids primes entirely!"),
-                ("Matrix Math - The Language of Lattices",
-                 """**What are Matrices?**
-
-A matrix is a rectangular grid of numbers. A vector is a single row or column of numbers.
-
-**Dot product:** [1,2] dot [3,4] = 1 times 3 + 2 times 4 = 11
-
-**The LWE equation:**
-b = A times s + e
-Where A is a public matrix, s is the secret vector, e is small noise.
-
-**Key concepts you will be tested on:**
-- Dot products and matrix multiplication
-- Matrix dimensions and shapes
-- Transpose: flipping rows and columns
-- Identity matrix
-- Linear independence
-- Determinants""",
-                 "Kyber public key IS a matrix! Key generation computes b = A times s + e mod q. Given A and b, finding s in 1000+ dimensions is impossible even for quantum computers. This is the LWE problem!"),
-                ("Number Theory - Deep Integer Math",
-                 """**What is Number Theory?**
-
-Number theory studies integers and their deep properties.
-
-**Euler totient phi(n):** Count of integers less than n that share no factors with n
-- phi(8) = 4 because numbers 1, 3, 5, 7 are coprime to 8
-- phi(p) = p-1 for any prime p
-
-**Abstract algebra:**
-- Group: set with one operation following specific rules
-- Ring: set with + and times like polynomial rings in Kyber
-- Field: ring where division is always possible
-
-**Key concepts you will be tested on:**
-- Euler totient function
-- Chinese Remainder Theorem
-- Discrete logarithm problem
-- Groups, rings, and fields""",
-                 "Kyber works in the polynomial ring Zq[x] divided by (x^n+1). This ring structure makes computation fast while keeping the lattice problem hard. RSA uses Euler totient phi(n)=(p-1)(q-1) computable only if you know the secret primes!"),
-                ("Lattice Problems - The Future of Crypto",
-                 """**What are Lattice Problems?**
-
-A lattice is an infinite grid of points in multi-dimensional space.
-
-**SVP (Shortest Vector Problem):** Find the shortest nonzero vector in a lattice
-- In 2D: easy to solve
-- In 1000 dimensions: computationally impossible
-
-**LWE (Learning With Errors):**
-Given noisy equations A times s + e = b, find secret s.
-The noise e makes this impossible to reverse!
-
-**Why quantum-safe?**
-- No quantum algorithm gives significant speedup on SVP
-- Grover gives at most square root speedup - not enough
-- Shor Algorithm does not help at all
-
-**Key concepts you will be tested on:**
-- SVP and CVP hardness
-- LWE and MLWE problems
-- Kyber key sizes and security levels
-- Why Grover gives only quadratic speedup""",
-                 "This IS the math behind Kyber, Dilithium, and Falcon! NIST chose lattice crypto because SVP and LWE have no known quantum speedup. Shor Algorithm does not help. Grover gives only square root speedup - not enough to break 256-bit lattice security!"),
-            ]
-
-            title, body, pqc = BODIES[idx]
             st.markdown(
-                "<div style='background:" + color + "10;border-left:4px solid " + color + ";"
-                "border-radius:0 10px 10px 0;padding:1rem 1.5rem;margin-bottom:1rem;'>"
-                "<h3 style='color:" + color + ";margin:0'>" + lvl["emoji"] + " " + title + "</h3>"
-                "</div>",
+                f"<div style='background:{color}15;border:2px solid {color}50;"
+                f"border-radius:12px;padding:14px;margin:8px 0'>"
+                f"<h3 style='color:{color};margin:0'>{sel_lvl['emoji']} {sel_lvl['name']}: {sel_lvl['topic']}</h3>"
+                f"<span style='background:{color}25;color:{color};font-size:0.75rem;"
+                f"padding:2px 8px;border-radius:100px'>{sel_lvl['grade']} · 10 questions · 30s timer · speed bonuses</span>"
+                f"</div>",
                 unsafe_allow_html=True
             )
-            st.markdown(body)
-            st.info("🔐 PQC Connection: " + pqc)
-            st.markdown("---")
-            st.markdown("### Ready to test your knowledge?")
-            st.caption("10 questions - 30 seconds each - time bonus points!")
 
-            if st.button("▶ Start Challenge", key="math_start_btn", type="primary"):
+            if st.button(f"▶ Start {sel_lvl['name']}!", key="math_start_btn", type="primary"):
                 st.session_state.math_game_active = True
-                st.session_state.math_level = idx
+                st.session_state.math_level = sel_idx
                 st.rerun()
 
-            if st.session_state.get("math_game_active") and st.session_state.get("math_level") == idx:
-                import streamlit.components.v1 as cmath
-                cmath.html("""
+            if st.session_state.get("math_game_active") and st.session_state.get("math_level") == sel_idx:
+                qs = ALL_QS[sel_idx]
+                qs_json = _json.dumps(qs)
+
+                _math_comp.html(f"""
 <style>
-body{margin:0;background:#0f172a;font-family:sans-serif;color:white;padding:10px;}
-.wrap{max-width:540px;margin:0 auto;}
-.hud{display:flex;gap:5px;margin-bottom:8px;}
-.hb{background:#1e293b;border:1px solid #334155;border-radius:8px;
-padding:5px 8px;font-size:11px;font-weight:bold;color:#a5b4fc;flex:1;text-align:center;}
-.qbox{background:#1e293b;border:1px solid #334155;border-radius:12px;padding:16px;margin:6px 0;}
-.qt{font-size:1.2rem;font-weight:bold;color:white;margin-bottom:5px;}
-.qc{font-size:0.78rem;color:#888;margin-bottom:12px;}
-.opts{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin:8px 0;}
-.opt{padding:10px;border-radius:8px;border:2px solid #334155;cursor:pointer;
-font-size:12px;font-weight:bold;background:#1e293b;color:#a5b4fc;text-align:center;}
-.opt:hover{border-color:#4f46e5;}
-.opt.correct{border-color:#10b981;background:rgba(16,185,129,0.2);color:#10b981;}
-.opt.wrong{border-color:#ef4444;background:rgba(239,68,68,0.15);color:#ef4444;}
-.fb{padding:9px;border-radius:8px;margin:5px 0;font-size:12px;text-align:center;display:none;}
-.fb.ok{background:rgba(16,185,129,0.15);border:1px solid #10b981;color:#10b981;}
-.fb.bad{background:rgba(239,68,68,0.12);border:1px solid #ef4444;color:#ef4444;}
-.fc{background:rgba(79,70,229,0.12);border:1px solid rgba(79,70,229,0.35);
-border-radius:8px;padding:7px;margin:5px 0;font-size:11px;color:#a5b4fc;text-align:center;display:none;}
-.nb{width:100%;padding:11px;border-radius:8px;border:none;cursor:pointer;
-font-size:13px;font-weight:bold;background:#4f46e5;color:white;margin-top:7px;display:none;}
-.tb{height:5px;background:#334155;border-radius:3px;margin:5px 0;overflow:hidden;}
-.tf{height:100%;border-radius:3px;background:#10b981;}
-.done{background:rgba(16,185,129,0.08);border:1px solid #10b981;border-radius:12px;
-padding:20px;text-align:center;display:none;}
+body{{margin:0;background:#0f172a;font-family:sans-serif;color:white;padding:10px;}}
+.wrap{{max-width:540px;margin:0 auto;}}
+.hud{{display:flex;gap:5px;margin-bottom:8px;}}
+.hb{{background:#1e293b;border:1px solid #334155;border-radius:8px;padding:5px 8px;font-size:11px;font-weight:bold;color:#a5b4fc;flex:1;text-align:center;}}
+.qbox{{background:#1e293b;border:1px solid {color}40;border-radius:12px;padding:16px;margin:6px 0;}}
+.qt{{font-size:1.1rem;font-weight:bold;color:white;margin-bottom:10px;}}
+.opts{{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin:8px 0;}}
+.opt{{padding:10px;border-radius:8px;border:2px solid #334155;cursor:pointer;font-size:12px;font-weight:bold;background:#0f172a;color:#a5b4fc;text-align:center;transition:all 0.15s;}}
+.opt:hover{{border-color:{color};background:{color}15;}}
+.opt.correct{{border-color:#10b981;background:rgba(16,185,129,0.2);color:#10b981;}}
+.opt.wrong{{border-color:#ef4444;background:rgba(239,68,68,0.15);color:#ef4444;}}
+.fb{{padding:9px;border-radius:8px;margin:5px 0;font-size:12px;text-align:center;display:none;}}
+.fb.ok{{background:rgba(16,185,129,0.15);border:1px solid #10b981;color:#10b981;}}
+.fb.bad{{background:rgba(239,68,68,0.12);border:1px solid #ef4444;color:#ef4444;}}
+.fc{{background:rgba(79,70,229,0.12);border:1px solid rgba(79,70,229,0.35);border-radius:8px;padding:7px;margin:5px 0;font-size:11px;color:#a5b4fc;text-align:center;display:none;}}
+.nb{{width:100%;padding:10px;border-radius:8px;border:none;cursor:pointer;font-size:13px;font-weight:bold;background:{color};color:white;margin-top:7px;display:none;}}
+.tb{{height:6px;background:#334155;border-radius:3px;margin:5px 0;overflow:hidden;}}
+.tf{{height:100%;border-radius:3px;transition:width 0.1s;}}
+.done{{background:rgba(16,185,129,0.08);border:2px solid #10b981;border-radius:12px;padding:20px;text-align:center;display:none;}}
 </style>
 <div class="wrap">
 <div class="hud">
     <div class="hb">Score<br><b id="sc">0</b></div>
-    <div class="hb">Right<br><b id="ok">0</b></div>
+    <div class="hb">Correct<br><b id="ok">0</b></div>
     <div class="hb">Wrong<br><b id="wr">0</b></div>
     <div class="hb">Time<br><b id="tm">30</b>s</div>
     <div class="hb">Q<br><b id="qn">1</b>/10</div>
+    <div class="hb">Streak<br><b id="streak">0</b>🔥</div>
 </div>
-<div class="tb"><div class="tf" id="tf" style="width:100%"></div></div>
+<div class="tb"><div class="tf" id="tf" style="width:100%;background:{color}"></div></div>
 <div class="qbox" id="qbox">
     <div class="qt" id="qt"></div>
-    <div class="qc" id="qc"></div>
     <div class="opts" id="opts"></div>
     <div class="fb" id="fb"></div>
     <div class="fc" id="fc"></div>
-    <button class="nb" id="nb" onclick="nextQ()">Next Question</button>
+    <button class="nb" id="nb" onclick="nextQ()">Next ➡️</button>
 </div>
 <div class="done" id="done">
-    <div style="font-size:2.5rem">🏆</div>
-    <h2 style="color:#10b981;margin:8px 0">Level Complete!</h2>
+    <div style="font-size:2.5rem" id="done-emoji">🏆</div>
+    <h2 style="color:{color};margin:8px 0" id="done-title">Level Complete!</h2>
     <p id="dm" style="color:#888;margin:8px 0"></p>
-    <button onclick="restart()" style="padding:9px 22px;border-radius:8px;border:none;
-        cursor:pointer;background:#4f46e5;color:white;font-size:13px;font-weight:bold;">
-        Play Again
-    </button>
+    <button onclick="restart()" style="padding:9px 22px;border-radius:8px;border:none;cursor:pointer;background:{color};color:white;font-size:13px;font-weight:bold;">🔄 Play Again</button>
 </div>
 </div>
 <script>
-var QS=[
-    {q:"What is 17 mod 5?",opts:["2","3","4","1"],ans:0,ctx:"17 = 3x5 + 2",fact:"RSA uses mod with huge primes. Kyber uses mod q=3329!"},
-    {q:"What is 25 mod 7?",opts:["3","4","2","5"],ans:1,ctx:"25 = 3x7 + 4",fact:"In Kyber all math happens mod q. This keeps numbers small!"},
-    {q:"What is (13+9) mod 11?",opts:["1","2","3","0"],ans:0,ctx:"13+9=22, 22=2x11+0",fact:"Hash functions use modular addition inside SHA-3!"},
-    {q:"Which number is prime?",opts:["97","91","87","93"],ans:0,ctx:"97 has no factors except 1 and 97",fact:"RSA uses primes with 512+ digits. Shor Algorithm breaks this!"},
-    {q:"Prime factors of 15?",opts:["3 and 5","3 and 4","5 and 7","2 and 7"],ans:0,ctx:"15 = 3 x 5",fact:"RSA multiplies two primes. Shor Algorithm factors the product!"},
-    {q:"Dot product of [1,2] and [3,4]?",opts:["11","10","12","8"],ans:0,ctx:"1x3 + 2x4 = 11",fact:"Kyber uses matrix-vector dot products for its public key!"},
-    {q:"In LWE: b = As + e, what is e?",opts:["Small noise vector","The secret","Public key","The message"],ans:0,ctx:"LWE = Learning With Errors",fact:"The noise e is what makes LWE impossible to solve!"},
-    {q:"Euler totient of prime p equals?",opts:["p-1","p","p+1","p/2"],ans:0,ctx:"All numbers 1 to p-1 are coprime to prime p",fact:"RSA uses phi(n)=(p-1)(q-1). Only computable if you know p and q!"},
-    {q:"What makes SVP hard in 1000 dimensions?",opts:["No efficient algorithm exists","Computers are too slow","The math is wrong","Quantum helps a lot"],ans:0,ctx:"SVP = Shortest Vector Problem",fact:"SVP hardness is exactly why Kyber is quantum-safe!"},
-    {q:"Grover Algorithm gives what speedup on search?",opts:["Square root speedup","Exponential speedup","No speedup","Doubles the speed"],ans:0,ctx:"Grover searches N items in sqrt(N) steps",fact:"Grover gives sqrt speedup only. Not enough to break 256-bit lattice crypto!"},
-];
-var qi=0,sc=0,ok=0,wr=0,answered=false,tl=30,ti;
-function loadQ(){
+var QS={qs_json};
+var qi=0,sc=0,ok=0,wr=0,answered=false,tl=30,ti,streak=0;
+function loadQ(){{
+    if(qi>=QS.length){{showDone();return;}}
     answered=false;
     var q=QS[qi];
     document.getElementById("qt").textContent=q.q;
-    document.getElementById("qc").textContent=q.ctx;
     document.getElementById("qn").textContent=(qi+1);
-    document.getElementById("fb").style.display="none";
-    document.getElementById("fc").style.display="none";
+    ["fb","fc"].forEach(function(id){{document.getElementById(id).style.display="none";}});
     document.getElementById("nb").style.display="none";
-    var od=document.getElementById("opts");
-    od.innerHTML="";
-    for(var i=0;i<q.opts.length;i++){
-        var b=document.createElement("button");
-        b.className="opt";
-        b.textContent=q.opts[i];
-        b.setAttribute("data-i",i);
-        b.onclick=function(){answer(parseInt(this.getAttribute("data-i")));};
+    var od=document.getElementById("opts");od.innerHTML="";
+    for(var i=0;i<q.opts.length;i++){{
+        var b=document.createElement("button");b.className="opt";
+        b.textContent=q.opts[i];b.setAttribute("data-i",i);
+        b.onclick=function(){{answer(parseInt(this.getAttribute("data-i")));}}
         od.appendChild(b);
-    }
-    clearInterval(ti);
-    tl=30;
-    ti=setInterval(function(){
-        tl--;
-        document.getElementById("tm").textContent=tl;
-        var pct=(tl/30)*100;
-        var f=document.getElementById("tf");
-        f.style.width=pct+"%";
-        f.style.background=tl>15?"#10b981":tl>8?"#f59e0b":"#ef4444";
-        if(tl<=0){clearInterval(ti);if(!answered)timeUp();}
-    },1000);
-}
-function timeUp(){
-    answered=true;wr++;
-    var q=QS[qi];
-    var btns=document.querySelectorAll(".opt");
-    btns[q.ans].className="opt correct";
-    var f=document.getElementById("fb");
-    f.textContent="Time up! Answer: "+q.opts[q.ans];
-    f.className="fb bad";f.style.display="block";
-    document.getElementById("wr").textContent=wr;
+    }}
+    clearInterval(ti);tl=30;
+    ti=setInterval(function(){{
+        tl--;document.getElementById("tm").textContent=tl;
+        var pct=(tl/30)*100;var f=document.getElementById("tf");
+        f.style.width=pct+"%";f.style.background=tl>15?"{color}":tl>8?"#f59e0b":"#ef4444";
+        if(tl<=0){{clearInterval(ti);if(!answered)timeUp();}}
+    }},1000);
+}}
+function answer(i){{
+    if(answered)return;answered=true;clearInterval(ti);
+    var q=QS[qi];var correct=(i===q.ans);
+    document.querySelectorAll(".opt").forEach(function(b,j){{
+        if(j===q.ans)b.classList.add("correct");
+        else if(j===i&&!correct)b.classList.add("wrong");
+        b.onclick=null;
+    }});
+    if(correct){{ok++;streak++;var bonus=Math.floor(tl/5);var pts=10+bonus+(streak>=3?5:0);sc+=pts;
+        var fb=document.getElementById("fb");fb.className="fb ok";
+        fb.textContent="✅ Correct! +"+pts+"pts"+(streak>=3?" 🔥x"+streak+" streak!":"");
+        fb.style.display="block";
+    }}else{{wr++;streak=0;sc=Math.max(0,sc-5);
+        var fb=document.getElementById("fb");fb.className="fb bad";
+        fb.textContent="❌ Wrong! Answer: "+q.opts[q.ans];fb.style.display="block";
+    }}
+    document.getElementById("fc").textContent="💡 "+q.f;document.getElementById("fc").style.display="block";
     document.getElementById("nb").style.display="block";
-}
-function answer(i){
-    if(answered)return;
-    answered=true;
-    clearInterval(ti);
-    var q=QS[qi];
-    var btns=document.querySelectorAll(".opt");
-    btns[q.ans].className="opt correct";
-    if(i!==q.ans)btns[i].className="opt wrong";
-    var correct=i===q.ans;
-    var bonus=Math.floor(tl/3);
-    var pts=correct?100+bonus:0;
-    sc+=pts;
-    if(correct)ok++;else wr++;
-    document.getElementById("sc").textContent=sc;
-    document.getElementById("ok").textContent=ok;
-    document.getElementById("wr").textContent=wr;
-    var fb=document.getElementById("fb");
-    fb.textContent=correct?"Correct! +"+pts+" pts (time bonus +"+bonus+")":"Wrong! Answer: "+q.opts[q.ans];
-    fb.className="fb "+(correct?"ok":"bad");
-    fb.style.display="block";
-    var fc=document.getElementById("fc");
-    fc.textContent="PQC: "+q.fact;
-    fc.style.display="block";
-    document.getElementById("nb").style.display="block";
-}
-function nextQ(){
-    qi++;
-    if(qi>=QS.length){
-        clearInterval(ti);
-        document.getElementById("qbox").style.display="none";
-        document.getElementById("done").style.display="block";
-        var pct=Math.round(ok/QS.length*100);
-        document.getElementById("dm").textContent="Score: "+sc+" | Accuracy: "+pct+"% | "+ok+"/10 correct";
-    } else {
-        loadQ();
-    }
-}
-function restart(){
-    qi=0;sc=0;ok=0;wr=0;
-    document.getElementById("sc").textContent=0;
-    document.getElementById("ok").textContent=0;
-    document.getElementById("wr").textContent=0;
-    document.getElementById("qbox").style.display="block";
-    document.getElementById("done").style.display="none";
+    document.getElementById("sc").textContent=sc;document.getElementById("ok").textContent=ok;
+    document.getElementById("wr").textContent=wr;document.getElementById("streak").textContent=streak;
+}}
+function timeUp(){{
+    answered=true;streak=0;var q=QS[qi];
+    document.querySelectorAll(".opt").forEach(function(b,j){{if(j===q.ans)b.classList.add("correct");b.onclick=null;}});
+    var fb=document.getElementById("fb");fb.className="fb bad";
+    fb.textContent="⏰ Time up! Answer: "+q.opts[q.ans];fb.style.display="block";
+    document.getElementById("fc").textContent="💡 "+q.f;document.getElementById("fc").style.display="block";
+    document.getElementById("nb").style.display="block";document.getElementById("streak").textContent=0;
+}}
+function nextQ(){{qi++;loadQ();}}
+function showDone(){{
+    document.getElementById("qbox").style.display="none";document.getElementById("done").style.display="block";
+    var pct=Math.round(ok/QS.length*100);var grade=pct>=90?"A":pct>=80?"B":pct>=70?"C":pct>=60?"D":"F";
+    document.getElementById("done-emoji").textContent=pct>=90?"🏆":pct>=80?"⭐":"👍";
+    document.getElementById("done-title").textContent="Grade "+grade+" — "+ok+"/"+QS.length+" correct";
+    document.getElementById("dm").textContent="Score: "+sc+" | "+pct+"% correct";
+}}
+function restart(){{
+    qi=0;sc=0;ok=0;wr=0;streak=0;answered=false;
+    document.getElementById("qbox").style.display="block";document.getElementById("done").style.display="none";
+    ["sc","ok","wr","streak"].forEach(function(id){{document.getElementById(id).textContent=0;}});
     loadQ();
-}
+}}
 loadQ();
 </script>
-""", height=600)
-                if st.button("Back to Intro", key="math_back"):
-                    st.session_state.math_game_active = False
-                    st.rerun()
+""", height=520)
+
+                done_key = f"math_done_{sel_idx}"
+                xp_reward = (sel_idx + 1) * 15
+                if not st.session_state.get(done_key):
+                    if st.button(f"✅ Mark Complete! +{xp_reward} XP", key=f"math_done_btn_{sel_idx}"):
+                        st.session_state[done_key] = True
+                        st.session_state.xp = st.session_state.get("xp", 0) + xp_reward
+                        if sel_idx == 11:
+                            st.session_state.badges = st.session_state.get("badges", []) + ["🧮 Math Grandmaster"]
+                            st.balloons()
+                            st.success(f"🏆 GRANDMASTER! +{xp_reward} XP + Math Grandmaster badge!")
+                        else:
+                            st.success(f"Level {sel_idx+1} complete! +{xp_reward} XP!")
+                        st.rerun()
+                else:
+                    st.success(f"✅ Level {sel_idx+1} completed! +{xp_reward} XP earned")
