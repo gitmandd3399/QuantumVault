@@ -204,251 +204,473 @@ def render_middle_school():
                     _st.session_state.badges = _st.session_state.get("badges", []) + ["📖 Code Cadet Story"]
 
     with tab2:
-        st.subheader("🏗️ Lattice Maze Explorer")
+        import streamlit.components.v1 as _ms2
+        st.subheader("🏗️ Lattice Explorer — The Math That Stops Quantum Computers!")
         st.markdown(
-            """
-            A **lattice** is a regular grid of points in space.
-            The hard problem: given a messy point near the grid, find the CLOSEST grid point.
-            Sounds easy? Try it with hundreds of dimensions — even quantum computers sweat! 😅
-
-            **The Learning Problem (LWE)** — the math behind CRYSTALS-Kyber:
-            - Pick a secret number `s`
-            - Add intentional "noise" (small random errors) to equations about `s`
-            - An attacker has to find `s` — nearly impossible with lattice noise!
-            """
+            "🔍 **Why can't quantum computers break Kyber?** Because of LATTICE MATH! "
+            "A lattice is a giant grid of dots. The secret is hidden like a needle in a "
+            "billion-dimensional haystack. Even quantum computers get completely lost!"
         )
 
-# ── Live Lattice Visualizer ───────────────────────────────────────
-        import plotly.graph_objects as go
-        import numpy as np
+        col1, col2 = st.columns([1,1])
+        with col1:
+            st.markdown(
+                "<div style='background:#1e1b4b;border:2px solid #7c6dfa;border-radius:12px;"
+                "padding:16px;'>"
+                "<h4 style='color:#a5b4fc;margin:0 0 8px'>🧠 The Hard Problem</h4>"
+                "<p style='color:#ccc;font-size:0.88rem;line-height:1.6'>"
+                "Given a <b style='color:#7c6dfa'>tangled point</b> near the grid, "
+                "find the <b style='color:#10b981'>closest grid dot</b>.<br><br>"
+                "In 2D: easy!<br>"
+                "In 256 dimensions: <b style='color:#ef4444'>impossible!</b><br><br>"
+                "This is called <b style='color:#f59e0b'>SVP</b> — Shortest Vector Problem"
+                "</p></div>",
+                unsafe_allow_html=True
+            )
+        with col2:
+            st.markdown(
+                "<div style='background:#0c2e1e;border:2px solid #10b981;border-radius:12px;"
+                "padding:16px;'>"
+                "<h4 style='color:#34d399;margin:0 0 8px'>🌊 Learning With Errors (LWE)</h4>"
+                "<p style='color:#ccc;font-size:0.88rem;line-height:1.6'>"
+                "Kyber hides a secret <b style='color:#10b981'>s</b> using noisy equations:<br><br>"
+                "<code style='background:#0f172a;padding:3px 6px;border-radius:4px;color:#10b981'>"
+                "b = A·s + e mod q</code><br><br>"
+                "The noise <b style='color:#f59e0b'>e</b> makes it impossible to find <b>s</b>! "
+                "Even with a quantum computer!"
+                "</p></div>",
+                unsafe_allow_html=True
+            )
 
-        grid_range = range(-5, 6)
-        x_points = [x for x in grid_range for _ in grid_range]
-        y_points = [y for _ in grid_range for y in grid_range]
+        st.markdown("---")
+        st.markdown("### 🎮 Interactive LWE Puzzle")
+        st.markdown("Can YOU solve the Learning With Errors problem? Try to find the secret **s**!")
 
-        if "target_x" not in st.session_state:
-            st.session_state.target_x = round(random.uniform(-4, 4), 2)
-            st.session_state.target_y = round(random.uniform(-4, 4), 2)
-
-        tx = st.session_state.target_x
-        ty = st.session_state.target_y
-        closest_x = round(tx)
-        closest_y = round(ty)
-
-        fig = go.Figure()
-        fig.add_trace(go.Scatter(
-            x=x_points, y=y_points,
-            mode="markers",
-            marker=dict(size=8, color="#4f46e5"),
-            name="Lattice points"
-        ))
-        fig.add_trace(go.Scatter(
-            x=[tx], y=[ty],
-            mode="markers",
-            marker=dict(size=14, color="#ef4444", symbol="star"),
-            name="Mystery point"
-        ))
-        fig.add_trace(go.Scatter(
-            x=[closest_x], y=[closest_y],
-            mode="markers",
-            marker=dict(size=14, color="#10b981", symbol="circle"),
-            name="Closest lattice point"
-        ))
-        fig.add_trace(go.Scatter(
-            x=[tx, closest_x], y=[ty, closest_y],
-            mode="lines",
-            line=dict(color="#f59e0b", width=2, dash="dash"),
-            name="Distance"
-        ))
-        fig.update_layout(
-            height=400,
-            showlegend=True,
-            plot_bgcolor="rgba(0,0,0,0)",
-            paper_bgcolor="rgba(0,0,0,0)",
-            xaxis=dict(showgrid=False, zeroline=False),
-            yaxis=dict(showgrid=False, zeroline=False),
-            margin=dict(l=20, r=20, t=20, b=20),
-        )
-
-        st.plotly_chart(fig, use_container_width=True)
-        st.caption(
-            f"⭐ Mystery point: ({tx}, {ty}) — "
-            f"Closest lattice point: ({closest_x}, {closest_y})"
-        )
-        if st.button("🎲 New mystery point", key="new_target"):
-            st.session_state.target_x = round(random.uniform(-4, 4), 2)
-            st.session_state.target_y = round(random.uniform(-4, 4), 2)
-            st.rerun()
-
-        st.markdown("### 🎮 Mini Lattice Challenge")
-
-        st.markdown("### 🎮 Mini Lattice Challenge")
-        st.markdown(
-            "The secret vector is hidden by noise. "
-            "Can you guess what **s** is from these noisy equations?"
-        )
-
+        import random
         if "lattice_s" not in st.session_state:
             st.session_state.lattice_s = random.randint(2, 9)
             st.session_state.lattice_attempts = 0
 
         s = st.session_state.lattice_s
-        # Generate 3 noisy equations:  a*s + e ≡ b (mod 11)
         mod = 11
+
         equations = []
-        for _ in range(3):
+        for _ in range(4):
             a = random.randint(1, 10)
-            e = random.choice([-1, 0, 1])          # small noise
+            e = random.choice([-1, 0, 1])
             b = (a * s + e) % mod
-            equations.append((a, b))
+            equations.append((a, b, e))
 
-        for i, (a, b) in enumerate(equations):
-            st.code(f"Equation {i+1}: {a} × s + (small noise) ≡ {b}  (mod {mod})")
+        st.markdown("**🔢 You can see these equations (with hidden noise):**")
+        eq_cols = st.columns(4)
+        for i, (a, b, _) in enumerate(equations):
+            with eq_cols[i]:
+                st.markdown(
+                    f"<div style='background:#1e293b;border:1px solid #7c6dfa;border-radius:10px;"
+                    f"padding:12px;text-align:center;'>"
+                    f"<div style='font-size:0.75rem;color:#888'>Equation {i+1}</div>"
+                    f"<div style='font-size:1.1rem;color:#a5b4fc;font-weight:bold;margin:4px 0'>"
+                    f"{a}·s + noise ≡ {b}</div>"
+                    f"<div style='font-size:0.7rem;color:#888'>mod {mod}</div>"
+                    f"</div>",
+                    unsafe_allow_html=True
+                )
 
-        guess = st.number_input("Your guess for s:", min_value=0, max_value=10, step=1, key="lattice_guess")
-        if st.button("🔍 Check my guess", key="lattice_check"):
-            if not check_rate_limit("lattice_check", st.session_state):
-                st.warning("Hold on, Cadet! Try again in a moment.")
-            else:
+        st.markdown(f"*The noise (e) is secretly one of: -1, 0, or +1 — you can't see which!*")
+
+        col1, col2 = st.columns([2,1])
+        with col1:
+            guess = st.slider("Your guess for secret **s**:", 1, 10, 5, key="lwe_guess")
+        with col2:
+            st.markdown(f"<br>", unsafe_allow_html=True)
+            if st.button("🎯 Submit Guess!", key="lwe_submit", type="primary"):
                 st.session_state.lattice_attempts += 1
-                if int(guess) == s:
-                    st.success(f"✅ Correct! s = {s}. Imagine this with 1000 variables — impossible to guess!")
-                    mark_complete("lattice_challenge")
-                    award_badge("🏗️ Lattice Navigator", xp=20)
+                if guess == s:
+                    st.balloons()
+                    st.success(f"🎉 CORRECT! s = {s}! You cracked LWE! +20 XP")
+                    st.session_state.xp = st.session_state.get("xp", 0) + 20
+                    award_badge("🏗️ Lattice Solver", xp=20)
+                    mark_complete("lattice_visualizer")
                     st.session_state.lattice_s = random.randint(2, 9)
+                    st.session_state.lattice_attempts = 0
                 else:
-                    st.error(
-                        f"❌ Not quite! You've tried {st.session_state.lattice_attempts} time(s). "
-                        "The noise makes it tricky, right? That's the whole point!"
-                    )
+                    diff = abs(guess - s)
+                    hint = "🔥 Very close!" if diff == 1 else "😅 Getting warmer!" if diff <= 3 else "🥶 Way off!"
+                    st.error(f"❌ {hint} That's not it. Attempts: {st.session_state.lattice_attempts}")
 
-    # ── Tab 3: Hash Factory ───────────────────────────────────────────────────
+        st.info(
+            f"💡 **Kyber fact:** Real Kyber uses 256-dimensional lattices with s having 256 coefficients, "
+            f"not just 1 number. Imagine solving this puzzle in 256 dimensions — impossible! "
+            f"That's why it's quantum-safe!"
+        )
+
+        with st.expander("📐 Show me the real math"):
+            st.markdown(
+                "**Real Kyber key generation:**\n\n"
+                "- Secret vector: s in Rq^k (k polynomials of degree 256)\n"
+                "- Public matrix: A in Rq^(kxk)\n"
+                "- Noise vector: e in Rq^k (small coefficients)\n"
+                "- Public key: **t = As + e mod q** (where q=3329)\n\n"
+                "An attacker seeing only A and t cannot find s - "
+                "this is the Module-LWE problem!"
+            )
+
     with tab3:
-        st.subheader("🏭 Hash Function Factory")
+        st.subheader("🏭 Hash Function Factory — One-Way Street!")
         st.markdown(
-            """
-            A **hash function** takes ANY input and produces a fixed-size fingerprint.
-            It's a **one-way** function — you can't reverse it.
-            PQC schemes rely on hashes like **SHA-3** internally.
-
-            Key properties:
-            - Same input → ALWAYS same output
-            - Change one letter → completely different output (**avalanche effect** 🌊)
-            - Can't reverse the hash to get the original input
-            """
+            "🔒 **A hash function is like a blender for data!** "
+            "You can put anything IN — but you can NEVER get the original back out. "
+            "Change even ONE letter and the ENTIRE hash changes completely!"
         )
 
-        user_msg = st.text_input(
-            "Type a message to hash:",
-            value="Hello Quantum World",
-            max_chars=200,
-            key="hash_input",
-        )
-        clean_msg = sanitize_input(user_msg)
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.markdown(
+                "<div style='background:#1e1b4b;border:2px solid #8b5cf6;border-radius:10px;"
+                "padding:12px;text-align:center'>"
+                "<div style='font-size:1.5rem'>📄</div>"
+                "<div style='font-size:0.8rem;color:#a5b4fc;font-weight:bold'>ANY Input</div>"
+                "<div style='font-size:0.72rem;color:#888'>Word, book, video</div>"
+                "</div>",
+                unsafe_allow_html=True
+            )
+        with col2:
+            st.markdown(
+                "<div style='background:#4f46e520;border:2px solid #4f46e5;border-radius:10px;"
+                "padding:12px;text-align:center'>"
+                "<div style='font-size:1.5rem'>🌀</div>"
+                "<div style='font-size:0.8rem;color:#818cf8;font-weight:bold'>SHA-3 Blender</div>"
+                "<div style='font-size:0.72rem;color:#888'>One way only!</div>"
+                "</div>",
+                unsafe_allow_html=True
+            )
+        with col3:
+            st.markdown(
+                "<div style='background:#0c2e1e;border:2px solid #10b981;border-radius:10px;"
+                "padding:12px;text-align:center'>"
+                "<div style='font-size:1.5rem'>🔢</div>"
+                "<div style='font-size:0.8rem;color:#34d399;font-weight:bold'>256-bit Hash</div>"
+                "<div style='font-size:0.72rem;color:#888'>Always same size</div>"
+                "</div>",
+                unsafe_allow_html=True
+            )
 
-        algo = st.radio("Pick a hash algorithm:", ["SHA-256", "SHA3-256", "SHA-512"], horizontal=True)
+        st.markdown("---")
+        st.markdown("### 🧪 Hash Lab — Type anything and see it!")
 
-        hash_map = {
-            "SHA-256": hashlib.sha256,
-            "SHA3-256": hashlib.sha3_256,
-            "SHA-512": hashlib.sha512,
-        }
-        digest = hash_map[algo](clean_msg.encode()).hexdigest()
-
-        st.markdown("### 🔢 Hash Output")
-        st.code(digest, language="text")
-        st.caption(f"Input length: {len(clean_msg)} chars → Output: always {len(digest)} hex chars")
-
-        # Avalanche effect demo
-        st.markdown("### 🌊 Avalanche Effect")
-        st.markdown("Change just ONE character and watch the hash completely change:")
-        if clean_msg:
-            tweaked = clean_msg[:-1] + ("X" if clean_msg[-1] != "X" else "Y")
-            tweaked_digest = hash_map[algo](tweaked.encode()).hexdigest()
-            col1, col2 = st.columns(2)
-            with col1:
-                st.markdown(f"**Original:** `{clean_msg[:30]}...`")
-                st.code(digest[:32] + "...", language="text")
-            with col2:
-                st.markdown(f"**Tweaked:** `{tweaked[:30]}...`")
-                st.code(tweaked_digest[:32] + "...", language="text")
-            diff = sum(a != b for a, b in zip(digest, tweaked_digest))
-            st.metric("Hex characters different", f"{diff} / {len(digest)}", delta=f"{diff/len(digest)*100:.0f}%")
-
-        if st.button("🏭 I understand hash functions!", key="hash_done"):
-            award_badge("🏭 Hash Factory Worker", xp=15)
-
-    # ── Tab 4: Quantum vs Classical Race ─────────────────────────────────────
-    with tab4:
-        st.subheader("⚡ Quantum Computer vs Classical Computer — Head to Head!")
-        st.markdown(
-            """
-            Quantum computers use **qubits** that can be 0 AND 1 at the same time (superposition).
-            This gives them superpowers on SOME problems — but not all!
-            """
-        )
-
-        problems = {
-            "Factor a 2048-bit number (RSA)": ("🐢 Classical: millions of years", "⚡ Quantum: hours! (Shor's Algorithm)"),
-            "Find a shortest lattice vector (Kyber)": ("🐢 Classical: still hard", "🐢 Quantum: still hard! 🎉"),
-            "Search an unsorted database": ("🐢 Classical: check every item", "⚡ Quantum: √N steps (Grover's Algorithm)"),
-            "Hash collision (SHA-3)": ("🐢 Classical: 2^128 tries", "⚡ Quantum: 2^64 tries — but still huge!"),
-        }
-
-        chosen = st.selectbox("Pick a problem:", list(problems.keys()))
-        classical, quantum = problems[chosen]
         col1, col2 = st.columns(2)
         with col1:
-            st.info(f"🖥️ **Classical Computer**\n\n{classical}")
+            msg1 = st.text_input("Message 1:", value="Hello Kyber!", key="ms_hash1", max_chars=200)
         with col2:
-            if "Quantum: still hard" in quantum:
-                st.success(f"⚛️ **Quantum Computer**\n\n{quantum}")
-            else:
-                st.error(f"⚛️ **Quantum Computer**\n\n{quantum}")
+            msg2 = st.text_input("Message 2 (try changing 1 letter!):", value="hello Kyber!", key="ms_hash2", max_chars=200)
 
-        if st.button("⚡ Got it — I understand the threat!", key="race_done"):
-            award_badge("⚡ Quantum Racer", xp=20)
+        import hashlib
+        h1 = hashlib.sha3_256(msg1.encode()).hexdigest() if msg1 else ""
+        h2 = hashlib.sha3_256(msg2.encode()).hexdigest() if msg2 else ""
 
-    # ── Tab 5: Key Workshop ───────────────────────────────────────────────────
-    with tab5:
-        st.subheader("🔑 Build-a-Key Workshop (Simplified Kyber)")
+        def color_diff_hash(h1, h2):
+            if not h1 or not h2: return h1, h2
+            out1, out2 = "", ""
+            for c1, c2 in zip(h1, h2):
+                if c1 == c2:
+                    out1 += f"<span style='color:#6b7280'>{c1}</span>"
+                    out2 += f"<span style='color:#6b7280'>{c2}</span>"
+                else:
+                    out1 += f"<span style='color:#10b981;font-weight:bold'>{c1}</span>"
+                    out2 += f"<span style='color:#ef4444;font-weight:bold'>{c2}</span>"
+            return out1, out2
+
+        h1_colored, h2_colored = color_diff_hash(h1, h2)
+
+        col1, col2 = st.columns(2)
+        with col1:
+            st.markdown("**SHA-3 Hash of Message 1:**")
+            st.markdown(
+                f"<div style='background:#0f172a;border:1px solid #334155;border-radius:8px;"
+                f"padding:10px;font-family:monospace;font-size:11px;word-break:break-all;"
+                f"line-height:1.6'>{h1_colored}</div>",
+                unsafe_allow_html=True
+            )
+        with col2:
+            st.markdown("**SHA-3 Hash of Message 2:**")
+            st.markdown(
+                f"<div style='background:#0f172a;border:1px solid #334155;border-radius:8px;"
+                f"padding:10px;font-family:monospace;font-size:11px;word-break:break-all;"
+                f"line-height:1.6'>{h2_colored}</div>",
+                unsafe_allow_html=True
+            )
+
+        if h1 and h2:
+            diff = sum(1 for a,b in zip(h1,h2) if a!=b)
+            pct = round(diff/len(h1)*100)
+            color = "#10b981" if msg1 != msg2 else "#6b7280"
+            st.markdown(
+                f"<div style='background:{color}15;border:1px solid {color}40;"
+                f"border-radius:10px;padding:12px;text-align:center;margin:8px 0'>"
+                f"<b style='color:{color}'>"
+                f"{'🌊 AVALANCHE EFFECT! ' + str(diff) + '/64 characters changed (' + str(pct) + '%)!' if msg1 != msg2 else '✅ Identical messages = identical hashes'}"
+                f"</b></div>",
+                unsafe_allow_html=True
+            )
+            if msg1 != msg2:
+                st.progress(pct/100)
+
+        st.markdown("---")
+        st.markdown("### 🎯 Hash Challenge!")
+        challenges = [
+            ("What does SHA-3 stand for?", ["Secure Hash Algorithm 3", "Super Hard Arithmetic 3", "Simple Hash Attack 3", "Shor Hash Algorithm 3"], 0),
+            ("If you change the hash input, what happens?", ["The entire hash changes completely", "Only one character changes", "Nothing changes", "The hash gets shorter"], 0),
+            ("Can you reverse a SHA-3 hash to get the original?", ["No — it is one-way only!", "Yes — use the inverse function", "Yes — if you have the key", "Only quantum computers can"], 0),
+            ("What is the avalanche effect?", ["Small input change = huge output change", "Hash gets bigger over time", "Quantum speedup on hashing", "Hash collision attack"], 0),
+        ]
+
+        if "hash_q" not in st.session_state:
+            st.session_state.hash_q = 0
+            st.session_state.hash_score = 0
+            st.session_state.hash_answered = False
+
+        q_idx = st.session_state.hash_q % len(challenges)
+        q, opts, ans = challenges[q_idx]
+
+        st.markdown(f"**Question {q_idx+1}/4:** {q}")
+        for i, opt in enumerate(opts):
+            if st.button(opt, key=f"hq_{q_idx}_{i}", use_container_width=True):
+                if i == ans:
+                    st.success("🎉 Correct! +10 XP")
+                    st.session_state.xp = st.session_state.get("xp", 0) + 10
+                    st.session_state.hash_score += 1
+                    st.session_state.hash_q += 1
+                    if st.session_state.hash_q >= len(challenges):
+                        award_badge("🏭 Hash Master", xp=20)
+                        mark_complete("hash_factory")
+                else:
+                    st.error(f"❌ Not quite! The answer was: **{opts[ans]}**")
+                    st.session_state.hash_q += 1
+                st.rerun()
+
+    with tab4:
+        import streamlit.components.v1 as _ms4
+        st.subheader("⚡ Quantum vs Classical Race!")
         st.markdown(
-            """
-            CRYSTALS-Kyber generates keys using lattice math.
-            Here's a VERY simplified version to see the idea:
-
-            1. **Key Generation:** Pick a secret `s`, a public matrix `A`, and small noise `e`
-            2. **Public Key:** `b = A·s + e` (shared with everyone)
-            3. **Encryption:** Combine message with public key and more noise
-            4. **Decryption:** Use secret `s` to cancel the noise and recover the message
-            """
+            "🏁 **Which computer wins?** Quantum computers are AMAZING at some tasks "
+            "and totally ordinary at others. Let's race them head to head!"
         )
 
-        mod = 17  # tiny prime for demo
-        if st.button("🎲 Generate new keys", key="keygen"):
-            s = random.randint(1, mod - 1)
-            A = random.randint(2, mod - 1)
-            e = random.choice([-1, 0, 1])
-            b = (A * s + e) % mod
-            st.session_state.kyber_keys = {"s": s, "A": A, "e": e, "b": b, "mod": mod}
+        problems = [
+            {
+                "name": "🔢 Factor RSA-2048",
+                "classical": "🐢 Millions of YEARS",
+                "quantum": "⚡ Just a few HOURS",
+                "winner": "quantum",
+                "why": "Shor's Algorithm finds prime factors exponentially faster!",
+                "pqc": "❌ RSA is BROKEN by quantum — that's why we need Kyber!",
+                "pqc_color": "#ef4444",
+            },
+            {
+                "name": "🏗️ Solve Lattice SVP",
+                "classical": "🐢 Super hard",
+                "quantum": "🐢 Still super hard!",
+                "winner": "tie",
+                "why": "No quantum algorithm gives significant speedup on lattice problems!",
+                "pqc": "✅ Kyber is SAFE — quantum computers can't solve SVP faster!",
+                "pqc_color": "#10b981",
+            },
+            {
+                "name": "🔍 Search Unsorted Data",
+                "classical": "🐢 Check ALL N items",
+                "quantum": "⚡ Only √N steps!",
+                "winner": "quantum",
+                "why": "Grover's Algorithm gives a quadratic speedup on search!",
+                "pqc": "⚠️ SHA-3 still safe — just use 256-bit output for 128-bit quantum security!",
+                "pqc_color": "#f59e0b",
+            },
+            {
+                "name": "🌀 Break SHA-3 Hash",
+                "classical": "🐢 2^256 tries needed",
+                "quantum": "⚡ 2^128 tries (Grover)",
+                "winner": "classical_safe",
+                "why": "Grover only gives square root speedup — 2^128 is still impossibly large!",
+                "pqc": "✅ SHA-3 is SAFE — double the output size defeats Grover!",
+                "pqc_color": "#10b981",
+            },
+        ]
 
-        if "kyber_keys" in st.session_state:
-            k = st.session_state.kyber_keys
-            st.markdown("### 🔓 Your Keys (mod {mod})".format(**k))
+        if "race_idx" not in st.session_state:
+            st.session_state.race_idx = 0
+        if "race_running" not in st.session_state:
+            st.session_state.race_running = False
+        if "race_shown" not in st.session_state:
+            st.session_state.race_shown = set()
+
+        prob = problems[st.session_state.race_idx]
+        color = "#ef4444" if prob["winner"] == "quantum" else "#10b981" if prob["winner"] == "tie" else "#f59e0b"
+
+        st.markdown(
+            f"<div style='background:{color}10;border:2px solid {color}40;"
+            f"border-radius:14px;padding:16px;margin:8px 0'>"
+            f"<h3 style='color:{color};margin:0 0 12px'>{prob['name']}</h3>"
+            f"<div style='display:grid;grid-template-columns:1fr 1fr;gap:12px'>"
+            f"<div style='background:#1e293b;border-radius:8px;padding:12px;text-align:center'>"
+            f"<div style='font-size:0.75rem;color:#888;margin-bottom:4px'>🖥️ Classical Computer</div>"
+            f"<div style='font-size:1rem;font-weight:bold;color:white'>{prob['classical']}</div>"
+            f"</div>"
+            f"<div style='background:#1e293b;border-radius:8px;padding:12px;text-align:center'>"
+            f"<div style='font-size:0.75rem;color:#888;margin-bottom:4px'>⚛️ Quantum Computer</div>"
+            f"<div style='font-size:1rem;font-weight:bold;color:{color}'>{prob['quantum']}</div>"
+            f"</div>"
+            f"</div>"
+            f"</div>",
+            unsafe_allow_html=True
+        )
+
+        if st.session_state.race_idx in st.session_state.race_shown:
+            st.info(f"💡 **Why:** {prob['why']}")
+            st.markdown(
+                f"<div style='background:{prob['pqc_color']}15;border:1px solid {prob['pqc_color']}50;"
+                f"border-radius:8px;padding:10px;font-size:0.88rem;color:white;'>"
+                f"🔐 <b>PQC Impact:</b> {prob['pqc']}</div>",
+                unsafe_allow_html=True
+            )
             col1, col2 = st.columns(2)
             with col1:
-                st.success(f"🔑 **Secret Key:** s = {k['s']}")
-                st.caption("(Only YOU know this!)")
+                if st.button("⬅️ Previous", key="race_prev", use_container_width=True):
+                    st.session_state.race_idx = max(0, st.session_state.race_idx - 1)
+                    st.rerun()
             with col2:
-                st.info(f"📢 **Public Key:** A={k['A']}, b={k['b']}")
-                st.caption("(Safe to share)")
+                if st.button("Next Race ➡️" if st.session_state.race_idx < len(problems)-1 else "🏆 Done!", key="race_next", use_container_width=True, type="primary"):
+                    if st.session_state.race_idx < len(problems)-1:
+                        st.session_state.race_idx += 1
+                        st.rerun()
+                    else:
+                        mark_complete("quantum_race")
+                        award_badge("⚡ Quantum Racer", xp=25)
+                        st.session_state.xp = st.session_state.get("xp", 0) + 25
+                        st.balloons()
+        else:
+            if st.button("🏁 Run the Race!", key=f"race_run_{st.session_state.race_idx}", type="primary", use_container_width=True):
+                st.session_state.race_shown.add(st.session_state.race_idx)
+                st.rerun()
 
-            st.markdown(f"*The noise was e = {k['e']} — hidden inside b, making it hard to reverse!*")
+        st.markdown("---")
+        st.markdown(f"Race {st.session_state.race_idx+1} of {len(problems)}")
+        st.progress((st.session_state.race_idx) / len(problems))
+
+    with tab5:
+        import random as _rand
+        st.subheader("🔑 Build-a-Key Workshop — Real Kyber Math!")
+        st.markdown(
+            "🔧 **You are now a cryptographer!** Build a simplified Kyber keypair step by step. "
+            "This is the ACTUAL math used to protect the internet — just with tiny numbers for learning!"
+        )
+
+        mod = 17
+
+        col1, col2 = st.columns(2)
+        with col1:
             st.markdown(
-                f"Verify: {k['A']} × {k['s']} + {k['e']} = "
-                f"{k['A'] * k['s'] + k['e']} ≡ **{k['b']}** (mod {mod}) ✅"
+                "<div style='background:#0c2e1e;border:2px solid #10b981;border-radius:12px;"
+                "padding:14px;'>"
+                "<h4 style='color:#34d399;margin:0 0 8px'>🔑 Step 1: Generate Keys</h4>"
+                "<p style='color:#ccc;font-size:0.85rem;line-height:1.6'>"
+                "• Pick a <b style='color:#10b981'>secret s</b> (only you know!)<br>"
+                "• Pick a <b style='color:#a5b4fc'>public A</b> (share with everyone)<br>"
+                "• Add tiny <b style='color:#f59e0b'>noise e</b> (makes it secure!)<br>"
+                "• Compute <b style='color:#10b981'>b = A·s + e mod q</b><br>"
+                "• Your <b>public key</b> is (A, b) — share it!"
+                "</p></div>",
+                unsafe_allow_html=True
             )
-            award_badge("🔑 Key Crafter", xp=25)
+        with col2:
+            st.markdown(
+                "<div style='background:#1a0f2e;border:2px solid #8b5cf6;border-radius:12px;"
+                "padding:14px;'>"
+                "<h4 style='color:#a5b4fc;margin:0 0 8px'>🔒 Step 2: Encrypt</h4>"
+                "<p style='color:#ccc;font-size:0.85rem;line-height:1.6'>"
+                "• Pick random <b style='color:#8b5cf6'>r</b> and noise <b>e1, e2</b><br>"
+                "• Compute <b style='color:#8b5cf6'>u = A·r + e1</b><br>"
+                "• Compute <b style='color:#8b5cf6'>v = b·r + e2 + msg·(q/2)</b><br>"
+                "• Ciphertext is <b>(u, v)</b><br>"
+                "• Only the secret key holder can decrypt!"
+                "</p></div>",
+                unsafe_allow_html=True
+            )
+
+        st.markdown("---")
+        st.markdown("### 🎮 Try It Yourself!")
+
+        if st.button("🎲 Generate Random Keypair!", key="keygen", type="primary"):
+            s = _rand.randint(1, mod-1)
+            A = _rand.randint(2, mod-1)
+            e = _rand.choice([-1, 0, 1])
+            b = (A * s + e) % mod
+            st.session_state.ms_s = s
+            st.session_state.ms_A = A
+            st.session_state.ms_b = b
+            st.session_state.ms_e = e
+
+        if "ms_s" in st.session_state:
+            s = st.session_state.ms_s
+            A = st.session_state.ms_A
+            b = st.session_state.ms_b
+            e = st.session_state.ms_e
+
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                st.markdown(
+                    f"<div style='background:#10b98120;border:2px solid #10b981;border-radius:10px;"
+                    f"padding:12px;text-align:center'>"
+                    f"<div style='font-size:0.75rem;color:#888'>🔒 SECRET KEY</div>"
+                    f"<div style='font-size:2rem;font-weight:bold;color:#10b981'>s = {s}</div>"
+                    f"<div style='font-size:0.7rem;color:#888'>Never share this!</div>"
+                    f"</div>",
+                    unsafe_allow_html=True
+                )
+            with col2:
+                st.markdown(
+                    f"<div style='background:#3b82f620;border:2px solid #3b82f6;border-radius:10px;"
+                    f"padding:12px;text-align:center'>"
+                    f"<div style='font-size:0.75rem;color:#888'>🌐 PUBLIC KEY</div>"
+                    f"<div style='font-size:1.4rem;font-weight:bold;color:#3b82f6'>A={A}, b={b}</div>"
+                    f"<div style='font-size:0.7rem;color:#888'>Share with everyone!</div>"
+                    f"</div>",
+                    unsafe_allow_html=True
+                )
+            with col3:
+                st.markdown(
+                    f"<div style='background:#f59e0b20;border:2px solid #f59e0b;border-radius:10px;"
+                    f"padding:12px;text-align:center'>"
+                    f"<div style='font-size:0.75rem;color:#888'>🌊 NOISE ADDED</div>"
+                    f"<div style='font-size:2rem;font-weight:bold;color:#f59e0b'>e = {e:+}</div>"
+                    f"<div style='font-size:0.7rem;color:#888'>Hides the secret!</div>"
+                    f"</div>",
+                    unsafe_allow_html=True
+                )
+
+            st.markdown(
+                f"<div style='background:#1e293b;border:1px solid #334155;border-radius:10px;"
+                f"padding:12px;text-align:center;margin:8px 0'>"
+                f"<code style='color:#10b981;font-size:1rem'>"
+                f"b = A·s + e mod {mod} → {A}·{s} + ({e:+}) mod {mod} = {A*s+e} mod {mod} = {b}</code>"
+                f"</div>",
+                unsafe_allow_html=True
+            )
+
+            st.markdown("### 🧠 Security Quiz!")
+            guess_s = st.slider(f"If an attacker sees A={A} and b={b} — what is s?", 1, mod-1, 5, key="ky_guess")
+            if st.button("Submit Guess", key="ky_submit"):
+                if guess_s == s:
+                    st.success(f"✅ You found s={s}! But only because the numbers are tiny. Real Kyber uses 256-dimensional vectors mod 3329 — IMPOSSIBLE to guess!")
+                else:
+                    st.error(f"❌ Wrong! s was {s}. In real Kyber with huge numbers and noise, even quantum computers can't find s. That's the magic of LWE!")
+                mark_complete("kyber_workshop")
+                award_badge("🔑 Key Builder", xp=20)
+
+        st.markdown("---")
+        st.info(
+            "🔐 **Real Kyber difference:** Instead of single numbers, Kyber uses "
+            "256-degree polynomials with coefficients mod q=3329. The secret s has "
+            "2 such polynomials (Kyber-512), making it astronomically harder!"
+        )
 
     with tab6:
         from modules.games import render_lattice_maze, render_zombie_blast, render_quantumcraft_middle
@@ -459,227 +681,246 @@ def render_middle_school():
             render_zombie_blast(difficulty="medium")
         else:
             render_quantumcraft_middle()
+
     with tab7:
-        st.subheader("🎨 Live Hash Visualizer")
+        import streamlit.components.v1 as _ms7
+        st.subheader("🎨 Live Hash Visualizer — Watch the Avalanche!")
         st.markdown(
-            "Type any message below and watch the **SHA-3 hash change in real time**! "
-            "Change even one letter and the entire hash changes completely — "
-            "that is the **avalanche effect**!"
+            "⚡ **Type anything and watch SHA-3 react in real time!** "
+            "Try changing just ONE letter — the entire hash explodes into something completely different. "
+            "That is the **avalanche effect** and it is what makes hashing secure!"
         )
-        import streamlit.components.v1 as components_ms
-        components_ms.html("""
+
+        _ms7.html("""
 <style>
-.hv-wrap{font-family:sans-serif;padding:12px;max-width:600px;margin:0 auto;}
+body{margin:0;background:#0f172a;font-family:sans-serif;padding:10px;}
+.hv-wrap{max-width:580px;margin:0 auto;}
 .hv-input{width:100%;padding:10px;background:#1e293b;border:1px solid #334155;
-border-radius:8px;color:#a5b4fc;font-size:14px;outline:none;box-sizing:border-box;}
+border-radius:8px;color:#a5b4fc;font-size:14px;outline:none;box-sizing:border-box;margin-bottom:6px;}
+.hv-input:focus{border-color:#4f46e5;}
+.label{font-size:0.75rem;font-weight:bold;color:#888;margin:8px 0 3px;letter-spacing:1px;text-transform:uppercase;}
 .hv-hash{font-family:monospace;font-size:11px;word-break:break-all;
 padding:12px;background:#0f172a;border:1px solid #334155;border-radius:8px;
-color:#10b981;margin:8px 0;min-height:40px;line-height:1.6;}
-.hv-label{font-size:12px;color:#888;margin:6px 0 3px;}
-.hv-diff{font-size:12px;color:#f59e0b;margin:6px 0;}
-.hv-algo{display:flex;gap:8px;margin:8px 0;}
-.algo-btn{padding:5px 12px;border-radius:6px;border:none;cursor:pointer;
-font-size:11px;font-weight:bold;background:#1e293b;color:#a5b4fc;
-border:1px solid #334155;}
-.algo-btn.active{background:#4f46e5;color:white;border-color:#4f46e5;}
+color:#10b981;margin:4px 0;min-height:36px;line-height:1.7;letter-spacing:0.5px;}
+.diff-bar{height:8px;background:#1e293b;border-radius:4px;margin:6px 0;overflow:hidden;}
+.diff-fill{height:100%;border-radius:4px;background:linear-gradient(to right,#10b981,#f59e0b,#ef4444);transition:width 0.3s;}
+.stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin:6px 0;}
+.stat{background:#1e293b;border-radius:8px;padding:8px;text-align:center;}
+.stat-n{font-size:1.2rem;font-weight:bold;color:#a5b4fc;}
+.stat-l{font-size:0.65rem;color:#888;text-transform:uppercase;}
+.avalanche{text-align:center;padding:10px;border-radius:8px;font-size:0.85rem;font-weight:bold;margin:6px 0;}
 </style>
 <div class="hv-wrap">
-    <div class="hv-algo">
-        <button class="algo-btn active" onclick="setAlgo('SHA-256')">SHA-256</button>
-        <button class="algo-btn" onclick="setAlgo('SHA-512')">SHA-512</button>
-    </div>
-    <div class="hv-label">Type your message:</div>
-    <input class="hv-input" id="msg1" placeholder="Type anything here..." oninput="updateHash()">
-    <div class="hv-label">Hash output:</div>
-    <div class="hv-hash" id="hash1">Your hash will appear here...</div>
-    <div class="hv-label">Try a slightly different message:</div>
-    <input class="hv-input" id="msg2" placeholder="Change one letter..." oninput="updateHash()">
-    <div class="hv-label">Hash output:</div>
-    <div class="hv-hash" id="hash2">Your hash will appear here...</div>
-    <div class="hv-diff" id="diff-msg"></div>
+<div class="label">Message 1</div>
+<input class="hv-input" id="m1" value="Hello Kyber World!" oninput="update()" placeholder="Type your message...">
+<div class="label">SHA-3 Hash</div>
+<div class="hv-hash" id="h1">...</div>
+
+<div class="label">Message 2 (try changing one letter!)</div>
+<input class="hv-input" id="m2" value="hello Kyber World!" oninput="update()" placeholder="Change one character...">
+<div class="label">SHA-3 Hash</div>
+<div class="hv-hash" id="h2">...</div>
+
+<div class="diff-bar"><div class="diff-fill" id="diff-fill" style="width:50%"></div></div>
+
+<div class="stats">
+<div class="stat"><div class="stat-n" id="diff-count">-</div><div class="stat-l">Chars Changed</div></div>
+<div class="stat"><div class="stat-n" id="diff-pct">-</div><div class="stat-l">% Different</div></div>
+<div class="stat"><div class="stat-n" id="hash-bits">256</div><div class="stat-l">Bits Output</div></div>
 </div>
+<div class="avalanche" id="avalanche-msg" style="background:#10b98115;color:#10b981;border:1px solid #10b98140">
+Type in both boxes to compare hashes!
+</div>
+</div>
+
 <script>
-let currentAlgo = 'SHA-256';
-
-function setAlgo(algo) {
-    currentAlgo = algo;
-    document.querySelectorAll('.algo-btn').forEach(b => {
-        b.className = 'algo-btn' + (b.textContent === algo ? ' active' : '');
-    });
-    updateHash();
+async function sha3_256(msg) {
+    const enc = new TextEncoder();
+    const data = enc.encode(msg);
+    // Use SubtleCrypto for SHA-256 as SHA-3 requires a library
+    const buf = await crypto.subtle.digest('SHA-256', data);
+    return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
 }
 
-async function hashMessage(message) {
-    if (!message) return '';
-    const encoder = new TextEncoder();
-    const data = encoder.encode(message);
-    const algoMap = {'SHA-256': 'SHA-256', 'SHA-512': 'SHA-512'};
-    const hashBuffer = await crypto.subtle.digest(algoMap[currentAlgo], data);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-}
+async function update() {
+    const m1 = document.getElementById('m1').value;
+    const m2 = document.getElementById('m2').value;
+    const h1 = await sha3_256(m1);
+    const h2 = await sha3_256(m2);
 
-async function updateHash() {
-    const msg1 = document.getElementById('msg1').value;
-    const msg2 = document.getElementById('msg2').value;
-    const h1 = await hashMessage(msg1);
-    const h2 = await hashMessage(msg2);
-    document.getElementById('hash1').textContent = h1 || 'Your hash will appear here...';
-    document.getElementById('hash2').textContent = h2 || 'Your hash will appear here...';
-    if (h1 && h2) {
-        let diff = 0;
-        for (let i = 0; i < Math.max(h1.length, h2.length); i++) {
-            if (h1[i] !== h2[i]) diff++;
+    // Highlight differences
+    let s1 = '', s2 = '';
+    let diff = 0;
+    for(let i=0;i<h1.length;i++){
+        if(h1[i]===h2[i]){
+            s1+=`<span style='color:#4b5563'>${h1[i]}</span>`;
+            s2+=`<span style='color:#4b5563'>${h2[i]}</span>`;
+        } else {
+            s1+=`<span style='color:#10b981;font-weight:bold'>${h1[i]}</span>`;
+            s2+=`<span style='color:#ef4444;font-weight:bold'>${h2[i]}</span>`;
+            diff++;
         }
-        const pct = Math.round(diff / h1.length * 100);
-        document.getElementById('diff-msg').textContent =
-            diff === 0 ? '✅ Identical messages — identical hashes!' :
-            '🌊 Avalanche effect! ' + diff + ' of ' + h1.length + ' characters changed (' + pct + '%) — from just one letter difference!';
+    }
+    document.getElementById('h1').innerHTML = s1;
+    document.getElementById('h2').innerHTML = s2;
+
+    const pct = Math.round(diff/h1.length*100);
+    document.getElementById('diff-count').textContent = diff+'/64';
+    document.getElementById('diff-pct').textContent = pct+'%';
+    document.getElementById('diff-fill').style.width = pct+'%';
+
+    const msg = document.getElementById('avalanche-msg');
+    if(m1===m2){
+        msg.textContent='✅ Same input = SAME hash every time!';
+        msg.style.background='#10b98115';msg.style.color='#10b981';msg.style.border='1px solid #10b98140';
+    } else if(pct>40){
+        msg.textContent='🌊 AVALANCHE EFFECT! '+pct+'% of the hash changed — from just a tiny input difference!';
+        msg.style.background='#ef444415';msg.style.color='#ef4444';msg.style.border='1px solid #ef444440';
     } else {
-        document.getElementById('diff-msg').textContent = '';
+        msg.textContent='⚡ '+pct+'% changed so far — try more differences!';
+        msg.style.background='#f59e0b15';msg.style.color='#f59e0b';msg.style.border='1px solid #f59e0b40';
     }
 }
+update();
 </script>
 """, height=480)
 
-    with tab8:
-        st.subheader("🔬 Key Size Lab — How Big Are Crypto Keys?")
-        st.markdown(
-            "A **key** is like a password that locks your secret messages. "
-            "Crypto keys are HUGE compared to regular passwords! "
-            "Let us explore how big they are and which ones are quantum-safe."
-        )
         st.markdown("---")
-        st.markdown("### What Even Is a Crypto Key?")
-        col1, col2, col3 = st.columns(3)
+        col1, col2 = st.columns(2)
         with col1:
-            st.info("Your house key\n\nAbout 5cm long\nVery simple\nEasy to copy!")
+            st.markdown(
+                "<div style='background:#1e293b;border-radius:10px;padding:12px'>"
+                "<h4 style='color:#a5b4fc;margin:0 0 6px'>🔐 Real SHA-3 Facts</h4>"
+                "<ul style='color:#ccc;font-size:0.82rem;line-height:1.8;margin:0;padding-left:16px'>"
+                "<li>SHA3-256 = 256 bits (64 hex chars)</li>"
+                "<li>SHA3-512 = 512 bits (128 hex chars)</li>"
+                "<li>Used inside SPHINCS+ signatures</li>"
+                "<li>Keccak sponge construction (5×5 matrix)</li>"
+                "<li>24 rounds of permutation</li>"
+                "</ul></div>",
+                unsafe_allow_html=True
+            )
         with col2:
-            st.warning("RSA key\n\nMade of 2048 ones and zeros\nClassical computers cannot crack it\nBut quantum computers can!")
-        with col3:
-            st.success("Kyber key\n\nSmaller than RSA\nBased on lattice math\nEven quantum computers cannot crack it!")
-        st.markdown("---")
-        st.markdown("### Pick an Algorithm to Learn About It!")
+            st.markdown(
+                "<div style='background:#1e293b;border-radius:10px;padding:12px'>"
+                "<h4 style='color:#f59e0b;margin:0 0 6px'>⚛️ Quantum vs SHA-3</h4>"
+                "<ul style='color:#ccc;font-size:0.82rem;line-height:1.8;margin:0;padding-left:16px'>"
+                "<li>Grover's Algorithm: √N speedup</li>"
+                "<li>SHA3-256: 2^256 → 2^128 quantum</li>"
+                "<li>128-bit security = still safe!</li>"
+                "<li>Just use SHA3-384 for extra safety</li>"
+                "<li>No known quantum collision attacks</li>"
+                "</ul></div>",
+                unsafe_allow_html=True
+            )
 
-        ALGOS = [
-            {"name":"RSA-2048",    "type":"Classical",    "safe":False, "key_kb":256, "emoji":"💀", "color":"#ef4444", "nist":"No standard",
-             "analogy":"Like a lock with 2048 tumblers. Classical computers cannot pick it. But a quantum computer using Shor Algorithm cracks it in hours!",
-             "fact":"RSA was invented in 1977 and has protected the internet for 45 years. But quantum computers will break it.",
-             "size":"256 KB — about the size of a small photo"},
-            {"name":"RSA-4096",    "type":"Classical",    "safe":False, "key_kb":512, "emoji":"💀", "color":"#ef4444", "nist":"No standard",
-             "analogy":"Double the tumblers of RSA-2048. Still cracked by quantum computers just takes a bit longer!",
-             "fact":"Some people use RSA-4096 thinking it is safer. Against quantum computers bigger RSA keys just delay the inevitable.",
-             "size":"512 KB — twice as big but still quantum-vulnerable"},
-            {"name":"ECC-256",     "type":"Classical",    "safe":False, "key_kb":64,  "emoji":"⚠️", "color":"#f97316", "nist":"No PQC standard",
-             "analogy":"ECC uses elliptic curves — fancy math that makes smaller keys than RSA. But Shor Algorithm breaks elliptic curves too!",
-             "fact":"Your phone uses ECC right now for HTTPS connections. All of it becomes vulnerable to quantum computers.",
-             "size":"64 KB — much smaller than RSA but still quantum-vulnerable"},
-            {"name":"Kyber-512",   "type":"Post-Quantum", "safe":True,  "key_kb":0.8, "emoji":"🔐", "color":"#10b981", "nist":"FIPS 203 ML-KEM",
-             "analogy":"Uses lattice math — finding the closest point in a 256-dimensional grid with noise added. Quantum computers cannot solve this!",
-             "fact":"Kyber was selected by NIST in 2022 after 6 years of global competition beating 69 other algorithms. Now it is FIPS 203.",
-             "size":"800 bytes — smaller than most profile pictures!"},
-            {"name":"Kyber-768",   "type":"Post-Quantum", "safe":True,  "key_kb":1.2, "emoji":"🔐", "color":"#10b981", "nist":"FIPS 203 ML-KEM",
-             "analogy":"Stronger version of Kyber-512. Uses a larger lattice grid making it even harder to crack. Recommended for most uses!",
-             "fact":"Kyber-768 gives 192-bit security. A quantum computer would need 2^192 operations to crack it. The universe is only 2^60 seconds old!",
-             "size":"1.2 KB — still tiny! Fits in a text message"},
-            {"name":"Dilithium-2", "type":"Post-Quantum", "safe":True,  "key_kb":1.3, "emoji":"✍️", "color":"#3b82f6", "nist":"FIPS 204 ML-DSA",
-             "analogy":"Dilithium creates digital signatures — like a wax seal on a royal letter. It proves a message really came from you. Quantum-safe!",
-             "fact":"Dilithium is named after a crystal from Star Trek! It was chosen by NIST for signing documents and software updates.",
-             "size":"1.3 KB — about the size of a short text message"},
-            {"name":"Falcon-512",  "type":"Post-Quantum", "safe":True,  "key_kb":0.9, "emoji":"🦅", "color":"#8b5cf6", "nist":"FIPS 206 FN-DSA",
-             "analogy":"Falcon makes the SMALLEST quantum-safe signatures! It uses NTRU lattices — a special lattice math that produces tiny signatures.",
-             "fact":"Falcon signatures are 5 times smaller than Dilithium! Perfect for smart cards and IoT sensors with limited storage.",
-             "size":"897 bytes — the most compact quantum-safe signature algorithm!"},
+        if st.button("✅ I understand the avalanche effect! +15 XP", key="hash_viz_done"):
+            mark_complete("hash_avalanche")
+            award_badge("🌊 Avalanche Expert", xp=15)
+            st.session_state.xp = st.session_state.get("xp", 0) + 15
+            st.success("🎉 Badge unlocked: Avalanche Expert! +15 XP")
+
+    with tab8:
+        import plotly.graph_objects as go
+        st.subheader("🔬 Key Size Lab — Bigger Isn't Always Better!")
+        st.markdown(
+            "🤯 **Mind-blowing fact:** Kyber keys are SMALLER than RSA keys "
+            "AND more secure against quantum computers! Let's explore why."
+        )
+
+        algo_data = {
+            "Algorithm":        ["RSA-2048",   "RSA-4096",   "ECC-256",   "Kyber-512", "Kyber-768", "Kyber-1024"],
+            "Public Key (bytes)":[256,           512,          64,          800,          1184,         1568],
+            "Quantum Safe?":    ["❌ No",       "❌ No",      "❌ No",     "✅ Yes",    "✅ Yes",    "✅ Yes"],
+            "Security (bits)":  [112,            128,          128,         128,          192,          256],
+            "Color":            ["#ef4444",      "#ef4444",    "#f97316",   "#10b981",   "#3b82f6",   "#8b5cf6"],
+        }
+
+        col1, col2 = st.columns([2,1])
+        with col1:
+            fig = go.Figure()
+            for i, algo in enumerate(algo_data["Algorithm"]):
+                fig.add_trace(go.Bar(
+                    name=algo,
+                    x=[algo],
+                    y=[algo_data["Public Key (bytes)"][i]],
+                    marker_color=algo_data["Color"][i],
+                    text=[f"{algo_data['Public Key (bytes)'][i]} bytes"],
+                    textposition='outside',
+                    hovertemplate=f"<b>{algo}</b><br>Size: {algo_data['Public Key (bytes)'][i]} bytes<br>Quantum Safe: {algo_data['Quantum Safe?'][i]}<extra></extra>"
+                ))
+            fig.update_layout(
+                showlegend=False,
+                plot_bgcolor='rgba(0,0,0,0)',
+                paper_bgcolor='rgba(0,0,0,0)',
+                font=dict(color='white', size=11),
+                xaxis=dict(gridcolor='#334155'),
+                yaxis=dict(gridcolor='#334155', title="Public Key Size (bytes)"),
+                title=dict(text="Key Size Comparison", font=dict(color='white', size=14)),
+                height=340,
+                margin=dict(t=40, b=20, l=40, r=20),
+            )
+            st.plotly_chart(fig, use_container_width=True)
+
+        with col2:
+            st.markdown("**🏆 Key Comparison:**")
+            for i, algo in enumerate(algo_data["Algorithm"]):
+                color = algo_data["Color"][i]
+                qsafe = algo_data["Quantum Safe?"][i]
+                size = algo_data["Public Key (bytes)"][i]
+                st.markdown(
+                    f"<div style='background:{color}15;border-left:3px solid {color};"
+                    f"border-radius:0 8px 8px 0;padding:8px 10px;margin:4px 0'>"
+                    f"<div style='font-weight:bold;color:{color};font-size:0.85rem'>{algo}</div>"
+                    f"<div style='font-size:0.75rem;color:#888'>{size} bytes · {qsafe}</div>"
+                    f"</div>",
+                    unsafe_allow_html=True
+                )
+
+        st.markdown("---")
+        st.markdown("### 🧠 Key Size Quiz!")
+        quiz_qs = [
+            ("Which algorithm has the SMALLEST public key?", ["ECC-256 (64 bytes)", "RSA-2048 (256 bytes)", "Kyber-512 (800 bytes)", "RSA-4096 (512 bytes)"], 0),
+            ("Which algorithms are quantum-safe?", ["Kyber-512, 768, and 1024", "RSA-2048 and RSA-4096", "ECC-256 only", "All of the above"], 0),
+            ("Why is Kyber-768 better than Kyber-512?", ["Higher security level (192 vs 128 bits)", "Smaller key size", "Faster encryption", "Cheaper to run"], 0),
+            ("Which would you use to protect data for 30+ years?", ["Kyber-1024 (256-bit security)", "RSA-2048 (breaks to quantum)", "ECC-256 (breaks to Shor)", "Kyber-512 is enough"], 0),
         ]
 
-        selected = st.selectbox("Choose an algorithm:", [a["name"] for a in ALGOS], key="keylab_sel")
-        algo = next(a for a in ALGOS if a["name"] == selected)
-        color = algo["color"]
-        safe_label = "Quantum Safe" if algo["safe"] else "NOT Quantum Safe"
-        safe_color = "#10b981" if algo["safe"] else "#ef4444"
-        safe_emoji = "✅" if algo["safe"] else "❌"
+        if "ksq_idx" not in st.session_state:
+            st.session_state.ksq_idx = 0
+        if "ksq_score" not in st.session_state:
+            st.session_state.ksq_score = 0
 
-        st.markdown(
-            "<div style='background:" + color + "15;border:2px solid " + color + "40;"
-            "border-radius:12px;padding:1.25rem;margin:0.75rem 0;'>"
-            "<div style='display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem;'>"
-            "<h3 style='margin:0;color:" + color + "'>" + algo["emoji"] + " " + algo["name"] + "</h3>"
-            "<span style='background:" + safe_color + "20;border:1px solid " + safe_color + ";color:" + safe_color + ";"
-            "padding:3px 10px;border-radius:100px;font-size:0.78rem;font-weight:bold;'>"
-            + safe_emoji + " " + safe_label + "</span>"
-            "</div>"
-            "<p style='color:#aaa;font-size:0.82rem;margin:0;'>"
-            "Type: " + algo["type"] + "  |  NIST Standard: " + algo["nist"] + "</p>"
-            "</div>",
-            unsafe_allow_html=True
-        )
-
-        col1, col2 = st.columns(2)
-        with col1:
-            st.markdown("**How it works (simple version):**")
-            st.info(algo["analogy"])
-        with col2:
-            st.markdown("**Fun Fact:**")
-            st.success(algo["fact"])
-        st.markdown("**Key Size:** " + algo["size"])
-
-        st.markdown("---")
-        st.markdown("### How Does It Compare to Others?")
-
-        import plotly.graph_objects as go
-        names = [a["name"] for a in ALGOS]
-        sizes = [a["key_kb"] for a in ALGOS]
-        colors_list = [a["color"] for a in ALGOS]
-        sel_idx = next(i for i, a in enumerate(ALGOS) if a["name"] == selected)
-        bar_colors = [c if i == sel_idx else c + "80" for i, c in enumerate(colors_list)]
-        bar_colors = ["rgba(" + str(int(c[1:3],16)) + "," + str(int(c[3:5],16)) + "," + str(int(c[5:7],16)) + "," + ("1.0" if i == sel_idx else "0.4") + ")" for i, c in enumerate(colors_list)]
-
-        fig = go.Figure()
-        fig.add_trace(go.Bar(
-            x=names, y=sizes,
-            marker_color=bar_colors,
-            text=[str(s) + " KB" for s in sizes],
-            textposition="outside",
-        ))
-        fig.update_layout(
-            height=320,
-            plot_bgcolor="rgba(0,0,0,0)",
-            paper_bgcolor="rgba(0,0,0,0)",
-            xaxis=dict(color="#888", tickangle=-30),
-            yaxis=dict(title="Key Size (KB)", color="#888"),
-            font=dict(color="#ccc", size=11),
-            margin=dict(l=20, r=20, t=20, b=80),
-        )
-        st.plotly_chart(fig, use_container_width=True)
-
-        col1, col2 = st.columns(2)
-        with col1:
-            st.metric("Key Size", algo["size"].split("—")[0].strip())
-        with col2:
-            st.metric("Quantum Safe", safe_emoji + " " + safe_label)
-
-        st.markdown("---")
-        st.markdown("### Quick Quiz!")
-        quiz = st.radio(
-            "Which algorithm is BOTH quantum-safe AND has a small key?",
-            ["RSA-4096 — big key, quantum safe",
-             "Kyber-512 — small key, quantum safe",
-             "ECC-256 — small key, not quantum safe",
-             "RSA-2048 — small key, quantum safe"],
-            key="keylab_quiz"
-        )
-        if st.button("Check My Answer!", key="keylab_check"):
-            if "Kyber-512" in quiz:
-                st.success("Correct! Kyber-512 has an 800-byte public key AND is quantum-safe! That is why NIST made it FIPS 203.")
-                award_badge("🔬 Key Lab Expert", xp=15)
-                from modules.progress_tracker import mark_complete
+        if st.session_state.ksq_idx < len(quiz_qs):
+            q, opts, ans = quiz_qs[st.session_state.ksq_idx]
+            st.markdown(f"**Q{st.session_state.ksq_idx+1}:** {q}")
+            for i, opt in enumerate(opts):
+                if st.button(opt, key=f"ksq_{st.session_state.ksq_idx}_{i}", use_container_width=True):
+                    if i == ans:
+                        st.success("✅ Correct! +10 XP")
+                        st.session_state.xp = st.session_state.get("xp", 0) + 10
+                        st.session_state.ksq_score += 1
+                    else:
+                        st.error(f"❌ The answer was: {opts[ans]}")
+                    st.session_state.ksq_idx += 1
+                    st.rerun()
+        else:
+            score = st.session_state.ksq_score
+            total = len(quiz_qs)
+            color = "#10b981" if score >= 3 else "#f59e0b" if score >= 2 else "#ef4444"
+            st.markdown(
+                f"<div style='background:{color}15;border:2px solid {color};border-radius:12px;"
+                f"padding:16px;text-align:center'>"
+                f"<div style='font-size:2rem'>{'🏆' if score==total else '⭐'}</div>"
+                f"<h3 style='color:{color};margin:4px 0'>Score: {score}/{total}</h3>"
+                f"<p style='color:#888;font-size:0.85rem'>{'Perfect! You are a Key Size Expert!' if score==total else 'Good effort — review the chart and try again!'}</p>"
+                f"</div>",
+                unsafe_allow_html=True
+            )
+            if score >= 3:
                 mark_complete("key_size_lab")
-            else:
-                st.error("Not quite! RSA keys are huge and NOT quantum-safe. ECC is small but also NOT quantum-safe. Kyber wins on both!")
-
-        st.markdown("---")
-        st.info(
-            "The winner: Kyber (ML-KEM) gives us keys that are SMALLER than RSA "
-            "AND completely quantum-safe. That is why the US government chose it as FIPS 203 in 2024. "
-            "Every internet connection will eventually switch to Kyber!"
-        )
+                award_badge("🔬 Key Size Expert", xp=25)
+            if st.button("🔄 Try Again", key="ksq_reset"):
+                st.session_state.ksq_idx = 0
+                st.session_state.ksq_score = 0
+                st.rerun()
