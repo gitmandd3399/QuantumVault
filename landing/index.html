@@ -1,1823 +1,391 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QuantumVault Academy — Teaching Post-Quantum Cryptography K–12</title>
-    <meta name="description"
-        content="The only K-12 platform teaching NIST post-quantum cryptography through interactive games, live demos, and grade-appropriate modules. Used by schools, districts, and STEM programs.">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link
-        href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&family=DM+Mono&display=swap"
-        rel="stylesheet">
-    <style>
-        :root {
-            --ink: #0a0a0f;
-            --ink2: #13131a;
-            --ink3: #1c1c28;
-            --surface: #22222f;
-            --border: rgba(255, 255, 255, 0.08);
-            --border2: rgba(255, 255, 255, 0.14);
-            --accent: #7c6dfa;
-            --accent2: #a594ff;
-            --teal: #14d4a8;
-            --amber: #f4b942;
-            --red: #f45c5c;
-            --text: #e8e8f0;
-            --muted: #8888a0;
-            --font-head: 'Syne', sans-serif;
-            --font-body: 'DM Sans', sans-serif;
-            --font-mono: 'DM Mono', monospace;
-        }
-
-        *,
-        *::before,
-        *::after {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        html {
-            scroll-behavior: smooth;
-        }
-
-        body {
-            background: var(--ink);
-            color: var(--text);
-            font-family: var(--font-body);
-            font-size: 16px;
-            line-height: 1.7;
-            overflow-x: hidden;
-        }
-
-        /* ── Grid texture ── */
-        body::before {
-            content: '';
-            position: fixed;
-            inset: 0;
-            background-image:
-                linear-gradient(rgba(124, 109, 250, 0.03) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(124, 109, 250, 0.03) 1px, transparent 1px);
-            background-size: 40px 40px;
-            pointer-events: none;
-            z-index: 0;
-        }
-
-        /* ── Nav ── */
-        nav {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 100;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 1rem 2.5rem;
-            background: rgba(10, 10, 15, 0.85);
-            backdrop-filter: blur(12px);
-            border-bottom: 1px solid var(--border);
-        }
-
-        .nav-logo {
-            font-family: var(--font-head);
-            font-size: 1.1rem;
-            font-weight: 700;
-            color: var(--text);
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .nav-logo span {
-            color: var(--accent2);
-        }
-
-        .nav-links {
-            display: flex;
-            align-items: center;
-            gap: 2rem;
-            list-style: none;
-        }
-
-        .nav-links a {
-            color: var(--muted);
-            text-decoration: none;
-            font-size: 0.9rem;
-            font-weight: 400;
-            transition: color 0.2s;
-        }
-
-        .nav-links a:hover {
-            color: var(--text);
-        }
-
-        .nav-cta {
-            background: var(--accent);
-            color: white !important;
-            padding: 0.5rem 1.25rem;
-            border-radius: 6px;
-            font-weight: 500 !important;
-            transition: background 0.2s !important;
-        }
-
-        .nav-cta:hover {
-            background: var(--accent2) !important;
-            color: white !important;
-        }
-
-        /* ── Hero ── */
-        .hero {
-            position: relative;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            padding: 8rem 2rem 4rem;
-            z-index: 1;
-        }
-
-        .hero-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            background: rgba(124, 109, 250, 0.12);
-            border: 1px solid rgba(124, 109, 250, 0.3);
-            color: var(--accent2);
-            font-size: 0.8rem;
-            font-weight: 500;
-            padding: 0.35rem 1rem;
-            border-radius: 100px;
-            margin-bottom: 2rem;
-            font-family: var(--font-mono);
-            animation: fadeUp 0.6s ease both;
-        }
-
-        .hero-badge::before {
-            content: '';
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
-            background: var(--teal);
-            animation: pulse 2s ease infinite;
-        }
-
-        @keyframes pulse {
-
-            0%,
-            100% {
-                opacity: 1;
-            }
-
-            50% {
-                opacity: 0.3;
-            }
-        }
-
-        .hero h1 {
-            font-family: var(--font-head);
-            font-size: clamp(2.8rem, 7vw, 5.5rem);
-            font-weight: 800;
-            line-height: 1.05;
-            letter-spacing: -0.03em;
-            max-width: 14ch;
-            margin-bottom: 1.5rem;
-            animation: fadeUp 0.6s 0.1s ease both;
-        }
-
-        .hero h1 em {
-            font-style: normal;
-            background: linear-gradient(135deg, var(--accent2), var(--teal));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .hero-sub {
-            font-size: 1.15rem;
-            color: var(--muted);
-            max-width: 52ch;
-            margin-bottom: 2.5rem;
-            font-weight: 300;
-            line-height: 1.75;
-            animation: fadeUp 0.6s 0.2s ease both;
-        }
-
-        .hero-actions {
-            display: flex;
-            gap: 1rem;
-            flex-wrap: wrap;
-            justify-content: center;
-            animation: fadeUp 0.6s 0.3s ease both;
-        }
-
-        .btn-primary {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            background: var(--accent);
-            color: white;
-            text-decoration: none;
-            padding: 0.85rem 2rem;
-            border-radius: 8px;
-            font-weight: 500;
-            font-size: 0.95rem;
-            transition: all 0.2s;
-            border: none;
-            cursor: pointer;
-        }
-
-        .btn-primary:hover {
-            background: var(--accent2);
-            transform: translateY(-1px);
-        }
-
-        .btn-ghost {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            background: transparent;
-            color: var(--text);
-            text-decoration: none;
-            padding: 0.85rem 2rem;
-            border-radius: 8px;
-            font-weight: 500;
-            font-size: 0.95rem;
-            border: 1px solid var(--border2);
-            transition: all 0.2s;
-            cursor: pointer;
-        }
-
-        .btn-ghost:hover {
-            border-color: rgba(255, 255, 255, 0.3);
-            background: rgba(255, 255, 255, 0.04);
-        }
-
-        .hero-stats {
-            display: flex;
-            gap: 3rem;
-            margin-top: 4rem;
-            justify-content: center;
-            flex-wrap: wrap;
-            animation: fadeUp 0.6s 0.4s ease both;
-        }
-
-        .hero-stat {
-            text-align: center;
-        }
-
-        .hero-stat strong {
-            display: block;
-            font-family: var(--font-head);
-            font-size: 2rem;
-            font-weight: 700;
-            color: var(--text);
-        }
-
-        .hero-stat span {
-            font-size: 0.8rem;
-            color: var(--muted);
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-        }
-
-        @keyframes fadeUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* ── App preview ── */
-        .app-preview {
-            position: relative;
-            z-index: 1;
-            padding: 0 2rem 6rem;
-            max-width: 900px;
-            margin: 0 auto;
-            animation: fadeUp 0.6s 0.5s ease both;
-        }
-
-        .preview-window {
-            background: var(--ink2);
-            border: 1px solid var(--border2);
-            border-radius: 12px;
-            overflow: hidden;
-        }
-
-        .preview-bar {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 0.75rem 1rem;
-            background: var(--ink3);
-            border-bottom: 1px solid var(--border);
-        }
-
-        .preview-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-        }
-
-        .preview-url {
-            flex: 1;
-            background: rgba(255, 255, 255, 0.06);
-            border-radius: 4px;
-            padding: 0.2rem 0.75rem;
-            font-family: var(--font-mono);
-            font-size: 0.75rem;
-            color: var(--muted);
-            margin: 0 0.5rem;
-        }
-
-        .preview-content {
-            padding: 2rem;
-            display: grid;
-            grid-template-columns: 200px 1fr;
-            gap: 1.5rem;
-            min-height: 320px;
-        }
-
-        .preview-sidebar {
-            background: var(--ink3);
-            border-radius: 8px;
-            padding: 1rem;
-        }
-
-        .preview-sidebar h4 {
-            font-family: var(--font-head);
-            font-size: 0.7rem;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            color: var(--muted);
-            margin-bottom: 1rem;
-        }
-
-        .preview-menu-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 0.5rem 0.75rem;
-            border-radius: 6px;
-            font-size: 0.8rem;
-            color: var(--muted);
-            margin-bottom: 4px;
-            cursor: default;
-        }
-
-        .preview-menu-item.active {
-            background: rgba(124, 109, 250, 0.15);
-            color: var(--accent2);
-        }
-
-        .preview-dot-sm {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            flex-shrink: 0;
-        }
-
-        .preview-main {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
-
-        .preview-tabs {
-            display: flex;
-            gap: 4px;
-            background: var(--ink3);
-            padding: 4px;
-            border-radius: 8px;
-            width: fit-content;
-        }
-
-        .preview-tab {
-            padding: 0.3rem 0.75rem;
-            border-radius: 6px;
-            font-size: 0.75rem;
-            color: var(--muted);
-            cursor: default;
-        }
-
-        .preview-tab.active {
-            background: var(--surface);
-            color: var(--text);
-        }
-
-        .preview-card {
-            background: var(--ink3);
-            border-radius: 8px;
-            padding: 1rem;
-        }
-
-        .preview-card h3 {
-            font-family: var(--font-head);
-            font-size: 0.85rem;
-            margin-bottom: 0.5rem;
-            color: var(--text);
-        }
-
-        .preview-bars {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            margin-top: 0.5rem;
-        }
-
-        .preview-bar-row {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 0.7rem;
-            color: var(--muted);
-        }
-
-        .preview-bar-fill {
-            height: 6px;
-            border-radius: 3px;
-            flex: 1;
-            background: var(--surface);
-            overflow: hidden;
-        }
-
-        .preview-bar-fill-inner {
-            height: 100%;
-            border-radius: 3px;
-        }
-
-        .preview-bottom {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 0.75rem;
-        }
-
-        .preview-mini {
-            background: var(--ink3);
-            border-radius: 8px;
-            padding: 0.75rem;
-        }
-
-        .preview-mini-label {
-            font-size: 0.65rem;
-            color: var(--muted);
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            margin-bottom: 4px;
-        }
-
-        .preview-mini-value {
-            font-family: var(--font-head);
-            font-size: 1.3rem;
-            font-weight: 700;
-        }
-
-        /* ── Section ── */
-        section {
-            position: relative;
-            z-index: 1;
-        }
-
-        .container {
-            max-width: 1100px;
-            margin: 0 auto;
-            padding: 0 2rem;
-        }
-
-        .section-label {
-            font-family: var(--font-mono);
-            font-size: 0.75rem;
-            color: var(--accent2);
-            text-transform: uppercase;
-            letter-spacing: 0.15em;
-            margin-bottom: 1rem;
-        }
-
-        .section-title {
-            font-family: var(--font-head);
-            font-size: clamp(2rem, 4vw, 3rem);
-            font-weight: 700;
-            line-height: 1.15;
-            letter-spacing: -0.02em;
-            margin-bottom: 1rem;
-        }
-
-        .section-sub {
-            font-size: 1rem;
-            color: var(--muted);
-            max-width: 52ch;
-            line-height: 1.75;
-        }
-
-        /* ── Why ── */
-        .why {
-            padding: 6rem 0;
-            border-top: 1px solid var(--border);
-        }
-
-        .why-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 1.5rem;
-            margin-top: 3rem;
-        }
-
-        .why-card {
-            background: var(--ink2);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 1.75rem;
-            transition: border-color 0.2s;
-        }
-
-        .why-card:hover {
-            border-color: var(--border2);
-        }
-
-        .why-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2rem;
-            margin-bottom: 1rem;
-        }
-
-        .why-card h3 {
-            font-family: var(--font-head);
-            font-size: 1rem;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-        }
-
-        .why-card p {
-            font-size: 0.875rem;
-            color: var(--muted);
-            line-height: 1.7;
-        }
-
-        /* ── Grades ── */
-        .grades {
-            padding: 6rem 0;
-            border-top: 1px solid var(--border);
-        }
-
-        .grades-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 1.5rem;
-            margin-top: 3rem;
-        }
-
-        .grade-card {
-            background: var(--ink2);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            overflow: hidden;
-            transition: transform 0.2s, border-color 0.2s;
-        }
-
-        .grade-card:hover {
-            transform: translateY(-4px);
-            border-color: var(--border2);
-        }
-
-        .grade-header {
-            padding: 1.5rem;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .grade-badge {
-            display: inline-block;
-            font-size: 0.7rem;
-            font-weight: 500;
-            padding: 0.2rem 0.6rem;
-            border-radius: 4px;
-            margin-bottom: 0.75rem;
-            font-family: var(--font-mono);
-        }
-
-        .grade-card h3 {
-            font-family: var(--font-head);
-            font-size: 1.1rem;
-            font-weight: 700;
-            margin-bottom: 0.25rem;
-        }
-
-        .grade-card .grade-range {
-            font-size: 0.8rem;
-            color: var(--muted);
-        }
-
-        .grade-body {
-            padding: 1.5rem;
-        }
-
-        .grade-features {
-            list-style: none;
-            display: flex;
-            flex-direction: column;
-            gap: 0.6rem;
-        }
-
-        .grade-features li {
-            display: flex;
-            align-items: flex-start;
-            gap: 8px;
-            font-size: 0.85rem;
-            color: var(--muted);
-        }
-
-        .grade-features li::before {
-            content: '→';
-            color: var(--accent2);
-            flex-shrink: 0;
-            margin-top: 1px;
-        }
-
-        /* ── Games ── */
-        .games {
-            padding: 6rem 0;
-            border-top: 1px solid var(--border);
-        }
-
-        .games-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
-            margin-top: 3rem;
-        }
-
-        .game-card {
-            background: var(--ink2);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 1.5rem;
-            text-align: center;
-            transition: all 0.2s;
-        }
-
-        .game-card:hover {
-            border-color: var(--border2);
-            transform: translateY(-2px);
-        }
-
-        .game-emoji {
-            font-size: 2.5rem;
-            display: block;
-            margin-bottom: 0.75rem;
-        }
-
-        .game-card h4 {
-            font-family: var(--font-head);
-            font-size: 0.9rem;
-            font-weight: 600;
-            margin-bottom: 0.4rem;
-        }
-
-        .game-card p {
-            font-size: 0.78rem;
-            color: var(--muted);
-        }
-
-        /* ── Pricing ── */
-        .pricing {
-            padding: 6rem 0;
-            border-top: 1px solid var(--border);
-        }
-
-        .pricing-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 1.5rem;
-            margin-top: 3rem;
-            align-items: start;
-        }
-
-        .pricing-card {
-            background: var(--ink2);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 2rem;
-            transition: border-color 0.2s;
-        }
-
-        .pricing-card.featured {
-            border-color: var(--accent);
-            background: rgba(124, 109, 250, 0.06);
-            position: relative;
-        }
-
-        .featured-badge {
-            position: absolute;
-            top: -12px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: var(--accent);
-            color: white;
-            font-size: 0.7rem;
-            font-weight: 500;
-            padding: 0.2rem 0.75rem;
-            border-radius: 100px;
-            white-space: nowrap;
-            font-family: var(--font-mono);
-        }
-
-        .pricing-card h3 {
-            font-family: var(--font-head);
-            font-size: 1.1rem;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-        }
-
-        .pricing-card .pricing-desc {
-            font-size: 0.85rem;
-            color: var(--muted);
-            margin-bottom: 1.5rem;
-        }
-
-        .pricing-price {
-            margin-bottom: 1.5rem;
-        }
-
-        .pricing-price strong {
-            font-family: var(--font-head);
-            font-size: 2.5rem;
-            font-weight: 800;
-        }
-
-        .pricing-price span {
-            font-size: 0.85rem;
-            color: var(--muted);
-        }
-
-        .pricing-features {
-            list-style: none;
-            display: flex;
-            flex-direction: column;
-            gap: 0.75rem;
-            margin-bottom: 2rem;
-        }
-
-        .pricing-features li {
-            display: flex;
-            align-items: flex-start;
-            gap: 10px;
-            font-size: 0.875rem;
-            color: var(--muted);
-        }
-
-        .check {
-            color: var(--teal);
-            flex-shrink: 0;
-            margin-top: 2px;
-        }
-
-        .pricing-btn {
-            display: block;
-            width: 100%;
-            text-align: center;
-            padding: 0.75rem;
-            border-radius: 8px;
-            font-weight: 500;
-            font-size: 0.9rem;
-            text-decoration: none;
-            transition: all 0.2s;
-            cursor: pointer;
-            border: none;
-        }
-
-        .pricing-btn-outline {
-            background: transparent;
-            border: 1px solid var(--border2);
-            color: var(--text);
-        }
-
-        .pricing-btn-outline:hover {
-            background: rgba(255, 255, 255, 0.05);
-        }
-
-        .pricing-btn-filled {
-            background: var(--accent);
-            color: white;
-        }
-
-        .pricing-btn-filled:hover {
-            background: var(--accent2);
-        }
-
-        /* ── Social proof ── */
-        .social {
-            padding: 6rem 0;
-            border-top: 1px solid var(--border);
-        }
-
-        .testimonials {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 1.5rem;
-            margin-top: 3rem;
-        }
-
-        .testimonial {
-            background: var(--ink2);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 1.75rem;
-        }
-
-        .testimonial p {
-            font-size: 0.9rem;
-            color: var(--text);
-            line-height: 1.75;
-            margin-bottom: 1.25rem;
-            font-style: italic;
-        }
-
-        .testimonial-author {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .testimonial-avatar {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.75rem;
-            font-weight: 600;
-            flex-shrink: 0;
-        }
-
-        .testimonial-author strong {
-            display: block;
-            font-size: 0.85rem;
-            font-weight: 500;
-        }
-
-        .testimonial-author span {
-            font-size: 0.78rem;
-            color: var(--muted);
-        }
-
-        /* ── FAQ ── */
-        .faq {
-            padding: 6rem 0;
-            border-top: 1px solid var(--border);
-        }
-
-        .faq-list {
-            margin-top: 3rem;
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-            max-width: 720px;
-        }
-
-        .faq-item {
-            background: var(--ink2);
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            overflow: hidden;
-        }
-
-        .faq-q {
-            width: 100%;
-            background: none;
-            border: none;
-            padding: 1.25rem 1.5rem;
-            text-align: left;
-            color: var(--text);
-            font-family: var(--font-body);
-            font-size: 0.95rem;
-            font-weight: 500;
-            cursor: pointer;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .faq-q:hover {
-            background: rgba(255, 255, 255, 0.02);
-        }
-
-        .faq-arrow {
-            font-size: 0.8rem;
-            color: var(--muted);
-            transition: transform 0.2s;
-            flex-shrink: 0;
-        }
-
-        .faq-item.open .faq-arrow {
-            transform: rotate(180deg);
-        }
-
-        .faq-a {
-            display: none;
-            padding: 0 1.5rem 1.25rem;
-            font-size: 0.875rem;
-            color: var(--muted);
-            line-height: 1.75;
-            border-top: 1px solid var(--border);
-            padding-top: 1rem;
-        }
-
-        .faq-item.open .faq-a {
-            display: block;
-        }
-
-        /* ── CTA ── */
-        .cta-section {
-            padding: 8rem 0;
-            border-top: 1px solid var(--border);
-            text-align: center;
-        }
-
-        .cta-box {
-            background: var(--ink2);
-            border: 1px solid var(--border2);
-            border-radius: 16px;
-            padding: 4rem 2rem;
-            max-width: 640px;
-            margin: 0 auto;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .cta-box::before {
-            content: '';
-            position: absolute;
-            top: -60px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 200px;
-            height: 200px;
-            border-radius: 50%;
-            background: rgba(124, 109, 250, 0.15);
-            filter: blur(60px);
-            pointer-events: none;
-        }
-
-        .cta-box h2 {
-            font-family: var(--font-head);
-            font-size: 2.2rem;
-            font-weight: 700;
-            margin-bottom: 1rem;
-            letter-spacing: -0.02em;
-        }
-
-        .cta-box p {
-            color: var(--muted);
-            margin-bottom: 2rem;
-            font-size: 1rem;
-        }
-
-        .cta-form {
-            display: flex;
-            gap: 0.75rem;
-            max-width: 420px;
-            margin: 0 auto;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-
-        .cta-input {
-            flex: 1;
-            min-width: 200px;
-            background: var(--ink3);
-            border: 1px solid var(--border2);
-            border-radius: 8px;
-            padding: 0.75rem 1rem;
-            color: var(--text);
-            font-family: var(--font-body);
-            font-size: 0.9rem;
-            outline: none;
-        }
-
-        .cta-input:focus {
-            border-color: var(--accent);
-        }
-
-        .cta-input::placeholder {
-            color: var(--muted);
-        }
-
-        /* ── Footer ── */
-        footer {
-            border-top: 1px solid var(--border);
-            padding: 3rem 0;
-            position: relative;
-            z-index: 1;
-        }
-
-        .footer-inner {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 1rem;
-        }
-
-        .footer-logo {
-            font-family: var(--font-head);
-            font-size: 0.9rem;
-            font-weight: 700;
-            color: var(--text);
-        }
-
-        .footer-logo span {
-            color: var(--accent2);
-        }
-
-        .footer-links {
-            display: flex;
-            gap: 1.5rem;
-            list-style: none;
-            flex-wrap: wrap;
-        }
-
-        .footer-links a {
-            font-size: 0.8rem;
-            color: var(--muted);
-            text-decoration: none;
-            transition: color 0.2s;
-        }
-
-        .footer-links a:hover {
-            color: var(--text);
-        }
-
-        .footer-copy {
-            font-size: 0.78rem;
-            color: var(--muted);
-        }
-
-        /* ── Modal ── */
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.75);
-            z-index: 200;
-            align-items: center;
-            justify-content: center;
-            padding: 2rem;
-        }
-
-        .modal-overlay.open {
-            display: flex;
-        }
-
-        .modal {
-            background: var(--ink2);
-            border: 1px solid var(--border2);
-            border-radius: 16px;
-            padding: 2.5rem;
-            max-width: 480px;
-            width: 100%;
-            position: relative;
-        }
-
-        .modal-close {
-            position: absolute;
-            top: 1rem;
-            right: 1rem;
-            background: none;
-            border: none;
-            color: var(--muted);
-            font-size: 1.2rem;
-            cursor: pointer;
-            padding: 0.25rem 0.5rem;
-            border-radius: 4px;
-        }
-
-        .modal-close:hover {
-            color: var(--text);
-        }
-
-        .modal h2 {
-            font-family: var(--font-head);
-            font-size: 1.5rem;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-        }
-
-        .modal p {
-            font-size: 0.875rem;
-            color: var(--muted);
-            margin-bottom: 1.5rem;
-        }
-
-        .modal-form {
-            display: flex;
-            flex-direction: column;
-            gap: 0.75rem;
-        }
-
-        .modal-input {
-            background: var(--ink3);
-            border: 1px solid var(--border2);
-            border-radius: 8px;
-            padding: 0.75rem 1rem;
-            color: var(--text);
-            font-family: var(--font-body);
-            font-size: 0.9rem;
-            outline: none;
-            width: 100%;
-        }
-
-        .modal-input:focus {
-            border-color: var(--accent);
-        }
-
-        .modal-input::placeholder {
-            color: var(--muted);
-        }
-
-        select.modal-input option {
-            background: var(--ink2);
-        }
-
-        .modal-submit {
-            background: var(--accent);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            padding: 0.85rem;
-            font-family: var(--font-body);
-            font-size: 0.95rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: background 0.2s;
-            margin-top: 0.5rem;
-        }
-
-        .modal-submit:hover {
-            background: var(--accent2);
-        }
-
-        .modal-success {
-            display: none;
-            text-align: center;
-            padding: 1rem 0;
-        }
-
-        .modal-success h3 {
-            font-family: var(--font-head);
-            font-size: 1.3rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .modal-success p {
-            margin-bottom: 0;
-        }
-
-        /* ── Responsive ── */
-        @media (max-width: 768px) {
-            nav {
-                padding: 1rem 1.25rem;
-            }
-
-            .nav-links {
-                display: none;
-            }
-
-            .grades-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .preview-content {
-                grid-template-columns: 1fr;
-            }
-
-            .preview-sidebar {
-                display: none;
-            }
-
-            .footer-inner {
-                flex-direction: column;
-                text-align: center;
-            }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QuantumVault Academy — K-12 Post-Quantum Cryptography</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+    --teal:#0d9488;--teal-l:#2dd4bf;--teal-b:#5eead4;
+    --cyan:#06b6d4;--cyan-l:#67e8f9;
+    --navy:#020d14;--navy2:#071520;--navy3:#0c1f2e;
+    --border:#164154;
+}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--navy);color:#ccfbf1;line-height:1.7;}
+
+/* NAV */
+nav{position:fixed;top:0;width:100%;z-index:100;
+    background:rgba(2,13,20,0.85);backdrop-filter:blur(20px);
+    border-bottom:1px solid rgba(45,212,191,0.1);padding:0 5%;}
+.nav-inner{max-width:1200px;margin:0 auto;display:flex;
+    justify-content:space-between;align-items:center;height:64px;}
+.logo{font-size:1.2rem;font-weight:800;
+    background:linear-gradient(135deg,var(--teal-b),var(--cyan-l));
+    -webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.nav-links{display:flex;gap:32px;list-style:none;}
+.nav-links a{color:#5eead4;text-decoration:none;font-size:0.9rem;
+    font-weight:500;transition:color 0.2s;}
+.nav-links a:hover{color:var(--teal-b);}
+.nav-cta{background:linear-gradient(135deg,var(--teal),var(--cyan));
+    color:#020d14!important;padding:8px 20px;border-radius:8px;
+    font-weight:700!important;transition:all 0.2s!important;}
+.nav-cta:hover{box-shadow:0 4px 20px rgba(45,212,191,0.4);}
+
+/* HERO */
+.hero{min-height:100vh;display:flex;align-items:center;justify-content:center;
+    text-align:center;padding:80px 5% 60px;position:relative;overflow:hidden;}
+.hero::before{content:'';position:absolute;top:-200px;left:-200px;
+    width:600px;height:600px;
+    background:radial-gradient(circle,rgba(13,148,136,0.12),transparent);
+    border-radius:50%;pointer-events:none;}
+.hero::after{content:'';position:absolute;bottom:-200px;right:-200px;
+    width:600px;height:600px;
+    background:radial-gradient(circle,rgba(6,182,212,0.1),transparent);
+    border-radius:50%;pointer-events:none;}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;
+    background:rgba(13,148,136,0.12);border:1px solid rgba(45,212,191,0.25);
+    border-radius:100px;padding:6px 16px;font-size:0.82rem;
+    color:var(--teal-b);font-weight:600;margin-bottom:24px;letter-spacing:0.5px;}
+h1{font-size:clamp(2.2rem,5vw,4rem);font-weight:800;line-height:1.15;
+    margin-bottom:24px;letter-spacing:-1px;}
+h1 span{background:linear-gradient(135deg,var(--teal-b),var(--cyan-l));
+    -webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.hero-sub{font-size:clamp(1rem,2vw,1.2rem);color:#94d9d0;max-width:580px;
+    margin:0 auto 40px;line-height:1.8;}
+.hero-btns{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;}
+.btn-primary{background:linear-gradient(135deg,var(--teal),var(--cyan));
+    color:#020d14;padding:14px 32px;border-radius:12px;font-weight:700;
+    font-size:1rem;text-decoration:none;transition:all 0.2s;
+    box-shadow:0 4px 24px rgba(13,148,136,0.4);}
+.btn-primary:hover{transform:translateY(-3px);box-shadow:0 8px 40px rgba(45,212,191,0.5);}
+.btn-secondary{background:rgba(13,148,136,0.1);color:var(--teal-b);
+    padding:14px 32px;border-radius:12px;font-weight:600;font-size:1rem;
+    text-decoration:none;border:1px solid rgba(45,212,191,0.25);transition:all 0.2s;}
+.btn-secondary:hover{background:rgba(13,148,136,0.2);border-color:var(--teal-l);}
+.hero-stats{display:flex;gap:40px;justify-content:center;flex-wrap:wrap;
+    margin-top:60px;padding-top:40px;border-top:1px solid rgba(45,212,191,0.1);}
+.stat{text-align:center;}
+.stat-n{font-size:2.2rem;font-weight:800;
+    background:linear-gradient(135deg,var(--teal-b),var(--cyan));
+    -webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.stat-l{font-size:0.82rem;color:#2dd4bf80;font-weight:600;
+    text-transform:uppercase;letter-spacing:1px;margin-top:4px;}
+
+/* TRUST BAR */
+.trust{background:rgba(13,148,136,0.05);border-top:1px solid rgba(45,212,191,0.1);
+    border-bottom:1px solid rgba(45,212,191,0.1);padding:20px 5%;}
+.trust-inner{max-width:1200px;margin:0 auto;display:flex;
+    justify-content:center;gap:48px;flex-wrap:wrap;}
+.trust-item{display:flex;align-items:center;gap:8px;
+    font-size:0.85rem;color:#5eead4;font-weight:600;}
+
+/* SECTIONS */
+section{padding:80px 5%;}
+.section-inner{max-width:1200px;margin:0 auto;}
+.section-tag{display:inline-block;background:rgba(13,148,136,0.12);
+    border:1px solid rgba(45,212,191,0.2);border-radius:100px;
+    padding:4px 14px;font-size:0.78rem;color:var(--teal-b);
+    font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:16px;}
+.section-title{font-size:clamp(1.8rem,3vw,2.6rem);font-weight:800;
+    line-height:1.2;margin-bottom:16px;letter-spacing:-0.5px;}
+.section-title span{background:linear-gradient(135deg,var(--teal-b),var(--cyan));
+    -webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.section-sub{font-size:1.05rem;color:#94d9d0;max-width:560px;line-height:1.8;}
+
+/* FEATURES */
+.features-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
+    gap:24px;margin-top:48px;}
+.feature-card{background:rgba(13,148,136,0.06);
+    backdrop-filter:blur(16px);border:1px solid rgba(45,212,191,0.12);
+    border-radius:18px;padding:28px;transition:all 0.3s;position:relative;overflow:hidden;}
+.feature-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;
+    background:linear-gradient(90deg,var(--teal),var(--cyan));opacity:0;transition:opacity 0.3s;}
+.feature-card:hover{transform:translateY(-4px);
+    box-shadow:0 16px 48px rgba(13,148,136,0.15);
+    border-color:rgba(45,212,191,0.25);}
+.feature-card:hover::before{opacity:1;}
+.feature-icon{font-size:2.5rem;margin-bottom:16px;display:block;}
+.feature-title{font-size:1.15rem;font-weight:700;color:var(--teal-b);margin-bottom:8px;}
+.feature-desc{font-size:0.92rem;color:#94d9d0;line-height:1.7;}
+
+/* GRADES */
+.grades-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+    gap:24px;margin-top:48px;}
+.grade-card{border-radius:18px;padding:32px;
+    border:1px solid rgba(45,212,191,0.1);
+    background:rgba(13,148,136,0.05);transition:all 0.3s;}
+.grade-card:hover{transform:translateY(-4px);}
+.grade-label{display:inline-block;padding:4px 12px;border-radius:100px;
+    font-size:0.78rem;font-weight:700;margin-bottom:16px;}
+.grade-title{font-size:1.3rem;font-weight:800;color:var(--teal-b);margin-bottom:10px;}
+.grade-desc{font-size:0.92rem;color:#94d9d0;line-height:1.7;margin-bottom:16px;}
+.grade-features{list-style:none;}
+.grade-features li{font-size:0.88rem;color:#5eead4;padding:4px 0;}
+.grade-features li::before{content:'→ ';color:var(--teal);}
+
+/* PRICING */
+.pricing-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+    gap:24px;margin-top:48px;}
+.price-card{background:rgba(13,148,136,0.06);border:1px solid rgba(45,212,191,0.12);
+    border-radius:18px;padding:28px;transition:all 0.3s;position:relative;}
+.price-card.popular{border-color:var(--teal);
+    box-shadow:0 8px 40px rgba(13,148,136,0.2);}
+.popular-badge{position:absolute;top:-12px;left:50%;transform:translateX(-50%);
+    background:linear-gradient(135deg,var(--teal),var(--cyan));
+    color:#020d14;font-size:0.72rem;font-weight:700;
+    padding:4px 14px;border-radius:100px;white-space:nowrap;}
+.price-name{font-size:1rem;font-weight:700;color:var(--teal-b);margin-bottom:8px;}
+.price-amount{font-size:2.5rem;font-weight:800;color:#f0fdfa;line-height:1;}
+.price-period{font-size:0.85rem;color:#2dd4bf60;margin-left:4px;}
+.price-desc{font-size:0.85rem;color:#94d9d0;margin:12px 0 20px;}
+.price-features{list-style:none;margin-bottom:24px;}
+.price-features li{font-size:0.88rem;color:#5eead4;padding:5px 0;
+    border-bottom:1px solid rgba(45,212,191,0.06);}
+.price-features li::before{content:'✓  ';color:var(--teal);}
+.price-btn{display:block;text-align:center;padding:12px;border-radius:10px;
+    font-weight:700;font-size:0.95rem;text-decoration:none;transition:all 0.2s;}
+.price-btn-primary{background:linear-gradient(135deg,var(--teal),var(--cyan));color:#020d14;}
+.price-btn-primary:hover{box-shadow:0 4px 20px rgba(45,212,191,0.4);transform:translateY(-2px);}
+.price-btn-outline{background:transparent;color:var(--teal-b);
+    border:1px solid rgba(45,212,191,0.25);}
+.price-btn-outline:hover{background:rgba(13,148,136,0.12);}
+
+/* NIST BANNER */
+.nist-banner{background:rgba(13,148,136,0.08);border:1px solid rgba(45,212,191,0.15);
+    border-radius:18px;padding:40px;text-align:center;margin-top:48px;}
+.nist-title{font-size:1.2rem;font-weight:700;color:var(--teal-b);margin-bottom:16px;}
+.nist-algos{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-top:20px;}
+.algo-chip{background:rgba(13,148,136,0.12);border:1px solid rgba(45,212,191,0.2);
+    border-radius:8px;padding:8px 16px;font-size:0.82rem;
+    color:var(--teal-b);font-family:'Fira Code',monospace;font-weight:500;}
+
+/* CTA */
+.cta{background:linear-gradient(135deg,var(--navy2),var(--navy3));
+    border-top:1px solid rgba(45,212,191,0.1);text-align:center;padding:80px 5%;}
+.cta h2{font-size:clamp(1.8rem,3vw,2.8rem);font-weight:800;
+    margin-bottom:16px;letter-spacing:-0.5px;}
+.cta p{font-size:1.1rem;color:#94d9d0;max-width:500px;margin:0 auto 40px;}
+
+/* FOOTER */
+footer{background:var(--navy2);border-top:1px solid rgba(45,212,191,0.08);
+    padding:40px 5%;text-align:center;}
+.footer-logo{font-size:1.1rem;font-weight:800;
+    background:linear-gradient(135deg,var(--teal-b),var(--cyan));
+    -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+    margin-bottom:12px;}
+footer p{font-size:0.85rem;color:#2dd4bf50;line-height:1.7;}
+
+/* Mobile */
+@media(max-width:768px){
+    .nav-links{display:none;}
+    .hero-stats{gap:24px;}
+    .trust-inner{gap:24px;}
+    .stat-n{font-size:1.8rem;}
+}
+</style>
 </head>
-
 <body>
 
-    <!-- Nav -->
-    <nav>
-        <a href="#" class="nav-logo">🔐 Quantum<span>Vault</span></a>
-        <ul class="nav-links">
-            <li><a href="#grades">Curriculum</a></li>
-            <li><a href="#games">Games</a></li>
-            <li><a href="#pricing">Pricing</a></li>
-            <li><a href="#faq">FAQ</a></li>
-            <li><a href="#" class="nav-cta" onclick="openModal()">Request Demo</a></li>
+<nav>
+  <div class="nav-inner">
+    <div class="logo">🔐 QuantumVault Academy</div>
+    <ul class="nav-links">
+      <li><a href="#features">Features</a></li>
+      <li><a href="#grades">Grades</a></li>
+      <li><a href="#pricing">Pricing</a></li>
+      <li><a href="https://quantumvault-uj5jxuxyqlhajvez5ub9fc.streamlit.app/" class="nav-cta">Launch App →</a></li>
+    </ul>
+  </div>
+</nav>
+
+<section class="hero">
+  <div>
+    <div class="hero-badge">⚛️ NIST FIPS 203 · 204 · 205 · 206 Aligned</div>
+    <h1>The First K-12 <span>Post-Quantum</span><br>Cryptography Platform</h1>
+    <p class="hero-sub">Teach students the algorithms protecting the internet from quantum computers. Interactive games, AI tutoring, and real NIST standards — for every grade level.</p>
+    <div class="hero-btns">
+      <a href="https://quantumvault-uj5jxuxyqlhajvez5ub9fc.streamlit.app/" class="btn-primary">🚀 Try It Free</a>
+      <a href="#features" class="btn-secondary">See Features →</a>
+    </div>
+    <div class="hero-stats">
+      <div class="stat"><div class="stat-n">K–12</div><div class="stat-l">All Grade Levels</div></div>
+      <div class="stat"><div class="stat-n">120+</div><div class="stat-l">Unique Challenges</div></div>
+      <div class="stat"><div class="stat-n">4</div><div class="stat-l">NIST Standards</div></div>
+      <div class="stat"><div class="stat-n">7+</div><div class="stat-l">Interactive Games</div></div>
+    </div>
+  </div>
+</section>
+
+<div class="trust">
+  <div class="trust-inner">
+    <div class="trust-item">🔒 COPPA Compliant</div>
+    <div class="trust-item">🎓 NSA GenCyber Eligible</div>
+    <div class="trust-item">↩️ 30-Day Free Trial</div>
+    <div class="trust-item">⚛️ NIST FIPS 203-206</div>
+    <div class="trust-item">🤖 AI-Powered Tutoring</div>
+  </div>
+</div>
+
+<section id="features">
+  <div class="section-inner">
+    <div class="section-tag">Features</div>
+    <h2 class="section-title">Everything students need to<br><span>master post-quantum crypto</span></h2>
+    <p class="section-sub">From story-based learning for K-5 to real Python LWE code for high schoolers — QuantumVault meets every student where they are.</p>
+    <div class="features-grid">
+      <div class="feature-card">
+        <span class="feature-icon">🎮</span>
+        <div class="feature-title">12-Level Games</div>
+        <div class="feature-desc">7 interactive games with 12 progressive levels each — Falling Blocks, Lattice Maze, Tower Defense, Zombie Blast, and more. Learning disguised as play.</div>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">🤖</span>
+        <div class="feature-title">AI PQC Tutor</div>
+        <div class="feature-desc">Grade-adaptive AI tutor powered by Claude AI. Answers student questions about Kyber, lattices, and NIST standards in age-appropriate language.</div>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">🧩</span>
+        <div class="feature-title">Cipher Decoder + Escape Room</div>
+        <div class="feature-desc">12-level cipher challenge from Caesar to real LWE math. Timed escape room with 5 PQC puzzles. Students race the quantum monster!</div>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">💻</span>
+        <div class="feature-title">Real Python Code</div>
+        <div class="feature-desc">High schoolers write and run actual LWE encryption code. Experiment with noise parameters and watch decryption fail in real time.</div>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">📊</span>
+        <div class="feature-title">Teacher Dashboard</div>
+        <div class="feature-desc">Track every student's XP, badges, and completion rates. Export class data as CSV. Set weekly challenges and monitor engagement.</div>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">🏆</span>
+        <div class="feature-title">XP, Badges & Certificates</div>
+        <div class="feature-desc">Students earn XP, unlock trading cards, customize their character, and download printed certificates of completion. Parents love sharing these.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="grades" style="background:rgba(13,148,136,0.03);">
+  <div class="section-inner">
+    <div class="section-tag">Curriculum</div>
+    <h2 class="section-title">Built for <span>every grade level</span></h2>
+    <p class="section-sub">Age-appropriate content from kindergarten through 12th grade. One platform, three complete curricula.</p>
+    <div class="grades-grid">
+      <div class="grade-card">
+        <span class="grade-label" style="background:rgba(16,185,129,0.15);color:#10b981">🟢 K-5 Elementary</span>
+        <div class="grade-title">Agent Pixel's Adventure</div>
+        <div class="grade-desc">Story-based learning with Agent Pixel and Byte the robot. No math required — just imagination and curiosity.</div>
+        <ul class="grade-features">
+          <li>5-chapter illustrated story</li>
+          <li>Color mixing key exchange</li>
+          <li>Lock puzzle games</li>
+          <li>12-level word search</li>
+          <li>Vocabulary flashcards</li>
         </ul>
-    </nav>
-
-    <!-- Hero -->
-    <section class="hero">
-        <div class="hero-badge">NIST PQC Standards 2024 — Now in the Classroom</div>
-        <h1>Teach <em>Post-Quantum Cryptography</em> to Every Student</h1>
-        <p class="hero-sub">The
-            only K–12 platform that makes NIST post-quantum cryptography accessible — through interactive games, live
-            algorithm demos, and grade-appropriate modules from elementary through high school.</p>
-        <div class="hero-actions">
-            <a href="#" class="btn-primary" onclick="openModal()">
-                Request a Free Demo →
-            </a>
-            <a href="https://quantumvault-uj5jxuxyqlhajvez5ub9fc.streamlit.app" target="_blank" class="btn-ghost">
-                Try It Live ↗
-            </a>
-        </div>
-        <div class="hero-stats">
-            <div class="hero-stat">
-                <strong>3</strong>
-                <span>Grade Tiers</span>
-            </div>
-            <div class="hero-stat">
-                <strong>7+</strong>
-                <span>Mini Games</span>
-            </div>
-            <div class="hero-stat">
-                <strong>NIST</strong>
-                <span>Aligned</span>
-            </div>
-            <div class="hero-stat">
-                <strong>COPPA</strong>
-                <span>Compliant</span>
-            </div>
-        </div>
-    </section>
-
-    <!-- App Preview -->
-    <div class="app-preview">
-        <div class="preview-window">
-            <div class="preview-bar">
-                <div class="preview-dot" style="background:#f45c5c"></div>
-                <div class="preview-dot" style="background:#f4b942"></div>
-                <div class="preview-dot" style="background:#14d4a8"></div>
-                <div class="preview-url">quantumvault.streamlit.app</div>
-            </div>
-            <div class="preview-content">
-                <div class="preview-sidebar">
-                    <h4>QuantumVault</h4>
-                    <div class="preview-menu-item">
-                        <div class="preview-dot-sm" style="background:#14d4a8"></div>
-                        Elementary K–5
-                    </div>
-                    <div class="preview-menu-item active">
-                        <div class="preview-dot-sm" style="background:#7c6dfa"></div>
-                        Middle School 6–8
-                    </div>
-                    <div class="preview-menu-item">
-                        <div class="preview-dot-sm" style="background:#f45c5c"></div>
-                        High School 9–12
-                    </div>
-                    <div class="preview-menu-item">
-                        <div class="preview-dot-sm" style="background:#f4b942"></div>
-                        Leaderboard
-                    </div>
-                    <div class="preview-menu-item">
-                        <div class="preview-dot-sm" style="background:#888"></div>
-                        Mission Map
-                    </div>
-                    <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.08);">
-                        <div style="font-size: 0.65rem; color: #555; margin-bottom: 6px;">AGENT RANK</div>
-                        <div style="font-size: 0.8rem; color: #a594ff; font-weight: 600;">🔐 Agent</div>
-                        <div
-                            style="background: rgba(255,255,255,0.08); border-radius: 4px; height: 4px; margin-top: 6px;">
-                            <div style="background: #7c6dfa; height: 4px; border-radius: 4px; width: 65%"></div>
-                        </div>
-                        <div style="font-size: 0.65rem; color: #555; margin-top: 4px;">150 XP — 150 to next</div>
-                    </div>
-                </div>
-                <div class="preview-main">
-                    <div>
-                        <div
-                            style="font-size: 1rem; font-weight: 600; margin-bottom: 0.75rem; font-family: 'Syne', sans-serif;">
-                            🟡 Code Cadets — Middle School</div>
-                        <div class="preview-tabs">
-                            <div class="preview-tab active">🏗️ Lattice</div>
-                            <div class="preview-tab">🏭 Hash</div>
-                            <div class="preview-tab">⚡ Race</div>
-                            <div class="preview-tab">🎮 Games</div>
-                        </div>
-                    </div>
-                    <div class="preview-card">
-                        <h3>Live Lattice Visualizer</h3>
-                        <div
-                            style="background: rgba(124,109,250,0.06); border-radius: 6px; padding: 0.75rem; display: flex; align-items: center; justify-content: center; gap: 4px; flex-wrap: wrap;">
-                            <span style="font-size: 0.6rem; color: #7c6dfa;">●</span>
-                            <span style="font-size: 0.6rem; color: #7c6dfa;">●</span>
-                            <span style="font-size: 0.6rem; color: #7c6dfa;">●</span>
-                            <span style="font-size: 0.6rem; color: #ef4444;">★</span>
-                            <span style="font-size: 0.6rem; color: #7c6dfa;">●</span>
-                            <span style="font-size: 0.6rem; color: #14d4a8;">●</span>
-                            <span style="font-size: 0.6rem; color: #7c6dfa;">●</span>
-                            <span style="font-size: 0.6rem; color: #7c6dfa;">●</span>
-                        </div>
-                    </div>
-                    <div class="preview-bottom">
-                        <div class="preview-mini">
-                            <div class="preview-mini-label">XP Earned</div>
-                            <div class="preview-mini-value" style="color: #a594ff;">150</div>
-                        </div>
-                        <div class="preview-mini">
-                            <div class="preview-mini-label">Badges</div>
-                            <div class="preview-mini-value" style="color: #14d4a8;">4 🏅</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+      </div>
+      <div class="grade-card">
+        <span class="grade-label" style="background:rgba(124,109,250,0.15);color:#a5b4fc">🟡 6-8 Middle School</span>
+        <div class="grade-title">The Codebreaker Crew</div>
+        <div class="grade-desc">Real math concepts behind PQC — lattices, hash functions, and key sizes — made visual and interactive.</div>
+        <ul class="grade-features">
+          <li>Live lattice visualizer</li>
+          <li>SHA-3 hash factory</li>
+          <li>Quantum vs classical race</li>
+          <li>Build-a-Key workshop</li>
+          <li>Key size lab with charts</li>
+        </ul>
+      </div>
+      <div class="grade-card">
+        <span class="grade-label" style="background:rgba(244,92,92,0.15);color:#f45c5c">🔴 9-12 High School</span>
+        <div class="grade-title">Professional PQC</div>
+        <div class="grade-desc">NIST timeline, algorithm comparison lab, real Python LWE code, threat modeling, and 12-level math challenges.</div>
+        <ul class="grade-features">
+          <li>Full NIST timeline</li>
+          <li>Python LWE implementation</li>
+          <li>Threat modeling simulator</li>
+          <li>12-level math challenge</li>
+          <li>Career explorer</li>
+        </ul>
+      </div>
     </div>
+  </div>
+</section>
 
-    <!-- Why -->
-    <section class="why" id="why">
-        <div class="container">
-            <div class="section-label">Why QuantumVault</div>
-            <h2 class="section-title">The quantum threat is real.<br>Schools aren't ready.</h2>
-            <p class="section-sub">NIST finalized post-quantum cryptography standards in 2024. No K-12 curriculum covers
-                it. QuantumVault changes that.</p>
-            <div class="why-grid">
-                <div class="why-card">
-                    <div class="why-icon" style="background: rgba(124,109,250,0.15);">🔐</div>
-                    <h3>NIST-Aligned Content</h3>
-                    <p>All curriculum based on the official NIST PQC standards — ML-KEM (Kyber), ML-DSA (Dilithium), and
-                        SPHINCS+. Students learn real algorithms, not simplified versions.</p>
-                </div>
-                <div class="why-card">
-                    <div class="why-icon" style="background: rgba(20,212,168,0.15);">🎮</div>
-                    <h3>Learn Through Play</h3>
-                    <p>Seven interactive games make abstract cryptography tangible. Zombie blasters, tower defense, and
-                        Minecraft-style mining all reinforce PQC concepts through play.</p>
-                </div>
-                <div class="why-card">
-                    <div class="why-icon" style="background: rgba(244,185,66,0.15);">📊</div>
-                    <h3>Built for Every Grade</h3>
-                    <p>Three separate learning tracks from K-5 through 12th grade. Difficulty scales appropriately —
-                        color mixing key exchange for kindergartners, real LWE code for seniors.</p>
-                </div>
-                <div class="why-card">
-                    <div class="why-icon" style="background: rgba(244,92,92,0.15);">🛡️</div>
-                    <h3>COPPA Compliant</h3>
-                    <p>Zero personal data collected. No accounts required for students under 13. Privacy-first by design
-                        — safe to deploy in any school district without legal concerns.</p>
-                </div>
-                <div class="why-card">
-                    <div class="why-icon" style="background: rgba(124,109,250,0.15);">⚡</div>
-                    <h3>First Mover Advantage</h3>
-                    <p>No other platform teaches K-12 post-quantum cryptography. With quantum computers advancing
-                        rapidly, districts that adopt early will be ahead of federal mandates.</p>
-                </div>
-                <div class="why-card">
-                    <div class="why-icon" style="background: rgba(20,212,168,0.15);">📱</div>
-                    <h3>No Installation Needed</h3>
-                    <p>Runs entirely in the browser on any device. No IT department involvement required. Teachers can
-                        start using QuantumVault in their classroom the same day they sign up.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Grades -->
-    <section class="grades" id="grades">
-        <div class="container">
-            <div class="section-label">Curriculum</div>
-            <h2 class="section-title">Three grade-level tracks</h2>
-            <p class="section-sub">Each module is purpose-built for its age group — same concepts, very different
-                delivery.</p>
-            <div class="grades-grid">
-                <div class="grade-card">
-                    <div class="grade-header">
-                        <div class="grade-badge" style="background: rgba(20,212,168,0.15); color: #14d4a8;">K–5
-                            Elementary</div>
-                        <h3>Secret Keepers</h3>
-                        <div class="grade-range">Grades Kindergarten through 5th</div>
-                    </div>
-                    <div class="grade-body">
-                        <ul class="grade-features">
-                            <li>Story mode — Agent Pixel vs the Quantum Monster</li>
-                            <li>Color mixing key exchange analogy</li>
-                            <li>Quantum-safe lock puzzle with timer</li>
-                            <li>PQC vocabulary flashcards</li>
-                            <li>Falling blocks mini game</li>
-                            <li>QuantumCraft — Crypto Kingdom</li>
-                        </ul>
-                    </div>
-                </div>
-                <div class="grade-card" style="border-color: rgba(124,109,250,0.3);">
-                    <div class="grade-header">
-                        <div class="grade-badge" style="background: rgba(124,109,250,0.15); color: #a594ff;">6–8 Middle
-                            School</div>
-                        <h3>Code Cadets</h3>
-                        <div class="grade-range">Grades 6th through 8th</div>
-                    </div>
-                    <div class="grade-body">
-                        <ul class="grade-features">
-                            <li>Live interactive lattice visualizer</li>
-                            <li>SHA-3 hash factory with avalanche effect</li>
-                            <li>Quantum vs classical speed race</li>
-                            <li>Simplified Kyber key workshop</li>
-                            <li>Lattice maze mini game</li>
-                            <li>QuantumCraft — Lattice Mines</li>
-                        </ul>
-                    </div>
-                </div>
-                <div class="grade-card">
-                    <div class="grade-header">
-                        <div class="grade-badge" style="background: rgba(244,92,92,0.15); color: #f45c5c;">9–12 High
-                            School</div>
-                        <h3>Cipher Corps</h3>
-                        <div class="grade-range">Grades 9th through 12th</div>
-                    </div>
-                    <div class="grade-body">
-                        <ul class="grade-features">
-                            <li>NIST PQC standardization timeline</li>
-                            <li>Algorithm comparison lab (RSA vs Kyber)</li>
-                            <li>Live Python LWE code lab</li>
-                            <li>Threat modeling simulator</li>
-                            <li>RSA vs Kyber quantum attack race</li>
-                            <li>PQC Tower Defense + Cipher Ruins</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Games -->
-    <section class="games" id="games">
-        <div class="container">
-            <div class="section-label">Mini Games</div>
-            <h2 class="section-title">Learn by playing</h2>
-            <p class="section-sub">Every game teaches a real PQC concept. Students don't realize they're learning —
-                they're just having fun.</p>
-            <div class="games-grid">
-                <div class="game-card">
-                    <span class="game-emoji">🧱</span>
-                    <h4>Falling Blocks</h4>
-                    <p>Catch Kyber and Dilithium. Avoid RSA and ECC.</p>
-                </div>
-                <div class="game-card">
-                    <span class="game-emoji">🌀</span>
-                    <h4>Lattice Maze</h4>
-                    <p>Collect Kyber keys. Evade quantum attackers.</p>
-                </div>
-                <div class="game-card">
-                    <span class="game-emoji">🛡️</span>
-                    <h4>Tower Defense</h4>
-                    <p>Deploy Kyber, Dilithium, SPHINCS+ towers.</p>
-                </div>
-                <div class="game-card">
-                    <span class="game-emoji">🧟</span>
-                    <h4>Zombie Blast</h4>
-                    <p>Blast RSA zombies with PQC weapons.</p>
-                </div>
-                <div class="game-card">
-                    <span class="game-emoji">⛏️</span>
-                    <h4>QuantumCraft</h4>
-                    <p>Mine crypto ore. Build quantum-safe walls.</p>
-                </div>
-                <div class="game-card">
-                    <span class="game-emoji">🏃</span>
-                    <h4>Cipher Ruins</h4>
-                    <p>Side-scroll and collect PQC power-ups.</p>
-                </div>
-                <div class="game-card">
-                    <span class="game-emoji">⚡</span>
-                    <h4>Quantum Race</h4>
-                    <p>Watch RSA get shattered. Kyber holds strong.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Pricing -->
-    <section class="pricing" id="pricing">
-        <div class="container">
-            <div class="section-label">Pricing</div>
-            <h2 class="section-title">Simple, transparent pricing</h2>
-            <p class="section-sub">Per-school annual licenses. Volume discounts for districts. Grant funding assistance
-                available.</p>
-            <div class="pricing-grid">
-                <div class="pricing-card">
-                    <h3>Classroom</h3>
-                    <p class="pricing-desc">Single teacher, one grade level</p>
-                    <div class="pricing-price">
-                        <strong>$499</strong><span>/year</span>
-                    </div>
-                    <ul class="pricing-features">
-                        <li><span class="check">✓</span> One grade level module</li>
-                        <li><span class="check">✓</span> Up to 35 students</li>
-                        <li><span class="check">✓</span> All mini games</li>
-                        <li><span class="check">✓</span> Leaderboard</li>
-                        <li><span class="check">✓</span> Email support</li>
-                    </ul>
-                    <a href="#" class="pricing-btn pricing-btn-outline" onclick="openModal()">Get Started</a>
-                </div>
-                <div class="pricing-card featured">
-                    <div class="featured-badge">Most Popular</div>
-                    <h3>School</h3>
-                    <p class="pricing-desc">Whole school, all three grade levels</p>
-                    <div class="pricing-price">
-                        <strong>$1,1,999</strong><span>/year</span>
-                    </div>
-                    <ul class="pricing-features">
-                        <li><span class="check">✓</span> All three grade modules</li>
-                        <li><span class="check">✓</span> Unlimited students</li>
-                        <li><span class="check">✓</span> All mini games</li>
-                        <li><span class="check">✓</span> School-wide leaderboard</li>
-                        <li><span class="check">✓</span> Teacher progress dashboard</li>
-                        <li><span class="check">✓</span> Priority support</li>
-                        <li><span class="check">✓</span> Custom school branding</li>
-                    </ul>
-                    <a href="#" class="pricing-btn pricing-btn-filled" onclick="openModal()">Request Demo</a>
-                </div>
-                <div class="pricing-card">
-                    <h3>District</h3>
-                    <p class="pricing-desc">Multiple schools, centralized admin</p>
-                    <div class="pricing-price">
-                        <strong>Custom</strong>
-                    </div>
-                    <ul class="pricing-features">
-                        <li><span class="check">✓</span> Everything in School</li>
-                        <li><span class="check">✓</span> Unlimited schools</li>
-                        <li><span class="check">✓</span> District admin dashboard</li>
-                        <li><span class="check">✓</span> SSO integration</li>
-                        <li><span class="check">✓</span> FERPA compliance docs</li>
-                        <li><span class="check">✓</span> Dedicated account manager</li>
-                        <li><span class="check">✓</span> Grant writing assistance</li>
-                    </ul>
-                    <a href="#" class="pricing-btn pricing-btn-outline" onclick="openModal()">Contact Us</a>
-                </div>
-            </div>
-            <p style="text-align:center; margin-top: 2rem; font-size: 0.85rem; color: var(--muted);">
-                All plans include a 30-day free trial. NSA GenCyber grant eligible.
-                <a href="#" onclick="openModal()" style="color: var(--accent2); text-decoration: none;">Ask about grant
-                    assistance →</a>
-            </p>
-        </div>
-    </section>
-
-    <!-- Social Proof -->
-    <section class="social" id="social">
-        <div class="container">
-            <div class="section-label">What Educators Say</div>
-            <h2 class="section-title">Built with teacher feedback</h2>
-            <div class="testimonials">
-                <div class="testimonial">
-                    <p>"Finally — a platform that teaches the cryptography that actually matters right now. My 7th
-                        graders were coding LWE problems within an hour. The games kept them hooked."</p>
-                    <div class="testimonial-author">
-                        <div class="testimonial-avatar" style="background: rgba(124,109,250,0.2); color: #a594ff;">MT
-                        </div>
-                        <div>
-                            <strong>Ms. Torres</strong>
-                            <span>STEM Teacher, California</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="testimonial">
-                    <p>"The timing is perfect. With NIST releasing PQC standards, our district needed something to get
-                        ahead of the curriculum wave. QuantumVault is exactly that."</p>
-                    <div class="testimonial-author">
-                        <div class="testimonial-avatar" style="background: rgba(20,212,168,0.2); color: #14d4a8;">DR
-                        </div>
-                        <div>
-                            <strong>Dr. Reynolds</strong>
-                            <span>IT Director, Texas ISD</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="testimonial">
-                    <p>"My 4th graders couldn't get enough of the Zombie Blast game. They learned that RSA is not
-                        quantum-safe without me saying a single word of lecture. That's magic."</p>
-                    <div class="testimonial-author">
-                        <div class="testimonial-avatar" style="background: rgba(244,185,66,0.2); color: #f4b942;">JP
-                        </div>
-                        <div>
-                            <strong>Mr. Park</strong>
-                            <span>Elementary Teacher, Georgia</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- FAQ -->
-    <section class="faq" id="faq">
-        <div class="container">
-            <div class="section-label">FAQ</div>
-            <h2 class="section-title">Common questions</h2>
-            <div class="faq-list">
-                <div class="faq-item">
-                    <button class="faq-q" onclick="toggleFaq(this)">
-                        Do students need to know math or coding to use QuantumVault?
-                        <span class="faq-arrow">▼</span>
-                    </button>
-                    <div class="faq-a">No. The K-5 module requires zero prior knowledge — it uses color mixing and
-                        puzzle games. The middle school module introduces math through visual lattice diagrams. Only the
-                        high school module involves actual Python code, and even then it's guided step by step.</div>
-                </div>
-                <div class="faq-item">
-                    <button class="faq-q" onclick="toggleFaq(this)">
-                        Is QuantumVault COPPA and FERPA compliant?
-                        <span class="faq-arrow">▼</span>
-                    </button>
-                    <div class="faq-a">QuantumVault collects zero personal data from students. No accounts are required.
-                        The only data stored is anonymous nicknames and XP scores on the leaderboard. We provide full
-                        FERPA compliance documentation for district purchases.</div>
-                </div>
-                <div class="faq-item">
-                    <button class="faq-q" onclick="toggleFaq(this)">
-                        How does this align with NIST standards?
-                        <span class="faq-arrow">▼</span>
-                    </button>
-                    <div class="faq-a">All algorithms taught in QuantumVault are the four finalists from NIST's PQC
-                        competition — ML-KEM (Kyber), ML-DSA (Dilithium), SLH-DSA (SPHINCS+), and FN-DSA (Falcon). The
-                        high school module specifically covers FIPS 203, 204, and 205.</div>
-                </div>
-                <div class="faq-item">
-                    <button class="faq-q" onclick="toggleFaq(this)">
-                        Can we apply for NSA GenCyber or CISA grants to fund this?
-                        <span class="faq-arrow">▼</span>
-                    </button>
-                    <div class="faq-a">Yes. QuantumVault is eligible for NSA GenCyber, CISA K-12 cybersecurity education
-                        grants, and various state-level STEM funding programs. District plans include grant writing
-                        assistance to help you secure funding.</div>
-                </div>
-                <div class="faq-item">
-                    <button class="faq-q" onclick="toggleFaq(this)">
-                        Does it work on Chromebooks and tablets?
-                        <span class="faq-arrow">▼</span>
-                    </button>
-                    <div class="faq-a">Yes. QuantumVault runs entirely in any modern web browser — Chrome, Safari,
-                        Firefox, Edge. No installation, no app download, no IT department involvement. Works on
-                        Chromebooks, iPads, Windows laptops, and Android tablets.</div>
-                </div>
-                <div class="faq-item">
-                    <button class="faq-q" onclick="toggleFaq(this)">
-                        Is there a free trial?
-                        <span class="faq-arrow">▼</span>
-                    </button>
-                    <div class="faq-a">Yes — all plans include a 30-day free trial with full access to all modules and
-                        games. You can also try the live demo version anytime without signing up.</div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- CTA -->
-    <section class="cta-section">
-        <div class="container">
-            <div class="cta-box">
-                <h2>Ready to bring quantum-safe crypto to your school?</h2>
-                <p>Join the schools preparing students for the post-quantum world. Free 30-day trial, no credit card
-                    required.</p>
-                <div class="cta-form">
-                    <input type="email" class="cta-input" placeholder="Your school email" id="cta-email">
-                    <button class="btn-primary" onclick="openModalWithEmail()">Get Free Trial →</button>
-                </div>
-                <p style="font-size: 0.78rem; color: var(--muted); margin-top: 1rem;">30-day free trial · No credit card
-                    · COPPA compliant</p>
-            </div>
-        </div>
-    </section>
-
-    <!-- Footer -->
-    <footer>
-        <div class="container">
-            <div class="footer-inner">
-                <div class="footer-logo">🔐 Quantum<span>Vault</span> Academy</div>
-                <ul class="footer-links">
-                    <li><a href="#grades">Curriculum</a></li>
-                    <li><a href="#pricing">Pricing</a></li>
-                    <li><a href="privacy.html">Privacy Policy</a></li>
-                    <li><a href="terms.html">Terms of Service</a></li>
-                    <li><a href="#" onclick="openModal()">Contact</a></li>
-                </ul>
-                <div class="footer-copy">© 2026 QuantumVault Academy. All rights reserved.</div>
-            </div>
-        </div>
-    </footer>
-
-    <!-- Demo Request Modal -->
-    <div class="modal-overlay" id="modal">
-        <div class="modal">
-            <button class="modal-close" onclick="closeModal()">✕</button>
-            <div id="modal-form-content">
-                <h2>Request a Free Demo</h2>
-                <p>Tell us about your school and we'll set up a personalized demo within 24 hours.</p>
-                <div class="modal-form">
-                    <input type="text" class="modal-input" placeholder="Your name" id="m-name">
-                    <input type="email" class="modal-input" placeholder="School email" id="m-email">
-                    <input type="text" class="modal-input" placeholder="School / District name" id="m-school">
-                    <select class="modal-input" id="m-role">
-                        <option value="" disabled selected>Your role</option>
-                        <option>Teacher</option>
-                        <option>Department Head</option>
-                        <option>Principal</option>
-                        <option>IT Director</option>
-                        <option>Curriculum Coordinator</option>
-                        <option>District Administrator</option>
-                    </select>
-                    <select class="modal-input" id="m-plan">
-                        <option value="" disabled selected>Interested in</option>
-                        <option>Classroom ($499/yr)</option>
-                        <option>School ($1,1,999/yr)</option>
-                        <option>District (Custom)</option>
-                        <option>Grant Funding Info</option>
-                        <option>Just exploring</option>
-                    </select>
-                    <button class="modal-submit" onclick="submitDemo()">Request Demo →</button>
-                </div>
-            </div>
-            <div class="modal-success" id="modal-success">
-                <div style="font-size: 2.5rem; margin-bottom: 1rem;">🎉</div>
-                <h3>Demo request received!</h3>
-                <p>We'll reach out within 24 hours to schedule your personalized demo. Check your email!</p>
-            </div>
-        </div>
+<section id="pricing">
+  <div class="section-inner">
+    <div class="section-tag">Pricing</div>
+    <h2 class="section-title">Simple pricing for <span>every school</span></h2>
+    <p class="section-sub">Start free. Upgrade when you are ready. All plans include a 30-day free trial — no credit card required.</p>
+    <div class="pricing-grid">
+      <div class="price-card">
+        <div class="price-name">🆓 Free</div>
+        <div><span class="price-amount">$0</span><span class="price-period">forever</span></div>
+        <div class="price-desc">Try one grade level with up to 10 students.</div>
+        <ul class="price-features">
+          <li>1 grade level module</li>
+          <li>Up to 10 students</li>
+          <li>All mini games</li>
+          <li>Leaderboard access</li>
+        </ul>
+        <a href="https://quantumvault-uj5jxuxyqlhajvez5ub9fc.streamlit.app/" class="price-btn price-btn-outline">Get Started Free</a>
+      </div>
+      <div class="price-card popular">
+        <div class="popular-badge">⭐ MOST POPULAR</div>
+        <div class="price-name">🏫 School</div>
+        <div><span class="price-amount">$1,999</span><span class="price-period">/year</span></div>
+        <div class="price-desc">All three grade levels, unlimited students.</div>
+        <ul class="price-features">
+          <li>All 3 grade modules K-12</li>
+          <li>Unlimited students</li>
+          <li>AI Tutor included</li>
+          <li>Teacher dashboard</li>
+          <li>NSA GenCyber eligible</li>
+        </ul>
+        <a href="https://quantumvault-uj5jxuxyqlhajvez5ub9fc.streamlit.app/" class="price-btn price-btn-primary">Start Free Trial →</a>
+      </div>
+      <div class="price-card">
+        <div class="price-name">📝 Grant Package</div>
+        <div><span class="price-amount">$2,499</span><span class="price-period">/year</span></div>
+        <div class="price-desc">School plan plus grant writing support.</div>
+        <ul class="price-features">
+          <li>Everything in School plan</li>
+          <li>Grant writing letter</li>
+          <li>FERPA compliance docs</li>
+          <li>Dedicated onboarding</li>
+          <li>NSA GenCyber support</li>
+        </ul>
+        <a href="https://quantumvault-uj5jxuxyqlhajvez5ub9fc.streamlit.app/" class="price-btn price-btn-outline">Learn More</a>
+      </div>
     </div>
+    <div class="nist-banner">
+      <div class="nist-title">🔐 Aligned with All Four NIST Post-Quantum Standards</div>
+      <p style="color:#94d9d0;font-size:0.95rem">The same algorithms protecting the US government — now in your classroom.</p>
+      <div class="nist-algos">
+        <div class="algo-chip">ML-KEM · FIPS 203</div>
+        <div class="algo-chip">ML-DSA · FIPS 204</div>
+        <div class="algo-chip">SLH-DSA · FIPS 205</div>
+        <div class="algo-chip">FN-DSA · FIPS 206</div>
+      </div>
+    </div>
+  </div>
+</section>
 
-    <script>
-        function openModal() {
-            document.getElementById('modal').classList.add('open');
-            document.body.style.overflow = 'hidden';
-        }
+<section class="cta">
+  <h2>Ready to future-proof<br><span style="background:linear-gradient(135deg,#5eead4,#67e8f9);-webkit-background-clip:text;-webkit-text-fill-color:transparent">your students?</span></h2>
+  <p>Join the first and only K-12 post-quantum cryptography curriculum. Start free today — no credit card required.</p>
+  <a href="https://quantumvault-uj5jxuxyqlhajvez5ub9fc.streamlit.app/" class="btn-primary" style="font-size:1.1rem;padding:16px 40px;">🚀 Launch QuantumVault Free →</a>
+</section>
 
-        function openModalWithEmail() {
-            const email = document.getElementById('cta-email').value;
-            openModal();
-            if (email) document.getElementById('m-email').value = email;
-        }
+<footer>
+  <div class="footer-logo">🔐 QuantumVault Academy</div>
+  <p>The First and Only K-12 Post-Quantum Cryptography Platform<br>
+  NIST FIPS 203 · 204 · 205 · 206 · COPPA Compliant · NSA GenCyber Eligible<br><br>
+  Questions? <a href="mailto:hello@quantumvaultacademy.com" style="color:#2dd4bf">hello@quantumvaultacademy.com</a></p>
+</footer>
 
-        function closeModal() {
-            document.getElementById('modal').classList.remove('open');
-            document.body.style.overflow = '';
-        }
-
-        document.getElementById('modal').addEventListener('click', function (e) {
-            if (e.target === this) closeModal();
-        });
-
-        function submitDemo() {
-            const name = document.getElementById('m-name').value;
-            const email = document.getElementById('m-email').value;
-            const school = document.getElementById('m-school').value;
-            if (!name || !email || !school) {
-                alert('Please fill in your name, email, and school name.');
-                return;
-            }
-            document.getElementById('modal-form-content').style.display = 'none';
-            document.getElementById('modal-success').style.display = 'block';
-            // TODO: Replace with actual form submission (Formspree, EmailJS, etc.)
-            console.log('Demo request:', { name, email, school });
-        }
-
-        function toggleFaq(btn) {
-            const item = btn.closest('.faq-item');
-            item.classList.toggle('open');
-        }
-
-        // Scroll animations
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(e => {
-                if (e.isIntersecting) {
-                    e.target.style.opacity = '1';
-                    e.target.style.transform = 'translateY(0)';
-                }
-            });
-        }, { threshold: 0.1 });
-
-        document.querySelectorAll('.why-card, .grade-card, .game-card, .pricing-card, .testimonial').forEach(el => {
-            el.style.opacity = '0';
-            el.style.transform = 'translateY(24px)';
-            el.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
-            observer.observe(el);
-        });
-    </script>
 </body>
-
 </html>
