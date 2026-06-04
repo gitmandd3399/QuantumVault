@@ -994,15 +994,17 @@ def render_high_school():
                 unlocked = xp >= lvl["xp_req"]
                 completed = st.session_state.get(f"math_done_{i}", False)
                 c = lvl["color"]
+                bg = c + "20" if completed else "#1e293b"
+                border = "2px solid " + c if unlocked else "1px solid #334155"
+                emoji = lvl["emoji"] if unlocked else "🔒"
+                name_color = c if unlocked else "#888"
+                grade_txt = "✅" if completed else lvl["grade"]
                 st.markdown(
-                    f"<div style='background:{\'%s20\' % c if completed else \'#1e293b\'};"
-                    f"border:{\'2px solid \' + c if unlocked else \'1px solid #334155\'};"
+                    f"<div style='background:{bg};border:{border};"
                     f"border-radius:10px;padding:8px 4px;text-align:center;margin:3px'>"
-                    f"<div style='font-size:1.2rem'>{lvl['emoji'] if unlocked else '🔒'}</div>"
-                    f"<div style='font-size:0.65rem;font-weight:bold;"
-                    f"color:{\'%s\' % c if unlocked else \'#888\'}\'>{lvl['name']}</div>"
-                    f"<div style='font-size:0.6rem;color:#888'>"
-                    f"{'✅' if completed else lvl['grade']}</div>"
+                    f"<div style='font-size:1.2rem'>{emoji}</div>"
+                    f"<div style='font-size:0.65rem;font-weight:bold;color:{name_color}'>{lvl['name']}</div>"
+                    f"<div style='font-size:0.6rem;color:#888'>{grade_txt}</div>"
                     f"</div>",
                     unsafe_allow_html=True
                 )
@@ -1013,9 +1015,9 @@ def render_high_school():
         for i, lvl in enumerate(LEVELS):
             unlocked = xp >= lvl["xp_req"]
             if unlocked:
-                level_names.append(f"{lvl['emoji']} {lvl['name']}: {lvl['topic']}")
+                level_names.append(lvl["emoji"] + " " + lvl["name"] + ": " + lvl["topic"])
             else:
-                level_names.append(f"🔒 {lvl['name']} — needs {lvl['xp_req']} XP (you have {xp})")
+                level_names.append("🔒 " + lvl["name"] + " — needs " + str(lvl["xp_req"]) + " XP (you have " + str(xp) + ")")
 
         sel = st.selectbox("Choose your level:", level_names, key="math_sel")
         sel_idx = level_names.index(sel)
@@ -1035,7 +1037,7 @@ def render_high_school():
                 unsafe_allow_html=True
             )
 
-            if st.button(f"▶ Start {sel_lvl['name']}!", key="math_start_btn", type="primary"):
+            if st.button("▶ Start " + sel_lvl["name"] + "!", key="math_start_btn", type="primary"):
                 st.session_state.math_game_active = True
                 st.session_state.math_level = sel_idx
                 st.rerun()
