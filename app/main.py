@@ -149,23 +149,16 @@ def sidebar():
             is_active = current == route
             if is_active:
                 st.sidebar.markdown(
-                    f"<div style='background:{c}25;border:1px solid {c}50;"
-                    f"border-radius:8px;padding:5px 10px;margin:2px 0;"
+                    f"<div style='background:{c}25;border:1px solid {c}60;"
+                    f"border-radius:8px;padding:6px 12px;margin:2px 0;"
                     f"font-size:0.82rem;color:white;font-weight:bold'>"
-                    f"{emoji} {label}</div>",
+                    f"{emoji} {label} ◀</div>",
                     unsafe_allow_html=True
-                )
-                # invisible button to allow reselection
-                st.sidebar.button(
-                    f"{emoji} {label}", key=f"nav_{route}",
-                    use_container_width=True,
-                    help=label, disabled=True,
-                    label_visibility="collapsed"
                 )
             else:
                 if st.sidebar.button(
                     f"{emoji} {label}", key=f"nav_{route}",
-                    use_container_width=True, help=label,
+                    use_container_width=True,
                 ):
                     st.session_state.level = route
                     st.rerun()
