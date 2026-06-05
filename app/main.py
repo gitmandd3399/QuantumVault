@@ -525,6 +525,10 @@ def main():
         render_algo_battle()
     elif "Career Explorer" in level:
         render_career_explorer()
+    elif "Privacy Policy" in level:
+        render_privacy_policy()
+    elif "Terms of Service" in level:
+        render_terms_of_service()
     elif "AI Tutor" in level:
         if st.session_state.get("plan_type", "free") == "free":
             st.title("🤖 AI Tutor")
