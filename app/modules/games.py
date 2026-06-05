@@ -440,592 +440,581 @@ ctx.fillText("Press ▶ Start to play!",W/2,H/2+60);
 """, height=700)
 
 def render_lattice_maze():
-    """6-8: Enhanced Lattice Maze with better graphics, enemies, levels and PQC content."""
-    st.subheader("🌀 Lattice Maze Escape — Enhanced!")
+    """6-8: Lattice Maze — Navigate the quantum grid to rescue stolen NIST algorithms."""
+    import streamlit as st
+    st.subheader("🌀 Lattice Maze — Operation: Quantum Rescue!")
     st.markdown(
-        "Navigate the **quantum lattice grid** to collect all Kyber Keys! "
-        "Avoid quantum attackers. Arrow keys or WASD to move. "
-        "Each level gets harder — boss enemies appear on level 3+!"
+        "🚨 **MISSION BRIEFING:** The Quantum Monster has stolen the 4 NIST PQC algorithm crystals "
+        "and hidden them in a lattice grid! You are Agent Pixel. Navigate the maze, "
+        "collect all crystals, and escape before the Shor and Grover enemies catch you. "
+        "Each crystal you collect teaches you a real PQC concept!"
     )
 
-    with st.expander("📚 Why Lattice Math?", expanded=False):
-        st.info(
-            "A lattice is a regular grid of points in space. "
-            "The hard problem: given a noisy point near the grid, find the CLOSEST grid point. "
-            "In 1000 dimensions this stumps quantum computers — that is why Kyber is safe! "
-            "This maze represents navigating a 2D lattice to find the Kyber keys (solutions)."
-        )
-
-    import streamlit.components.v1 as components_lm
-    components_lm.html("""
+    import streamlit.components.v1 as _lm
+    _lm.html("""
 <!DOCTYPE html>
 <html>
 <head>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
-body{background:#0f172a;font-family:sans-serif;color:white;}
-#lm-wrap{display:flex;flex-direction:column;align-items:center;padding:10px;}
-.lm-hud{display:flex;justify-content:space-between;width:460px;margin-bottom:8px;gap:5px;}
-.hud-box{background:#1e293b;border:1px solid #334155;border-radius:8px;
-padding:5px 8px;font-size:12px;font-weight:bold;color:#a5b4fc;flex:1;text-align:center;}
-#mazeCanvas{border:2px solid #4f46e5;border-radius:12px;display:block;}
-.lm-btns{display:flex;gap:6px;margin:8px 0;flex-wrap:wrap;justify-content:center;}
-.lm-btn{padding:8px 16px;border-radius:8px;border:none;cursor:pointer;
-font-size:13px;font-weight:bold;background:#4f46e5;color:white;}
-.lm-btn:active{background:#3730a3;}
-#lm-msg{font-size:12px;color:#34d399;min-height:18px;margin:4px;text-align:center;}
-#lm-fact{background:rgba(79,70,229,0.15);border:1px solid rgba(79,70,229,0.4);
-border-radius:8px;padding:6px 12px;margin:4px;font-size:11px;color:#a5b4fc;
-max-width:460px;display:none;text-align:center;}
-.dir-pad{display:grid;grid-template-columns:repeat(3,40px);gap:4px;margin:4px;}
-.dir-btn{width:40px;height:40px;border-radius:8px;border:none;cursor:pointer;
-background:#1e293b;color:#a5b4fc;font-size:16px;font-weight:bold;
-border:1px solid #334155;}
-.dir-btn:active{background:#4f46e5;color:white;}
+body{background:#020d14;font-family:'Segoe UI',sans-serif;color:white;}
+#wrap{display:flex;flex-direction:column;align-items:center;padding:10px;max-width:520px;margin:0 auto;}
+
+/* HUD */
+.hud{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;width:100%;margin-bottom:8px;}
+.hb{background:#071520;border:1px solid #1a3a5a;border-radius:8px;padding:5px 4px;
+    text-align:center;font-size:10px;color:#60a5fa;}
+.hb b{display:block;font-size:14px;color:#93c5fd;}
+
+/* Mission panel */
+#mission{background:#071520;border:1px solid #1a3a5a;border-radius:10px;
+    padding:8px 12px;width:100%;margin-bottom:6px;font-size:11px;color:#60a5fa;
+    min-height:32px;line-height:1.5;}
+
+/* Canvas */
+#gc{border:2px solid #1d4ed8;border-radius:12px;display:block;
+    box-shadow:0 0 24px rgba(59,130,246,0.2);}
+
+/* Crystal collection */
+#crystals{display:flex;gap:8px;justify-content:center;margin:8px 0;flex-wrap:wrap;}
+.crystal{background:#071520;border:2px solid #334155;border-radius:10px;
+    padding:6px 10px;font-size:11px;color:#64748b;text-align:center;
+    transition:all 0.3s;min-width:70px;}
+.crystal.collected{border-color:#10b981;color:#10b981;
+    box-shadow:0 0 12px rgba(16,185,129,0.3);background:#071f15;}
+.crystal.collecting{animation:pulse 0.5s ease-in-out;}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.15)}}
+
+/* Message */
+#msg{font-size:12px;color:#34d399;min-height:18px;margin:4px;text-align:center;font-weight:bold;}
+
+/* Fact box */
+#fact{background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.3);
+    border-radius:10px;padding:8px 12px;margin:4px 0;font-size:11px;color:#93c5fd;
+    max-width:460px;display:none;text-align:center;line-height:1.5;width:100%;}
+
+/* Buttons */
+.btns{display:flex;gap:6px;margin:6px 0;flex-wrap:wrap;justify-content:center;}
+.btn{padding:8px 18px;border-radius:8px;border:none;cursor:pointer;
+    font-size:12px;font-weight:bold;color:white;transition:all 0.15s;}
+.btn:active{transform:scale(0.95);}
+.btn-start{background:#1d4ed8;}
+.btn-next{background:#059669;}
+.btn-next:disabled{background:#334155;cursor:not-allowed;}
+
+/* D-pad */
+.dpad{display:grid;grid-template-columns:repeat(3,44px);gap:4px;margin:6px 0;}
+.db{width:44px;height:44px;border-radius:8px;border:1px solid #1e3a5a;
+    cursor:pointer;background:#071520;color:#60a5fa;font-size:18px;font-weight:bold;
+    transition:all 0.1s;}
+.db:active{background:#1d4ed8;color:white;transform:scale(0.92);}
+
+/* Win/Game over overlay */
+#overlay{display:none;position:absolute;top:0;left:0;right:0;bottom:0;
+    background:rgba(2,13,20,0.92);border-radius:12px;
+    flex-direction:column;align-items:center;justify-content:center;
+    text-align:center;padding:20px;}
+.overlay-wrap{position:relative;width:460px;}
 </style>
 </head>
 <body>
-<div id="lm-wrap">
-    <div class="lm-hud">
-        <div class="hud-box">❤️ Lives<br><span id="mlives">3</span></div>
-        <div class="hud-box">🔑 Keys<br><span id="mkeys">0</span>/<span id="mtotal">3</span></div>
-        <div class="hud-box">⭐ Score<br><span id="mscore">0</span></div>
-        <div class="hud-box">🌊 Level<br><span id="mlevel">1</span></div>
-        <div class="hud-box">👾 Enemies<br><span id="menemies">0</span></div>
-    </div>
-    <canvas id="mazeCanvas" width="460" height="420"></canvas>
-    <div id="lm-msg">Press Start to play!</div>
-    <div id="lm-fact"></div>
-    <div class="lm-btns">
-        <button class="lm-btn" style="background:#10b981" onclick="startMaze()">▶ Start</button>
-        <button class="lm-btn" style="background:#4f46e5" onclick="nextLevel()" id="next-btn" disabled>Next Level →</button>
-    </div>
-    <div class="dir-pad">
-        <div></div>
-        <button class="dir-btn" onclick="move(0,-1)">▲</button>
-        <div></div>
-        <button class="dir-btn" onclick="move(-1,0)">◀</button>
-        <button class="dir-btn" onclick="startMaze()">⟳</button>
-        <button class="dir-btn" onclick="move(1,0)">▶</button>
-        <div></div>
-        <button class="dir-btn" onclick="move(0,1)">▼</button>
-        <div></div>
+<div id="wrap">
+
+<div class="hud">
+    <div class="hb">❤️ Lives<br><b id="hlives">3</b></div>
+    <div class="hb">🔮 Crystals<br><b id="hcrystals">0/4</b></div>
+    <div class="hb">⭐ Score<br><b id="hscore">0</b></div>
+    <div class="hb">🌊 Level<br><b id="hlevel">1</b>/12</div>
+    <div class="hb">👾 Enemies<br><b id="henemies">0</b></div>
+</div>
+
+<div id="mission">🎯 Mission: Collect all NIST algorithm crystals and reach the EXIT portal!</div>
+
+<div id="crystals">
+    <div class="crystal" id="c0">🔐<br>ML-KEM</div>
+    <div class="crystal" id="c1">✍️<br>ML-DSA</div>
+    <div class="crystal" id="c2">🌲<br>SLH-DSA</div>
+    <div class="crystal" id="c3">🦅<br>FN-DSA</div>
+</div>
+
+<div class="overlay-wrap">
+    <canvas id="gc" width="460" height="400"></canvas>
+    <div id="overlay">
+        <div id="ov-emoji" style="font-size:3rem;margin-bottom:8px">🏆</div>
+        <h2 id="ov-title" style="color:#60a5fa;margin-bottom:8px"></h2>
+        <p id="ov-msg" style="color:#94a3b8;font-size:12px;margin-bottom:12px"></p>
+        <div id="ov-btns"></div>
     </div>
 </div>
+
+<div id="msg">Press START to begin your mission!</div>
+<div id="fact"></div>
+
+<div class="btns">
+    <button class="btn btn-start" onclick="startGame()">▶ START MISSION</button>
+    <button class="btn btn-next" id="next-btn" onclick="nextLevel()" disabled>Next Level →</button>
+</div>
+
+<div class="dpad">
+    <div></div>
+    <button class="db" onclick="tryMove(0,-1)">▲</button>
+    <div></div>
+    <button class="db" onclick="tryMove(-1,0)">◀</button>
+    <button class="db" onclick="startGame()">⟳</button>
+    <button class="db" onclick="tryMove(1,0)">▶</button>
+    <div></div>
+    <button class="db" onclick="tryMove(0,1)">▼</button>
+    <div></div>
+</div>
+
+</div>
+
 <script>
-const mc = document.getElementById("mazeCanvas");
-const mx = mc.getContext("2d");
-const CELL = 40, COLS = 11, ROWS = 10;
+const cv = document.getElementById("gc");
+const cx = cv.getContext("2d");
+const CELL=40, COLS=11, ROWS=10;
 
-const KEY_FACTS = [
-    {item:"🔐", name:"Kyber Key",    fact:"ML-KEM FIPS 203 — Quantum-safe key encapsulation!",     color:"#10b981", pts:50},
-    {item:"✍️", name:"Dilithium",    fact:"ML-DSA FIPS 204 — Quantum-safe digital signatures!",    color:"#3b82f6", pts:75},
-    {item:"🌲", name:"SPHINCS+",     fact:"SLH-DSA FIPS 205 — Hash-based backup signature!",       color:"#8b5cf6", pts:100},
-    {item:"🦅", name:"Falcon",       fact:"FN-DSA FIPS 206 — Smallest quantum-safe signature!",    color:"#f59e0b", pts:125},
-    {item:"🧮", name:"LWE Crystal",  fact:"Learning With Errors — The hardest PQC math problem!",  color:"#ec4899", pts:150},
+// 4 NIST crystals with real facts
+const CRYSTALS = [
+    {id:0, emoji:"🔐", name:"ML-KEM",   color:"#10b981",
+     fact:"FIPS 203 (Kyber) — Uses Module-LWE lattice math. Protects TLS, VPNs, and encrypted messaging from quantum attacks!",
+     pts:100},
+    {id:1, emoji:"✍️", name:"ML-DSA",   color:"#3b82f6",
+     fact:"FIPS 204 (Dilithium) — Digital signature using Module-LWE+SIS. Signs software updates so nobody can forge them!",
+     pts:125},
+    {id:2, emoji:"🌲", name:"SLH-DSA",  color:"#8b5cf6",
+     fact:"FIPS 205 (SPHINCS+) — Hash-based signatures using SHA-3. The backup standard — safe even if lattices are broken!",
+     pts:150},
+    {id:3, emoji:"🦅", name:"FN-DSA",   color:"#f59e0b",
+     fact:"FIPS 206 (Falcon) — NTRU lattice signatures. Smallest signatures of all 4 standards — perfect for IoT devices!",
+     pts:175},
 ];
 
-const ENEMY_TYPES = [
-    {emoji:"☠️", name:"Shor",   spd:1, color:"#ef4444", fact:"Shor Algorithm breaks RSA!",      boss:false},
-    {emoji:"🌀", name:"Grover", spd:2, color:"#f97316", fact:"Grover speeds up brute force!",    boss:false},
-    {emoji:"👾", name:"HHL",    spd:1, color:"#a855f7", fact:"HHL attacks linear algebra!",      boss:false},
-    {emoji:"💀", name:"Q-BOSS", spd:1, color:"#dc2626", fact:"Full quantum computer attack!",    boss:true},
+const ENEMIES = [
+    {emoji:"☠️", name:"Shor",   color:"#ef4444", spd:8, fact:"Shor's Algorithm breaks RSA by finding prime factors — that's why we need Kyber!"},
+    {emoji:"🌀", name:"Grover", color:"#f97316", spd:6, fact:"Grover's Algorithm speeds up brute force — doubles required key sizes but can't break Kyber!"},
+    {emoji:"👾", name:"HHL",    color:"#a855f7", spd:5, fact:"HHL Algorithm attacks linear systems — but NOT the lattice problems Kyber uses!"},
+    {emoji:"💀", name:"Q-BOSS", color:"#dc2626", spd:4, fact:"A Cryptographically Relevant Quantum Computer! Deploy Kyber NOW before these exist!"},
 ];
 
+// 12 maze layouts
 const MAZES = [
-    // Level 1 - Very Simple
-    [
-        [1,1,1,1,1,1,1,1,1,1,1],
-        [1,0,0,0,0,0,0,0,0,0,1],
-        [1,0,1,1,1,0,1,1,1,0,1],
-        [1,0,1,0,0,0,0,0,1,0,1],
-        [1,0,1,0,1,1,1,0,1,0,1],
-        [1,0,0,0,0,0,0,0,0,0,1],
-        [1,0,1,1,1,0,1,1,1,0,1],
-        [1,0,0,0,0,0,0,0,0,0,1],
-        [1,0,1,1,1,1,1,1,1,0,1],
-        [1,1,1,1,1,1,1,1,1,1,1],
-    ],
-    // Level 2 - Simple
-    [
-        [1,1,1,1,1,1,1,1,1,1,1],
-        [1,0,0,0,1,0,0,0,0,0,1],
-        [1,0,1,0,1,0,1,1,1,0,1],
-        [1,0,1,0,0,0,0,0,1,0,1],
-        [1,0,1,1,1,1,1,0,1,0,1],
-        [1,0,0,0,0,0,1,0,0,0,1],
-        [1,1,1,1,0,1,1,1,1,0,1],
-        [1,0,0,0,0,0,0,0,0,0,1],
-        [1,0,1,1,1,1,1,1,1,0,1],
-        [1,1,1,1,1,1,1,1,1,1,1],
-    ],
-    // Level 3 - Easy with 2 enemies
-    [
-        [1,1,1,1,1,1,1,1,1,1,1],
-        [1,0,0,0,0,0,1,0,0,0,1],
-        [1,0,1,1,1,0,1,0,1,0,1],
-        [1,0,1,0,0,0,0,0,1,0,1],
-        [1,0,1,0,1,1,1,1,1,0,1],
-        [1,0,0,0,1,0,0,0,0,0,1],
-        [1,1,1,0,1,0,1,1,1,1,1],
-        [1,0,0,0,0,0,1,0,0,0,1],
-        [1,0,1,1,1,1,1,0,1,0,1],
-        [1,1,1,1,1,1,1,1,1,1,1],
-    ],
-    // Level 4 - Medium
-    [
-        [1,1,1,1,1,1,1,1,1,1,1],
-        [1,0,0,0,1,0,0,0,1,0,1],
-        [1,1,1,0,1,0,1,0,1,0,1],
-        [1,0,0,0,0,0,1,0,0,0,1],
-        [1,0,1,1,1,0,1,1,1,0,1],
-        [1,0,0,0,1,0,0,0,1,0,1],
-        [1,1,1,0,1,1,1,0,1,0,1],
-        [1,0,0,0,0,0,0,0,0,0,1],
-        [1,0,1,1,1,1,1,1,1,0,1],
-        [1,1,1,1,1,1,1,1,1,1,1],
-    ],
-    // Level 5 - Medium with boss
-    [
-        [1,1,1,1,1,1,1,1,1,1,1],
-        [1,0,0,0,1,0,0,0,1,0,1],
-        [1,0,1,0,1,0,1,0,1,0,1],
-        [1,0,1,0,0,0,1,0,0,0,1],
-        [1,0,1,1,1,0,1,1,1,0,1],
-        [1,0,0,0,0,0,0,0,1,0,1],
-        [1,1,1,1,0,1,0,0,1,0,1],
-        [1,0,0,0,0,1,0,1,0,0,1],
-        [1,0,1,1,0,0,0,1,1,0,1],
-        [1,1,1,1,1,1,1,1,1,1,1],
-    ],
-    // Level 6 - Hard
-    [
-        [1,1,1,1,1,1,1,1,1,1,1],
-        [1,0,1,0,0,0,1,0,0,0,1],
-        [1,0,1,0,1,0,1,0,1,0,1],
-        [1,0,0,0,1,0,0,0,1,0,1],
-        [1,1,1,0,1,1,1,0,1,1,1],
-        [1,0,0,0,0,0,0,0,0,0,1],
-        [1,0,1,1,1,0,1,1,1,0,1],
-        [1,0,0,0,1,0,0,0,1,0,1],
-        [1,1,1,0,1,1,1,0,0,0,1],
-        [1,1,1,1,1,1,1,1,1,1,1],
-    ],
-    // Level 7 - Hard with 3 enemies
-    [
-        [1,1,1,1,1,1,1,1,1,1,1],
-        [1,0,0,0,1,0,1,0,0,0,1],
-        [1,0,1,0,1,0,1,0,1,0,1],
-        [1,0,1,0,0,0,0,0,1,0,1],
-        [1,0,1,1,1,1,1,0,1,0,1],
-        [1,0,0,0,0,0,1,0,0,0,1],
-        [1,1,0,1,0,0,1,1,1,0,1],
-        [1,0,0,1,0,1,0,0,0,0,1],
-        [1,0,1,1,0,1,0,1,1,0,1],
-        [1,1,1,1,1,1,1,1,1,1,1],
-    ],
-    // Level 8 - Expert
-    [
-        [1,1,1,1,1,1,1,1,1,1,1],
-        [1,0,1,0,0,0,0,0,1,0,1],
-        [1,0,1,0,1,1,1,0,1,0,1],
-        [1,0,0,0,1,0,0,0,0,0,1],
-        [1,1,1,0,1,0,1,1,1,1,1],
-        [1,0,0,0,0,0,1,0,0,0,1],
-        [1,0,1,1,1,0,1,0,1,0,1],
-        [1,0,0,0,1,0,0,0,1,0,1],
-        [1,1,1,0,1,1,1,0,0,0,1],
-        [1,1,1,1,1,1,1,1,1,1,1],
-    ],
-    // Level 9 - Expert with boss
-    [
-        [1,1,1,1,1,1,1,1,1,1,1],
-        [1,0,0,0,1,0,0,0,0,0,1],
-        [1,1,1,0,1,1,1,1,1,0,1],
-        [1,0,0,0,0,0,0,0,1,0,1],
-        [1,0,1,1,1,1,1,0,1,0,1],
-        [1,0,1,0,0,0,1,0,0,0,1],
-        [1,0,1,0,1,0,1,1,1,0,1],
-        [1,0,0,0,1,0,0,0,0,0,1],
-        [1,1,1,0,1,1,1,1,1,0,1],
-        [1,1,1,1,1,1,1,1,1,1,1],
-    ],
-    // Level 10 - Master
-    [
-        [1,1,1,1,1,1,1,1,1,1,1],
-        [1,0,1,0,1,0,1,0,1,0,1],
-        [1,0,1,0,1,0,1,0,1,0,1],
-        [1,0,0,0,0,0,0,0,0,0,1],
-        [1,1,1,1,0,1,0,1,1,1,1],
-        [1,0,0,0,0,1,0,0,0,0,1],
-        [1,0,1,1,0,1,0,1,1,0,1],
-        [1,0,0,1,0,0,0,1,0,0,1],
-        [1,1,0,1,1,1,0,1,0,0,1],
-        [1,1,1,1,1,1,1,1,1,1,1],
-    ],
-    // Level 11 - Master with 4 enemies
-    [
-        [1,1,1,1,1,1,1,1,1,1,1],
-        [1,0,0,0,0,1,0,0,0,0,1],
-        [1,0,1,1,0,1,0,1,1,0,1],
-        [1,0,1,0,0,0,0,0,1,0,1],
-        [1,0,1,0,1,1,1,0,1,0,1],
-        [1,0,0,0,1,0,1,0,0,0,1],
-        [1,1,0,0,1,0,1,0,0,1,1],
-        [1,0,0,1,0,0,0,1,0,0,1],
-        [1,0,0,1,1,1,0,1,0,0,1],
-        [1,1,1,1,1,1,1,1,1,1,1],
-    ],
-    // Level 12 - Grandmaster boss
-    [
-        [1,1,1,1,1,1,1,1,1,1,1],
-        [1,0,0,1,0,0,0,1,0,0,1],
-        [1,0,1,1,0,1,0,1,1,0,1],
-        [1,0,0,0,0,1,0,0,0,0,1],
-        [1,1,1,0,1,1,1,0,1,1,1],
-        [1,0,0,0,0,0,0,0,0,0,1],
-        [1,0,1,0,1,0,1,0,1,0,1],
-        [1,0,1,0,1,0,1,0,1,0,1],
-        [1,0,0,0,0,0,0,0,0,0,1],
-        [1,1,1,1,1,1,1,1,1,1,1],
-    ],
+    [[1,1,1,1,1,1,1,1,1,1,1],[1,0,0,0,0,0,0,0,0,0,1],[1,0,1,1,1,0,1,1,1,0,1],[1,0,1,0,0,0,0,0,1,0,1],[1,0,1,0,1,1,1,0,1,0,1],[1,0,0,0,0,0,0,0,0,0,1],[1,0,1,1,1,0,1,1,1,0,1],[1,0,0,0,0,0,0,0,0,0,1],[1,0,1,1,1,1,1,1,1,0,1],[1,1,1,1,1,1,1,1,1,1,1]],
+    [[1,1,1,1,1,1,1,1,1,1,1],[1,0,0,0,1,0,0,0,0,0,1],[1,0,1,0,1,0,1,1,1,0,1],[1,0,1,0,0,0,0,0,1,0,1],[1,0,1,1,1,1,1,0,1,0,1],[1,0,0,0,0,0,1,0,0,0,1],[1,1,1,1,0,1,1,1,1,0,1],[1,0,0,0,0,0,0,0,0,0,1],[1,0,1,1,1,1,1,1,1,0,1],[1,1,1,1,1,1,1,1,1,1,1]],
+    [[1,1,1,1,1,1,1,1,1,1,1],[1,0,0,0,0,0,1,0,0,0,1],[1,0,1,1,1,0,1,0,1,0,1],[1,0,1,0,0,0,0,0,1,0,1],[1,0,1,0,1,1,1,1,1,0,1],[1,0,0,0,1,0,0,0,0,0,1],[1,1,1,0,1,0,1,1,1,1,1],[1,0,0,0,0,0,1,0,0,0,1],[1,0,1,1,1,1,1,0,1,0,1],[1,1,1,1,1,1,1,1,1,1,1]],
+    [[1,1,1,1,1,1,1,1,1,1,1],[1,0,0,0,1,0,0,0,1,0,1],[1,1,1,0,1,0,1,0,1,0,1],[1,0,0,0,0,0,1,0,0,0,1],[1,0,1,1,1,0,1,1,1,0,1],[1,0,0,0,1,0,0,0,1,0,1],[1,1,1,0,1,1,1,0,1,0,1],[1,0,0,0,0,0,0,0,0,0,1],[1,0,1,1,1,1,1,1,1,0,1],[1,1,1,1,1,1,1,1,1,1,1]],
+    [[1,1,1,1,1,1,1,1,1,1,1],[1,0,0,0,1,0,0,0,1,0,1],[1,0,1,0,1,0,1,0,1,0,1],[1,0,1,0,0,0,1,0,0,0,1],[1,0,1,1,1,0,1,1,1,0,1],[1,0,0,0,0,0,0,0,1,0,1],[1,1,1,1,0,1,0,0,1,0,1],[1,0,0,0,0,1,0,1,0,0,1],[1,0,1,1,0,0,0,1,1,0,1],[1,1,1,1,1,1,1,1,1,1,1]],
+    [[1,1,1,1,1,1,1,1,1,1,1],[1,0,0,0,0,0,0,0,0,0,1],[1,0,1,0,1,1,1,0,1,0,1],[1,0,1,0,1,0,1,0,1,0,1],[1,0,1,0,0,0,1,0,1,0,1],[1,0,0,0,1,0,0,0,0,0,1],[1,1,0,1,1,0,1,1,0,1,1],[1,0,0,0,0,0,0,0,0,0,1],[1,0,1,1,0,1,0,1,1,0,1],[1,1,1,1,1,1,1,1,1,1,1]],
+    [[1,1,1,1,1,1,1,1,1,1,1],[1,0,1,0,0,0,0,0,1,0,1],[1,0,1,0,1,1,1,0,1,0,1],[1,0,0,0,1,0,0,0,0,0,1],[1,1,1,0,1,0,1,1,1,1,1],[1,0,0,0,0,0,1,0,0,0,1],[1,0,1,1,1,0,1,0,1,0,1],[1,0,0,0,0,0,0,0,1,0,1],[1,0,1,1,1,1,1,1,1,0,1],[1,1,1,1,1,1,1,1,1,1,1]],
+    [[1,1,1,1,1,1,1,1,1,1,1],[1,0,0,0,1,0,1,0,0,0,1],[1,0,1,0,1,0,1,0,1,0,1],[1,0,1,0,0,0,0,0,1,0,1],[1,0,1,1,0,1,0,1,1,0,1],[1,0,0,0,0,1,0,0,0,0,1],[1,1,0,1,0,1,1,0,1,1,1],[1,0,0,1,0,0,0,0,1,0,1],[1,0,1,1,1,1,0,0,0,0,1],[1,1,1,1,1,1,1,1,1,1,1]],
+    [[1,1,1,1,1,1,1,1,1,1,1],[1,0,0,0,0,0,0,0,0,0,1],[1,1,1,0,1,0,1,0,1,1,1],[1,0,0,0,1,0,1,0,0,0,1],[1,0,1,1,1,0,1,1,1,0,1],[1,0,1,0,0,0,0,0,1,0,1],[1,0,1,0,1,1,1,0,1,0,1],[1,0,0,0,1,0,0,0,0,0,1],[1,1,0,1,1,0,1,1,0,1,1],[1,1,1,1,1,1,1,1,1,1,1]],
+    [[1,1,1,1,1,1,1,1,1,1,1],[1,0,1,0,0,0,1,0,0,0,1],[1,0,1,0,1,0,1,0,1,0,1],[1,0,0,0,1,0,0,0,1,0,1],[1,1,1,0,1,1,0,1,1,0,1],[1,0,0,0,0,0,0,1,0,0,1],[1,0,1,1,1,0,1,1,1,0,1],[1,0,0,0,0,0,0,0,0,0,1],[1,0,1,1,0,1,0,1,1,0,1],[1,1,1,1,1,1,1,1,1,1,1]],
+    [[1,1,1,1,1,1,1,1,1,1,1],[1,0,0,0,1,0,0,0,0,0,1],[1,0,1,0,1,1,1,1,1,0,1],[1,0,1,0,0,0,0,0,1,0,1],[1,0,1,1,1,0,1,0,1,0,1],[1,0,0,0,0,0,1,0,0,0,1],[1,1,0,1,1,0,1,1,0,1,1],[1,0,0,1,0,0,0,1,0,0,1],[1,0,1,1,1,0,1,1,1,0,1],[1,1,1,1,1,1,1,1,1,1,1]],
+    [[1,1,1,1,1,1,1,1,1,1,1],[1,0,0,0,0,0,0,0,0,0,1],[1,0,1,1,0,1,0,1,1,0,1],[1,0,1,0,0,1,0,1,0,0,1],[1,0,0,0,1,1,1,0,0,0,1],[1,1,0,1,0,0,0,1,0,1,1],[1,0,0,1,0,1,0,1,0,0,1],[1,0,1,0,0,1,0,0,1,0,1],[1,0,0,0,1,0,1,0,0,0,1],[1,1,1,1,1,1,1,1,1,1,1]],
 ];
 
-let player, enemies, keys, score, lives, level, running, collected, maze, animFrame;
-let particles = [];
+const LEVEL_CONFIG = [
+    {enemies:0, crystals:2, timeLimit:0},
+    {enemies:0, crystals:2, timeLimit:0},
+    {enemies:1, crystals:3, timeLimit:0},
+    {enemies:1, crystals:3, timeLimit:0},
+    {enemies:2, crystals:4, timeLimit:0},
+    {enemies:2, crystals:4, timeLimit:60},
+    {enemies:2, crystals:4, timeLimit:50},
+    {enemies:3, crystals:4, timeLimit:45},
+    {enemies:3, crystals:4, timeLimit:40},
+    {enemies:3, crystals:4, timeLimit:35},
+    {enemies:4, crystals:4, timeLimit:30},
+    {enemies:4, crystals:4, timeLimit:25},
+];
 
-function showFact(fact, color) {
-    const f = document.getElementById("lm-fact");
-    f.textContent = "📚 " + fact;
-    f.style.display = "block";
-    f.style.borderColor = color + "60";
-    clearTimeout(window._ft);
-    window._ft = setTimeout(()=>{f.style.display="none";}, 4000);
+let level=0, lives=3, score=0, gameActive=false;
+let player={x:1,y:1}, crystalPos=[], enemyPos=[], exitPos={x:9,y:8};
+let collectedCrystals=new Set(), moveTimer=null, enemyMoveTimer=null;
+let factTimer=null, timeLeft=0, timeTimer=null;
+
+function getFreeCells(maze) {
+    let cells=[];
+    for(let r=1;r<ROWS-1;r++) for(let c=1;c<COLS-1;c++)
+        if(maze[r][c]===0) cells.push({x:c,y:r});
+    return cells;
 }
 
-function showMsg(msg) { document.getElementById("lm-msg").textContent = msg; }
+function dist(a,b){return Math.abs(a.x-b.x)+Math.abs(a.y-b.y);}
 
-function updateHUD() {
-    document.getElementById("mlives").textContent = "❤️".repeat(Math.max(0,lives));
-    document.getElementById("mkeys").textContent = collected;
-    document.getElementById("mtotal").textContent = keys.length;
-    document.getElementById("mscore").textContent = score;
-    document.getElementById("mlevel").textContent = level;
-    document.getElementById("menemies").textContent = enemies.length;
+function placeCrystals(maze, cfg) {
+    let free = getFreeCells(maze).filter(c=>dist(c,{x:1,y:1})>3);
+    let needed = Math.min(cfg.crystals, CRYSTALS.length, free.length);
+    let placed=[], used=new Set();
+    // Place crystals spread out
+    for(let i=0;i<needed;i++){
+        let best=null, bestDist=0;
+        for(let j=0;j<free.length;j++){
+            if(used.has(j)) continue;
+            let minD=placed.length?Math.min(...placed.map(p=>dist(free[j],p))):999;
+            if(minD>bestDist){bestDist=minD;best=j;}
+        }
+        if(best!==null){used.add(best);placed.push({...free[best],crystalIdx:i});}
+    }
+    return placed;
 }
 
-function startMaze() {
-    level = 1;
-    score = 0;
-    lives = 3;
-    document.getElementById("next-btn").disabled = true;
-    loadLevel();
+function placeEnemies(maze, cfg) {
+    let free = getFreeCells(maze).filter(c=>dist(c,{x:1,y:1})>4&&dist(c,exitPos)>2);
+    let placed=[];
+    for(let i=0;i<Math.min(cfg.enemies,free.length);i++){
+        let idx=Math.floor(Math.random()*free.length);
+        placed.push({...free[idx], typeIdx:i%ENEMIES.length, moveCount:0});
+        free.splice(idx,1);
+    }
+    return placed;
 }
 
-function loadLevel() {
-    const mIdx = Math.min(level-1, MAZES.length-1);
-    maze = MAZES[mIdx].map(r=>[...r]);
-    player = {x:1, y:1};
-    enemies = [];
-    particles = [];
-    collected = 0;
+function startGame() {
+    clearTimers();
+    collectedCrystals=new Set();
+    lives=3; score=0;
+    level=0;
+    updateCrystalUI();
+    initLevel();
+}
 
-    // Place keys based on level — more keys at higher levels
-    const keyCount = Math.min(3 + Math.floor(level/2), 7);
-    keys = [];
-    const keyTypes = KEY_FACTS.slice(0, Math.min(level+1, KEY_FACTS.length));
-    const positions = [{x:8,y:1},{x:5,y:3},{x:8,y:7},{x:3,y:7},{x:9,y:5}];
-    for(let i=0;i<Math.min(keyCount,positions.length);i++){
-        const kType = keyTypes[i % keyTypes.length];
-        keys.push({...positions[i], collected:false, ...kType});
+function initLevel() {
+    clearTimers();
+    const maze=MAZES[level%MAZES.length];
+    const cfg=LEVEL_CONFIG[Math.min(level,LEVEL_CONFIG.length-1)];
+    player={x:1,y:1};
+    exitPos={x:9,y:8};
+    crystalPos=placeCrystals(maze,cfg);
+    enemyPos=placeEnemies(maze,cfg);
+    gameActive=true;
+    collectedCrystals=new Set();
+    updateCrystalUI();
+    document.getElementById("next-btn").disabled=true;
+
+    if(cfg.timeLimit>0){
+        timeLeft=cfg.timeLimit;
+        timeTimer=setInterval(()=>{
+            timeLeft--;
+            setMsg(`⏱️ Time: ${timeLeft}s — collect all crystals!`);
+            if(timeLeft<=0){clearInterval(timeTimer);loseLife("⏰ Time's up!");}
+        },1000);
     }
 
-    // Spawn enemies based on level (more per level)
-    const enemyCount = Math.min(1 + Math.floor(level/2), 5);
-    const hasBoss = level >= 3 && level % 2 === 1;
-    for(let i=0;i<enemyCount;i++){
-        const eType = i===0 && hasBoss ? ENEMY_TYPES[3] : ENEMY_TYPES[Math.floor(Math.random()*3)];
-        enemies.push({
-            x: 9, y: 7-i*2,
-            type: eType,
-            timer: 0,
-            rate: eType.boss ? 60 : 30+Math.floor(Math.random()*30),
-            stunned: 0,
-        });
-    }
-
-    running = true;
+    setMsg(`Level ${level+1}: Collect ${crystalPos.length} NIST crystal${crystalPos.length>1?'s':''}!`);
     updateHUD();
-    showMsg("Level " + level + "! Collect all " + keys.length + " keys!");
-    cancelAnimationFrame(animFrame);
-    gameLoop();
+    drawAll();
+    enemyMoveTimer=setInterval(moveEnemies,cfg.enemies>0?600:99999);
 }
 
-function nextLevel() {
-    level++;
-    document.getElementById("next-btn").disabled = true;
-    loadLevel();
+function clearTimers(){
+    if(enemyMoveTimer) clearInterval(enemyMoveTimer);
+    if(timeTimer) clearInterval(timeTimer);
+    if(factTimer) clearTimeout(factTimer);
 }
 
-function canMove(x, y) {
-    if(x<0||y<0||x>=COLS||y>=ROWS) return false;
-    return maze[y][x] === 0;
+function updateHUD(){
+    document.getElementById("hlives").textContent=lives;
+    document.getElementById("hcrystals").textContent=collectedCrystals.size+"/"+crystalPos.length;
+    document.getElementById("hscore").textContent=score;
+    document.getElementById("hlevel").textContent=level+1;
+    document.getElementById("henemies").textContent=enemyPos.length;
 }
 
-function move(dx, dy) {
-    if(!running) return;
-    const nx = player.x+dx, ny = player.y+dy;
-    if(canMove(nx,ny)) {
-        player.x=nx; player.y=ny;
-        checkCollect();
-        checkEnemy();
+function updateCrystalUI(){
+    for(let i=0;i<4;i++){
+        let el=document.getElementById("c"+i);
+        el.className="crystal"+(collectedCrystals.has(i)?" collected":"");
     }
 }
 
-document.addEventListener("keydown", e=>{
-    if(e.key==="ArrowUp"||e.key==="w")    {e.preventDefault();move(0,-1);}
-    if(e.key==="ArrowDown"||e.key==="s")  {e.preventDefault();move(0,1);}
-    if(e.key==="ArrowLeft"||e.key==="a")  move(-1,0);
-    if(e.key==="ArrowRight"||e.key==="d") move(1,0);
-});
-
-function checkCollect() {
-    keys.forEach(k=>{
-        if(!k.collected && k.x===player.x && k.y===player.y) {
-            k.collected=true; collected++; score+=k.pts;
-            showFact(k.fact, k.color);
-            showMsg("Collected " + k.name + "! +" + k.pts + " pts");
-            // Sparkle particles
-            for(let i=0;i<10;i++) particles.push({
-                x:k.x*CELL+CELL/2, y:k.y*CELL+CELL/2,
-                vx:(Math.random()-0.5)*5, vy:(Math.random()-0.5)*5,
-                color:k.color, alpha:1, r:3
-            });
-            updateHUD();
-            if(collected===keys.length) {
-                running=false;
-                showMsg("🎉 Level " + level + " complete! Score: " + score);
-                document.getElementById("next-btn").disabled = level >= 12;
-                if(level>=12) showMsg("🏆 GRANDMASTER! All 12 levels complete! Score: " + score);
-                else if(level>=9) showMsg("🔥 Expert level! Score: " + score);
-            }
-        }
-    });
+function setMsg(m,c){
+    let el=document.getElementById("msg");
+    el.textContent=m;
+    el.style.color=c||"#34d399";
 }
 
-function checkEnemy() {
-    enemies.forEach((e,i)=>{
-        if(e.x===player.x&&e.y===player.y) {
-            lives--;
-            player={x:1,y:1};
-            showMsg("💀 " + e.type.name + " caught you! " + e.type.fact);
-            showFact(e.type.fact, e.type.color);
-            updateHUD();
-            if(lives<=0){running=false;showMsg("☠️ Game Over! Score: "+score);}
-        }
-    });
+function showFact(text,color){
+    let el=document.getElementById("fact");
+    el.textContent=text;
+    el.style.display="block";
+    el.style.borderColor=(color||"#3b82f6")+"80";
+    if(factTimer) clearTimeout(factTimer);
+    factTimer=setTimeout(()=>el.style.display="none",5000);
 }
 
-function moveEnemies() {
-    if(!running) return;
-    enemies.forEach(e=>{
-        e.timer++;
-        if(e.timer < e.rate) return;
-        e.timer=0;
-        if(e.stunned>0){e.stunned--;return;}
+function tryMove(dx,dy){
+    if(!gameActive) return;
+    const maze=MAZES[level%MAZES.length];
+    let nx=player.x+dx, ny=player.y+dy;
+    if(nx<0||ny<0||nx>=COLS||ny>=ROWS) return;
+    if(maze[ny][nx]===1) return;
+    player={x:nx,y:ny};
 
-        const dirs=[{dx:0,dy:-1},{dx:0,dy:1},{dx:-1,dy:0},{dx:1,dy:0}];
-        const valid=dirs.filter(d=>canMove(e.x+d.dx,e.y+d.dy));
-        if(valid.length===0) return;
+    // Check crystal collection
+    for(let i=0;i<crystalPos.length;i++){
+        let c=crystalPos[i];
+        if(c.x===player.x&&c.y===player.y&&!collectedCrystals.has(c.crystalIdx)){
+            collectedCrystals.add(c.crystalIdx);
+            let cr=CRYSTALS[c.crystalIdx];
+            score+=cr.pts*(level+1);
+            setMsg("✨ "+cr.name+" crystal collected! +"+cr.pts*(level+1)+" pts",cr.color);
+            showFact("🔐 "+cr.name+": "+cr.fact, cr.color);
+            document.getElementById("c"+c.crystalIdx).classList.add("collecting");
+            setTimeout(()=>document.getElementById("c"+c.crystalIdx).classList.remove("collecting"),500);
+            updateCrystalUI();
+        }
+    }
 
-        // Smart pathfinding toward player
-        valid.sort((a,b)=>{
-            const da=Math.abs((e.x+a.dx)-player.x)+Math.abs((e.y+a.dy)-player.y);
-            const db=Math.abs((e.x+b.dx)-player.x)+Math.abs((e.y+b.dy)-player.y);
-            return da-db;
+    // Check exit
+    if(player.x===exitPos.x&&player.y===exitPos.y){
+        if(collectedCrystals.size>=crystalPos.length){
+            levelComplete();
+        } else {
+            let need=crystalPos.length-collectedCrystals.size;
+            setMsg("🚫 Collect "+need+" more crystal"+( need>1?"s":"")+" first!","#f59e0b");
+        }
+    }
+
+    // Check enemy collision
+    checkEnemyCollision();
+    updateHUD();
+    drawAll();
+}
+
+function moveEnemies(){
+    if(!gameActive) return;
+    const maze=MAZES[level%MAZES.length];
+    const DIRS=[{x:1,y:0},{x:-1,y:0},{x:0,y:1},{x:0,y:-1}];
+
+    enemyPos=enemyPos.map(e=>{
+        // 60% chase player, 40% random
+        let moves=DIRS.filter(d=>{
+            let nx=e.x+d.x,ny=e.y+d.y;
+            return nx>=0&&ny>=0&&nx<COLS&&ny<ROWS&&maze[ny][nx]===0;
         });
+        if(moves.length===0) return e;
 
-        // Boss always goes toward player, others sometimes random
-        const move2 = e.type.boss||Math.random()<0.7 ? valid[0] : valid[Math.floor(Math.random()*valid.length)];
-        e.x+=move2.dx; e.y+=move2.dy;
-        checkEnemy();
-    });
-}
-
-function gameLoop() {
-    animFrame=requestAnimationFrame(gameLoop);
-
-    // Move enemies periodically
-    moveEnemies();
-
-    // Update particles
-    particles=particles.filter(p=>{
-        p.x+=p.vx; p.y+=p.vy; p.alpha-=0.04;
-        p.vx*=0.95; p.vy*=0.95;
-        return p.alpha>0;
+        let chosen;
+        if(Math.random()<0.6){
+            // Chase
+            let best=moves[0], bestD=dist({x:e.x+moves[0].x,y:e.y+moves[0].y},player);
+            for(let m of moves){
+                let d=dist({x:e.x+m.x,y:e.y+m.y},player);
+                if(d<bestD){bestD=d;best=m;}
+            }
+            chosen=best;
+        } else {
+            chosen=moves[Math.floor(Math.random()*moves.length)];
+        }
+        return {...e,x:e.x+chosen.x,y:e.y+chosen.y};
     });
 
-    draw();
+    checkEnemyCollision();
+    drawAll();
 }
 
-function draw() {
-    mx.clearRect(0,0,mc.width,mc.height);
+function checkEnemyCollision(){
+    for(let e of enemyPos){
+        if(e.x===player.x&&e.y===player.y){
+            let et=ENEMIES[e.typeIdx];
+            loseLife("💥 "+et.name+" caught you! "+et.fact);
+            return;
+        }
+    }
+}
 
-    // Background gradient
-    const bg=mx.createLinearGradient(0,0,0,mc.height);
-    bg.addColorStop(0,"#0f0c29");
-    bg.addColorStop(1,"#1e1b4b");
-    mx.fillStyle=bg;
-    mx.fillRect(0,0,mc.width,mc.height);
+function loseLife(msg){
+    clearTimers();
+    lives--;
+    gameActive=false;
+    updateHUD();
+    if(lives<=0){
+        showOverlay("💀","Game Over!",
+            "Score: "+score+" | Level "+( level+1),
+            [{label:"🔄 Try Again",fn:"startGame()"}]);
+    } else {
+        setMsg("💀 "+msg+" ("+lives+" lives left)","#ef4444");
+        showFact(msg.includes("!")?msg.split("!")[1]||"":"The quantum enemies are getting stronger!", "#ef4444");
+        setTimeout(()=>{initLevel();},2000);
+    }
+}
+
+function levelComplete(){
+    clearTimers();
+    gameActive=false;
+    let bonus=Math.max(0,timeLeft)*10;
+    score+=bonus+(level+1)*50;
+    updateHUD();
+
+    if(level>=11){
+        showOverlay("🏆","ALL 12 LEVELS COMPLETE!",
+            "Final Score: "+score+" | You are a Lattice Master!",
+            [{label:"🔄 Play Again",fn:"startGame()"}]);
+    } else {
+        setMsg("✅ Level "+(level+1)+" complete! +"+(bonus+(level+1)*50)+" pts","#10b981");
+        document.getElementById("next-btn").disabled=false;
+        showMissionBrief(level+1);
+    }
+}
+
+function showMissionBrief(nextLvl){
+    const briefs=[
+        "","","Level 3: Your first enemy appears — the Shor Algorithm! It breaks RSA.",
+        "Level 4: Shor is faster now. Kyber's lattice math stops it cold!",
+        "Level 5: BOSS LEVEL! Collect all 4 NIST crystals to win.",
+        "Level 6: Time limit added! Real cryptographers work under pressure.",
+        "Level 7: Grover joins — it speeds up brute force attacks!",
+        "Level 8: Three enemies now. This is what real PQC defends against.",
+        "Level 9: HHL Algorithm appears — attacks linear algebra systems!",
+        "Level 10: Time is running out. The quantum computer is almost ready!",
+        "Level 11: All four enemies + time pressure. The final defense!",
+        "Level 12: GRANDMASTER! All enemies at full speed. Can you escape?",
+    ];
+    let brief=briefs[nextLvl]||"Next level!";
+    document.getElementById("mission").textContent="🎯 "+brief;
+}
+
+function nextLevel(){
+    level++;
+    collectedCrystals=new Set();
+    updateCrystalUI();
+    initLevel();
+    document.getElementById("next-btn").disabled=true;
+}
+
+function showOverlay(emoji,title,msg,btns){
+    let ov=document.getElementById("overlay");
+    document.getElementById("ov-emoji").textContent=emoji;
+    document.getElementById("ov-title").textContent=title;
+    document.getElementById("ov-msg").textContent=msg;
+    let bc=document.getElementById("ov-btns");
+    bc.innerHTML="";
+    for(let b of btns){
+        bc.innerHTML+=`<button class="btn btn-start" style="margin:4px" onclick="${b.fn}">${b.label}</button>`;
+    }
+    ov.style.display="flex";
+    setTimeout(()=>ov.style.display="none",100);
+    ov.style.display="flex";
+}
+
+function drawAll(){
+    const maze=MAZES[level%MAZES.length];
+    cx.clearRect(0,0,cv.width,cv.height);
 
     // Draw maze
     for(let r=0;r<ROWS;r++){
         for(let c=0;c<COLS;c++){
             if(maze[r][c]===1){
-                // Wall with gradient
-                const wg=mx.createLinearGradient(c*CELL,r*CELL,(c+1)*CELL,(r+1)*CELL);
-                wg.addColorStop(0,"#1e1b4b");
-                wg.addColorStop(1,"#0f172a");
-                mx.fillStyle=wg;
-                mx.fillRect(c*CELL,r*CELL,CELL,CELL);
-                // Wall border glow
-                mx.strokeStyle="rgba(79,70,229,0.4)";
-                mx.lineWidth=1;
-                mx.strokeRect(c*CELL,r*CELL,CELL,CELL);
+                cx.fillStyle="#071a2e";
+                cx.fillRect(c*CELL,r*CELL,CELL,CELL);
+                cx.strokeStyle="#1a3a5a";
+                cx.lineWidth=1;
+                cx.strokeRect(c*CELL,r*CELL,CELL,CELL);
+                // Lattice dots
+                cx.fillStyle="#1d4ed820";
+                cx.beginPath();
+                cx.arc(c*CELL+CELL/2,r*CELL+CELL/2,3,0,Math.PI*2);
+                cx.fill();
             } else {
-                mx.fillStyle="rgba(15,23,42,0.8)";
-                mx.fillRect(c*CELL,r*CELL,CELL,CELL);
-                mx.strokeStyle="rgba(79,70,229,0.1)";
-                mx.lineWidth=0.5;
-                mx.strokeRect(c*CELL,r*CELL,CELL,CELL);
+                cx.fillStyle="#020d14";
+                cx.fillRect(c*CELL,r*CELL,CELL,CELL);
             }
         }
     }
 
-    // Draw lattice dots on open cells
+    // Draw grid lines on open cells (lattice effect)
+    cx.strokeStyle="#0a2040";
+    cx.lineWidth=0.5;
     for(let r=0;r<ROWS;r++){
         for(let c=0;c<COLS;c++){
             if(maze[r][c]===0){
-                mx.beginPath();
-                mx.arc(c*CELL+CELL/2,r*CELL+CELL/2,2,0,Math.PI*2);
-                mx.fillStyle="rgba(79,70,229,0.3)";
-                mx.fill();
+                cx.strokeRect(c*CELL,r*CELL,CELL,CELL);
             }
         }
     }
 
-    // Draw keys with glow
-    keys.forEach(k=>{
-        if(k.collected) return;
-        // Glow
-        mx.beginPath();
-        mx.arc(k.x*CELL+CELL/2,k.y*CELL+CELL/2,18,0,Math.PI*2);
-        mx.fillStyle=k.color+"22";
-        mx.fill();
-        // Key emoji
-        mx.font="22px sans-serif";
-        mx.textAlign="center";
-        mx.fillText(k.item,k.x*CELL+CELL/2,k.y*CELL+CELL/1.4);
-        // Label
-        mx.font="7px sans-serif";
-        mx.fillStyle=k.color;
-        mx.fillText(k.name,k.x*CELL+CELL/2,k.y*CELL+CELL-4);
-    });
+    // Draw exit portal
+    let allCollected=collectedCrystals.size>=crystalPos.length;
+    if(allCollected){
+        // Glowing exit
+        cx.fillStyle="#10b98130";
+        cx.fillRect(exitPos.x*CELL,exitPos.y*CELL,CELL,CELL);
+        cx.strokeStyle="#10b981";
+        cx.lineWidth=2;
+        cx.strokeRect(exitPos.x*CELL+2,exitPos.y*CELL+2,CELL-4,CELL-4);
+    }
+    cx.font=`${CELL-8}px serif`;
+    cx.textAlign="center";
+    cx.textBaseline="middle";
+    cx.fillText(allCollected?"🚀":"🚪",exitPos.x*CELL+CELL/2,exitPos.y*CELL+CELL/2);
 
-    // Draw particles
-    particles.forEach(p=>{
-        mx.beginPath();
-        mx.arc(p.x,p.y,p.r,0,Math.PI*2);
-        mx.fillStyle=p.color+Math.floor(p.alpha*255).toString(16).padStart(2,"0");
-        mx.fill();
-    });
+    // Draw crystals
+    for(let c of crystalPos){
+        if(!collectedCrystals.has(c.crystalIdx)){
+            let cr=CRYSTALS[c.crystalIdx];
+            // Glow effect
+            cx.shadowColor=cr.color;
+            cx.shadowBlur=12;
+            cx.fillText(cr.emoji,c.x*CELL+CELL/2,c.y*CELL+CELL/2);
+            cx.shadowBlur=0;
+        }
+    }
 
     // Draw enemies
-    enemies.forEach(e=>{
-        const size = e.type.boss ? 28 : 22;
-        // Boss pulse effect
-        if(e.type.boss){
-            mx.beginPath();
-            mx.arc(e.x*CELL+CELL/2,e.y*CELL+CELL/2,20+Math.sin(Date.now()*0.005)*4,0,Math.PI*2);
-            mx.fillStyle="rgba(220,38,38,0.2)";
-            mx.fill();
-        }
-        mx.font=size+"px sans-serif";
-        mx.textAlign="center";
-        mx.fillText(e.type.emoji,e.x*CELL+CELL/2,e.y*CELL+CELL/1.3);
-        // Enemy label
-        mx.font="7px sans-serif";
-        mx.fillStyle=e.type.color;
-        mx.fillText(e.type.name,e.x*CELL+CELL/2,e.y*CELL+2);
-    });
-
-    // Draw player with glow
-    mx.beginPath();
-    mx.arc(player.x*CELL+CELL/2,player.y*CELL+CELL/2,16,0,Math.PI*2);
-    mx.fillStyle="rgba(16,185,129,0.2)";
-    mx.fill();
-    mx.font="24px sans-serif";
-    mx.textAlign="center";
-    mx.fillText("🕵️",player.x*CELL+CELL/2,player.y*CELL+CELL/1.35);
-
-    // Player highlight
-    mx.strokeStyle="#10b981";
-    mx.lineWidth=2;
-    mx.strokeRect(player.x*CELL+2,player.y*CELL+2,CELL-4,CELL-4);
-
-    // Game over overlay
-    if(!running&&lives<=0){
-        mx.fillStyle="rgba(0,0,0,0.8)";
-        mx.fillRect(0,0,mc.width,mc.height);
-        mx.fillStyle="#ef4444";
-        mx.font="bold 28px sans-serif";
-        mx.textAlign="center";
-        mx.fillText("☠️ QUANTUM WIN!",mc.width/2,mc.height/2-30);
-        mx.fillStyle="white";
-        mx.font="16px sans-serif";
-        mx.fillText("Score: "+score,mc.width/2,mc.height/2+10);
-        mx.fillStyle="#a5b4fc";
-        mx.font="12px sans-serif";
-        mx.fillText("Kyber lattice math beats quantum attackers!",mc.width/2,mc.height/2+40);
+    for(let e of enemyPos){
+        let et=ENEMIES[e.typeIdx];
+        cx.shadowColor=et.color;
+        cx.shadowBlur=8;
+        cx.fillText(et.emoji,e.x*CELL+CELL/2,e.y*CELL+CELL/2);
+        cx.shadowBlur=0;
+        // Name label
+        cx.fillStyle=et.color;
+        cx.font="7px sans-serif";
+        cx.fillText(et.name,e.x*CELL+CELL/2,e.y*CELL+CELL-3);
+        cx.font=`${CELL-8}px serif`;
     }
 
-    // Win overlay
-    if(!running&&lives>0&&collected===keys.length){
-        mx.fillStyle="rgba(0,0,0,0.7)";
-        mx.fillRect(0,0,mc.width,mc.height);
-        mx.fillStyle="#10b981";
-        mx.font="bold 26px sans-serif";
-        mx.textAlign="center";
-        mx.fillText("🎉 LEVEL "+level+" COMPLETE!",mc.width/2,mc.height/2-30);
-        mx.fillStyle="white";
-        mx.font="15px sans-serif";
-        mx.fillText("Score: "+score,mc.width/2,mc.height/2+10);
-        if(level<3){
-            mx.fillStyle="#a5b4fc";
-            mx.font="13px sans-serif";
-            mx.fillText("Press Next Level →",mc.width/2,mc.height/2+40);
-        }
-    }
+    // Draw player
+    cx.font=`${CELL-6}px serif`;
+    cx.shadowColor="#3b82f6";
+    cx.shadowBlur=16;
+    cx.fillText("🕵️",player.x*CELL+CELL/2,player.y*CELL+CELL/2);
+    cx.shadowBlur=0;
+
+    // Level indicator dots
+    cx.font="10px sans-serif";
 }
 
-// Idle screen
-mx.fillStyle="#0f0c29";
-mx.fillRect(0,0,mc.width,mc.height);
-mx.fillStyle="#a5b4fc";
-mx.font="bold 20px sans-serif";
-mx.textAlign="center";
-mx.fillText("🌀 Lattice Maze Escape",mc.width/2,mc.height/2-50);
-mx.fillStyle="#6b7280";
-mx.font="13px sans-serif";
-mx.fillText("Collect Kyber keys, avoid quantum attackers",mc.width/2,mc.height/2-15);
-mx.fillText("3 levels with increasing difficulty!",mc.width/2,mc.height/2+15);
-mx.fillStyle="#4f46e5";
-mx.font="bold 14px sans-serif";
-mx.fillText("Press ▶ Start to play!",mc.width/2,mc.height/2+50);
+// Keyboard controls
+document.addEventListener("keydown",e=>{
+    if(!gameActive) return;
+    const map={"ArrowUp":[0,-1],"ArrowDown":[0,1],"ArrowLeft":[-1,0],"ArrowRight":[1,0],
+               "w":[0,-1],"s":[0,1],"a":[-1,0],"d":[1,0]};
+    if(map[e.key]){e.preventDefault();tryMove(...map[e.key]);}
+});
+
+// Initial draw
+cx.fillStyle="#020d14";
+cx.fillRect(0,0,cv.width,cv.height);
+cx.fillStyle="#1d4ed8";
+cx.font="bold 18px sans-serif";
+cx.textAlign="center";
+cx.textBaseline="middle";
+cx.fillText("🌀 OPERATION: QUANTUM RESCUE",cv.width/2,cv.height/2-40);
+cx.fillStyle="#60a5fa";
+cx.font="13px sans-serif";
+cx.fillText("The Quantum Monster stole the NIST algorithm crystals!",cv.width/2,cv.height/2);
+cx.fillText("Collect ML-KEM, ML-DSA, SLH-DSA and FN-DSA",cv.width/2,cv.height/2+20);
+cx.fillText("then escape through the exit portal!",cv.width/2,cv.height/2+40);
+cx.fillStyle="#334155";
+cx.font="12px sans-serif";
+cx.fillText("Press START MISSION to begin",cv.width/2,cv.height/2+70);
 </script>
 </body>
 </html>
-""", height=680)
+""", height=700)
+
 
 def render_tower_defense():
     """9-12: Improved PQC Tower Defense with more towers, enemies, bosses and education."""
