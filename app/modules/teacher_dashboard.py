@@ -50,22 +50,22 @@ def render_teacher_dashboard():
             st.markdown("<br>", unsafe_allow_html=True)
             if st.button("🔓 Login", key="teacher_login"):
                 import time as _time
-        _now = _time.time()
-        _attempts = st.session_state.get("teacher_attempts", 0)
-        _window = st.session_state.get("teacher_window", _now)
-        if _now - _window > 300:
-            st.session_state.teacher_attempts = 0
-            st.session_state.teacher_window = _now
-        st.session_state.teacher_attempts = _attempts + 1
-        if _attempts >= 5:
-            remaining = int(300 - (_now - _window))
-            st.error(f"Too many attempts. Try again in {remaining} seconds.")
-            st.stop()
-        if pwd == TEACHER_PASSWORD:
-            st.session_state.teacher_auth = True
-            st.rerun()
-        else:
-            st.error("Incorrect password. Contact your school administrator.")
+                _now = _time.time()
+                _attempts = st.session_state.get("teacher_attempts", 0)
+                _window = st.session_state.get("teacher_window", _now)
+                if _now - _window > 300:
+                    st.session_state.teacher_attempts = 0
+                    st.session_state.teacher_window = _now
+                st.session_state.teacher_attempts = _attempts + 1
+                if _attempts >= 5:
+                    remaining = int(300 - (_now - _window))
+                    st.error(f"Too many attempts. Try again in {remaining} seconds.")
+                    st.stop()
+                if pwd == TEACHER_PASSWORD:
+                    st.session_state.teacher_auth = True
+                    st.rerun()
+                else:
+                    st.error("Incorrect password. Contact your school administrator.")
         st.info(
             "💡 Demo password: **quantumvault2024** — "
             "Change this in teacher_dashboard.py before deploying to schools."
