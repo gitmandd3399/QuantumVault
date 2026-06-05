@@ -32,6 +32,7 @@ from modules.tls_simulator import render_tls_simulator
 from modules.threat_thermometer import render_threat_thermometer
 from modules.algo_battle import render_algo_battle
 from modules.career_explorer import render_career_explorer
+from modules.privacy_policy import render_privacy_policy, render_terms_of_service
 # ── Page config ───────────────────────────────────────────────────────────────
 st.set_page_config(
     page_title="QuantumVault Academy",
@@ -138,6 +139,8 @@ def sidebar():
         {"label": "⚙️ ACCOUNT", "color": "#6b7280", "items": [
             ("👨‍🏫", "Teacher Dashboard", "👨‍🏫 Teacher Dashboard"),
             ("💎", "Pricing & Plans",    "💎 Pricing & Plans"),
+            ("🔒", "Privacy Policy",      "🔒 Privacy Policy"),
+            ("📋", "Terms of Service",    "📋 Terms of Service"),
         ]},
     ]
 
