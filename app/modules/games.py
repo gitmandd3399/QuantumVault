@@ -2040,13 +2040,14 @@ def render_quantumcraft_elementary():
     }
     function updateUI(){
         document.getElementById('qscore').textContent=score;
-        document.getElementById('qhp').textContent=Math.max(0,qhp);
         document.getElementById('qmined').textContent=mined;
+        document.getElementById('qlevel').textContent=level;
         document.getElementById('slot-kyber').textContent='Kyber:'+inventory.kyber;
         document.getElementById('slot-lattice').textContent='Lattice:'+inventory.lattice;
         document.getElementById('slot-hash').textContent='Hash:'+inventory.hash;
         document.getElementById('slot-key').textContent='Keys:'+inventory.key;
-        document.getElementById('qlives').textContent='❤️'.repeat(Math.max(0,lives));
+        var lv=document.getElementById('qlives');
+        if(lv) lv.textContent='❤️'.repeat(Math.max(0,lives));
     }
     document.addEventListener('keydown',e=>{
         keys[e.key]=true;
