@@ -1466,7 +1466,7 @@ updateUI();
 def render_zombie_blast(difficulty: str = "easy"):
     """Quantum Zombie Blast — clean redesign with better UI and gameplay."""
     diff = {
-        "easy":   {"speed": 1.2, "rate": 100, "hp": 30,  "label": "🟢 Recruit",     "waves": 5},
+        "easy":   {"speed": 2.2, "rate": 55,  "hp": 30,  "label": "🟢 Recruit",     "waves": 5},
         "medium": {"speed": 1.8, "rate": 75,  "hp": 55,  "label": "🟡 Code Cadet",  "waves": 8},
         "hard":   {"speed": 2.8, "rate": 50,  "hp": 90,  "label": "🔴 Cipher Corps", "waves": 12},
     }.get(difficulty, {"speed": 1.2, "rate": 100, "hp": 30, "label": "🟢 Recruit", "waves": 5})
