@@ -2020,7 +2020,19 @@ def render_quantumcraft_elementary():
                     score+=b.pts;mined++;world[ny][nx]='empty';
                     document.getElementById('qc-msg').textContent='Mined '+bt+'! +'+b.pts+' pts';
                     updateUI();
-                    if(mined>=level*8){level++;document.getElementById('qlevel').textContent=level;genWorld();for(let i=0;i<level+2;i++)spawnC();}
+                    if(mined>=level*8){
+                        level++;
+                        document.getElementById('qlevel').textContent=level;
+                        document.getElementById('qc-msg').textContent=
+                            '🎉 LEVEL '+level+'! More creepers! Mine '+level*8+' blocks to advance!';
+                        genWorld();
+                        enemies=[];
+                        for(let i=0;i<level+2;i++) spawnC();
+                        // Speed up creepers each level
+                        enemies.forEach(e=>{ e.rate=Math.max(20, 45-level*3); });
+                        score+=level*50;
+                        updateUI();
+                    }
                     return;
                 }
             }
