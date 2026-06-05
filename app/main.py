@@ -53,7 +53,7 @@ if "badges" not in st.session_state:
 if "xp" not in st.session_state:
     st.session_state.xp = 0
 if "plan_type" not in st.session_state:
-    st.session_state.plan_type = "paid"
+    st.session_state.plan_type = "free"
 if "free_module" not in st.session_state:
     st.session_state.free_module = None
 
@@ -450,6 +450,68 @@ def main():
         return
 
     level = st.session_state.level
+    plan = st.session_state.get("plan_type", "free")
+    free_mod = st.session_state.get("free_module", "")
+
+    # FREE TIER GATING
+    FREE_ALLOWED = [
+        "💎 Pricing & Plans",
+        "🔒 Privacy Policy",
+        "📋 Terms of Service",
+        "🏆 Leaderboard",
+        "🌍 World Map",
+        "🗺️ Mission Map",
+        "📊 My Progress",
+    ]
+
+    GRADE_MAP = {
+        "Elementary": "🟢 Elementary (K–5)",
+        "Middle":     "🟡 Middle School (6–8)",
+        "High":       "🔴 High School (9–12)",
+    }
+
+    if plan == "free" and level and not level.startswith("─"):
+        allowed = False
+        # Always allow free pages
+        for fa in FREE_ALLOWED:
+            if fa in level:
+                allowed = True
+                break
+        # Allow the chosen free module
+        if free_mod:
+            for key, val in GRADE_MAP.items():
+                if key in free_mod and key in level:
+                    allowed = True
+                    break
+        # If not allowed show upgrade prompt
+        if not allowed and level not in ["", None]:
+            st.markdown(
+                "<div style='background:#071520;border:2px solid #1d4ed8;"
+                "border-radius:16px;padding:30px;text-align:center;margin:20px 0'>"
+                "<div style='font-size:3rem;margin-bottom:10px'>🔐</div>"
+                "<h2 style='color:#60a5fa;margin-bottom:8px'>Premium Feature</h2>"
+                "<p style='color:#94a3b8;margin-bottom:16px'>"
+                "This feature is available on paid plans.<br>"
+                "Your free plan includes: <b style='color:#60a5fa'>"
+                + (free_mod if free_mod else "one grade module of your choice") +
+                "</b></p>"
+                "</div>",
+                unsafe_allow_html=True
+            )
+            col1, col2, col3 = st.columns([1,2,1])
+            with col2:
+                if st.button("🚀 View Plans & Upgrade", type="primary",
+                             use_container_width=True, key="gate_upgrade"):
+                    st.session_state.level = "💎 Pricing & Plans"
+                    st.rerun()
+                st.markdown(
+                    "<div style='text-align:center;margin-top:8px;"
+                    "font-size:0.85rem;color:#475569'>"
+                    "School license from $1,999/yr · 30-day free trial · No credit card</div>",
+                    unsafe_allow_html=True
+                )
+            st.stop()
+
     if not level or level.startswith("─"):
         st.markdown(
             "<div style='text-align:center;padding:60px 20px'>"
