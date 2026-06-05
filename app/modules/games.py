@@ -1737,7 +1737,8 @@ function loop() {{
     }});
 
     // Wave complete
-    if(spawnCount>=waveSize&&zombies.length===0){{
+    waveTimer++;
+    if(spawnCount>=waveSize&&(zombies.length===0||waveTimer>1800)){{
         if(wave>=MAX_WAVES){{
             running=false;
             showMsg("🏆 QUANTUM GUARDIAN! All 12 waves cleared! Score: "+score);
@@ -1745,10 +1746,15 @@ function loop() {{
             wave++;
             const nextCfg = getWaveConfig();
             waveSize=nextCfg.count;
-            spawnCount=0; spawnT=0;
+            spawnCount=0; spawnT=0; waveTimer=0; waveTimer=0;
+            zombies=[];
             document.getElementById("zwave").textContent=wave+"/12";
             showMsg("✅ Wave "+(wave-1)+" cleared! Wave "+wave+": "+nextCfg.name+" incoming!");
         }}
+    }}
+    // Force respawn if somehow no zombies and not all spawned yet
+    if(spawnCount<waveSize&&zombies.length===0&&spawnT>50){{
+        spawnZombie(); spawnT=0;
     }}
 
     updateHUD();
@@ -2051,6 +2057,8 @@ def render_quantumcraft_elementary():
     function gLoop(){
         window._qcF=requestAnimationFrame(gLoop);mt++;
         if(mt>=8){mt=0;if(!running)return;
+            // Keep minimum creeper population
+            if(enemies.length<2+Math.floor(level/2)) spawnC();
             let nx=player.x,ny=player.y;
             if(keys['ArrowUp']||keys['w'])ny--;
             if(keys['ArrowDown']||keys['s'])ny++;
@@ -2068,6 +2076,8 @@ def render_quantumcraft_elementary():
                 if(moves.length>0){const m=moves[0];e.x=m.x;e.y=m.y;}
                 if(e.x===player.x&&e.y===player.y){
                     qhp-=15;updateUI();enemies.splice(i,1);
+                    // Respawn a new creeper after 2 seconds
+                    setTimeout(()=>{if(running) spawnC();}, 2000);
                     if(qhp<=0){running=false;
                         qx.fillStyle='rgba(0,0,0,0.85)';qx.fillRect(0,0,480,400);
                         qx.fillStyle='#ef4444';qx.font='bold 26px sans-serif';qx.textAlign='center';
@@ -2087,7 +2097,12 @@ def render_quantumcraft_elementary():
             if(b.emoji){qx.font='20px sans-serif';qx.textAlign='center';qx.fillText(b.emoji,c*CELL+20,r*CELL+28);}
             if(b.mineable){qx.strokeStyle='rgba(255,255,255,0.3)';qx.lineWidth=1.5;qx.strokeRect(c*CELL+2,r*CELL+2,CELL-4,CELL-4);}
         }
-        enemies.forEach(e=>{qx.font='22px sans-serif';qx.textAlign='center';qx.fillText('X',e.x*CELL+20,e.y*CELL+28);});
+        enemies.forEach(e=>{
+            qx.font='22px sans-serif';qx.textAlign='center';
+            qx.shadowColor='#ef4444';qx.shadowBlur=8;
+            qx.fillText('💀',e.x*CELL+20,e.y*CELL+28);
+            qx.shadowBlur=0;
+        });
         qx.font='24px sans-serif';qx.textAlign='center';qx.fillText('P',player.x*CELL+20,player.y*CELL+28);
         qx.strokeStyle='#10b981';qx.lineWidth=2;qx.strokeRect(player.x*CELL+2,player.y*CELL+2,CELL-4,CELL-4);
     }
