@@ -1581,7 +1581,7 @@ function getWaveConfig() {{
 let player = {{x:W/2, y:H-55, w:40, h:40, spd:6}};
 let bullets=[], zombies=[], explosions=[], stars=[];
 let selWeapon=0, zhp=100, score=0, wave=1, killed=0;
-let running=false, frameId, spawnT=0, spawnCount=0, waveSize=0;
+let running=false, frameId, spawnT=0, spawnCount=0, waveSize=0, waveTimer=0;
 let keys={{}};
 
 // Generate starfield
@@ -1611,7 +1611,7 @@ function updateHUD() {{
 
 function startGame() {{
     bullets=[]; zombies=[]; explosions=[];
-    zhp=100; score=0; wave=1; killed=0; spawnT=0; spawnCount=0;
+    zhp=100; score=0; wave=1; killed=0; spawnT=0; spawnCount=0; waveTimer=0;
     waveSize=WAVE_CONFIG[0].count; running=true; player.x=W/2;
     updateHUD();
     showMsg("🧟 Wave 1 incoming! Blast the quantum zombies!");
@@ -1746,7 +1746,7 @@ function loop() {{
             wave++;
             const nextCfg = getWaveConfig();
             waveSize=nextCfg.count;
-            spawnCount=0; spawnT=0; waveTimer=0; waveTimer=0;
+            spawnCount=0; spawnT=0; waveTimer=0;
             zombies=[];
             document.getElementById("zwave").textContent=wave+"/12";
             showMsg("✅ Wave "+(wave-1)+" cleared! Wave "+wave+": "+nextCfg.name+" incoming!");
