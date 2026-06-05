@@ -394,3 +394,24 @@ def render_pricing_page():
         "QuantumVault Academy never stores credit card information. "
         "Cancel anytime. Questions? Email hello@quantumvaultacademy.com"
     )
+
+
+def handle_stripe_webhook(payload: bytes, sig_header: str) -> dict:
+    """Verify Stripe webhook signature before processing events."""
+    import logging
+    import streamlit as _st
+    webhook_secret = _st.secrets.get("STRIPE_WEBHOOK_SECRET", "")
+    if not webhook_secret:
+        logging.warning("STRIPE_WEBHOOK_SECRET not configured!")
+        return {"error": "Webhook secret not set"}
+    try:
+        import stripe as _stripe
+        event = _stripe.Webhook.construct_event(payload, sig_header, webhook_secret)
+        logging.info(f"Stripe webhook verified: {event['type']}")
+        return {"success": True, "type": event["type"]}
+    except ValueError as e:
+        logging.error(f"Invalid Stripe payload: {e}")
+        return {"error": "Invalid payload"}
+    except Exception as e:
+        logging.error(f"Stripe signature failed: {e}")
+        return {"error": "Signature verification failed"}

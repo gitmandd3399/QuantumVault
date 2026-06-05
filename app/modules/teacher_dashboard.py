@@ -49,7 +49,18 @@ def render_teacher_dashboard():
         with col2:
             st.markdown("<br>", unsafe_allow_html=True)
             if st.button("🔓 Login", key="teacher_login"):
-                if pwd == TEACHER_PASSWORD:
+                import time as _time
+        _attempts = st.session_state.get("teacher_attempts", 0)
+        _window = st.session_state.get("teacher_window", _time.time())
+        if _time.time() - _window > 300:
+            st.session_state.teacher_attempts = 0
+            st.session_state.teacher_window = _time.time()
+        st.session_state.teacher_attempts = _attempts + 1
+        if _attempts >= 5:
+            remaining = int(300 - (_time.time() - _window))
+            st.error(f"Too many attempts. Try again in {remaining} seconds.")
+            st.stop()
+        if pwd == TEACHER_PASSWORD:
                     st.session_state.teacher_auth = True
                     st.rerun()
                 else:
