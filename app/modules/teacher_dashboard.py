@@ -61,10 +61,10 @@ def render_teacher_dashboard():
             st.error(f"Too many attempts. Try again in {remaining} seconds.")
             st.stop()
         if pwd == TEACHER_PASSWORD:
-                    st.session_state.teacher_auth = True
-                    st.rerun()
-                else:
-                    st.error("Incorrect password. Contact your school administrator.")
+            st.session_state.teacher_auth = True
+            st.rerun()
+        else:
+            st.error("Incorrect password. Contact your school administrator.")
         st.info(
             "💡 Demo password: **quantumvault2024** — "
             "Change this in teacher_dashboard.py before deploying to schools."
