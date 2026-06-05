@@ -1943,7 +1943,7 @@ def render_quantumcraft_elementary():
     </style>
     <div class="qc-wrap">
         <div class="qc-bar">
-            <span>HP:<span id="qhp">100</span></span>
+            <span>Lives:<span id="qlives">❤️❤️❤️</span></span>
             <span>Score:<span id="qscore">0</span></span>
             <span>Mined:<span id="qmined">0</span></span>
             <span>Level:<span id="qlevel">1</span></span>
@@ -1975,7 +1975,7 @@ def render_quantumcraft_elementary():
         chest:{color:'#b45309',emoji:'C',solid:true,mineable:true,item:'chest',pts:50},
         placed:{color:'#4f46e5',emoji:'',solid:true,mineable:false},
     };
-    let world=[],player,enemies,inventory,score,qhp,level,running,mined,keys={};
+    let world=[],player,enemies,inventory,score,qhp,level,running,mined,keys={},lives=3;
     function genWorld(){
         world=[];
         for(let r=0;r<ROWS;r++){world[r]=[];for(let c=0;c<COLS;c++){
@@ -1994,7 +1994,7 @@ def render_quantumcraft_elementary():
     function startQC(){
         genWorld();player={x:1,y:4};enemies=[];
         inventory={kyber:0,lattice:0,hash:0,key:0,chest:0};
-        score=0;qhp=100;level=1;running=true;mined=0;
+        score=0;qhp=100;level=1;running=true;mined=0;lives=3;
         for(let i=0;i<4;i++)spawnC();
         document.getElementById('qc-msg').textContent='Mine the glowing crypto blocks!';
         updateUI();cancelAnimationFrame(window._qcF);gLoop();
@@ -2046,6 +2046,7 @@ def render_quantumcraft_elementary():
         document.getElementById('slot-lattice').textContent='Lattice:'+inventory.lattice;
         document.getElementById('slot-hash').textContent='Hash:'+inventory.hash;
         document.getElementById('slot-key').textContent='Keys:'+inventory.key;
+        document.getElementById('qlives').textContent='❤️'.repeat(Math.max(0,lives));
     }
     document.addEventListener('keydown',e=>{
         keys[e.key]=true;
@@ -2075,13 +2076,20 @@ def render_quantumcraft_elementary():
                 if(dy<0&&canWalk(e.x,e.y-1))moves.push({x:e.x,y:e.y-1});
                 if(moves.length>0){const m=moves[0];e.x=m.x;e.y=m.y;}
                 if(e.x===player.x&&e.y===player.y){
-                    qhp-=15;updateUI();enemies.splice(i,1);
-                    // Respawn a new creeper after 2 seconds
+                    lives--;
+                    enemies.splice(i,1);
                     setTimeout(()=>{if(running) spawnC();}, 2000);
-                    if(qhp<=0){running=false;
+                    document.getElementById('qc-msg').textContent='💀 Lost a life! '+lives+' lives left!';
+                    // Flash player red
+                    qhp=100;
+                    updateUI();
+                    if(lives<=0){
+                        running=false;
                         qx.fillStyle='rgba(0,0,0,0.85)';qx.fillRect(0,0,480,400);
                         qx.fillStyle='#ef4444';qx.font='bold 26px sans-serif';qx.textAlign='center';
-                        qx.fillText('Quantum Won! Score:'+score,240,200);
+                        qx.fillText('Game Over! Score:'+score,240,185);
+                        qx.fillStyle='white';qx.font='16px sans-serif';
+                        qx.fillText('Press Start to play again!',240,220);
                     }
                 }
             });
