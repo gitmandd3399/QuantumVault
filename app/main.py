@@ -560,6 +560,8 @@ def main():
         render_pricing_page()
     elif "Trading Cards" in level:
         render_trading_cards()
+    elif "Prime Factor" in level:
+        render_prime_factor_game()
     elif "Daily Challenge" in level:
         render_daily_challenge()
     elif "Share Achievement" in level:
