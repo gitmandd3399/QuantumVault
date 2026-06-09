@@ -143,11 +143,7 @@ def render_mfa_login():
 
             st.markdown(f"##### 📱 Check your email")
             st.info(
-                f"We sent a 6-digit code to **{st.session_state.mfa_email}**
-
-"
-                f"⏱️ Code expires in **{remaining//60}:{remaining%60:02d}**"
-            )
+            st.info("Code sent to " + str(st.session_state.mfa_email) + " — expires in " + str(remaining//60) + ":" + str(remaining%60).zfill(2))
 
             # Rate limiting
             if st.session_state.mfa_attempts >= 5:
