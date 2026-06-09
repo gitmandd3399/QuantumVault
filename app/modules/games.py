@@ -3522,3 +3522,383 @@ cx.fillText("Press START to begin",W/2,H/2+50);
 </body>
 </html>
 """, height=750)
+
+
+
+
+def render_secret_message():
+    """Free game: Secret Message Maker — K-5 cipher introduction!"""
+    import streamlit as st
+    import streamlit.components.v1 as components
+    st.subheader("🔤 Secret Message Maker!")
+    st.markdown(
+        "**Type a secret message and encrypt it!** "
+        "Can you decode the mystery messages? "
+        "Learn why simple ciphers are NOT quantum-safe — and what is! "
+        "FREE for everyone!"
+    )
+    components.html("""
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:#020d14;font-family:'Segoe UI',sans-serif;color:white;}
+#wrap{display:flex;flex-direction:column;align-items:center;padding:12px;max-width:540px;margin:0 auto;}
+.hud{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;width:100%;margin-bottom:8px;}
+.hb{background:#071520;border:1px solid #1a3a5a;border-radius:8px;padding:6px 4px;text-align:center;font-size:10px;color:#60a5fa;}
+.hb b{display:block;font-size:16px;color:white;}
+.tabs{display:flex;gap:4px;width:100%;margin-bottom:8px;}
+.tab{flex:1;padding:8px;border-radius:8px;border:1px solid #1a3a5a;background:#071520;
+    color:#60a5fa;font-size:12px;font-weight:bold;cursor:pointer;text-align:center;}
+.tab.active{background:#1d4ed8;border-color:#3b82f6;color:white;}
+.card{background:#071520;border:1px solid #1a3a5a;border-radius:12px;padding:14px;width:100%;margin-bottom:8px;}
+.card h4{color:#60a5fa;margin-bottom:8px;font-size:13px;}
+.msg-input{width:100%;background:#0a1f35;border:2px solid #1d4ed8;border-radius:8px;
+    color:white;font-size:13px;padding:10px;outline:none;resize:none;font-family:'Segoe UI',sans-serif;}
+.msg-input:focus{border-color:#60a5fa;}
+.msg-output{width:100%;background:#051018;border:1px solid #1a3a5a;border-radius:8px;
+    color:#10b981;font-size:13px;padding:10px;min-height:50px;font-family:'Fira Code',monospace;
+    word-break:break-all;line-height:1.6;}
+.cipher-select{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0;}
+.cipher-btn{padding:5px 12px;border-radius:20px;border:1px solid #1a3a5a;
+    background:#071520;color:#60a5fa;font-size:11px;cursor:pointer;}
+.cipher-btn.active{background:#1d4ed8;border-color:#3b82f6;color:white;}
+#msg{font-size:12px;color:#34d399;min-height:18px;margin:4px;text-align:center;font-weight:bold;}
+#fact-box{background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.3);
+    border-radius:8px;padding:8px 12px;margin:4px 0;font-size:11px;color:#93c5fd;
+    display:none;line-height:1.5;width:100%;}
+.challenge-card{background:#071520;border:2px solid #7c3aed;border-radius:12px;
+    padding:14px;width:100%;margin-bottom:8px;}
+.challenge-card h4{color:#a78bfa;margin-bottom:6px;font-size:13px;}
+.encrypted-msg{font-family:'Fira Code',monospace;font-size:14px;color:#fbbf24;
+    letter-spacing:2px;background:#051018;padding:10px;border-radius:6px;
+    word-break:break-all;margin:8px 0;}
+.decode-input{width:100%;background:#0a1f35;border:2px solid #7c3aed;border-radius:8px;
+    color:white;font-size:13px;padding:8px;outline:none;}
+.decode-input:focus{border-color:#a78bfa;}
+.btn{padding:8px 16px;border-radius:8px;border:none;cursor:pointer;
+    font-size:12px;font-weight:bold;color:white;margin:3px;}
+.btn-blue{background:#1d4ed8;}
+.btn-purple{background:#7c3aed;}
+.btn-green{background:#059669;}
+.btn-row{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin:6px 0;}
+.key-display{display:flex;gap:3px;flex-wrap:wrap;margin:6px 0;justify-content:center;}
+.key-pair{background:#0a1f35;border:1px solid #1a3a5a;border-radius:4px;
+    padding:3px 5px;font-size:9px;color:#60a5fa;font-family:monospace;}
+.key-pair span{color:#10b981;}
+.level-badge{display:inline-block;background:linear-gradient(135deg,#7c3aed,#1d4ed8);
+    border-radius:20px;padding:3px 12px;font-size:11px;font-weight:bold;margin-bottom:6px;}
+#progress{display:flex;gap:4px;justify-content:center;flex-wrap:wrap;margin:6px 0;}
+.pdot{width:12px;height:12px;border-radius:50%;background:#1e293b;border:1px solid #334155;}
+.pdot.done{background:#10b981;}.pdot.current{background:#3b82f6;}
+.pdot.failed{background:#ef4444;}
+</style>
+</head>
+<body>
+<div id="wrap">
+<div class="hud">
+    <div class="hb">⭐ Score<br><b id="h-score">0</b></div>
+    <div class="hb">🏆 Level<br><b id="h-level">1</b>/12</div>
+    <div class="hb">🔥 Streak<br><b id="h-streak">0</b></div>
+</div>
+
+<div class="tabs">
+    <div class="tab active" onclick="showTab('encrypt')">🔐 Encrypt</div>
+    <div class="tab" onclick="showTab('decode')">🕵️ Decode Challenge</div>
+    <div class="tab" onclick="showTab('learn')">📚 Learn</div>
+</div>
+
+<!-- ENCRYPT TAB -->
+<div id="tab-encrypt">
+    <div class="card">
+        <h4>Choose a cipher:</h4>
+        <div class="cipher-select">
+            <button class="cipher-btn active" onclick="setCipher('substitution',this)">🔄 Substitution</button>
+            <button class="cipher-btn" onclick="setCipher('caesar',this)">⚔️ Caesar (+3)</button>
+            <button class="cipher-btn" onclick="setCipher('reverse',this)">↩️ Reverse</button>
+            <button class="cipher-btn" onclick="setCipher('morse',this)">📡 Morse</button>
+        </div>
+        <div id="cipher-info" style="font-size:10px;color:#64748b;margin-bottom:8px;">
+            Each letter maps to a different letter — like a secret code!
+        </div>
+    </div>
+    <div class="card">
+        <h4>✏️ Type your message:</h4>
+        <textarea class="msg-input" id="plain-input" rows="3" 
+            placeholder="Type anything here..." 
+            oninput="encrypt()">Hello World</textarea>
+    </div>
+    <div class="card">
+        <h4>🔐 Encrypted message:</h4>
+        <div class="msg-output" id="cipher-output">—</div>
+        <div class="btn-row" style="margin-top:8px">
+            <button class="btn btn-blue" onclick="copyEncrypted()">📋 Copy</button>
+            <button class="btn btn-purple" onclick="showKeyMap()">🗝️ Show Key</button>
+        </div>
+        <div id="key-map" style="display:none;margin-top:6px">
+            <div style="font-size:10px;color:#60a5fa;margin-bottom:4px">Cipher Key:</div>
+            <div class="key-display" id="key-display"></div>
+        </div>
+    </div>
+</div>
+
+<!-- DECODE TAB -->
+<div id="tab-decode" style="display:none">
+    <div class="challenge-card">
+        <div class="level-badge" id="challenge-badge">Level 1</div>
+        <h4 id="challenge-title">🕵️ Decode this secret message!</h4>
+        <div id="challenge-hint" style="font-size:10px;color:#64748b;margin-bottom:6px;"></div>
+        <div class="encrypted-msg" id="challenge-msg">—</div>
+        <input class="decode-input" id="decode-input" type="text" 
+               placeholder="Type your decoded message here..."
+               onkeydown="if(event.key==='Enter') checkDecode()"/>
+        <div class="btn-row" style="margin-top:8px">
+            <button class="btn btn-purple" onclick="checkDecode()">🔓 Submit Answer</button>
+            <button class="btn btn-blue" onclick="getDecodeHint()">💡 Hint</button>
+            <button class="btn btn-green" id="next-challenge" onclick="nextChallenge()" style="display:none">Next →</button>
+        </div>
+    </div>
+    <div id="progress"></div>
+</div>
+
+<!-- LEARN TAB -->
+<div id="tab-learn" style="display:none">
+    <div class="card">
+        <h4>🔐 Why Simple Ciphers FAIL</h4>
+        <div style="font-size:11px;color:#94a3b8;line-height:1.7">
+            <p style="margin-bottom:6px">⚔️ <b style="color:#ef4444">Substitution Cipher:</b> Easy to crack with frequency analysis. 'E' is the most common letter in English — find the most common encrypted letter and you have your key!</p>
+            <p style="margin-bottom:6px">⚔️ <b style="color:#f59e0b">Caesar Cipher:</b> Only 25 possible keys — a computer tries all of them in milliseconds!</p>
+            <p style="margin-bottom:6px">⚔️ <b style="color:#f97316">RSA Encryption:</b> Was considered unbreakable — until quantum computers. Shor's Algorithm factors RSA keys in seconds!</p>
+            <p style="margin-bottom:6px">✅ <b style="color:#10b981">Kyber (ML-KEM FIPS 203):</b> Uses lattice math — even quantum computers can't break it! The hardest problem in all of cryptography!</p>
+        </div>
+    </div>
+    <div class="card">
+        <h4>📊 Cipher Strength Comparison</h4>
+        <div style="font-size:11px">
+            <div style="margin:4px 0">Substitution <div style="background:#ef4444;height:8px;width:10%;border-radius:4px;display:inline-block;margin-left:6px"></div> <span style="color:#ef4444">Weak</span></div>
+            <div style="margin:4px 0">Caesar &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <div style="background:#f59e0b;height:8px;width:15%;border-radius:4px;display:inline-block;margin-left:6px"></div> <span style="color:#f59e0b">Very Weak</span></div>
+            <div style="margin:4px 0">RSA-2048 &nbsp;&nbsp; <div style="background:#3b82f6;height:8px;width:70%;border-radius:4px;display:inline-block;margin-left:6px"></div> <span style="color:#3b82f6">Strong (classical)</span></div>
+            <div style="margin:4px 0">RSA vs Shor <div style="background:#ef4444;height:8px;width:10%;border-radius:4px;display:inline-block;margin-left:6px"></div> <span style="color:#ef4444">Broken by quantum!</span></div>
+            <div style="margin:4px 0">Kyber &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <div style="background:#10b981;height:8px;width:100%;border-radius:4px;display:inline-block;margin-left:6px"></div> <span style="color:#10b981">Quantum-Safe! ✅</span></div>
+        </div>
+    </div>
+</div>
+
+<div id="msg">Type a message to encrypt it!</div>
+<div id="fact-box"></div>
+</div>
+
+<script>
+let currentCipher = "substitution";
+let challengeLevel = 1;
+let score = 0, streak = 0;
+let challengeResults = [];
+let hintUsed = false;
+let factTimeout = null;
+
+const SUB_MAP = {
+    a:"q",b:"w",c:"e",d:"r",e:"t",f:"y",g:"u",h:"i",i:"o",j:"p",
+    k:"a",l:"s",m:"d",n:"f",o:"g",p:"h",q:"j",r:"k",s:"l",t:"z",
+    u:"x",v:"c",w:"v",x:"b",y:"n",z:"m"
+};
+const REV_SUB = Object.fromEntries(Object.entries(SUB_MAP).map(([k,v])=>[v,k]));
+
+const CHALLENGES = [
+    {level:1, cipher:"substitution", plain:"HELLO",      hint:"5 letters, a greeting!"},
+    {level:2, cipher:"caesar",       plain:"CAT",         hint:"A furry animal with 3 letters"},
+    {level:3, cipher:"substitution", plain:"QUANTUM",     hint:"Related to physics and computing!"},
+    {level:4, cipher:"reverse",      plain:"SECRET",      hint:"Something hidden — 6 letters"},
+    {level:5, cipher:"caesar",       plain:"KYBER",       hint:"A NIST post-quantum algorithm!"},
+    {level:6, cipher:"substitution", plain:"ENCRYPT",     hint:"What you do to a secret message"},
+    {level:7, cipher:"reverse",      plain:"LATTICE",     hint:"The math behind Kyber — 7 letters"},
+    {level:8, cipher:"caesar",       plain:"QUANTUM SAFE",hint:"Two words: describes Kyber"},
+    {level:9, cipher:"substitution", plain:"NIST FIPS",   hint:"The organization that standardized PQC"},
+    {level:10,cipher:"reverse",      plain:"SHOR ATTACK", hint:"Two words: how quantum breaks RSA"},
+    {level:11,cipher:"caesar",       plain:"POST QUANTUM",hint:"Two words: the new era of cryptography"},
+    {level:12,cipher:"substitution", plain:"KYBER WINS",  hint:"Two words: the quantum-safe future!"},
+];
+
+const CIPHER_INFO = {
+    substitution: "Each letter maps to a different letter — like a secret code!",
+    caesar: "Shift each letter 3 positions forward in the alphabet (A→D, B→E...)",
+    reverse: "Reverse the entire message!",
+    morse: "Convert to dots and dashes (Morse code)",
+};
+
+function applySubstitution(text){
+    return text.split("").map(c=>{
+        if(/[a-z]/.test(c)) return SUB_MAP[c]||c;
+        if(/[A-Z]/.test(c)) return (SUB_MAP[c.toLowerCase()]||c).toUpperCase();
+        return c;
+    }).join("");
+}
+
+function applyCaesar(text, shift=3){
+    return text.split("").map(c=>{
+        if(/[a-zA-Z]/.test(c)){
+            const base=c<="Z"?65:97;
+            return String.fromCharCode((c.charCodeAt(0)-base+shift+26)%26+base);
+        }
+        return c;
+    }).join("");
+}
+
+function applyReverse(text){ return text.split("").reverse().join(""); }
+
+function applyMorse(text){
+    const M={"A":".-","B":"-...","C":"-.-.","D":"-..","E":".","F":"..-.","G":"--.","H":"....","I":"..","J":".---","K":"-.-","L":".-..","M":"--","N":"-.","O":"---","P":".--.","Q":"--.-","R":".-.","S":"...","T":"-","U":"..-","V":"...-","W":".--","X":"-..-","Y":"-.--","Z":"--.."," ":"/"};
+    return text.toUpperCase().split("").map(c=>M[c]||c).join(" ");
+}
+
+function applycipher(text, cipher){
+    switch(cipher){
+        case "substitution": return applySubstitution(text);
+        case "caesar": return applyCaesar(text);
+        case "reverse": return applyReverse(text);
+        case "morse": return applyMorse(text);
+        default: return text;
+    }
+}
+
+function encryptChallenge(plain, cipher){ return applycipher(plain, cipher); }
+
+function setCipher(cipher, btn){
+    currentCipher = cipher;
+    document.querySelectorAll(".cipher-btn").forEach(b=>b.classList.remove("active"));
+    btn.classList.add("active");
+    document.getElementById("cipher-info").textContent = CIPHER_INFO[cipher];
+    encrypt();
+}
+
+function encrypt(){
+    const input = document.getElementById("plain-input").value;
+    if(!input){document.getElementById("cipher-output").textContent="—";return;}
+    const encrypted = applycipher(input, currentCipher);
+    document.getElementById("cipher-output").textContent = encrypted;
+}
+
+function copyEncrypted(){
+    const text = document.getElementById("cipher-output").textContent;
+    if(navigator.clipboard) navigator.clipboard.writeText(text);
+    setMsg("📋 Copied to clipboard!","#10b981");
+}
+
+function showKeyMap(){
+    const km = document.getElementById("key-map");
+    km.style.display = km.style.display==="none"?"block":"none";
+    const kd = document.getElementById("key-display");
+    kd.innerHTML = Object.entries(SUB_MAP).map(([k,v])=>
+        `<div class="key-pair">${k.toUpperCase()}→<span>${v.toUpperCase()}</span></div>`
+    ).join("");
+}
+
+function showTab(tab){
+    ["encrypt","decode","learn"].forEach(t=>{
+        document.getElementById("tab-"+t).style.display=t===tab?"block":"none";
+    });
+    document.querySelectorAll(".tab").forEach((t,i)=>{
+        t.classList.toggle("active",["encrypt","decode","learn"][i]===tab);
+    });
+    if(tab==="decode") loadChallenge();
+}
+
+function loadChallenge(){
+    const ch = CHALLENGES[Math.min(challengeLevel-1, CHALLENGES.length-1)];
+    const encrypted = encryptChallenge(ch.plain, ch.cipher);
+    document.getElementById("challenge-badge").textContent="Level "+challengeLevel+" — "+ch.cipher.charAt(0).toUpperCase()+ch.cipher.slice(1)+" Cipher";
+    document.getElementById("challenge-title").textContent="🕵️ Decode this "+ch.cipher+" message!";
+    document.getElementById("challenge-hint").textContent="Cipher: "+ch.cipher+" | Hint available if stuck";
+    document.getElementById("challenge-msg").textContent=encrypted;
+    document.getElementById("decode-input").value="";
+    document.getElementById("next-challenge").style.display="none";
+    hintUsed=false;
+    buildProgress();
+    updateHUD();
+}
+
+function checkDecode(){
+    const answer = document.getElementById("decode-input").value.trim().toUpperCase();
+    const ch = CHALLENGES[Math.min(challengeLevel-1, CHALLENGES.length-1)];
+    if(answer === ch.plain.toUpperCase()){
+        const pts = hintUsed?50:100*(challengeLevel);
+        score += pts;
+        streak++;
+        challengeResults[challengeLevel-1]="done";
+        buildProgress();
+        updateHUD();
+        setMsg("🎉 CORRECT! +"+pts+" pts"+(streak>1?" 🔥×"+streak:"")+(hintUsed?" (hint used)":""),"#10b981");
+        showFact("✅ "+getCipherFact(ch.cipher),"#10b981");
+        document.getElementById("next-challenge").style.display="inline-block";
+    } else {
+        streak=0;
+        score=Math.max(0,score-10);
+        updateHUD();
+        setMsg("❌ Not quite! The message is: "+ch.plain.length+" letters. Try again!","#ef4444");
+    }
+}
+
+function getDecodeHint(){
+    const ch = CHALLENGES[Math.min(challengeLevel-1, CHALLENGES.length-1)];
+    hintUsed=true;
+    setMsg("💡 Hint: "+ch.hint+" | Cipher: "+ch.cipher,"#a78bfa");
+    score=Math.max(0,score-25);
+    updateHUD();
+}
+
+function nextChallenge(){
+    if(challengeLevel>=12){
+        setMsg("🏆 ALL 12 CHALLENGES COMPLETE! You are a Cipher Master! Score: "+score,"#fbbf24");
+        return;
+    }
+    challengeLevel++;
+    loadChallenge();
+}
+
+function getCipherFact(cipher){
+    const facts={
+        substitution:"Substitution ciphers were used by Julius Caesar 2,000 years ago — but frequency analysis breaks them in minutes!",
+        caesar:"Caesar cipher has only 25 possible keys — a quantum computer could try all of them in nanoseconds!",
+        reverse:"Simple reversals are the weakest cipher — but they teach the concept of transformation!",
+        morse:"Morse code is not encryption — it's an encoding. Anyone with a chart can decode it!",
+    };
+    return facts[cipher]||"Even complex classical ciphers fail against quantum computers — that's why we need Kyber!";
+}
+
+function buildProgress(){
+    let html="";
+    for(let i=0;i<12;i++){
+        let cls="pdot";
+        if(i<challengeResults.length) cls+=" "+(challengeResults[i]==="done"?"done":"failed");
+        else if(i===challengeLevel-1) cls+=" current";
+        html+=`<div class="${cls}"></div>`;
+    }
+    document.getElementById("progress").innerHTML=html;
+}
+
+function updateHUD(){
+    document.getElementById("h-score").textContent=score;
+    document.getElementById("h-level").textContent=challengeLevel;
+    document.getElementById("h-streak").textContent=streak;
+}
+
+function setMsg(m,c){
+    let el=document.getElementById("msg");
+    el.textContent=m; el.style.color=c||"#34d399";
+}
+
+function showFact(text,color){
+    let el=document.getElementById("fact-box");
+    el.textContent=text; el.style.display="block";
+    el.style.borderColor=(color||"#3b82f6")+"50";
+    if(factTimeout) clearTimeout(factTimeout);
+    factTimeout=setTimeout(()=>el.style.display="none",6000);
+}
+
+// Init
+encrypt();
+buildProgress();
+</script>
+</body>
+</html>
+""", height=750)
