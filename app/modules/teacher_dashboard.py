@@ -14,7 +14,7 @@ from utils.security import get_level, sanitize_input
 
 SCORES_FILE = pathlib.Path(__file__).parent.parent / "static" / "scores.json"
 import streamlit as _st_td
-TEACHER_PASSWORD = _st_td.secrets.get("TEACHER_PASSWORD", "quantumvault2024")
+TEACHER_PASSWORD = _st_td.secrets.get("TEACHER_PASSWORD", "")
 
 
 def load_scores() -> dict:
@@ -67,8 +67,7 @@ def render_teacher_dashboard():
                 else:
                     st.error("Incorrect password. Contact your school administrator.")
         st.info(
-            "💡 Demo password: **quantumvault2024** — "
-            "Change this in teacher_dashboard.py before deploying to schools."
+            "💡 Contact hello@quantumvaultacademy.com for teacher access credentials."
         )
         return
 
