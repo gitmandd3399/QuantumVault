@@ -6,7 +6,6 @@ Teaches Post-Quantum Cryptography from K–12.
 import os
 import streamlit as st
 import datetime
-from streamlit_google_auth import Authenticate
 from modules.elementary import render_elementary
 from modules.middle_school import render_middle_school
 from modules.high_school import render_high_school
@@ -64,53 +63,7 @@ if _dev_password:
     if st.sidebar.text_input("Dev unlock:", type="password", key="dev_unlock") == _dev_password:
         st.session_state.plan_type = "paid"
         st.session_state.free_module = None
-# ── Google OAuth ─────────────────────────────────────────────────────────────
-import json, tempfile, os as _os
-_client_id     = st.secrets.get("GOOGLE_CLIENT_ID", "")
-_client_secret = st.secrets.get("GOOGLE_CLIENT_SECRET", "")
-_cookie_secret = st.secrets.get("COOKIE_SECRET", "fallback_secret_key_32chars!!")
 
-if _client_id and _client_secret:
-    # Write credentials to temp file
-    _creds = {
-        "web": {
-            "client_id": _client_id,
-            "client_secret": _client_secret,
-            "redirect_uris": ["https://quantumvaultacademy.streamlit.app/"],
-            "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-            "token_uri": "https://oauth2.googleapis.com/token"
-        }
-    }
-    _creds_file = tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False)
-    json.dump(_creds, _creds_file)
-    _creds_file.close()
-
-    authenticator = Authenticate(
-        secret_credentials_path=_creds_file.name,
-        redirect_uri="https://quantumvaultacademy.streamlit.app/",
-        cookie_name="qva_auth",
-        cookie_key=_cookie_secret,
-        cookie_expiry_days=30,
-    )
-    authenticator.check_authentification()
-    if not st.session_state.get("connected"):
-        st.markdown(
-            "<div style='text-align:center;padding:60px 20px'>"
-            "<div style='font-size:4rem;margin-bottom:16px'>🔐</div>"
-            "<h1 style='color:#60a5fa;margin-bottom:8px'>QuantumVault Academy</h1>"
-            "<p style='color:#94a3b8;margin-bottom:24px'>"
-            "Sign in with Google to access your quantum-safe learning platform.</p>"
-            "</div>",
-            unsafe_allow_html=True
-        )
-        col1, col2, col3 = st.columns([1,2,1])
-        with col2:
-            authenticator.login()
-        st.stop()
-    else:
-        st.session_state["user_email"] = st.session_state.get("user_info", {}).get("email", "")
-        st.session_state["user_name"]  = st.session_state.get("user_info", {}).get("name", "Student")
-    _os.unlink(_creds_file.name)
 
 if "streak_days" not in st.session_state:
     st.session_state.streak_days = 0
