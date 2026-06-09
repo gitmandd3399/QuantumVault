@@ -3082,14 +3082,14 @@ setMsg("Press ▶ New Game to start factoring!");
 
 
 def render_network_defender():
-    """Free game: Quantum Network Defender — Protect your network from quantum attacks!"""
+    """Free game: Quantum Network Defender v2 — Cinematic network defense with waves, animations, and boss attacks!"""
     import streamlit as st
     import streamlit.components.v1 as components
     st.subheader("🌐 Quantum Network Defender!")
     st.markdown(
-        "**Your mission:** Protect the network by upgrading vulnerable RSA connections to "
-        "quantum-safe Kyber before the Shor Attack breaks through! "
-        "Click connections to upgrade them. FREE for everyone!"
+        "**MISSION:** Quantum attack ships are targeting your network nodes! "
+        "Click nodes to deploy Kyber shields before they get hacked. "
+        "Survive all 12 waves to save the internet! **FREE for everyone!**"
     )
     components.html("""
 <!DOCTYPE html>
@@ -3097,433 +3097,626 @@ def render_network_defender():
 <head>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
-body{background:#020d14;font-family:'Segoe UI',sans-serif;color:white;}
-#wrap{display:flex;flex-direction:column;align-items:center;padding:12px;max-width:560px;margin:0 auto;}
-.hud{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;width:100%;margin-bottom:8px;}
-.hb{background:#071520;border:1px solid #1a3a5a;border-radius:8px;padding:6px 4px;text-align:center;font-size:10px;color:#60a5fa;}
-.hb b{display:block;font-size:16px;color:white;}
-#net-canvas{border:2px solid #1d4ed8;border-radius:12px;display:block;cursor:pointer;
-    box-shadow:0 0 20px rgba(59,130,246,0.15);}
-#legend{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:6px 0;font-size:10px;}
-.leg{display:flex;align-items:center;gap:4px;}
-.leg-line{width:24px;height:3px;border-radius:2px;}
-#msg{font-size:12px;color:#34d399;min-height:20px;margin:4px;text-align:center;font-weight:bold;
-    background:#071520;border-radius:6px;padding:4px 8px;width:100%;}
+body{background:#020d14;font-family:'Segoe UI',sans-serif;color:white;overflow:hidden;}
+#wrap{display:flex;flex-direction:column;align-items:center;padding:8px;max-width:560px;margin:0 auto;}
+.hud{display:grid;grid-template-columns:repeat(5,1fr);gap:3px;width:100%;margin-bottom:6px;}
+.hb{background:#071520;border:1px solid #1a3a5a;border-radius:8px;padding:5px 3px;
+    text-align:center;font-size:9px;color:#60a5fa;transition:all 0.3s;}
+.hb b{display:block;font-size:14px;color:white;}
+.hb.flash{background:#1d4ed8;border-color:#60a5fa;}
+
+#wave-announce{background:linear-gradient(135deg,#071520,#0a1f35);
+    border:2px solid #1d4ed8;border-radius:12px;padding:10px 16px;
+    width:100%;text-align:center;margin-bottom:6px;font-size:13px;
+    color:#60a5fa;font-weight:bold;min-height:36px;}
+
+#gc{border:2px solid #1d4ed8;border-radius:12px;display:block;cursor:pointer;
+    box-shadow:0 0 30px rgba(59,130,246,0.2);}
+
+#bottom-panel{display:grid;grid-template-columns:1fr 1fr;gap:6px;width:100%;margin-top:6px;}
+#shield-panel{background:#071520;border:1px solid #1a3a5a;border-radius:10px;padding:8px;}
+#shield-panel h4{color:#10b981;font-size:11px;margin-bottom:4px;}
+.shield-btn{padding:5px 10px;border-radius:6px;border:none;cursor:pointer;
+    font-size:11px;font-weight:bold;color:white;margin:2px;display:block;width:100%;
+    text-align:left;transition:all 0.15s;}
+.shield-btn:hover{filter:brightness(1.2);transform:translateX(2px);}
+.shield-btn.kyber{background:linear-gradient(90deg,#059669,#10b981);}
+.shield-btn.dilithium{background:linear-gradient(90deg,#1d4ed8,#3b82f6);}
+.shield-btn.sphincs{background:linear-gradient(90deg,#7c3aed,#8b5cf6);}
+.shield-btn:disabled{background:#1e293b;color:#475569;cursor:not-allowed;}
+
+#info-panel{background:#071520;border:1px solid #1a3a5a;border-radius:10px;padding:8px;}
+#info-panel h4{color:#60a5fa;font-size:11px;margin-bottom:4px;}
+#node-info{font-size:10px;color:#94a3b8;line-height:1.5;}
+
+#msg{font-size:11px;color:#34d399;min-height:18px;margin:4px;text-align:center;
+    font-weight:bold;width:100%;}
 #fact-box{background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.3);
-    border-radius:8px;padding:8px 12px;margin:4px 0;font-size:11px;color:#93c5fd;
-    display:none;text-align:center;line-height:1.5;width:100%;}
-#attack-bar-wrap{width:100%;margin:6px 0;}
-#atk-label{font-size:10px;color:#ef4444;display:flex;justify-content:space-between;margin-bottom:3px;}
-#atk-bar{height:14px;background:#1e293b;border-radius:7px;overflow:hidden;border:1px solid #334155;}
-#atk-fill{height:100%;width:0%;background:linear-gradient(90deg,#ef4444,#f97316);border-radius:7px;transition:width 0.3s;}
-.btns{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin:6px 0;}
-.btn{padding:8px 18px;border-radius:8px;border:none;cursor:pointer;font-size:12px;font-weight:bold;color:white;}
-.btn-start{background:#1d4ed8;}
-.btn-next{background:#059669;}
-.btn-next:disabled{background:#1e293b;color:#475569;cursor:not-allowed;}
-#upgrade-panel{background:#071520;border:1px solid #1a3a5a;border-radius:10px;
-    padding:8px 12px;width:100%;margin:4px 0;font-size:11px;display:none;}
-#upgrade-panel h4{color:#60a5fa;margin-bottom:6px;}
-.upg-btn{padding:5px 12px;border-radius:6px;border:none;cursor:pointer;font-size:11px;
-    font-weight:bold;color:white;margin:3px;background:#1d4ed8;}
-.upg-btn:hover{background:#2563eb;}
-.upg-btn.active{background:#059669;}
+    border-radius:8px;padding:7px 10px;margin:3px 0;font-size:10px;color:#93c5fd;
+    display:none;line-height:1.5;width:100%;}
+
+.btns{display:flex;gap:5px;flex-wrap:wrap;justify-content:center;margin:5px 0;}
+.btn{padding:7px 16px;border-radius:8px;border:none;cursor:pointer;
+    font-size:12px;font-weight:bold;color:white;transition:all 0.15s;}
+.btn:hover{filter:brightness(1.2);transform:translateY(-1px);}
+.btn-start{background:linear-gradient(135deg,#1d4ed8,#06b6d4);}
+.btn-next{background:linear-gradient(135deg,#059669,#10b981);}
+.btn-next:disabled{background:#1e293b;color:#475569;cursor:not-allowed;transform:none;}
+.btn-repair{background:linear-gradient(135deg,#d97706,#f59e0b);}
 </style>
 </head>
 <body>
 <div id="wrap">
+
 <div class="hud">
-    <div class="hb">⭐ Score<br><b id="h-score">0</b></div>
-    <div class="hb">🌊 Level<br><b id="h-level">1</b>/12</div>
-    <div class="hb">🔐 Secured<br><b id="h-secured">0</b></div>
-    <div class="hb">💀 Broken<br><b id="h-broken">0</b></div>
+    <div class="hb" id="hb-score">⭐ Score<br><b id="h-score">0</b></div>
+    <div class="hb" id="hb-wave">🌊 Wave<br><b id="h-wave">1</b>/12</div>
+    <div class="hb" id="hb-shields">🛡️ Shields<br><b id="h-shields">3</b></div>
+    <div class="hb" id="hb-nodes">💻 Nodes<br><b id="h-nodes">0/0</b></div>
+    <div class="hb" id="hb-hp">❤️ Network<br><b id="h-hp">100%</b></div>
 </div>
 
-<div id="attack-bar-wrap">
-    <div id="atk-label">
-        <span>☠️ Shor Attack Progress</span>
-        <span id="atk-pct">0%</span>
+<div id="wave-announce">Press START to defend the quantum internet! 🌐</div>
+
+<canvas id="gc" width="540" height="380"></canvas>
+
+<div id="bottom-panel">
+    <div id="shield-panel">
+        <h4>🔐 Deploy Shield (click node first)</h4>
+        <button class="shield-btn kyber" id="btn-kyber" onclick="deployShield('kyber')" disabled>
+            🔐 Kyber ML-KEM — Strongest
+        </button>
+        <button class="shield-btn dilithium" id="btn-dilith" onclick="deployShield('dilithium')" disabled>
+            ✍️ Dilithium ML-DSA — Fast
+        </button>
+        <button class="shield-btn sphincs" id="btn-sphincs" onclick="deployShield('sphincs')" disabled>
+            🌲 SPHINCS+ — Backup
+        </button>
     </div>
-    <div id="atk-bar"><div id="atk-fill"></div></div>
+    <div id="info-panel">
+        <h4>📡 Node Info</h4>
+        <div id="node-info">Click a node to see its status and deploy a quantum-safe shield!</div>
+    </div>
 </div>
 
-<canvas id="net-canvas" width="540" height="360"></canvas>
-
-<div id="legend">
-    <div class="leg"><div class="leg-line" style="background:#ef4444"></div><span>RSA (Vulnerable)</span></div>
-    <div class="leg"><div class="leg-line" style="background:#10b981"></div><span>Kyber (Safe)</span></div>
-    <div class="leg"><div class="leg-line" style="background:#f59e0b"></div><span>Being Attacked</span></div>
-    <div class="leg"><div class="leg-line" style="background:#475569;height:2px;border-top:2px dashed #475569"></div><span>Broken!</span></div>
-</div>
-
-<div id="upgrade-panel">
-    <h4 id="upg-title">🔗 Connection Selected</h4>
-    <p id="upg-info" style="color:#94a3b8;margin-bottom:6px;font-size:10px;"></p>
-    <button class="upg-btn" onclick="upgradeSelected('kyber')">🔐 Upgrade to Kyber (+100pts)</button>
-    <button class="upg-btn" onclick="upgradeSelected('dilithium')">✍️ Add Dilithium Signature (+75pts)</button>
-    <button class="upg-btn" onclick="upgradeSelected('sphincs')">🌲 SPHINCS+ Backup (+50pts)</button>
-</div>
-
-<div id="msg">Press START to defend your network!</div>
+<div id="msg"></div>
 <div id="fact-box"></div>
 
 <div class="btns">
-    <button class="btn btn-start" onclick="startGame()">🌐 START</button>
-    <button class="btn btn-next" id="next-btn" onclick="nextLevel()" disabled>Next Level →</button>
+    <button class="btn btn-start" onclick="startGame()">🚀 START</button>
+    <button class="btn btn-repair" onclick="repairAll()">🔧 Repair All (-200pts)</button>
+    <button class="btn btn-next" id="next-btn" onclick="nextWave()" disabled>Next Wave →</button>
 </div>
 </div>
 
 <script>
-const cv = document.getElementById("net-canvas");
-const cx = cv.getContext("2d");
-const W=540, H=360;
+const cv=document.getElementById("gc");
+const cx=cv.getContext("2d");
+const W=540,H=380;
 
-const LEVEL_CONFIG = [
-    {level:1,  nodes:4,  rsaLinks:3,  attackRate:0.3, timeLimit:60,  name:"LAN Startup"},
-    {level:2,  nodes:5,  rsaLinks:4,  attackRate:0.4, timeLimit:55,  name:"School Network"},
-    {level:3,  nodes:6,  rsaLinks:5,  attackRate:0.5, timeLimit:50,  name:"Hospital System"},
-    {level:4,  nodes:7,  rsaLinks:6,  attackRate:0.6, timeLimit:45,  name:"Bank Network"},
-    {level:5,  nodes:8,  rsaLinks:7,  attackRate:0.7, timeLimit:42,  name:"Power Grid"},
-    {level:6,  nodes:8,  rsaLinks:8,  attackRate:0.8, timeLimit:38,  name:"Military Comms"},
-    {level:7,  nodes:9,  rsaLinks:9,  attackRate:0.9, timeLimit:35,  name:"Internet Exchange"},
-    {level:8,  nodes:9,  rsaLinks:10, attackRate:1.0, timeLimit:30,  name:"NSA Network"},
-    {level:9,  nodes:10, rsaLinks:11, attackRate:1.1, timeLimit:28,  name:"Pentagon"},
-    {level:10, nodes:10, rsaLinks:12, attackRate:1.2, timeLimit:25,  name:"Global Finance"},
-    {level:11, nodes:11, rsaLinks:13, attackRate:1.4, timeLimit:22,  name:"Nuclear Systems"},
-    {level:12, nodes:12, rsaLinks:15, attackRate:1.6, timeLimit:18,  name:"FINAL: Global Internet"},
+// Wave configurations
+const WAVES=[
+    {wave:1,  name:"First Contact",     nodes:4,  enemies:2, spd:0.4, hp:30,  reward:200, desc:"Basic Shor probes incoming!"},
+    {wave:2,  name:"Quantum Scouts",    nodes:5,  enemies:3, spd:0.5, hp:35,  reward:250, desc:"More scouts — defend the left flank!"},
+    {wave:3,  name:"Lattice Breach",    nodes:5,  enemies:4, spd:0.55,hp:40,  reward:300, desc:"They found a weak RSA node!"},
+    {wave:4,  name:"Shor Surge",        nodes:6,  enemies:5, spd:0.6, hp:45,  reward:350, desc:"Shor Algorithm ships deployed!"},
+    {wave:5,  name:"Grover Storm",      nodes:6,  enemies:6, spd:0.65,hp:50,  reward:400, desc:"Grover speedup detected!"},
+    {wave:6,  name:"RSA Collapse",      nodes:7,  enemies:7, spd:0.7, hp:55,  reward:500, desc:"All RSA nodes are prime targets!"},
+    {wave:7,  name:"Quantum Flood",     nodes:7,  enemies:8, spd:0.75,hp:60,  reward:600, desc:"Multiple simultaneous attacks!"},
+    {wave:8,  name:"CRQC Advance",      nodes:8,  enemies:9, spd:0.8, hp:70,  reward:700, desc:"Cryptographically Relevant QC detected!"},
+    {wave:9,  name:"Pentagon Breach",   nodes:8,  enemies:10,spd:0.85,hp:80,  reward:800, desc:"Critical infrastructure targeted!"},
+    {wave:10, name:"Global Attack",     nodes:9,  enemies:12,spd:0.9, hp:90,  reward:1000,desc:"World financial system under attack!"},
+    {wave:11, name:"Quantum Apocalypse",nodes:9,  enemies:14,spd:1.0, hp:100, reward:1200,desc:"Final defense — deploy everything!"},
+    {wave:12, name:"FINAL BOSS",        nodes:10, enemies:16,spd:1.1, hp:150, reward:2000,desc:"BOSS: The Quantum Monster itself!"},
 ];
 
-const NODE_EMOJIS = ["🖥️","📱","🏦","🏥","⚡","🛡️","🌍","🔭","🚀","🏛️","📡","🔐"];
-const FACTS = [
-    "RSA connections are vulnerable to Shor's Algorithm on quantum computers!",
-    "Kyber (ML-KEM FIPS 203) uses lattice math — immune to quantum attacks!",
-    "Every HTTPS connection today uses RSA or ECDH — both quantum-vulnerable!",
-    "Google already deployed hybrid Kyber+ECDH in Chrome for post-quantum TLS!",
-    "Dilithium (ML-DSA FIPS 204) signs data so nobody can forge network packets!",
-    "SPHINCS+ (SLH-DSA FIPS 205) uses SHA-3 — safe even if lattices are broken!",
-    "The NSM-10 mandate requires all US federal networks to upgrade by 2035!",
-    "A quantum computer with 4,000 qubits could break RSA-2048 in hours!",
-    "Post-quantum TLS 1.3 + Kyber is already being tested by Cloudflare!",
-    "Your school's network likely uses RSA — it needs upgrading soon!",
-    "Harvest-now-decrypt-later: enemies record encrypted traffic to decrypt later!",
-    "You just secured the global internet — now do it in real life with NIST standards!",
+const NODE_TYPES=[
+    {emoji:"🏦",name:"Bank",       color:"#f59e0b"},
+    {emoji:"🏥",name:"Hospital",   color:"#10b981"},
+    {emoji:"🏛️",name:"Government", color:"#3b82f6"},
+    {emoji:"⚡",name:"Power Grid", color:"#f97316"},
+    {emoji:"📡",name:"Satellite",  color:"#8b5cf6"},
+    {emoji:"🌍",name:"Internet Hub",color:"#06b6d4"},
+    {emoji:"🔭",name:"Research",   color:"#ec4899"},
+    {emoji:"🚀",name:"Military",   color:"#ef4444"},
+    {emoji:"🏫",name:"School",     color:"#84cc16"},
+    {emoji:"💊",name:"Pharma",     color:"#a78bfa"},
 ];
 
-let level=1, score=0, secured=0, broken=0, gameActive=false;
-let nodes=[], links=[], selectedLink=null;
-let attackTimer=null, gameTimer=null, attackProgress=0;
-let factTimeout=null;
+const ENEMY_TYPES=[
+    {emoji:"☠️",name:"Shor Bot",    color:"#ef4444",dmg:8},
+    {emoji:"🌀",name:"Grover Swarm",color:"#f97316",dmg:6},
+    {emoji:"👾",name:"CRQC Drone",  color:"#a855f7",dmg:12},
+    {emoji:"💀",name:"Q-BOSS",      color:"#dc2626",dmg:20},
+];
 
-function genNetwork(cfg) {
-    nodes = [];
-    links = [];
-    const cx2=W/2, cy2=H/2, r=Math.min(W,H)*0.38;
-    for(let i=0;i<cfg.nodes;i++){
-        const angle=(i/cfg.nodes)*Math.PI*2 - Math.PI/2;
-        nodes.push({
-            x: cx2 + r*Math.cos(angle),
-            y: cy2 + r*Math.sin(angle),
-            emoji: NODE_EMOJIS[i%NODE_EMOJIS.length],
-            id: i
-        });
+const SHIELD_FACTS={
+    kyber:"ML-KEM (FIPS 203) — Module Learning With Errors lattice math. The strongest post-quantum key exchange, used in TLS 1.3!",
+    dilithium:"ML-DSA (FIPS 204) — Module Lattice Digital Signature Algorithm. Signs every packet so enemies can't forge data!",
+    sphincs:"SLH-DSA (FIPS 205) — Stateless Hash-Based Signature. Uses only SHA-3 — safe even if all lattice math breaks!",
+};
+
+let wave=1,score=0,shieldsLeft=3,networkHp=100,gameActive=false;
+let nodes=[],enemies=[],particles=[],lasers=[];
+let selectedNode=null,gameLoop=null,factTimeout=null;
+let enemySpawnTimer=0,enemiesSpawned=0,waveEnemyCount=0;
+let frameCount=0;
+
+function genNodes(count){
+    nodes=[];
+    const cx2=W/2,cy2=H/2-20;
+    const radii=[80,160,230];
+    let placed=0;
+    for(let ring=0;ring<radii.length&&placed<count;ring++){
+        const perRing=ring===0?1:ring===1?4:count-placed;
+        const r=radii[ring];
+        for(let i=0;i<perRing&&placed<count;i++){
+            const angle=(i/perRing)*Math.PI*2-(Math.PI/2);
+            nodes.push({
+                x:cx2+r*Math.cos(angle),
+                y:cy2+r*Math.sin(angle),
+                type:NODE_TYPES[placed%NODE_TYPES.length],
+                shield:null,
+                hp:100,
+                maxHp:100,
+                id:placed,
+                pulse:Math.random()*Math.PI*2,
+                hacked:false,
+                beingAttacked:false,
+            });
+            placed++;
+        }
     }
-    // Create links
-    let linkCount=0;
-    let attempts=0;
-    while(linkCount < cfg.rsaLinks && attempts < 200) {
-        attempts++;
-        const a=Math.floor(Math.random()*cfg.nodes);
-        const b=Math.floor(Math.random()*cfg.nodes);
-        if(a===b) continue;
-        if(links.find(l=>(l.a===a&&l.b===b)||(l.a===b&&l.b===a))) continue;
-        links.push({a, b, state:"rsa", attackProgress:0, id:linkCount});
-        linkCount++;
-    }
+}
+
+function spawnEnemy(){
+    const cfg=WAVES[Math.min(wave-1,WAVES.length-1)];
+    const typeIdx=wave>=12?3:wave>=8?2:wave>=4?Math.floor(Math.random()*2):0;
+    const et=ENEMY_TYPES[typeIdx];
+    // Pick a random unshielded node as target
+    const targets=nodes.filter(n=>!n.hacked&&n.shield===null);
+    if(targets.length===0) return;
+    const target=targets[Math.floor(Math.random()*targets.length)];
+    // Spawn from edge
+    const angle=Math.random()*Math.PI*2;
+    const spawnR=260;
+    enemies.push({
+        x:W/2+spawnR*Math.cos(angle),
+        y:H/2-20+spawnR*Math.sin(angle),
+        tx:target.x, ty:target.y,
+        targetId:target.id,
+        type:et,
+        hp:cfg.hp,
+        maxHp:cfg.hp,
+        spd:cfg.spd,
+        id:Math.random(),
+        flash:0,
+        dead:false,
+        reached:false,
+    });
+    enemiesSpawned++;
 }
 
 function startGame(){
-    level=1; score=0; secured=0; broken=0;
-    gameActive=true; selectedLink=null; attackProgress=0;
-    clearTimers();
-    document.getElementById("upgrade-panel").style.display="none";
+    wave=1;score=0;shieldsLeft=3;networkHp=100;
+    gameActive=true;selectedNode=null;
+    enemiesSpawned=0;waveEnemyCount=0;
+    frameCount=0;
+    if(gameLoop) cancelAnimationFrame(gameLoop);
     document.getElementById("next-btn").disabled=true;
-    loadLevel();
+    initWave();
+    loop();
 }
 
-function loadLevel(){
-    const cfg=LEVEL_CONFIG[Math.min(level-1,LEVEL_CONFIG.length-1)];
-    genNetwork(cfg);
-    attackProgress=0;
-    selectedLink=null;
-    clearTimers();
-    gameActive=true;
-    document.getElementById("upgrade-panel").style.display="none";
+function initWave(){
+    const cfg=WAVES[Math.min(wave-1,WAVES.length-1)];
+    genNodes(cfg.nodes);
+    enemies=[];particles=[];lasers=[];
+    enemiesSpawned=0;
+    waveEnemyCount=cfg.enemies;
+    enemySpawnTimer=0;
+    selectedNode=null;
+    disableShieldBtns();
+    document.getElementById("wave-announce").textContent=
+        "🌊 Wave "+wave+"/12: "+cfg.name+" — "+cfg.desc;
     document.getElementById("next-btn").disabled=true;
-    document.getElementById("atk-fill").style.width="0%";
-    document.getElementById("atk-pct").textContent="0%";
-    setMsg("🌐 Level "+level+": "+cfg.name+" — Click RSA links to upgrade to Kyber!");
     updateHUD();
-    draw();
+}
 
-    // Attack timer — RSA links get attacked
-    attackTimer=setInterval(()=>{
-        if(!gameActive) return;
-        links.forEach(l=>{
-            if(l.state==="rsa"){
-                l.attackProgress+=cfg.attackRate;
-                if(l.attackProgress>=100){
-                    l.state="broken";
-                    broken++;
-                    updateHUD();
-                    setMsg("💥 RSA link "+l.id+" BROKEN by Shor Attack!","#ef4444");
-                    showFact("☠️ "+FACTS[Math.min(level-1,FACTS.length-1)],"#ef4444");
-                    checkGameState();
-                }
-            } else if(l.state==="attacking"){
-                l.attackProgress+=cfg.attackRate*1.5;
-                if(l.attackProgress>=100){
-                    l.state="broken";
-                    broken++;
-                    updateHUD();
-                    checkGameState();
+function loop(){
+    if(!gameActive){draw();return;}
+    frameCount++;
+    update();
+    draw();
+    gameLoop=requestAnimationFrame(loop);
+}
+
+function update(){
+    const cfg=WAVES[Math.min(wave-1,WAVES.length-1)];
+
+    // Spawn enemies
+    enemySpawnTimer++;
+    const spawnRate=Math.max(30,90-wave*5);
+    if(enemySpawnTimer>=spawnRate&&enemiesSpawned<waveEnemyCount){
+        spawnEnemy();
+        enemySpawnTimer=0;
+    }
+
+    // Update nodes pulse
+    nodes.forEach(n=>{n.pulse+=0.05;});
+
+    // Move enemies
+    enemies.forEach(e=>{
+        if(e.dead||e.reached) return;
+        // Retarget if target got shielded
+        const tnode=nodes[e.targetId];
+        if(tnode&&tnode.shield!==null&&!tnode.hacked){
+            // Find new unshielded target
+            const newTargets=nodes.filter(n=>!n.hacked&&n.shield===null&&n.id!==e.targetId);
+            if(newTargets.length>0){
+                const nt=newTargets[Math.floor(Math.random()*newTargets.length)];
+                e.targetId=nt.id;
+                e.tx=nt.x;e.ty=nt.y;
+            }
+        }
+        const dx=e.tx-e.x,dy=e.ty-e.y;
+        const dist=Math.sqrt(dx*dx+dy*dy);
+        if(dist<12){
+            e.reached=true;
+            // Attack the node
+            const node=nodes[e.targetId];
+            if(node){
+                if(node.shield){
+                    // Shield absorbs it!
+                    score+=50;
+                    spawnParticles(node.x,node.y,"#10b981",8);
+                    addLaser(e.x,e.y,node.x,node.y,"#10b981");
+                    setMsg("🛡️ "+node.shield.toUpperCase()+" shield blocked "+e.type.name+"! +50pts","#10b981");
+                } else if(!node.hacked){
+                    node.hp-=e.type.dmg*(1+wave*0.05);
+                    networkHp=Math.max(0,networkHp-e.type.dmg*0.5);
+                    spawnParticles(node.x,node.y,"#ef4444",6);
+                    addLaser(e.x,e.y,node.x,node.y,"#ef4444");
+                    if(node.hp<=0){
+                        node.hacked=true;
+                        node.hp=0;
+                        spawnParticles(node.x,node.y,"#f97316",15);
+                        flashHUD("hb-hp");
+                        setMsg("💥 "+node.type.name+" HACKED by "+e.type.name+"!","#ef4444");
+                        showFact("☠️ "+e.type.name+" broke through! This is why "+
+                            (wave<4?"RSA needs replacing":"Kyber is essential")+"!","#ef4444");
+                    }
                 }
             }
-        });
-        // Overall attack progress
-        attackProgress=Math.min(100,links.filter(l=>l.state==="broken").length/links.length*100);
-        document.getElementById("atk-fill").style.width=attackProgress+"%";
-        document.getElementById("atk-pct").textContent=Math.floor(attackProgress)+"%";
-        draw();
-    },500);
-}
+            e.dead=true;
+        } else {
+            e.x+=dx/dist*e.spd;
+            e.y+=dy/dist*e.spd;
+        }
+        if(e.flash>0) e.flash--;
+    });
 
-function checkGameState(){
-    const totalRSA=links.filter(l=>l.state==="rsa"||l.state==="attacking").length;
-    const totalSecured=links.filter(l=>["kyber","dilithium","sphincs"].includes(l.state)).length;
-    const totalBroken=links.filter(l=>l.state==="broken").length;
+    enemies=enemies.filter(e=>!e.dead&&!e.reached);
 
-    if(totalBroken>=Math.ceil(links.length*0.5)){
-        // Too many broken — game over
-        gameActive=false;
-        clearTimers();
-        setMsg("💀 NETWORK COMPROMISED! "+totalBroken+" links broken by quantum attacks!","#ef4444");
-        showFact("☠️ This is what happens when networks don't upgrade to post-quantum crypto! Deploy Kyber NOW!","#ef4444");
-    } else if(totalRSA===0&&totalBroken<Math.ceil(links.length*0.5)){
-        // All secured!
-        gameActive=false;
-        clearTimers();
-        const bonus=(links.length-totalBroken)*50;
-        score+=bonus+level*200;
-        secured+=totalSecured;
-        updateHUD();
-        setMsg("✅ NETWORK SECURED! All connections quantum-safe! +"+( bonus+level*200)+" pts","#10b981");
-        showFact("🔐 "+FACTS[Math.min(level-1,FACTS.length-1)],"#10b981");
-        document.getElementById("next-btn").disabled=level>=12;
-        if(level>=12) setMsg("🏆 GLOBAL INTERNET SECURED! You are a PQC Champion! Score: "+score,"#fbbf24");
+    // Update particles
+    particles.forEach(p=>{
+        p.x+=p.vx;p.y+=p.vy;p.alpha-=0.04;p.r*=0.95;
+    });
+    particles=particles.filter(p=>p.alpha>0);
+
+    // Update lasers
+    lasers.forEach(l=>l.alpha-=0.08);
+    lasers=lasers.filter(l=>l.alpha>0);
+
+    updateHUD();
+
+    // Check wave complete
+    if(enemiesSpawned>=waveEnemyCount&&enemies.length===0){
+        waveComplete();
+    }
+
+    // Check game over
+    if(networkHp<=0){
+        gameOver();
     }
 }
 
-function upgradeSelected(type){
-    if(!selectedLink) return;
-    const l=links.find(lk=>lk.id===selectedLink);
-    if(!l||l.state==="broken") return;
-    const pts={kyber:100,dilithium:75,sphincs:50}[type]||50;
-    l.state=type;
-    l.attackProgress=0;
-    score+=pts*level;
-    secured++;
+function waveComplete(){
+    if(!gameActive) return;
+    gameActive=false;
+    cancelAnimationFrame(gameLoop);
+    const cfg=WAVES[Math.min(wave-1,WAVES.length-1)];
+    const bonus=cfg.reward+shieldsLeft*100;
+    score+=bonus;
+    shieldsLeft+=2; // Reward shields for next wave
     updateHUD();
-    document.getElementById("upgrade-panel").style.display="none";
-    selectedLink=null;
-    setMsg("🔐 Link upgraded to "+type.toUpperCase()+"! +"+pts*level+" pts","#10b981");
-    checkGameState();
+    if(wave>=12){
+        document.getElementById("wave-announce").textContent=
+            "🏆 INTERNET SAVED! You defeated all 12 waves! Final Score: "+score;
+        setMsg("🏆 QUANTUM GUARDIAN! You saved the global internet! Score: "+score,"#fbbf24");
+        showFact("🔐 You deployed Kyber, Dilithium, and SPHINCS+ to protect the entire internet! "+
+            "This is exactly what NIST FIPS 203-206 was designed to do!","#10b981");
+    } else {
+        document.getElementById("wave-announce").textContent=
+            "✅ Wave "+wave+" cleared! +"+bonus+" pts | "+shieldsLeft+" shields ready | Next: "+
+            WAVES[wave].name;
+        setMsg("✅ Wave "+wave+" complete! +"+bonus+" pts. Deploy more shields!","#10b981");
+        showFact("🔐 "+SHIELD_FACTS[["kyber","dilithium","sphincs"][wave%3]],"#10b981");
+        document.getElementById("next-btn").disabled=false;
+    }
     draw();
 }
 
-function nextLevel(){
-    if(level>=12) return;
-    level++;
-    loadLevel();
+function gameOver(){
+    gameActive=false;
+    cancelAnimationFrame(gameLoop);
+    document.getElementById("wave-announce").textContent=
+        "💀 NETWORK COMPROMISED! Score: "+score+" | Wave "+wave+"/12";
+    setMsg("💀 The quantum attackers broke through! Deploy shields faster next time!","#ef4444");
+    showFact("☠️ Without post-quantum encryption, this is what happens when quantum computers arrive! "+
+        "NIST finalized Kyber, Dilithium, SPHINCS+, and Falcon in 2024 to prevent exactly this!","#ef4444");
+    draw();
 }
 
-function clearTimers(){
-    if(attackTimer) clearInterval(attackTimer);
-    if(gameTimer) clearInterval(gameTimer);
-    if(factTimeout) clearTimeout(factTimeout);
+function repairAll(){
+    if(score<200){setMsg("Need 200 pts to repair!","#f59e0b");return;}
+    score-=200;
+    nodes.forEach(n=>{n.hacked=false;n.hp=100;});
+    networkHp=Math.min(100,networkHp+20);
+    spawnParticles(W/2,H/2-20,"#10b981",20);
+    setMsg("🔧 All nodes repaired! -200 pts","#10b981");
+    updateHUD();
 }
 
-function updateHUD(){
-    document.getElementById("h-score").textContent=score;
-    document.getElementById("h-level").textContent=level;
-    document.getElementById("h-secured").textContent=secured;
-    document.getElementById("h-broken").textContent=broken;
+function deployShield(type){
+    if(selectedNode===null) return;
+    if(shieldsLeft<=0){setMsg("No shields left! Clear more waves to earn shields!","#f59e0b");return;}
+    const node=nodes[selectedNode];
+    if(!node||node.hacked){setMsg("Cannot shield a hacked node!","#ef4444");return;}
+    if(node.shield){setMsg("Node already shielded with "+node.shield.toUpperCase()+"!","#f59e0b");return;}
+    node.shield=type;
+    node.hp=100;
+    shieldsLeft--;
+    score+=50;
+    spawnParticles(node.x,node.y,type==="kyber"?"#10b981":type==="dilithium"?"#3b82f6":"#8b5cf6",12);
+    flashHUD("hb-shields");
+    setMsg("🔐 "+type.toUpperCase()+" shield deployed on "+node.type.name+"! +50pts","#10b981");
+    showFact("🔐 "+SHIELD_FACTS[type],"#10b981");
+    selectedNode=null;
+    disableShieldBtns();
+    updateHUD();
+    // Retarget all enemies attacking this node
+    enemies.forEach(e=>{
+        if(e.targetId===node.id){
+            const newTargets=nodes.filter(n=>!n.hacked&&n.shield===null&&n.id!==node.id);
+            if(newTargets.length>0){
+                const nt=newTargets[Math.floor(Math.random()*newTargets.length)];
+                e.targetId=nt.id;e.tx=nt.x;e.ty=nt.y;
+            }
+        }
+    });
 }
 
-function setMsg(m,c){
-    let el=document.getElementById("msg");
-    el.textContent=m; el.style.color=c||"#34d399";
-}
-
-function showFact(text,color){
-    let el=document.getElementById("fact-box");
-    el.textContent=text; el.style.display="block";
-    el.style.borderColor=(color||"#3b82f6")+"50";
-    if(factTimeout) clearTimeout(factTimeout);
-    factTimeout=setTimeout(()=>el.style.display="none",6000);
-}
-
-function getClickedLink(mx,my){
-    for(let l of links){
-        const na=nodes[l.a], nb=nodes[l.b];
-        // Distance from point to line segment
-        const dx=nb.x-na.x, dy=nb.y-na.y;
-        const len=Math.sqrt(dx*dx+dy*dy);
-        if(len===0) continue;
-        const t=Math.max(0,Math.min(1,((mx-na.x)*dx+(my-na.y)*dy)/(len*len)));
-        const px=na.x+t*dx, py=na.y+t*dy;
-        const dist=Math.sqrt((mx-px)**2+(my-py)**2);
-        if(dist<12) return l.id;
-    }
-    return null;
+function nextWave(){
+    wave++;
+    gameActive=true;
+    initWave();
+    loop();
 }
 
 cv.addEventListener("click",e=>{
     if(!gameActive) return;
     const rect=cv.getBoundingClientRect();
-    const mx=e.clientX-rect.left, my=e.clientY-rect.top;
-    const lid=getClickedLink(mx,my);
-    if(lid!==null){
-        const l=links.find(lk=>lk.id===lid);
-        if(l&&l.state!=="broken"){
-            selectedLink=lid;
-            document.getElementById("upgrade-panel").style.display="block";
-            document.getElementById("upg-title").textContent="🔗 Connection "+lid+": "+l.state.toUpperCase();
-            document.getElementById("upg-info").textContent=
-                l.state==="rsa"?"⚠️ This RSA link is vulnerable to Shor's Algorithm! Upgrade it now!":
-                "✅ Already secured with "+l.state.toUpperCase()+" — quantum safe!";
-            draw();
+    const mx=e.clientX-rect.left,my=e.clientY-rect.top;
+    for(let n of nodes){
+        if(Math.hypot(mx-n.x,my-n.y)<22){
+            selectedNode=n.id;
+            const shieldColor=n.shield?
+                {kyber:"#10b981",dilithium:"#3b82f6",sphincs:"#8b5cf6"}[n.shield]:"#ef4444";
+            document.getElementById("node-info").innerHTML=
+                "<b style='color:"+shieldColor+"'>"+n.type.emoji+" "+n.type.name+"</b><br>"+
+                "HP: "+(n.hacked?"💀 HACKED":Math.ceil(n.hp)+"%")+"<br>"+
+                "Shield: "+(n.shield?"✅ "+n.shield.toUpperCase():"❌ None — VULNERABLE!")+
+                "<br><span style='color:#60a5fa;font-size:9px'>Click a shield button to protect!</span>";
+            // Enable buttons
+            document.getElementById("btn-kyber").disabled=n.hacked||n.shield!==null||shieldsLeft<=0;
+            document.getElementById("btn-dilith").disabled=n.hacked||n.shield!==null||shieldsLeft<=0;
+            document.getElementById("btn-sphincs").disabled=n.hacked||n.shield!==null||shieldsLeft<=0;
+            return;
         }
     }
+    selectedNode=null;
+    disableShieldBtns();
+    document.getElementById("node-info").textContent="Click a node to see its status!";
 });
+
+function disableShieldBtns(){
+    ["btn-kyber","btn-dilith","btn-sphincs"].forEach(id=>
+        document.getElementById(id).disabled=true);
+}
+
+function spawnParticles(x,y,color,count){
+    for(let i=0;i<count;i++){
+        const angle=Math.random()*Math.PI*2;
+        const spd=Math.random()*3+1;
+        particles.push({x,y,vx:Math.cos(angle)*spd,vy:Math.sin(angle)*spd,
+            r:Math.random()*4+2,alpha:1,color});
+    }
+}
+
+function addLaser(x1,y1,x2,y2,color){
+    lasers.push({x1,y1,x2,y2,color,alpha:1});
+}
+
+function flashHUD(id){
+    const el=document.getElementById(id);
+    el.classList.add("flash");
+    setTimeout(()=>el.classList.remove("flash"),300);
+}
+
+function updateHUD(){
+    document.getElementById("h-score").textContent=score;
+    document.getElementById("h-wave").textContent=wave;
+    document.getElementById("h-shields").textContent=shieldsLeft;
+    const total=nodes.length;
+    const safe=nodes.filter(n=>n.shield&&!n.hacked).length;
+    document.getElementById("h-nodes").textContent=safe+"/"+total;
+    document.getElementById("h-hp").textContent=Math.ceil(networkHp)+"%";
+    document.getElementById("h-hp").style.color=
+        networkHp>60?"white":networkHp>30?"#f59e0b":"#ef4444";
+}
+
+function setMsg(m,c){
+    let el=document.getElementById("msg");
+    el.textContent=m;el.style.color=c||"#34d399";
+}
+
+function showFact(text,color){
+    let el=document.getElementById("fact-box");
+    el.textContent=text;el.style.display="block";
+    el.style.borderColor=(color||"#3b82f6")+"50";
+    if(factTimeout) clearTimeout(factTimeout);
+    factTimeout=setTimeout(()=>el.style.display="none",6000);
+}
 
 function draw(){
     cx.clearRect(0,0,W,H);
+    // Background
     cx.fillStyle="#020d14";
     cx.fillRect(0,0,W,H);
+    // Grid
+    cx.strokeStyle="#0a1f2e";cx.lineWidth=0.5;
+    for(let x=0;x<W;x+=30){cx.beginPath();cx.moveTo(x,0);cx.lineTo(x,H);cx.stroke();}
+    for(let y=0;y<H;y+=30){cx.beginPath();cx.moveTo(0,y);cx.lineTo(W,y);cx.stroke();}
 
-    // Draw grid
-    cx.strokeStyle="#0a1f2e";
-    cx.lineWidth=0.5;
-    for(let x=0;x<W;x+=40){cx.beginPath();cx.moveTo(x,0);cx.lineTo(x,H);cx.stroke();}
-    for(let y=0;y<H;y+=40){cx.beginPath();cx.moveTo(0,y);cx.lineTo(W,y);cx.stroke();}
-
-    // Draw links
-    for(let l of links){
-        const na=nodes[l.a], nb=nodes[l.b];
-        const isSelected=l.id===selectedLink;
-
-        cx.beginPath();
-        cx.moveTo(na.x,na.y);
-        cx.lineTo(nb.x,nb.y);
-
-        if(l.state==="broken"){
-            cx.setLineDash([5,5]);
-            cx.strokeStyle="#475569";
-            cx.lineWidth=isSelected?3:1.5;
-        } else if(l.state==="rsa"){
-            cx.setLineDash([]);
-            const pct=l.attackProgress/100;
-            cx.strokeStyle=pct>0.6?"#f97316":pct>0.3?"#f59e0b":"#ef4444";
-            cx.lineWidth=isSelected?4:2;
-            // Attack progress overlay
-            if(l.attackProgress>0){
-                const gx=na.x+(nb.x-na.x)*(l.attackProgress/100);
-                const gy=na.y+(nb.y-na.y)*(l.attackProgress/100);
-                cx.shadowColor="#ef4444";
-                cx.shadowBlur=8;
+    // Draw connection lines between nodes
+    cx.lineWidth=1;
+    for(let i=0;i<nodes.length;i++){
+        for(let j=i+1;j<nodes.length;j++){
+            const a=nodes[i],b=nodes[j];
+            const dist2=Math.hypot(a.x-b.x,a.y-b.y);
+            if(dist2<160){
+                const bothShielded=a.shield&&b.shield;
+                const eitherHacked=a.hacked||b.hacked;
+                cx.beginPath();cx.moveTo(a.x,a.y);cx.lineTo(b.x,b.y);
+                cx.setLineDash(eitherHacked?[4,4]:[]);
+                cx.strokeStyle=eitherHacked?"#47556920":bothShielded?"#10b98130":"#1d4ed820";
+                cx.lineWidth=eitherHacked?0.5:1;
+                cx.stroke();
+                cx.setLineDash([]);
             }
-        } else if(l.state==="kyber"){
-            cx.setLineDash([]);
-            cx.strokeStyle="#10b981";
-            cx.lineWidth=isSelected?4:2.5;
-            cx.shadowColor="#10b981";
-            cx.shadowBlur=6;
-        } else if(l.state==="dilithium"){
-            cx.setLineDash([]);
-            cx.strokeStyle="#3b82f6";
-            cx.lineWidth=isSelected?4:2.5;
-            cx.shadowColor="#3b82f6";
-            cx.shadowBlur=6;
-        } else if(l.state==="sphincs"){
-            cx.setLineDash([]);
-            cx.strokeStyle="#8b5cf6";
-            cx.lineWidth=isSelected?4:2.5;
-            cx.shadowColor="#8b5cf6";
-            cx.shadowBlur=6;
         }
+    }
 
-        cx.stroke();
-        cx.shadowBlur=0;
-        cx.setLineDash([]);
-
-        // Attack progress on RSA links
-        if(l.state==="rsa"&&l.attackProgress>0){
-            const pct=l.attackProgress/100;
-            cx.beginPath();
-            cx.moveTo(na.x,na.y);
-            cx.lineTo(na.x+(nb.x-na.x)*pct, na.y+(nb.y-na.y)*pct);
-            cx.strokeStyle="#f97316";
-            cx.lineWidth=3;
-            cx.stroke();
-        }
-
-        // Selected highlight
-        if(isSelected){
-            const mx2=(na.x+nb.x)/2, my2=(na.y+nb.y)/2;
-            cx.beginPath();
-            cx.arc(mx2,my2,8,0,Math.PI*2);
-            cx.fillStyle="#fbbf24";
-            cx.fill();
-        }
+    // Draw lasers
+    for(let l of lasers){
+        cx.beginPath();cx.moveTo(l.x1,l.y1);cx.lineTo(l.x2,l.y2);
+        cx.strokeStyle=l.color+Math.floor(l.alpha*255).toString(16).padStart(2,"0");
+        cx.lineWidth=2;cx.stroke();
     }
 
     // Draw nodes
     for(let n of nodes){
-        cx.beginPath();
-        cx.arc(n.x,n.y,18,0,Math.PI*2);
-        cx.fillStyle="#0a1f35";
+        const isSelected=n.id===selectedNode;
+        const shieldColor=n.shield?
+            {kyber:"#10b981",dilithium:"#3b82f6",sphincs:"#8b5cf6"}[n.shield]:"#ef4444";
+
+        // Pulse ring
+        if(!n.hacked){
+            const pulseR=20+Math.sin(n.pulse)*3;
+            cx.beginPath();cx.arc(n.x,n.y,pulseR,0,Math.PI*2);
+            cx.strokeStyle=(n.shield?shieldColor:"#ef4444")+"40";
+            cx.lineWidth=1;cx.stroke();
+        }
+
+        // Shield glow
+        if(n.shield&&!n.hacked){
+            cx.shadowColor=shieldColor;cx.shadowBlur=15;
+        }
+
+        // Node circle
+        cx.beginPath();cx.arc(n.x,n.y,18,0,Math.PI*2);
+        cx.fillStyle=n.hacked?"#1a0505":isSelected?"#0d2a4a":"#071520";
         cx.fill();
-        cx.strokeStyle="#1d4ed8";
-        cx.lineWidth=2;
+        cx.strokeStyle=n.hacked?"#ef4444":isSelected?"#fbbf24":n.shield?shieldColor:"#334155";
+        cx.lineWidth=isSelected?3:2;
         cx.stroke();
+        cx.shadowBlur=0;
+
+        // Emoji
+        cx.font="14px serif";cx.textAlign="center";cx.textBaseline="middle";
+        cx.globalAlpha=n.hacked?0.4:1;
+        cx.fillText(n.hacked?"💀":n.type.emoji,n.x,n.y);
+        cx.globalAlpha=1;
+
+        // HP bar
+        if(!n.hacked&&n.hp<100){
+            const bw=32,bh=4,bx=n.x-bw/2,by=n.y+20;
+            cx.fillStyle="#1e293b";cx.fillRect(bx,by,bw,bh);
+            cx.fillStyle=n.hp>50?"#10b981":"#ef4444";
+            cx.fillRect(bx,by,bw*(n.hp/100),bh);
+        }
+
+        // Shield indicator
+        if(n.shield&&!n.hacked){
+            cx.font="10px sans-serif";cx.textAlign="center";cx.fillStyle=shieldColor;
+            cx.fillText({kyber:"🔐",dilithium:"✍️",sphincs:"🌲"}[n.shield],n.x,n.y-24);
+        }
+    }
+
+    // Draw enemies
+    cx.textAlign="center";cx.textBaseline="middle";
+    for(let e of enemies){
+        if(e.dead) continue;
+        // Enemy trail
+        cx.shadowColor=e.type.color;cx.shadowBlur=10;
         cx.font="16px serif";
-        cx.textAlign="center";
-        cx.textBaseline="middle";
-        cx.fillText(n.emoji,n.x,n.y);
+        cx.fillText(e.type.emoji,e.x,e.y);
+        cx.shadowBlur=0;
+        // HP bar
+        const bw=24,bh=3,bx=e.x-bw/2,by=e.y+12;
+        cx.fillStyle="#1e293b";cx.fillRect(bx,by,bw,bh);
+        cx.fillStyle="#ef4444";
+        cx.fillRect(bx,by,bw*(e.hp/e.maxHp),bh);
+        // Attack line
+        cx.beginPath();cx.moveTo(e.x,e.y);cx.lineTo(e.tx,e.ty);
+        cx.strokeStyle=e.type.color+"20";cx.lineWidth=0.5;cx.stroke();
+    }
+
+    // Draw particles
+    for(let p of particles){
+        cx.beginPath();cx.arc(p.x,p.y,p.r,0,Math.PI*2);
+        cx.fillStyle=p.color+Math.floor(p.alpha*255).toString(16).padStart(2,"0");
+        cx.fill();
+    }
+
+    // Draw network HP bar at bottom
+    const hpW=W-40,hpH=6,hpX=20,hpY=H-12;
+    cx.fillStyle="#1e293b";cx.fillRect(hpX,hpY,hpW,hpH);
+    const hpColor=networkHp>60?"#10b981":networkHp>30?"#f59e0b":"#ef4444";
+    cx.fillStyle=hpColor;cx.fillRect(hpX,hpY,hpW*(networkHp/100),hpH);
+    cx.fillStyle="#60a5fa";cx.font="9px sans-serif";cx.textAlign="left";
+    cx.fillText("Network Health",hpX,hpY-3);
+
+    // Intro screen
+    if(!gameActive&&frameCount===0){
+        cx.fillStyle="rgba(2,13,20,0.85)";cx.fillRect(0,0,W,H);
+        cx.fillStyle="#1d4ed8";cx.font="bold 18px sans-serif";cx.textAlign="center";
+        cx.fillText("🌐 QUANTUM NETWORK DEFENDER",W/2,H/2-60);
+        cx.fillStyle="#60a5fa";cx.font="12px sans-serif";
+        cx.fillText("Quantum attack ships are targeting your network!",W/2,H/2-30);
+        cx.fillText("Click nodes → Deploy Kyber/Dilithium/SPHINCS+ shields",W/2,H/2-10);
+        cx.fillText("Shields block attacks — unshielded nodes get hacked!",W/2,H/2+10);
+        cx.fillText("Earn shields by clearing waves!",W/2,H/2+30);
+        cx.fillStyle="#334155";cx.font="11px sans-serif";
+        cx.fillText("Press 🚀 START to begin",W/2,H/2+60);
     }
 }
-
-// Initial draw
-cx.fillStyle="#020d14";
-cx.fillRect(0,0,W,H);
-cx.fillStyle="#1d4ed8";
-cx.font="bold 16px sans-serif";
-cx.textAlign="center";
-cx.textBaseline="middle";
-cx.fillText("🌐 QUANTUM NETWORK DEFENDER",W/2,H/2-30);
-cx.fillStyle="#60a5fa";
-cx.font="12px sans-serif";
-cx.fillText("Click RSA links (red) to upgrade to Kyber (green)",W/2,H/2);
-cx.fillText("Defend your network before Shor breaks through!",W/2,H/2+20);
-cx.fillStyle="#334155";
-cx.font="11px sans-serif";
-cx.fillText("Press START to begin",W/2,H/2+50);
+draw();
 </script>
 </body>
 </html>
-""", height=750)
-
-
+""", height=820)
 
 
 def render_secret_message():
