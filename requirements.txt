@@ -7,3 +7,5 @@ anthropic==0.105.2
 requests==2.32.3
 
 streamlit-google-auth==1.1.8
+
+pyotp==2.9.0

@@ -6,6 +6,7 @@ Teaches Post-Quantum Cryptography from K–12.
 import os
 import streamlit as st
 import datetime
+from modules.mfa import render_mfa_login
 from modules.elementary import render_elementary
 from modules.middle_school import render_middle_school
 from modules.high_school import render_high_school
@@ -65,6 +66,12 @@ if _dev_password:
         st.session_state.plan_type = "paid"
         st.session_state.free_module = None
 
+
+# ── Email MFA Gate ───────────────────────────────────────────────────────────
+_gmail = st.secrets.get("GMAIL_USER", "")
+if _gmail:
+    if not render_mfa_login():
+        st.stop()
 
 if "streak_days" not in st.session_state:
     st.session_state.streak_days = 0
