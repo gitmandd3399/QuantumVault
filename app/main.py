@@ -31,7 +31,7 @@ from modules.escape_room import render_escape_room
 from modules.tls_simulator import render_tls_simulator
 from modules.threat_thermometer import render_threat_thermometer
 from modules.algo_battle import render_algo_battle
-from modules.games import render_prime_factor_game
+from modules.games import render_prime_factor_game, render_network_defender
 from modules.career_explorer import render_career_explorer
 from modules.privacy_policy import render_privacy_policy, render_terms_of_service
 # ── Page config ───────────────────────────────────────────────────────────────
@@ -115,6 +115,7 @@ def sidebar():
             ("🃏", "Algo Battle",      "🃏 Algo Battle"),
             ("🎯", "Daily Challenge",  "🎯 Daily Challenge"),
             ("🔢", "Prime Factor",      "🔢 Prime Factor Cracker"),
+            ("🌐", "Network Defender",  "🌐 Network Defender"),
         ]},
         {"label": "🔬 LABS", "color": "#8b5cf6", "items": [
             ("🧪", "Crypto Lab",         "🧪 Crypto Lab"),
@@ -467,6 +468,7 @@ def main():
         "🗺️ Mission Map",
         "📊 My Progress",
         "🔢 Prime Factor Cracker",
+        "🌐 Network Defender",
     ]
 
     GRADE_MAP = {
@@ -564,6 +566,8 @@ def main():
         render_trading_cards()
     elif "Prime Factor" in level:
         render_prime_factor_game()
+    elif "Network Defender" in level:
+        render_network_defender()
     elif "Daily Challenge" in level:
         render_daily_challenge()
     elif "Share Achievement" in level:

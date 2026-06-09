@@ -3077,3 +3077,448 @@ setMsg("Press ▶ New Game to start factoring!");
 </body>
 </html>
 """, height=700)
+
+
+
+
+def render_network_defender():
+    """Free game: Quantum Network Defender — Protect your network from quantum attacks!"""
+    import streamlit as st
+    import streamlit.components.v1 as components
+    st.subheader("🌐 Quantum Network Defender!")
+    st.markdown(
+        "**Your mission:** Protect the network by upgrading vulnerable RSA connections to "
+        "quantum-safe Kyber before the Shor Attack breaks through! "
+        "Click connections to upgrade them. FREE for everyone!"
+    )
+    components.html("""
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:#020d14;font-family:'Segoe UI',sans-serif;color:white;}
+#wrap{display:flex;flex-direction:column;align-items:center;padding:12px;max-width:560px;margin:0 auto;}
+.hud{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;width:100%;margin-bottom:8px;}
+.hb{background:#071520;border:1px solid #1a3a5a;border-radius:8px;padding:6px 4px;text-align:center;font-size:10px;color:#60a5fa;}
+.hb b{display:block;font-size:16px;color:white;}
+#net-canvas{border:2px solid #1d4ed8;border-radius:12px;display:block;cursor:pointer;
+    box-shadow:0 0 20px rgba(59,130,246,0.15);}
+#legend{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:6px 0;font-size:10px;}
+.leg{display:flex;align-items:center;gap:4px;}
+.leg-line{width:24px;height:3px;border-radius:2px;}
+#msg{font-size:12px;color:#34d399;min-height:20px;margin:4px;text-align:center;font-weight:bold;
+    background:#071520;border-radius:6px;padding:4px 8px;width:100%;}
+#fact-box{background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.3);
+    border-radius:8px;padding:8px 12px;margin:4px 0;font-size:11px;color:#93c5fd;
+    display:none;text-align:center;line-height:1.5;width:100%;}
+#attack-bar-wrap{width:100%;margin:6px 0;}
+#atk-label{font-size:10px;color:#ef4444;display:flex;justify-content:space-between;margin-bottom:3px;}
+#atk-bar{height:14px;background:#1e293b;border-radius:7px;overflow:hidden;border:1px solid #334155;}
+#atk-fill{height:100%;width:0%;background:linear-gradient(90deg,#ef4444,#f97316);border-radius:7px;transition:width 0.3s;}
+.btns{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin:6px 0;}
+.btn{padding:8px 18px;border-radius:8px;border:none;cursor:pointer;font-size:12px;font-weight:bold;color:white;}
+.btn-start{background:#1d4ed8;}
+.btn-next{background:#059669;}
+.btn-next:disabled{background:#1e293b;color:#475569;cursor:not-allowed;}
+#upgrade-panel{background:#071520;border:1px solid #1a3a5a;border-radius:10px;
+    padding:8px 12px;width:100%;margin:4px 0;font-size:11px;display:none;}
+#upgrade-panel h4{color:#60a5fa;margin-bottom:6px;}
+.upg-btn{padding:5px 12px;border-radius:6px;border:none;cursor:pointer;font-size:11px;
+    font-weight:bold;color:white;margin:3px;background:#1d4ed8;}
+.upg-btn:hover{background:#2563eb;}
+.upg-btn.active{background:#059669;}
+</style>
+</head>
+<body>
+<div id="wrap">
+<div class="hud">
+    <div class="hb">⭐ Score<br><b id="h-score">0</b></div>
+    <div class="hb">🌊 Level<br><b id="h-level">1</b>/12</div>
+    <div class="hb">🔐 Secured<br><b id="h-secured">0</b></div>
+    <div class="hb">💀 Broken<br><b id="h-broken">0</b></div>
+</div>
+
+<div id="attack-bar-wrap">
+    <div id="atk-label">
+        <span>☠️ Shor Attack Progress</span>
+        <span id="atk-pct">0%</span>
+    </div>
+    <div id="atk-bar"><div id="atk-fill"></div></div>
+</div>
+
+<canvas id="net-canvas" width="540" height="360"></canvas>
+
+<div id="legend">
+    <div class="leg"><div class="leg-line" style="background:#ef4444"></div><span>RSA (Vulnerable)</span></div>
+    <div class="leg"><div class="leg-line" style="background:#10b981"></div><span>Kyber (Safe)</span></div>
+    <div class="leg"><div class="leg-line" style="background:#f59e0b"></div><span>Being Attacked</span></div>
+    <div class="leg"><div class="leg-line" style="background:#475569;height:2px;border-top:2px dashed #475569"></div><span>Broken!</span></div>
+</div>
+
+<div id="upgrade-panel">
+    <h4 id="upg-title">🔗 Connection Selected</h4>
+    <p id="upg-info" style="color:#94a3b8;margin-bottom:6px;font-size:10px;"></p>
+    <button class="upg-btn" onclick="upgradeSelected('kyber')">🔐 Upgrade to Kyber (+100pts)</button>
+    <button class="upg-btn" onclick="upgradeSelected('dilithium')">✍️ Add Dilithium Signature (+75pts)</button>
+    <button class="upg-btn" onclick="upgradeSelected('sphincs')">🌲 SPHINCS+ Backup (+50pts)</button>
+</div>
+
+<div id="msg">Press START to defend your network!</div>
+<div id="fact-box"></div>
+
+<div class="btns">
+    <button class="btn btn-start" onclick="startGame()">🌐 START</button>
+    <button class="btn btn-next" id="next-btn" onclick="nextLevel()" disabled>Next Level →</button>
+</div>
+</div>
+
+<script>
+const cv = document.getElementById("net-canvas");
+const cx = cv.getContext("2d");
+const W=540, H=360;
+
+const LEVEL_CONFIG = [
+    {level:1,  nodes:4,  rsaLinks:3,  attackRate:0.3, timeLimit:60,  name:"LAN Startup"},
+    {level:2,  nodes:5,  rsaLinks:4,  attackRate:0.4, timeLimit:55,  name:"School Network"},
+    {level:3,  nodes:6,  rsaLinks:5,  attackRate:0.5, timeLimit:50,  name:"Hospital System"},
+    {level:4,  nodes:7,  rsaLinks:6,  attackRate:0.6, timeLimit:45,  name:"Bank Network"},
+    {level:5,  nodes:8,  rsaLinks:7,  attackRate:0.7, timeLimit:42,  name:"Power Grid"},
+    {level:6,  nodes:8,  rsaLinks:8,  attackRate:0.8, timeLimit:38,  name:"Military Comms"},
+    {level:7,  nodes:9,  rsaLinks:9,  attackRate:0.9, timeLimit:35,  name:"Internet Exchange"},
+    {level:8,  nodes:9,  rsaLinks:10, attackRate:1.0, timeLimit:30,  name:"NSA Network"},
+    {level:9,  nodes:10, rsaLinks:11, attackRate:1.1, timeLimit:28,  name:"Pentagon"},
+    {level:10, nodes:10, rsaLinks:12, attackRate:1.2, timeLimit:25,  name:"Global Finance"},
+    {level:11, nodes:11, rsaLinks:13, attackRate:1.4, timeLimit:22,  name:"Nuclear Systems"},
+    {level:12, nodes:12, rsaLinks:15, attackRate:1.6, timeLimit:18,  name:"FINAL: Global Internet"},
+];
+
+const NODE_EMOJIS = ["🖥️","📱","🏦","🏥","⚡","🛡️","🌍","🔭","🚀","🏛️","📡","🔐"];
+const FACTS = [
+    "RSA connections are vulnerable to Shor's Algorithm on quantum computers!",
+    "Kyber (ML-KEM FIPS 203) uses lattice math — immune to quantum attacks!",
+    "Every HTTPS connection today uses RSA or ECDH — both quantum-vulnerable!",
+    "Google already deployed hybrid Kyber+ECDH in Chrome for post-quantum TLS!",
+    "Dilithium (ML-DSA FIPS 204) signs data so nobody can forge network packets!",
+    "SPHINCS+ (SLH-DSA FIPS 205) uses SHA-3 — safe even if lattices are broken!",
+    "The NSM-10 mandate requires all US federal networks to upgrade by 2035!",
+    "A quantum computer with 4,000 qubits could break RSA-2048 in hours!",
+    "Post-quantum TLS 1.3 + Kyber is already being tested by Cloudflare!",
+    "Your school's network likely uses RSA — it needs upgrading soon!",
+    "Harvest-now-decrypt-later: enemies record encrypted traffic to decrypt later!",
+    "You just secured the global internet — now do it in real life with NIST standards!",
+];
+
+let level=1, score=0, secured=0, broken=0, gameActive=false;
+let nodes=[], links=[], selectedLink=null;
+let attackTimer=null, gameTimer=null, attackProgress=0;
+let factTimeout=null;
+
+function genNetwork(cfg) {
+    nodes = [];
+    links = [];
+    const cx2=W/2, cy2=H/2, r=Math.min(W,H)*0.38;
+    for(let i=0;i<cfg.nodes;i++){
+        const angle=(i/cfg.nodes)*Math.PI*2 - Math.PI/2;
+        nodes.push({
+            x: cx2 + r*Math.cos(angle),
+            y: cy2 + r*Math.sin(angle),
+            emoji: NODE_EMOJIS[i%NODE_EMOJIS.length],
+            id: i
+        });
+    }
+    // Create links
+    let linkCount=0;
+    let attempts=0;
+    while(linkCount < cfg.rsaLinks && attempts < 200) {
+        attempts++;
+        const a=Math.floor(Math.random()*cfg.nodes);
+        const b=Math.floor(Math.random()*cfg.nodes);
+        if(a===b) continue;
+        if(links.find(l=>(l.a===a&&l.b===b)||(l.a===b&&l.b===a))) continue;
+        links.push({a, b, state:"rsa", attackProgress:0, id:linkCount});
+        linkCount++;
+    }
+}
+
+function startGame(){
+    level=1; score=0; secured=0; broken=0;
+    gameActive=true; selectedLink=null; attackProgress=0;
+    clearTimers();
+    document.getElementById("upgrade-panel").style.display="none";
+    document.getElementById("next-btn").disabled=true;
+    loadLevel();
+}
+
+function loadLevel(){
+    const cfg=LEVEL_CONFIG[Math.min(level-1,LEVEL_CONFIG.length-1)];
+    genNetwork(cfg);
+    attackProgress=0;
+    selectedLink=null;
+    clearTimers();
+    gameActive=true;
+    document.getElementById("upgrade-panel").style.display="none";
+    document.getElementById("next-btn").disabled=true;
+    document.getElementById("atk-fill").style.width="0%";
+    document.getElementById("atk-pct").textContent="0%";
+    setMsg("🌐 Level "+level+": "+cfg.name+" — Click RSA links to upgrade to Kyber!");
+    updateHUD();
+    draw();
+
+    // Attack timer — RSA links get attacked
+    attackTimer=setInterval(()=>{
+        if(!gameActive) return;
+        links.forEach(l=>{
+            if(l.state==="rsa"){
+                l.attackProgress+=cfg.attackRate;
+                if(l.attackProgress>=100){
+                    l.state="broken";
+                    broken++;
+                    updateHUD();
+                    setMsg("💥 RSA link "+l.id+" BROKEN by Shor Attack!","#ef4444");
+                    showFact("☠️ "+FACTS[Math.min(level-1,FACTS.length-1)],"#ef4444");
+                    checkGameState();
+                }
+            } else if(l.state==="attacking"){
+                l.attackProgress+=cfg.attackRate*1.5;
+                if(l.attackProgress>=100){
+                    l.state="broken";
+                    broken++;
+                    updateHUD();
+                    checkGameState();
+                }
+            }
+        });
+        // Overall attack progress
+        attackProgress=Math.min(100,links.filter(l=>l.state==="broken").length/links.length*100);
+        document.getElementById("atk-fill").style.width=attackProgress+"%";
+        document.getElementById("atk-pct").textContent=Math.floor(attackProgress)+"%";
+        draw();
+    },500);
+}
+
+function checkGameState(){
+    const totalRSA=links.filter(l=>l.state==="rsa"||l.state==="attacking").length;
+    const totalSecured=links.filter(l=>["kyber","dilithium","sphincs"].includes(l.state)).length;
+    const totalBroken=links.filter(l=>l.state==="broken").length;
+
+    if(totalBroken>=Math.ceil(links.length*0.5)){
+        // Too many broken — game over
+        gameActive=false;
+        clearTimers();
+        setMsg("💀 NETWORK COMPROMISED! "+totalBroken+" links broken by quantum attacks!","#ef4444");
+        showFact("☠️ This is what happens when networks don't upgrade to post-quantum crypto! Deploy Kyber NOW!","#ef4444");
+    } else if(totalRSA===0&&totalBroken<Math.ceil(links.length*0.5)){
+        // All secured!
+        gameActive=false;
+        clearTimers();
+        const bonus=(links.length-totalBroken)*50;
+        score+=bonus+level*200;
+        secured+=totalSecured;
+        updateHUD();
+        setMsg("✅ NETWORK SECURED! All connections quantum-safe! +"+( bonus+level*200)+" pts","#10b981");
+        showFact("🔐 "+FACTS[Math.min(level-1,FACTS.length-1)],"#10b981");
+        document.getElementById("next-btn").disabled=level>=12;
+        if(level>=12) setMsg("🏆 GLOBAL INTERNET SECURED! You are a PQC Champion! Score: "+score,"#fbbf24");
+    }
+}
+
+function upgradeSelected(type){
+    if(!selectedLink) return;
+    const l=links.find(lk=>lk.id===selectedLink);
+    if(!l||l.state==="broken") return;
+    const pts={kyber:100,dilithium:75,sphincs:50}[type]||50;
+    l.state=type;
+    l.attackProgress=0;
+    score+=pts*level;
+    secured++;
+    updateHUD();
+    document.getElementById("upgrade-panel").style.display="none";
+    selectedLink=null;
+    setMsg("🔐 Link upgraded to "+type.toUpperCase()+"! +"+pts*level+" pts","#10b981");
+    checkGameState();
+    draw();
+}
+
+function nextLevel(){
+    if(level>=12) return;
+    level++;
+    loadLevel();
+}
+
+function clearTimers(){
+    if(attackTimer) clearInterval(attackTimer);
+    if(gameTimer) clearInterval(gameTimer);
+    if(factTimeout) clearTimeout(factTimeout);
+}
+
+function updateHUD(){
+    document.getElementById("h-score").textContent=score;
+    document.getElementById("h-level").textContent=level;
+    document.getElementById("h-secured").textContent=secured;
+    document.getElementById("h-broken").textContent=broken;
+}
+
+function setMsg(m,c){
+    let el=document.getElementById("msg");
+    el.textContent=m; el.style.color=c||"#34d399";
+}
+
+function showFact(text,color){
+    let el=document.getElementById("fact-box");
+    el.textContent=text; el.style.display="block";
+    el.style.borderColor=(color||"#3b82f6")+"50";
+    if(factTimeout) clearTimeout(factTimeout);
+    factTimeout=setTimeout(()=>el.style.display="none",6000);
+}
+
+function getClickedLink(mx,my){
+    for(let l of links){
+        const na=nodes[l.a], nb=nodes[l.b];
+        // Distance from point to line segment
+        const dx=nb.x-na.x, dy=nb.y-na.y;
+        const len=Math.sqrt(dx*dx+dy*dy);
+        if(len===0) continue;
+        const t=Math.max(0,Math.min(1,((mx-na.x)*dx+(my-na.y)*dy)/(len*len)));
+        const px=na.x+t*dx, py=na.y+t*dy;
+        const dist=Math.sqrt((mx-px)**2+(my-py)**2);
+        if(dist<12) return l.id;
+    }
+    return null;
+}
+
+cv.addEventListener("click",e=>{
+    if(!gameActive) return;
+    const rect=cv.getBoundingClientRect();
+    const mx=e.clientX-rect.left, my=e.clientY-rect.top;
+    const lid=getClickedLink(mx,my);
+    if(lid!==null){
+        const l=links.find(lk=>lk.id===lid);
+        if(l&&l.state!=="broken"){
+            selectedLink=lid;
+            document.getElementById("upgrade-panel").style.display="block";
+            document.getElementById("upg-title").textContent="🔗 Connection "+lid+": "+l.state.toUpperCase();
+            document.getElementById("upg-info").textContent=
+                l.state==="rsa"?"⚠️ This RSA link is vulnerable to Shor's Algorithm! Upgrade it now!":
+                "✅ Already secured with "+l.state.toUpperCase()+" — quantum safe!";
+            draw();
+        }
+    }
+});
+
+function draw(){
+    cx.clearRect(0,0,W,H);
+    cx.fillStyle="#020d14";
+    cx.fillRect(0,0,W,H);
+
+    // Draw grid
+    cx.strokeStyle="#0a1f2e";
+    cx.lineWidth=0.5;
+    for(let x=0;x<W;x+=40){cx.beginPath();cx.moveTo(x,0);cx.lineTo(x,H);cx.stroke();}
+    for(let y=0;y<H;y+=40){cx.beginPath();cx.moveTo(0,y);cx.lineTo(W,y);cx.stroke();}
+
+    // Draw links
+    for(let l of links){
+        const na=nodes[l.a], nb=nodes[l.b];
+        const isSelected=l.id===selectedLink;
+
+        cx.beginPath();
+        cx.moveTo(na.x,na.y);
+        cx.lineTo(nb.x,nb.y);
+
+        if(l.state==="broken"){
+            cx.setLineDash([5,5]);
+            cx.strokeStyle="#475569";
+            cx.lineWidth=isSelected?3:1.5;
+        } else if(l.state==="rsa"){
+            cx.setLineDash([]);
+            const pct=l.attackProgress/100;
+            cx.strokeStyle=pct>0.6?"#f97316":pct>0.3?"#f59e0b":"#ef4444";
+            cx.lineWidth=isSelected?4:2;
+            // Attack progress overlay
+            if(l.attackProgress>0){
+                const gx=na.x+(nb.x-na.x)*(l.attackProgress/100);
+                const gy=na.y+(nb.y-na.y)*(l.attackProgress/100);
+                cx.shadowColor="#ef4444";
+                cx.shadowBlur=8;
+            }
+        } else if(l.state==="kyber"){
+            cx.setLineDash([]);
+            cx.strokeStyle="#10b981";
+            cx.lineWidth=isSelected?4:2.5;
+            cx.shadowColor="#10b981";
+            cx.shadowBlur=6;
+        } else if(l.state==="dilithium"){
+            cx.setLineDash([]);
+            cx.strokeStyle="#3b82f6";
+            cx.lineWidth=isSelected?4:2.5;
+            cx.shadowColor="#3b82f6";
+            cx.shadowBlur=6;
+        } else if(l.state==="sphincs"){
+            cx.setLineDash([]);
+            cx.strokeStyle="#8b5cf6";
+            cx.lineWidth=isSelected?4:2.5;
+            cx.shadowColor="#8b5cf6";
+            cx.shadowBlur=6;
+        }
+
+        cx.stroke();
+        cx.shadowBlur=0;
+        cx.setLineDash([]);
+
+        // Attack progress on RSA links
+        if(l.state==="rsa"&&l.attackProgress>0){
+            const pct=l.attackProgress/100;
+            cx.beginPath();
+            cx.moveTo(na.x,na.y);
+            cx.lineTo(na.x+(nb.x-na.x)*pct, na.y+(nb.y-na.y)*pct);
+            cx.strokeStyle="#f97316";
+            cx.lineWidth=3;
+            cx.stroke();
+        }
+
+        // Selected highlight
+        if(isSelected){
+            const mx2=(na.x+nb.x)/2, my2=(na.y+nb.y)/2;
+            cx.beginPath();
+            cx.arc(mx2,my2,8,0,Math.PI*2);
+            cx.fillStyle="#fbbf24";
+            cx.fill();
+        }
+    }
+
+    // Draw nodes
+    for(let n of nodes){
+        cx.beginPath();
+        cx.arc(n.x,n.y,18,0,Math.PI*2);
+        cx.fillStyle="#0a1f35";
+        cx.fill();
+        cx.strokeStyle="#1d4ed8";
+        cx.lineWidth=2;
+        cx.stroke();
+        cx.font="16px serif";
+        cx.textAlign="center";
+        cx.textBaseline="middle";
+        cx.fillText(n.emoji,n.x,n.y);
+    }
+}
+
+// Initial draw
+cx.fillStyle="#020d14";
+cx.fillRect(0,0,W,H);
+cx.fillStyle="#1d4ed8";
+cx.font="bold 16px sans-serif";
+cx.textAlign="center";
+cx.textBaseline="middle";
+cx.fillText("🌐 QUANTUM NETWORK DEFENDER",W/2,H/2-30);
+cx.fillStyle="#60a5fa";
+cx.font="12px sans-serif";
+cx.fillText("Click RSA links (red) to upgrade to Kyber (green)",W/2,H/2);
+cx.fillText("Defend your network before Shor breaks through!",W/2,H/2+20);
+cx.fillStyle="#334155";
+cx.font="11px sans-serif";
+cx.fillText("Press START to begin",W/2,H/2+50);
+</script>
+</body>
+</html>
+""", height=750)
