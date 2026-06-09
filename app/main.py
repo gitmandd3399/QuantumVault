@@ -65,18 +65,32 @@ if _dev_password:
         st.session_state.plan_type = "paid"
         st.session_state.free_module = None
 # ── Google OAuth ─────────────────────────────────────────────────────────────
+import json, tempfile, os as _os
 _client_id     = st.secrets.get("GOOGLE_CLIENT_ID", "")
 _client_secret = st.secrets.get("GOOGLE_CLIENT_SECRET", "")
-_cookie_secret = st.secrets.get("COOKIE_SECRET", "fallback_secret_key_32chars_long!")
+_cookie_secret = st.secrets.get("COOKIE_SECRET", "fallback_secret_key_32chars!!")
 
 if _client_id and _client_secret:
+    # Write credentials to temp file
+    _creds = {
+        "web": {
+            "client_id": _client_id,
+            "client_secret": _client_secret,
+            "redirect_uris": ["https://quantumvaultacademy.streamlit.app/"],
+            "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+            "token_uri": "https://oauth2.googleapis.com/token"
+        }
+    }
+    _creds_file = tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False)
+    json.dump(_creds, _creds_file)
+    _creds_file.close()
+
     authenticator = Authenticate(
-        secret_credentials_path=None,
+        secret_credentials_path=_creds_file.name,
+        redirect_uri="https://quantumvaultacademy.streamlit.app/",
         cookie_name="qva_auth",
         cookie_key=_cookie_secret,
-        redirect_uri="https://quantumvaultacademy.streamlit.app/",
-        client_id=_client_id,
-        client_secret=_client_secret,
+        cookie_expiry_days=30,
     )
     authenticator.check_authentification()
     if not st.session_state.get("connected"):
@@ -96,6 +110,7 @@ if _client_id and _client_secret:
     else:
         st.session_state["user_email"] = st.session_state.get("user_info", {}).get("email", "")
         st.session_state["user_name"]  = st.session_state.get("user_info", {}).get("name", "Student")
+    _os.unlink(_creds_file.name)
 
 if "streak_days" not in st.session_state:
     st.session_state.streak_days = 0
