@@ -464,6 +464,7 @@ def main():
         "🌍 World Map",
         "🗺️ Mission Map",
         "📊 My Progress",
+        "🔢 Prime Factor Cracker",
     ]
 
     GRADE_MAP = {
