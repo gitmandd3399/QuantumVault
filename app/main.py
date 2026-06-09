@@ -113,6 +113,7 @@ def sidebar():
             ("🏃", "Escape Room",      "🏃 Escape Room"),
             ("🃏", "Algo Battle",      "🃏 Algo Battle"),
             ("🎯", "Daily Challenge",  "🎯 Daily Challenge"),
+            ("🔢", "Prime Factor",      "🔢 Prime Factor Cracker"),
         ]},
         {"label": "🔬 LABS", "color": "#8b5cf6", "items": [
             ("🧪", "Crypto Lab",         "🧪 Crypto Lab"),
