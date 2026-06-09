@@ -4095,3 +4095,636 @@ buildProgress();
 </body>
 </html>
 """, height=750)
+
+
+def render_ctf_game():
+    """Free game: QuantumVault CTF — Operation Quantum Shield — Real PQC Capture The Flag!"""
+    import streamlit as st
+    import streamlit.components.v1 as components
+    st.subheader("🚩 Operation Quantum Shield — PQC Capture The Flag!")
+    st.markdown(
+        "**You are a PQC Agent.** 12 missions. Each hides a FLAG behind a real cryptography challenge. "
+        "Solve puzzles, crack codes, identify algorithms, and stop the quantum attackers. "
+        "Faster = more points. **FREE to play!**"
+    )
+    components.html("""
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:#020d14;font-family:'Segoe UI',sans-serif;color:white;overflow-x:hidden;}
+#wrap{display:flex;flex-direction:column;align-items:center;padding:10px;max-width:560px;margin:0 auto;}
+
+/* HUD */
+.hud{display:grid;grid-template-columns:repeat(4,1fr);gap:3px;width:100%;margin-bottom:6px;}
+.hb{background:#071520;border:1px solid #1a3a5a;border-radius:8px;padding:5px 3px;
+    text-align:center;font-size:9px;color:#60a5fa;transition:background 0.3s;}
+.hb b{display:block;font-size:14px;color:white;}
+.hb.flash{background:#1d4ed8;}
+
+/* Mission select */
+#mission-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;width:100%;margin:6px 0;}
+.mission-btn{background:#071520;border:2px solid #1a3a5a;border-radius:10px;padding:8px 4px;
+    text-align:center;cursor:pointer;transition:all 0.2s;font-size:10px;}
+.mission-btn:hover{border-color:#3b82f6;background:#0a1f35;}
+.mission-btn.locked{opacity:0.4;cursor:not-allowed;}
+.mission-btn.completed{border-color:#10b981;background:#071f15;}
+.mission-btn.active{border-color:#fbbf24;background:#1a1500;}
+.mission-btn .m-num{font-size:16px;font-weight:900;color:#60a5fa;}
+.mission-btn.completed .m-num{color:#10b981;}
+.mission-btn .m-flag{font-size:11px;}
+
+/* Mission card */
+#mission-card{background:#071520;border:2px solid #1d4ed8;border-radius:14px;
+    padding:14px;width:100%;margin:6px 0;display:none;}
+#mission-card.visible{display:block;}
+.mission-header{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.mission-icon{font-size:2rem;}
+.mission-meta h3{color:#60a5fa;font-size:14px;margin-bottom:2px;}
+.mission-meta p{color:#475569;font-size:10px;}
+.diff-badge{display:inline-block;border-radius:4px;padding:2px 8px;font-size:9px;font-weight:bold;}
+.diff-easy{background:#059669;color:white;}
+.diff-medium{background:#d97706;color:white;}
+.diff-hard{background:#dc2626;color:white;}
+
+/* Timer bar */
+#timer-wrap{width:100%;margin:6px 0;}
+#timer-bar{height:8px;background:#1e293b;border-radius:4px;overflow:hidden;}
+#timer-fill{height:100%;background:linear-gradient(90deg,#10b981,#3b82f6);
+    border-radius:4px;transition:width 0.5s;}
+#timer-text{font-size:10px;color:#60a5fa;text-align:right;margin-top:2px;}
+
+/* Challenge area */
+#challenge-area{background:#051018;border:1px solid #1a3a5a;border-radius:10px;
+    padding:12px;margin:8px 0;width:100%;}
+.challenge-text{font-size:12px;color:#94a3b8;line-height:1.7;margin-bottom:10px;}
+.code-block{background:#020d14;border:1px solid #1a3a5a;border-radius:6px;
+    padding:8px 10px;font-family:'Fira Code',monospace;font-size:11px;
+    color:#10b981;margin:6px 0;word-break:break-all;line-height:1.6;}
+.options-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:8px 0;}
+.option-btn{padding:8px 10px;border-radius:8px;border:2px solid #1a3a5a;
+    background:#071520;color:#94a3b8;font-size:11px;cursor:pointer;
+    text-align:left;transition:all 0.15s;line-height:1.4;}
+.option-btn:hover{border-color:#3b82f6;color:white;background:#0a1f35;}
+.option-btn.correct{border-color:#10b981;background:#071f15;color:#10b981;}
+.option-btn.wrong{border-color:#ef4444;background:#1a0505;color:#ef4444;}
+.flag-input-wrap{display:flex;gap:6px;margin:8px 0;}
+.flag-input{flex:1;background:#020d14;border:2px solid #1d4ed8;border-radius:8px;
+    color:#10b981;font-family:'Fira Code',monospace;font-size:13px;padding:8px 10px;
+    outline:none;}
+.flag-input:focus{border-color:#60a5fa;}
+.flag-input::placeholder{color:#1e3a5a;}
+.submit-btn{padding:8px 16px;border-radius:8px;border:none;cursor:pointer;
+    background:linear-gradient(135deg,#1d4ed8,#06b6d4);color:white;
+    font-size:12px;font-weight:bold;}
+.submit-btn:hover{filter:brightness(1.2);}
+
+/* Hint system */
+.hint-wrap{display:flex;gap:5px;flex-wrap:wrap;align-items:center;margin:6px 0;}
+.hint-btn{padding:4px 10px;border-radius:6px;border:1px solid #334155;
+    background:#071520;color:#60a5fa;font-size:10px;cursor:pointer;}
+.hint-btn:hover{border-color:#1d4ed8;}
+#hint-text{font-size:10px;color:#a78bfa;margin-top:4px;display:none;line-height:1.5;}
+
+/* Messages */
+#msg{font-size:12px;min-height:20px;margin:4px;text-align:center;
+    font-weight:bold;width:100%;}
+#fact-box{background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.3);
+    border-radius:8px;padding:8px 12px;margin:4px 0;font-size:10px;color:#93c5fd;
+    display:none;line-height:1.5;width:100%;}
+
+/* Flag capture animation */
+#flag-capture{display:none;position:fixed;top:0;left:0;right:0;bottom:0;
+    background:rgba(2,13,20,0.95);z-index:999;flex-direction:column;
+    align-items:center;justify-content:center;text-align:center;}
+#flag-capture.show{display:flex;}
+.flag-emoji{font-size:5rem;animation:flagWave 0.5s ease-out;}
+@keyframes flagWave{0%{transform:scale(0) rotate(-20deg)}70%{transform:scale(1.2) rotate(5deg)}100%{transform:scale(1) rotate(0)}}
+.flag-title{font-size:1.8rem;font-weight:900;color:#10b981;margin:10px 0;}
+.flag-pts{font-size:1rem;color:#60a5fa;margin-bottom:16px;}
+.continue-btn{padding:10px 24px;border-radius:8px;border:none;cursor:pointer;
+    background:linear-gradient(135deg,#059669,#10b981);color:white;
+    font-size:14px;font-weight:bold;}
+
+/* Btns */
+.btns{display:flex;gap:5px;flex-wrap:wrap;justify-content:center;margin:6px 0;}
+.btn{padding:7px 16px;border-radius:8px;border:none;cursor:pointer;
+    font-size:12px;font-weight:bold;color:white;}
+.btn-start{background:linear-gradient(135deg,#1d4ed8,#06b6d4);}
+.btn-back{background:#334155;}
+
+/* Progress dots */
+.progress{display:flex;gap:4px;justify-content:center;margin:4px 0;flex-wrap:wrap;}
+.pdot{width:10px;height:10px;border-radius:50%;background:#1e293b;border:1px solid #334155;}
+.pdot.done{background:#10b981;}.pdot.active{background:#fbbf24;}
+</style>
+</head>
+<body>
+
+<!-- Flag Capture Overlay -->
+<div id="flag-capture">
+    <div class="flag-emoji">🚩</div>
+    <div class="flag-title">FLAG CAPTURED!</div>
+    <div id="flag-pts" class="flag-pts">+500 pts</div>
+    <div id="flag-text" style="color:#94a3b8;font-size:11px;max-width:300px;margin-bottom:16px;line-height:1.6;"></div>
+    <button class="continue-btn" onclick="closeFlagCapture()">Continue Mission →</button>
+</div>
+
+<div id="wrap">
+<div class="hud">
+    <div class="hb" id="hb-score">⭐ Score<br><b id="h-score">0</b></div>
+    <div class="hb" id="hb-flags">🚩 Flags<br><b id="h-flags">0</b>/12</div>
+    <div class="hb" id="hb-hints">💡 Hints<br><b id="h-hints">3</b></div>
+    <div class="hb" id="hb-rank">🏆 Rank<br><b id="h-rank">Recruit</b></div>
+</div>
+
+<div class="progress" id="progress-dots"></div>
+
+<!-- Mission Select -->
+<div id="mission-select">
+    <div style="text-align:center;margin:8px 0">
+        <div style="font-size:1.1rem;font-weight:bold;color:#60a5fa">🚩 SELECT YOUR MISSION</div>
+        <div style="font-size:10px;color:#475569;margin-top:2px">Complete missions in order to unlock harder ones</div>
+    </div>
+    <div id="mission-grid"></div>
+    <div style="text-align:center;margin-top:8px;font-size:10px;color:#475569">
+        🔓 Complete each mission to unlock the next | 💡 Hints cost 50pts each
+    </div>
+</div>
+
+<!-- Active Mission -->
+<div id="mission-card">
+    <div class="mission-header">
+        <div class="mission-icon" id="m-icon">🔐</div>
+        <div class="mission-meta">
+            <h3 id="m-title">Mission 1</h3>
+            <p id="m-subtitle">Difficulty: Easy</p>
+            <span class="diff-badge diff-easy" id="m-diff">EASY</span>
+        </div>
+    </div>
+    <div id="timer-wrap">
+        <div id="timer-bar"><div id="timer-fill" style="width:100%"></div></div>
+        <div id="timer-text">⏱️ Time remaining: --</div>
+    </div>
+    <div id="challenge-area"></div>
+    <div class="hint-wrap">
+        <button class="hint-btn" onclick="useHint(1)">💡 Hint 1</button>
+        <button class="hint-btn" onclick="useHint(2)">💡 Hint 2</button>
+        <button class="hint-btn" onclick="useHint(3)">💡 Hint 3</button>
+        <span style="font-size:9px;color:#334155">(-50pts each)</span>
+    </div>
+    <div id="hint-text"></div>
+    <div id="msg"></div>
+    <div id="fact-box"></div>
+    <div class="btns">
+        <button class="btn btn-back" onclick="backToSelect()">← Missions</button>
+    </div>
+</div>
+
+</div>
+
+<script>
+const MISSIONS = [
+    {
+        id:1, icon:"🔐", title:"The RSA Breach",
+        subtitle:"Identify the vulnerable algorithm", diff:"EASY", pts:200, time:90,
+        type:"mcq",
+        challenge:"<b>SITUATION:</b> Our intelligence shows an enemy quantum computer just broke into a government server. The server was using one of these encryption algorithms. Which one did Shor's Algorithm break?",
+        options:[
+            {text:"ML-KEM (Kyber) FIPS 203 — Module Learning With Errors", correct:false},
+            {text:"RSA-2048 — Prime factorization based encryption", correct:true},
+            {text:"SLH-DSA (SPHINCS+) FIPS 205 — Hash-based signatures", correct:false},
+            {text:"ML-DSA (Dilithium) FIPS 204 — Lattice signatures", correct:false},
+        ],
+        flag:"FLAG{SH0R_BREAKS_RS4}",
+        fact:"Shor's Algorithm factors large prime numbers exponentially faster than classical computers — instantly breaking RSA-2048 which protects most internet traffic today!",
+        hints:["Think about which algorithm uses prime factorization as its security basis","Shor's Algorithm specifically targets problems involving large prime numbers","RSA = Rivest–Shamir–Adleman — named after its inventors who used primes as the hard problem"],
+    },
+    {
+        id:2, icon:"🔤", title:"The Caesar Intercept",
+        subtitle:"Decode the enemy message", diff:"EASY", pts:250, time:80,
+        type:"decode",
+        challenge:"<b>INTERCEPTED TRANSMISSION:</b> Enemy agents sent this encoded message. They used a Caesar cipher shifted by 13 (ROT13). Decode it to find the FLAG — the decoded message IS the flag:<br><br>",
+        code:"SYNT{PNR F4E_VF_J34X}",
+        flag:"FLAG{CAE S4R_IS_W34K}",
+        fact:"Caesar cipher only has 25 possible keys — a quantum computer tries all of them in nanoseconds! This is why we need Kyber's lattice math which has astronomically more possible keys.",
+        hints:["ROT13 means shift each letter 13 positions back in the alphabet","A→N, B→O, C→P... N→A, O→B etc. Numbers stay the same","Try: S→F, Y→L, T→A, N→G = FLAG..."],
+    },
+    {
+        id:3, icon:"🌀", title:"Kyber Key Hunt",
+        subtitle:"Find the correct Kyber property", diff:"EASY", pts:300, time:80,
+        type:"mcq",
+        challenge:"<b>BRIEFING:</b> NIST finalized ML-KEM (Kyber) as FIPS 203 in August 2024. Your mission: identify the correct mathematical problem that makes Kyber quantum-safe. The enemy thinks they can break it — prove them wrong.",
+        options:[
+            {text:"Integer Factorization — finding prime factors of large numbers", correct:false},
+            {text:"Discrete Logarithm Problem — used in elliptic curve cryptography", correct:false},
+            {text:"Module Learning With Errors (M-LWE) — finding a secret in a noisy lattice", correct:true},
+            {text:"Knapsack Problem — subset sum cryptography", correct:false},
+        ],
+        flag:"FLAG{LW3_L4TT1C3_M4TH}",
+        fact:"Module-LWE: given a matrix A and vector b = As + e (where s is secret and e is noise), find s. Even quantum computers can't solve this efficiently — that's why Kyber is quantum-safe!",
+        hints:["Kyber is based on lattice cryptography, not prime numbers","LWE stands for Learning With Errors","The security comes from the hardness of finding a secret vector hidden in random-looking equations"],
+    },
+    {
+        id:4, icon:"🔢", title:"The Prime Trap",
+        subtitle:"Factor the semiprime before time runs out", diff:"MEDIUM", pts:400, time:70,
+        type:"factor",
+        challenge:"<b>ENEMY TRAP:</b> The enemy locked a server with RSA using this small key. Factor it to prove RSA is breakable. Enter the two prime factors (p and q where p < q):",
+        number:3127,
+        p:53, q:59,
+        flag:"FLAG{RS4_F4CT0R3D}",
+        fact:"3127 = 53 × 59. Real RSA uses primes with 150+ digits each — impossible to factor classically but trivial for Shor's Algorithm! That's why NIST chose Kyber instead.",
+        hints:["Try dividing 3127 by prime numbers starting from 47","53 is one of the factors","53 × 59 = ?"],
+    },
+    {
+        id:5, icon:"✍️", title:"Signature Forgery",
+        subtitle:"Which signature stops quantum forgery", diff:"MEDIUM", pts:450, time:70,
+        type:"mcq",
+        challenge:"<b>CRISIS:</b> An enemy quantum computer forged a digital signature on a software update — millions of devices installed malware. Which NIST signature algorithm would have PREVENTED this attack?",
+        options:[
+            {text:"ECDSA — Elliptic Curve Digital Signature Algorithm", correct:false},
+            {text:"RSA-PSS — Probabilistic Signature Scheme", correct:false},
+            {text:"ML-DSA (Dilithium) FIPS 204 — Module Lattice Digital Signatures", correct:true},
+            {text:"HMAC-SHA256 — Hash-based Message Authentication", correct:false},
+        ],
+        flag:"FLAG{D1L1TH1UM_S1GNS}",
+        fact:"ML-DSA (Dilithium) FIPS 204 uses Module-LWE and Module-SIS lattice problems. It creates unforgeable signatures even against quantum computers — protecting software updates, certificates, and legal documents!",
+        hints:["ECDSA and RSA-PSS are both quantum-vulnerable via Shor's Algorithm","Look for the NIST PQC standard (FIPS number)","Dilithium was standardized as FIPS 204 in August 2024"],
+    },
+    {
+        id:6, icon:"🌲", title:"The Hash Fortress",
+        subtitle:"Decode the SHA-3 avalanche", diff:"MEDIUM", pts:500, time:65,
+        type:"mcq",
+        challenge:"<b>INTEL:</b> SPHINCS+ (SLH-DSA FIPS 205) uses hash functions instead of lattice math. An agent changed ONE character in a message and the hash completely changed — this is the avalanche effect. Which property makes SHA-3 quantum-resistant enough for SPHINCS+?",
+        options:[
+            {text:"SHA-3 can be reversed to find the original message", correct:false},
+            {text:"SHA-3 outputs are always 32 bytes regardless of input size", correct:false},
+            {text:"SHA-3 requires 2^128 quantum operations to find a collision — still infeasible", correct:true},
+            {text:"SHA-3 uses prime numbers internally like RSA", correct:false},
+        ],
+        flag:"FLAG{H4SH_4V4L4NCH3}",
+        fact:"Grover's Algorithm gives quantum computers a square-root speedup on brute force — reducing SHA-3-256 security from 2^256 to 2^128 operations. Still too hard! That's why SHA-3 based SPHINCS+ remains quantum-safe.",
+        hints:["Grover's Algorithm gives a quadratic speedup, not exponential","SHA-3-256 with 256-bit security becomes 128-bit against quantum — still secure","The key is that Grover helps but doesn't completely break hash functions like Shor breaks RSA"],
+    },
+    {
+        id:7, icon:"🦅", title:"Falcon Files",
+        subtitle:"Identify the smallest signature standard", diff:"MEDIUM", pts:550, time:60,
+        type:"mcq",
+        challenge:"<b>FIELD REPORT:</b> IoT devices and smart cards need tiny digital signatures — every byte matters. One NIST PQC standard produces the SMALLEST signatures of all four. Which is it and what lattice does it use?",
+        options:[
+            {text:"ML-KEM (Kyber) FIPS 203 — Module-LWE lattice", correct:false},
+            {text:"ML-DSA (Dilithium) FIPS 204 — Module lattice", correct:false},
+            {text:"FN-DSA (Falcon) FIPS 206 — NTRU lattice, smallest signatures", correct:true},
+            {text:"SLH-DSA (SPHINCS+) FIPS 205 — Hash-based, largest signatures", correct:false},
+        ],
+        flag:"FLAG{F4LC0N_NTR U_NTRU}",
+        fact:"Falcon (FN-DSA FIPS 206) uses NTRU lattices and produces signatures about 3x smaller than Dilithium — critical for IoT sensors, smart cards, and embedded systems where storage is measured in kilobytes!",
+        hints:["SPHINCS+ actually has the LARGEST signatures of the four","Falcon uses a different type of lattice — NTRU — not Module-LWE","FN-DSA = Falcon NTRU Digital Signature Algorithm"],
+    },
+    {
+        id:8, icon:"🕵️", title:"The NIST Timeline",
+        subtitle:"Complete the PQC timeline", diff:"HARD", pts:650, time:55,
+        type:"mcq",
+        challenge:"<b>CLASSIFIED:</b> You've captured an enemy document showing their timeline for breaking RSA. Your handler asks: when did NIST officially finalize the first 4 post-quantum cryptography standards, and what law requires US agencies to migrate?",
+        options:[
+            {text:"January 2022 — Executive Order 14028 on Cybersecurity", correct:false},
+            {text:"August 2024 — FIPS 203/204/205/206 + NSM-10 migration mandate by 2035", correct:true},
+            {text:"December 2023 — NIST Special Publication 800-208", correct:false},
+            {text:"March 2025 — Presidential Policy Directive 41", correct:false},
+        ],
+        flag:"FLAG{N1ST_2024_F1PS}",
+        fact:"NIST finalized FIPS 203 (Kyber), 204 (Dilithium), 205 (SPHINCS+), and 206 (Falcon) in August 2024. National Security Memorandum 10 (NSM-10) requires ALL US federal agencies to migrate by 2035!",
+        hints:["This happened very recently — after 2023","Look for the FIPS numbers 203, 204, 205, 206","NSM-10 = National Security Memorandum 10"],
+    },
+    {
+        id:9, icon:"⚡", title:"Harvest Now Decrypt Later",
+        subtitle:"Identify the current quantum threat", diff:"HARD", pts:700, time:55,
+        type:"mcq",
+        challenge:"<b>URGENT ALERT:</b> Intelligence confirms enemy agents are already collecting encrypted government communications — even though quantum computers can't break them yet. What is this attack called and why is it dangerous RIGHT NOW?",
+        options:[
+            {text:"Man-in-the-Middle Attack — intercepting communications in real time", correct:false},
+            {text:"Harvest Now Decrypt Later — storing encrypted data to decrypt when quantum computers arrive", correct:true},
+            {text:"Replay Attack — resending old captured packets", correct:false},
+            {text:"Side Channel Attack — measuring power consumption to find keys", correct:false},
+        ],
+        flag:"FLAG{H4RV3ST_N0W_D3CRYPT}",
+        fact:"Harvest Now Decrypt Later (HNDL) is happening TODAY. Nation-states are storing encrypted government communications, medical records, and financial data — waiting for quantum computers to arrive and decrypt it all. This is why migrating to Kyber NOW is urgent!",
+        hints:["This attack doesn't need a quantum computer today","The threat is about storing data for future decryption","The name literally describes the two-phase attack: collect now, decrypt when quantum computers exist"],
+    },
+    {
+        id:10, icon:"🔬", title:"The LWE Lab",
+        subtitle:"Solve a baby LWE problem", diff:"HARD", pts:800, time:50,
+        type:"lwe",
+        challenge:"<b>MATH LAB:</b> Learning With Errors (LWE) is the math behind Kyber. In this baby version: we have secret <b>s = 3</b>, modulus <b>q = 11</b>. Given equation: <b>(7 × s + noise) mod 11 = ?</b><br><br>With noise = 1, calculate the result. This is one equation in a real Kyber key — enemies must solve thousands of these simultaneously to break it!",
+        answer:"10",
+        flag:"FLAG{LW3_M4TH_PR0V3N}",
+        fact:"(7 × 3 + 1) mod 11 = 22 mod 11 = 0... wait: 7×3=21, 21+1=22, 22 mod 11 = 0. Kyber uses vectors of thousands of these equations with unknown noise — finding s requires solving an NP-hard problem even for quantum computers!",
+        hints:["Calculate 7 × 3 first","Then add the noise value of 1","Finally take mod 11 (remainder when divided by 11). 21+1=22, 22÷11=2 remainder ?"],
+    },
+    {
+        id:11, icon:"🌍", title:"TLS 1.3 + Kyber",
+        subtitle:"Identify the hybrid handshake", diff:"HARD", pts:900, time:45,
+        type:"mcq",
+        challenge:"<b>NETWORK INTERCEPT:</b> You captured a TLS 1.3 handshake from a quantum-safe connection. The key exchange used a hybrid approach combining classical and post-quantum algorithms. Which combination is Google Chrome and Cloudflare currently deploying?",
+        options:[
+            {text:"RSA-4096 + ML-DSA (Dilithium) hybrid", correct:false},
+            {text:"X25519 + ML-KEM-768 (Kyber) hybrid key exchange", correct:true},
+            {text:"ECDH-P384 + FN-DSA (Falcon) hybrid", correct:false},
+            {text:"DH-4096 + SLH-DSA (SPHINCS+) hybrid", correct:false},
+        ],
+        flag:"FLAG{X25519_KYBER_TLS}",
+        fact:"Google Chrome deployed X25519+Kyber hybrid TLS in 2023 — combining classical X25519 elliptic curve with ML-KEM-768 (Kyber). Hybrid means: secure against both classical AND quantum attacks during the transition period!",
+        hints:["Google Chrome and Cloudflare already have this deployed in production","Kyber is specifically designed for key encapsulation — TLS key exchange","X25519 is a modern elliptic curve — not RSA"],
+    },
+    {
+        id:12, icon:"💀", title:"FINAL: The Quantum Boss",
+        subtitle:"Stop the CRQC before it breaks everything", diff:"HARD", pts:1500, time:40,
+        type:"final",
+        challenge:"<b>🚨 FINAL MISSION — CRYPTOGRAPHICALLY RELEVANT QUANTUM COMPUTER DETECTED 🚨</b><br><br>A hostile nation just activated a CRQC capable of breaking RSA-2048. You have 40 seconds to identify which COMBINATION of NIST standards protects ALL of the following: key exchange, digital signatures, AND provides a hash-based backup. Choose the complete quantum-safe stack:",
+        options:[
+            {text:"RSA-4096 + ECDSA + SHA-256 — just use bigger classical keys", correct:false},
+            {text:"ML-KEM FIPS 203 + ML-DSA FIPS 204 + SLH-DSA FIPS 205 — complete PQC stack", correct:true},
+            {text:"ML-KEM FIPS 203 only — Kyber handles everything", correct:false},
+            {text:"FN-DSA FIPS 206 + SHA-3 — Falcon and hashes only", correct:false},
+        ],
+        flag:"FLAG{C0MPL3T3_PQC_ST4CK}",
+        fact:"The complete NIST PQC stack: ML-KEM (Kyber) for key exchange in TLS/VPN, ML-DSA (Dilithium) for signing certificates and code, SLH-DSA (SPHINCS+) as hash-based backup. Together they protect all internet communications from quantum attacks!",
+        hints:["You need THREE things: key exchange + signatures + backup","ML-KEM = key exchange. ML-DSA = signatures. SLH-DSA = hash backup","All four NIST standards have FIPS numbers: 203, 204, 205, 206"],
+    },
+];
+
+const RANKS=["Recruit","Cadet","Analyst","Specialist","Agent","Senior Agent",
+    "Cryptographer","PQC Expert","Cyber Guardian","NIST Scholar","PQC Champion","Quantum Master"];
+
+let score=0, flagsCaptured=0, hintsLeft=3;
+let missionStatus=new Array(12).fill("locked");
+let currentMission=null, missionTimer=null, timeLeft=0, factTimeout=null;
+let hintUsed=[false,false,false];
+
+missionStatus[0]="available";
+
+function buildMissionGrid(){
+    const grid=document.getElementById("mission-grid");
+    grid.innerHTML="";
+    MISSIONS.forEach((m,i)=>{
+        const status=missionStatus[i];
+        const div=document.createElement("div");
+        div.className="mission-btn "+(status==="locked"?"locked":status==="completed"?"completed":status==="active"?"active":"");
+        div.innerHTML=`<div class="m-num">${m.id}</div><div>${m.icon}</div><div class="m-flag">${status==="completed"?"🚩✅":status==="locked"?"🔒":"🚩"}</div>`;
+        div.onclick=()=>{if(status!=="locked") startMission(i);};
+        grid.appendChild(div);
+    });
+}
+
+function buildProgress(){
+    const d=document.getElementById("progress-dots");
+    d.innerHTML="";
+    missionStatus.forEach(s=>{
+        const dot=document.createElement("div");
+        dot.className="pdot"+(s==="completed"?" done":s==="active"?" active":"");
+        d.appendChild(dot);
+    });
+}
+
+function startMission(idx){
+    currentMission=idx;
+    const m=MISSIONS[idx];
+    missionStatus[idx]="active";
+    hintUsed=[false,false,false];
+    document.getElementById("hint-text").style.display="none";
+    document.getElementById("hint-text").textContent="";
+    document.getElementById("fact-box").style.display="none";
+    document.getElementById("msg").textContent="";
+
+    document.getElementById("mission-select").style.display="none";
+    document.getElementById("mission-card").classList.add("visible");
+
+    document.getElementById("m-icon").textContent=m.icon;
+    document.getElementById("m-title").textContent="Mission "+m.id+": "+m.title;
+    document.getElementById("m-subtitle").textContent=m.subtitle;
+    const diffEl=document.getElementById("m-diff");
+    diffEl.textContent=m.diff;
+    diffEl.className="diff-badge diff-"+m.diff.toLowerCase();
+
+    buildChallenge(m);
+    startTimer(m.time);
+    updateHUD();
+}
+
+function buildChallenge(m){
+    const area=document.getElementById("challenge-area");
+    let html=`<div class="challenge-text">${m.challenge}</div>`;
+
+    if(m.type==="mcq"||m.type==="final"){
+        if(m.code) html+=`<div class="code-block">${m.code}</div>`;
+        html+=`<div class="options-grid">`;
+        m.options.forEach((opt,i)=>{
+            html+=`<button class="option-btn" id="opt-${i}" onclick="selectOption(${i})">${opt.text}</button>`;
+        });
+        html+=`</div>`;
+    } else if(m.type==="decode"){
+        html+=`<div class="code-block">${m.code}</div>`;
+        html+=`<div class="flag-input-wrap">
+            <input class="flag-input" id="flag-answer" placeholder="FLAG{DECODED_MESSAGE}" 
+                onkeydown="if(event.key==='Enter') submitFlag()"/>
+            <button class="submit-btn" onclick="submitFlag()">🚩 Submit</button>
+        </div>`;
+    } else if(m.type==="factor"){
+        html+=`<div style="text-align:center;margin:10px 0">
+            <div style="font-size:2rem;font-weight:900;color:#60a5fa">${m.number}</div>
+            <div style="font-size:11px;color:#475569;margin-top:4px">Find p and q where ${m.number} = p × q</div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;justify-content:center;margin:8px 0">
+            <input class="flag-input" id="factor-p" placeholder="p (smaller)" type="number" style="width:120px;text-align:center"/>
+            <span style="color:#60a5fa;font-size:1.2rem">×</span>
+            <input class="flag-input" id="factor-q" placeholder="q (larger)" type="number" style="width:120px;text-align:center"/>
+        </div>
+        <div style="text-align:center">
+            <button class="submit-btn" onclick="submitFactor()">🔓 Factor It!</button>
+        </div>`;
+    } else if(m.type==="lwe"){
+        html+=`<div class="code-block">s = 3, q = 11\n(7 × s + 1) mod 11 = ?</div>
+        <div class="flag-input-wrap">
+            <input class="flag-input" id="lwe-answer" placeholder="Enter your answer (a number)" 
+                type="number" onkeydown="if(event.key==='Enter') submitLWE()"/>
+            <button class="submit-btn" onclick="submitLWE()">✓ Submit</button>
+        </div>`;
+    }
+    area.innerHTML=html;
+}
+
+function selectOption(i){
+    const m=MISSIONS[currentMission];
+    const opt=m.options[i];
+    document.querySelectorAll(".option-btn").forEach(b=>{
+        b.onclick=null;b.style.cursor="default";
+    });
+    if(opt.correct){
+        document.getElementById("opt-"+i).classList.add("correct");
+        captureFlag(m);
+    } else {
+        document.getElementById("opt-"+i).classList.add("wrong");
+        // Show correct answer
+        m.options.forEach((o,j)=>{if(o.correct)document.getElementById("opt-"+j).classList.add("correct");});
+        missionFailed(m);
+    }
+}
+
+function submitFlag(){
+    const m=MISSIONS[currentMission];
+    const answer=document.getElementById("flag-answer").value.trim().toUpperCase().replace(/\s/g,"");
+    const correct=m.flag.replace(/\s/g,"");
+    if(answer===correct){
+        captureFlag(m);
+    } else {
+        setMsg("❌ Wrong flag! Check your decoding. Try again!","#ef4444");
+        score=Math.max(0,score-20);
+        updateHUD();
+    }
+}
+
+function submitFactor(){
+    const m=MISSIONS[currentMission];
+    const p=parseInt(document.getElementById("factor-p").value)||0;
+    const q=parseInt(document.getElementById("factor-q").value)||0;
+    if((p===m.p&&q===m.q)||(p===m.q&&q===m.p)){
+        captureFlag(m);
+    } else if(p*q===m.number){
+        setMsg("⚠️ "+p+"×"+q+"="+m.number+" but those aren't the prime factors! Think primes!","#f59e0b");
+    } else {
+        setMsg("❌ "+p+"×"+q+"="+(p*q)+" ≠ "+m.number+". Try again!","#ef4444");
+        score=Math.max(0,score-20);
+        updateHUD();
+    }
+}
+
+function submitLWE(){
+    const m=MISSIONS[currentMission];
+    const ans=document.getElementById("lwe-answer").value.trim();
+    if(ans===m.answer){
+        captureFlag(m);
+    } else {
+        setMsg("❌ Not quite! Remember: (7×3+1) mod 11. Check your math!","#ef4444");
+        score=Math.max(0,score-20);
+        updateHUD();
+    }
+}
+
+function captureFlag(m){
+    clearInterval(missionTimer);
+    const timePts=Math.floor(timeLeft/m.time*200);
+    const hintPenalty=hintUsed.filter(h=>h).length*50;
+    const pts=m.pts+timePts-hintPenalty;
+    score+=pts;
+    flagsCaptured++;
+    missionStatus[currentMission]="completed";
+    if(currentMission+1<12) missionStatus[currentMission+1]="available";
+    updateHUD();
+
+    // Show flag capture overlay
+    document.getElementById("flag-pts").textContent="+"+pts+" pts ("+m.pts+" base + "+timePts+" speed bonus - "+hintPenalty+" hint penalty)";
+    document.getElementById("flag-text").textContent=m.fact;
+    document.getElementById("flag-capture").classList.add("show");
+}
+
+function missionFailed(m){
+    clearInterval(missionTimer);
+    missionStatus[currentMission]="available";
+    setMsg("❌ Wrong! Study the correct answer then try again. -100 pts","#ef4444");
+    score=Math.max(0,score-100);
+    showFact("📚 "+m.fact,"#ef4444");
+    updateHUD();
+}
+
+function closeFlagCapture(){
+    document.getElementById("flag-capture").classList.remove("show");
+    backToSelect();
+}
+
+function backToSelect(){
+    clearInterval(missionTimer);
+    currentMission=null;
+    document.getElementById("mission-select").style.display="block";
+    document.getElementById("mission-card").classList.remove("visible");
+    document.getElementById("msg").textContent="";
+    buildMissionGrid();
+    buildProgress();
+}
+
+function startTimer(seconds){
+    timeLeft=seconds;
+    updateTimer();
+    clearInterval(missionTimer);
+    missionTimer=setInterval(()=>{
+        timeLeft--;
+        updateTimer();
+        if(timeLeft<=0){
+            clearInterval(missionTimer);
+            const m=MISSIONS[currentMission];
+            setMsg("⏰ TIME'S UP! Flag not captured. Try again!","#ef4444");
+            showFact("📚 "+m.fact,"#ef4444");
+            score=Math.max(0,score-50);
+            missionStatus[currentMission]="available";
+            updateHUD();
+        }
+    },1000);
+}
+
+function updateTimer(){
+    const m=currentMission!==null?MISSIONS[currentMission]:null;
+    const maxTime=m?m.time:90;
+    const pct=timeLeft/maxTime*100;
+    document.getElementById("timer-fill").style.width=pct+"%";
+    document.getElementById("timer-fill").style.background=
+        pct>60?"linear-gradient(90deg,#10b981,#3b82f6)":
+        pct>30?"linear-gradient(90deg,#f59e0b,#d97706)":
+        "linear-gradient(90deg,#ef4444,#dc2626)";
+    document.getElementById("timer-text").textContent="⏱️ "+timeLeft+"s remaining"+(timeLeft<10?" — HURRY!":"");
+}
+
+function useHint(n){
+    const m=currentMission!==null?MISSIONS[currentMission]:null;
+    if(!m) return;
+    if(hintsLeft<=0){setMsg("No hints left!","#f59e0b");return;}
+    if(hintUsed[n-1]){setMsg("Already used hint "+n,"#f59e0b");return;}
+    hintUsed[n-1]=true;
+    hintsLeft--;
+    score=Math.max(0,score-50);
+    const hint=m.hints[n-1]||"No more hints available!";
+    const ht=document.getElementById("hint-text");
+    ht.style.display="block";
+    ht.textContent="💡 Hint "+n+": "+hint;
+    updateHUD();
+}
+
+function updateHUD(){
+    document.getElementById("h-score").textContent=score;
+    document.getElementById("h-flags").textContent=flagsCaptured;
+    document.getElementById("h-hints").textContent=hintsLeft;
+    const rankIdx=Math.min(flagsCaptured,RANKS.length-1);
+    document.getElementById("h-rank").textContent=RANKS[rankIdx];
+    buildMissionGrid();
+    buildProgress();
+}
+
+function setMsg(m,c){
+    let el=document.getElementById("msg");
+    el.textContent=m;el.style.color=c||"#34d399";
+}
+
+function showFact(text,color){
+    let el=document.getElementById("fact-box");
+    el.textContent=text;el.style.display="block";
+    el.style.borderColor=(color||"#3b82f6")+"50";
+    if(factTimeout) clearTimeout(factTimeout);
+    factTimeout=setTimeout(()=>el.style.display="none",7000);
+}
+
+// Init
+buildMissionGrid();
+buildProgress();
+</script>
+</body>
+</html>
+""", height=820)
