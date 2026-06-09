@@ -471,6 +471,7 @@ def main():
         "🔢 Prime Factor Cracker",
         "🌐 Network Defender",
         "🔤 Secret Message Maker",
+        "🧱 Falling Blocks",
     ]
 
     GRADE_MAP = {
