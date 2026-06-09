@@ -67,6 +67,12 @@ if _dev_password:
         st.session_state.free_module = None
 
 
+# ── Google Search Console Verification ──────────────────────────────────────
+_query = st.query_params
+if _query.get("google_verify") == "a3abbd1f357726a3":
+    st.write("google-site-verification: googlea3abbd1f357726a3.html")
+    st.stop()
+
 # ── Email MFA Gate ───────────────────────────────────────────────────────────
 _gmail = st.secrets.get("GMAIL_USER", "")
 if _gmail:
