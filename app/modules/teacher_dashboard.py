@@ -305,7 +305,7 @@ def render_teacher_dashboard():
         with col1:
             st.markdown(f"**{medals[min(i, len(medals)-1)]}**")
         with col2:
-            st.markdown(f"**{student['Nickname']}**")
+            st.markdown(f"**{sanitize_input(str(student['Nickname']), max_length=50)}**")
         with col3:
             st.markdown(f"⭐ {student['XP']} XP")
         with col4:

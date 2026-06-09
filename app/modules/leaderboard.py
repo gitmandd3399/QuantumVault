@@ -99,7 +99,7 @@ def render_leaderboard():
         with col1:
             st.markdown(f"**{medals[i]}**")
         with col2:
-            st.markdown(f"**{name}**")
+            st.markdown(f"**{sanitize_input(str(name), max_length=50)}**")
         with col3:
             st.markdown(f"⭐ {data['xp']} XP")
         with col4:

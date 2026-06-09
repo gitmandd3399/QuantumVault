@@ -6,6 +6,7 @@ Students write entries after completing activities.
 """
 
 import streamlit as st
+from utils.security import sanitize_input
 import datetime
 import anthropic
 
@@ -191,8 +192,8 @@ def render_research_journal():
                 f"📅 {entry['date']} — {entry['topic']} ({entry['word_count']} words)",
                 expanded=(i == 0)
             ):
-                st.markdown(f"**Module:** {entry['grade']}  |  **Topic:** {entry['topic']}")
-                st.markdown(f"**Prompt:** *{entry['prompt']}*")
+                st.markdown(f"**Module:** {sanitize_input(str(entry['grade']), 50)}  |  **Topic:** {sanitize_input(str(entry['topic']), 100)}")
+                st.markdown(f"**Prompt:** *{sanitize_input(str(entry['prompt']), 200)}*")
                 st.markdown("---")
                 st.markdown(entry["text"])
                 if entry.get("feedback"):
