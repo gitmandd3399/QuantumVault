@@ -110,13 +110,15 @@ def sidebar():
             ("🔴", "High School (9-12)",  "🔴 High School (9–12)"),
         ]},
         {"label": "🎮 GAMES", "color": "#f59e0b", "items": [
+            ("🔤", "Secret Message",    "🔤 Secret Message Maker"),
+            ("🔢", "Prime Factor",      "🔢 Prime Factor Cracker"),
+            ("🌐", "Network Defender",  "🌐 Network Defender"),
+            ("🧱", "Falling Blocks",    "🧱 Falling Blocks"),
+            ("─", "── Premium Games ──", "─"),
             ("🧩", "Cipher Decoder",   "🧩 Cipher Decoder"),
             ("🏃", "Escape Room",      "🏃 Escape Room"),
             ("🃏", "Algo Battle",      "🃏 Algo Battle"),
             ("🎯", "Daily Challenge",  "🎯 Daily Challenge"),
-            ("🔢", "Prime Factor",      "🔢 Prime Factor Cracker"),
-            ("🌐", "Network Defender",  "🌐 Network Defender"),
-            ("🔤", "Secret Message",    "🔤 Secret Message Maker"),
         ]},
         {"label": "🔬 LABS", "color": "#8b5cf6", "items": [
             ("🧪", "Crypto Lab",         "🧪 Crypto Lab"),
