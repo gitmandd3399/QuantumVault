@@ -73,9 +73,12 @@ if _query.get("google_verify") == "a3abbd1f357726a3":
     st.write("google-site-verification: googlea3abbd1f357726a3.html")
     st.stop()
 
-# ── Email MFA Gate ───────────────────────────────────────────────────────────
+# ── Email MFA Gate — only for paid/upgraded users ────────────────────────────
 _gmail = st.secrets.get("GMAIL_USER", "")
-if _gmail:
+_plan = st.session_state.get("plan_type", "free")
+_mfa_verified = st.session_state.get("mfa_verified", False)
+
+if _gmail and _plan == "paid" and not _mfa_verified:
     if not render_mfa_login():
         st.stop()
 
