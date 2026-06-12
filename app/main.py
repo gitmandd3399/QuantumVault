@@ -7,6 +7,7 @@ import os
 import streamlit as st
 import datetime
 from modules.mfa import render_mfa_login
+from modules.users import get_user, update_plan, get_user_count
 from modules.elementary import render_elementary
 from modules.middle_school import render_middle_school
 from modules.high_school import render_high_school
@@ -72,6 +73,13 @@ _query = st.query_params
 if _query.get("google_verify") == "a3abbd1f357726a3":
     st.write("google-site-verification: googlea3abbd1f357726a3.html")
     st.stop()
+
+# ── Load user plan from DB if logged in ──────────────────────────────────────
+_user_email = st.session_state.get("user_email", "")
+if _user_email and st.session_state.get("mfa_verified"):
+    _db_user = get_user(_user_email)
+    if _db_user:
+        st.session_state.plan_type = _db_user.get("plan", "free")
 
 # ── Email MFA Gate — only for paid/upgraded users ────────────────────────────
 _gmail = st.secrets.get("GMAIL_USER", "")

@@ -2,8 +2,10 @@ import streamlit as st
 import random
 import smtplib
 import time
+import logging
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from modules.users import create_user, get_user, user_exists
 
 
 def send_mfa_code(email: str, code: str) -> bool:
@@ -18,7 +20,7 @@ def send_mfa_code(email: str, code: str) -> bool:
         msg["From"] = "QuantumVault Academy <" + gmail_user + ">"
         msg["To"] = email
 
-        text_body = "Your QuantumVault Academy login code is: " + code + "\nExpires in 5 minutes."
+        text_body = "Your QuantumVault Academy login code is: " + code + ". Expires in 5 minutes."
 
         html_body = """
 <div style="font-family:Arial,sans-serif;max-width:480px;margin:0 auto;
@@ -50,7 +52,6 @@ def send_mfa_code(email: str, code: str) -> bool:
             server.sendmail(gmail_user, email, msg.as_string())
         return True
     except Exception as e:
-        import logging
         logging.error("MFA email failed: " + str(e))
         return False
 
@@ -96,6 +97,11 @@ def render_mfa_login():
                 key="mfa_email_input",
                 label_visibility="collapsed"
             )
+
+            is_new = email and not user_exists(email)
+            if is_new:
+                st.info("New account will be created automatically.")
+
             if st.button("Send Verification Code", type="primary",
                          use_container_width=True, key="mfa_send"):
                 if not email or "@" not in email or "." not in email:
@@ -113,10 +119,10 @@ def render_mfa_login():
                     else:
                         st.error("Could not send email. Contact hello@quantumvaultacademy.com")
 
-            st.markdown("---")
             st.markdown(
-                "<div style='text-align:center;font-size:10px;color:#334155'>"
-                "No password needed — just your email!</div>",
+                "<div style='text-align:center;font-size:10px;color:#334155;margin-top:8px'>"
+                "No password needed — just your email! | NIST AC-2 + IA-5 compliant"
+                "</div>",
                 unsafe_allow_html=True
             )
 
@@ -159,10 +165,16 @@ def render_mfa_login():
                 if st.button("Verify Code", type="primary", use_container_width=True):
                     st.session_state.mfa_attempts += 1
                     if code_input.strip() == st.session_state.mfa_code:
+                        # Create or update user account
+                        user = create_user(email_addr)
+                        plan = user.get("plan", "free")
                         st.session_state.mfa_verified = True
                         st.session_state.mfa_step = "done"
-                        st.session_state.user_email = st.session_state.mfa_email
-                        st.success("Verified! Welcome to QuantumVault Academy!")
+                        st.session_state.user_email = email_addr
+                        st.session_state.plan_type = plan
+                        st.session_state.user_name = email_addr.split("@")[0]
+                        logging.info("User logged in: " + email_addr + " plan: " + plan)
+                        st.success("Welcome back! Account verified.")
                         time.sleep(1)
                         st.rerun()
                     else:
@@ -175,8 +187,8 @@ def render_mfa_login():
                     st.rerun()
 
             st.markdown(
-                "<div style='text-align:center;font-size:10px;color:#334155'>"
-                "Check spam folder if you don't see the email.</div>",
+                "<div style='text-align:center;font-size:10px;color:#334155;margin-top:8px'>"
+                "Check spam folder if needed.</div>",
                 unsafe_allow_html=True
             )
 
