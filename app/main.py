@@ -504,6 +504,9 @@ def main():
         "🔤 Secret Message Maker",
         "🧱 Falling Blocks",
         "🚩 CTF Challenge",
+        "🛡️ Code the Shield",
+        "🐍 PQC Python Lab",
+        "🎮 Cipher Quest",
     ]
 
     GRADE_MAP = {
