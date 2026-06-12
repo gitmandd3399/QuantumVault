@@ -33,7 +33,7 @@ from modules.escape_room import render_escape_room
 from modules.tls_simulator import render_tls_simulator
 from modules.threat_thermometer import render_threat_thermometer
 from modules.algo_battle import render_algo_battle
-from modules.games import render_prime_factor_game, render_network_defender, render_secret_message, render_falling_blocks, render_ctf_game
+from modules.games import render_prime_factor_game, render_network_defender, render_secret_message, render_falling_blocks, render_ctf_game, render_code_shield, render_pqc_python_lab, render_cipher_quest
 from modules.career_explorer import render_career_explorer
 from modules.privacy_policy import render_privacy_policy, render_terms_of_service
 # ── Page config ───────────────────────────────────────────────────────────────
@@ -139,6 +139,10 @@ def sidebar():
             ("🌐", "Network Defender",  "🌐 Network Defender"),
             ("🧱", "Falling Blocks",    "🧱 Falling Blocks"),
             ("🚩", "CTF Challenge",    "🚩 CTF Challenge"),
+            ("─", "── Coding Games (7-day trial) ──", "─"),
+            ("🛡️", "Code the Shield",   "🛡️ Code the Shield"),
+            ("🐍", "PQC Python Lab",    "🐍 PQC Python Lab"),
+            ("🎮", "Cipher Quest",      "🎮 Cipher Quest"),
             ("─", "── Premium Games ──", "─"),
             ("🧩", "Cipher Decoder",   "🧩 Cipher Decoder"),
             ("🏃", "Escape Room",      "🏃 Escape Room"),
@@ -605,6 +609,12 @@ def main():
         render_falling_blocks()
     elif "CTF Challenge" in level:
         render_ctf_game()
+    elif "Code the Shield" in level:
+        render_code_shield()
+    elif "PQC Python Lab" in level:
+        render_pqc_python_lab()
+    elif "Cipher Quest" in level:
+        render_cipher_quest()
     elif "Daily Challenge" in level:
         render_daily_challenge()
     elif "Share Achievement" in level:
