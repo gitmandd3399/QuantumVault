@@ -139,7 +139,7 @@ def sidebar():
             ("🌐", "Network Defender",  "🌐 Network Defender"),
             ("🧱", "Falling Blocks",    "🧱 Falling Blocks"),
             ("🚩", "CTF Challenge",    "🚩 CTF Challenge"),
-            ("─", "── Coding Games (7-day trial) ──", "─"),
+            ("─", "── Coding Games Trial ──", "─ Coding Games"),
             ("🛡️", "Code the Shield",   "🛡️ Code the Shield"),
             ("🐍", "PQC Python Lab",    "🐍 PQC Python Lab"),
             ("🎮", "Cipher Quest",      "🎮 Cipher Quest"),
