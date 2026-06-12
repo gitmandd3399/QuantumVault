@@ -9589,14 +9589,14 @@ buildProgress();
 
 
 def render_code_shield():
-    """K-5: Code the Shield — drag and drop block coding to build Kyber shields."""
+    """K-5: Code the Shield — big colorful click blocks, zero typing."""
     import streamlit as st
     import streamlit.components.v1 as components
     from modules.trial import trial_gate
     if not trial_gate("code_shield", "Code the Shield"):
         return
     st.subheader("🛡️ Code the Shield!")
-    st.markdown("**Build a Kyber shield by snapping code blocks together!** Drag blocks to the builder area to protect the Quantum Vault from attackers.")
+    st.markdown("**Click the blocks in the right order** to build a Kyber shield! No typing needed — just click!")
     components.html(r"""
 <!DOCTYPE html>
 <html>
@@ -9604,50 +9604,58 @@ def render_code_shield():
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
 body{background:#020d14;font-family:'Segoe UI',sans-serif;color:white;}
-#wrap{max-width:560px;margin:0 auto;padding:10px;}
-.hud{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-bottom:8px;}
-.hb{background:#071520;border:1px solid #1a3a5a;border-radius:8px;padding:6px;text-align:center;font-size:10px;color:#60a5fa;}
-.hb b{display:block;font-size:15px;color:white;}
-#game-area{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;}
-#blocks-panel{background:#071520;border:1px solid #1a3a5a;border-radius:10px;padding:10px;}
-#blocks-panel h4{color:#60a5fa;font-size:11px;margin-bottom:8px;text-transform:uppercase;letter-spacing:1px;}
-#builder-panel{background:#071520;border:2px dashed #1d4ed8;border-radius:10px;padding:10px;min-height:200px;}
-#builder-panel h4{color:#60a5fa;font-size:11px;margin-bottom:8px;text-transform:uppercase;letter-spacing:1px;}
-.block{padding:8px 10px;border-radius:8px;margin-bottom:6px;cursor:grab;
-    font-size:11px;font-weight:bold;user-select:none;transition:all 0.15s;
-    border:2px solid transparent;}
-.block:hover{transform:translateX(3px);filter:brightness(1.2);}
-.block:active{cursor:grabbing;}
-.block.blue{background:#1d4ed820;border-color:#3b82f6;color:#60a5fa;}
-.block.green{background:#05301520;border-color:#10b981;color:#10b981;}
-.block.purple{background:#2e1a4020;border-color:#8b5cf6;color:#a78bfa;}
-.block.yellow{background:#1a1a0020;border-color:#fbbf24;color:#fbbf24;}
-.block.orange{background:#1a0a0020;border-color:#f97316;color:#f97316;}
-.placed-block{padding:8px 10px;border-radius:8px;margin-bottom:4px;font-size:11px;
-    font-weight:bold;display:flex;justify-content:space-between;align-items:center;}
-.remove-btn{background:none;border:none;color:#ef444460;cursor:pointer;font-size:14px;padding:0 4px;}
-.remove-btn:hover{color:#ef4444;}
-#output-area{background:#051018;border:1px solid #1a3a5a;border-radius:10px;padding:10px;
-    font-family:'Fira Code',monospace;font-size:11px;min-height:80px;margin-bottom:8px;}
-#output-area .line{color:#10b981;margin:2px 0;}
-#output-area .error{color:#ef4444;}
-#output-area .comment{color:#475569;}
-.challenge-box{background:#071520;border:1px solid #fbbf2440;border-radius:10px;
-    padding:10px;margin-bottom:8px;font-size:11px;}
-.challenge-box h4{color:#fbbf24;margin-bottom:4px;font-size:12px;}
-#run-btn{padding:8px 20px;background:linear-gradient(135deg,#1d4ed8,#06b6d4);
-    border:none;border-radius:8px;color:white;font-weight:bold;font-size:12px;
-    cursor:pointer;margin-right:6px;}
-#clear-btn{padding:8px 16px;background:#334155;border:none;border-radius:8px;
-    color:white;font-size:12px;cursor:pointer;}
-#next-btn{padding:8px 16px;background:#059669;border:none;border-radius:8px;
-    color:white;font-size:12px;cursor:pointer;display:none;}
-#msg{font-size:11px;min-height:18px;margin:4px 0;text-align:center;font-weight:bold;}
-#fact{background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.3);
-    border-radius:8px;padding:7px 10px;margin:4px 0;font-size:10px;color:#93c5fd;
-    display:none;line-height:1.5;}
-.level-badge{display:inline-block;background:linear-gradient(135deg,#1d4ed8,#7c3aed);
-    border-radius:20px;padding:3px 12px;font-size:10px;font-weight:bold;margin-bottom:6px;}
+#wrap{max-width:560px;margin:0 auto;padding:12px;}
+.hud{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:10px;}
+.hb{background:#071520;border:2px solid #1a3a5a;border-radius:12px;padding:8px;text-align:center;font-size:11px;color:#60a5fa;}
+.hb b{display:block;font-size:18px;color:white;}
+.challenge-box{background:#071520;border:2px solid #fbbf24;border-radius:14px;padding:14px;margin-bottom:12px;text-align:center;}
+.challenge-emoji{font-size:3rem;margin-bottom:6px;}
+.challenge-title{font-size:15px;font-weight:bold;color:#fbbf24;margin-bottom:4px;}
+.challenge-desc{font-size:12px;color:#94a3b8;line-height:1.6;}
+.section-label{font-size:11px;color:#475569;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;text-align:center;}
+#blocks-area{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;}
+.block{padding:14px 10px;border-radius:14px;cursor:pointer;text-align:center;
+    font-size:12px;font-weight:bold;transition:all 0.2s;border:3px solid transparent;
+    line-height:1.4;}
+.block:hover{transform:scale(1.05);filter:brightness(1.2);}
+.block:active{transform:scale(0.97);}
+.block.blue{background:#1d4ed830;border-color:#3b82f6;color:#93c5fd;}
+.block.green{background:#05301530;border-color:#10b981;color:#6ee7b7;}
+.block.purple{background:#2e1a4030;border-color:#8b5cf6;color:#c4b5fd;}
+.block.yellow{background:#1a1a0030;border-color:#fbbf24;color:#fde68a;}
+.block.orange{background:#1a0a0030;border-color:#f97316;color:#fed7aa;}
+.block.pink{background:#2a0a1a30;border-color:#ec4899;color:#fbcfe8;}
+#builder-area{background:#071520;border:3px dashed #1d4ed8;border-radius:14px;
+    min-height:120px;padding:10px;margin-bottom:10px;}
+.placed{padding:12px 14px;border-radius:10px;margin-bottom:6px;font-size:12px;
+    font-weight:bold;display:flex;justify-content:space-between;align-items:center;
+    cursor:pointer;}
+.placed .num{font-size:10px;color:#475569;margin-right:6px;}
+.remove-x{font-size:16px;opacity:0.5;}
+.remove-x:hover{opacity:1;}
+#run-btn{width:100%;padding:14px;background:linear-gradient(135deg,#1d4ed8,#06b6d4);
+    border:none;border-radius:12px;color:white;font-size:16px;font-weight:bold;
+    cursor:pointer;margin-bottom:6px;transition:all 0.2s;}
+#run-btn:hover{filter:brightness(1.15);transform:translateY(-1px);}
+#clear-btn{width:100%;padding:10px;background:#334155;border:none;border-radius:10px;
+    color:white;font-size:13px;cursor:pointer;margin-bottom:8px;}
+#next-btn{width:100%;padding:14px;background:linear-gradient(135deg,#059669,#10b981);
+    border:none;border-radius:12px;color:white;font-size:16px;font-weight:bold;
+    cursor:pointer;margin-bottom:8px;display:none;}
+#output{background:#051018;border:2px solid #1a3a5a;border-radius:10px;padding:12px;
+    font-size:12px;min-height:60px;margin-bottom:8px;line-height:1.7;}
+.out-line{color:#10b981;margin:2px 0;}
+.out-comment{color:#475569;margin:2px 0;}
+.out-error{color:#ef4444;margin:2px 0;}
+#msg{font-size:13px;min-height:20px;margin:4px 0;text-align:center;font-weight:bold;padding:6px;}
+#fact{background:rgba(59,130,246,0.1);border:2px solid rgba(59,130,246,0.3);
+    border-radius:10px;padding:10px 12px;margin:6px 0;font-size:11px;color:#93c5fd;
+    display:none;line-height:1.6;}
+.stars{font-size:24px;text-align:center;margin:6px 0;display:none;}
+.progress-dots{display:flex;gap:6px;justify-content:center;margin:8px 0;}
+.dot{width:14px;height:14px;border-radius:50%;background:#1e293b;border:2px solid #334155;}
+.dot.done{background:#10b981;border-color:#10b981;}
+.dot.active{background:#3b82f6;border-color:#60a5fa;}
 </style>
 </head>
 <body>
@@ -9655,331 +9663,777 @@ body{background:#020d14;font-family:'Segoe UI',sans-serif;color:white;}
 <div class="hud">
     <div class="hb">⭐ Score<br><b id="h-score">0</b></div>
     <div class="hb">🏆 Level<br><b id="h-level">1</b>/8</div>
-    <div class="hb">🔥 Streak<br><b id="h-streak">0</b></div>
+    <div class="hb">❤️ Lives<br><b id="h-lives">3</b></div>
 </div>
+
+<div class="progress-dots" id="prog"></div>
 
 <div class="challenge-box">
-    <div class="level-badge" id="level-badge">Level 1 — Kyber Basics</div>
-    <h4 id="challenge-title">🎯 Challenge</h4>
-    <p id="challenge-desc" style="color:#94a3b8;font-size:10px;line-height:1.5;margin-top:4px;"></p>
+    <div class="challenge-emoji" id="c-emoji">🔐</div>
+    <div class="challenge-title" id="c-title">Challenge 1</div>
+    <div class="challenge-desc" id="c-desc"></div>
 </div>
 
-<div id="game-area">
-    <div id="blocks-panel">
-        <h4>📦 Code Blocks</h4>
-        <div id="available-blocks"></div>
+<div class="section-label">👇 Click blocks to add them to your code</div>
+<div id="blocks-area"></div>
+
+<div class="section-label">🔨 Your code (click a block to remove it)</div>
+<div id="builder-area">
+    <div id="drop-hint" style="text-align:center;color:#1e3a5a;font-size:12px;padding:20px 0">
+        👆 Click blocks above to build your code here!
     </div>
-    <div id="builder-panel">
-        <h4>🔨 Your Code</h4>
-        <div id="placed-blocks"></div>
-        <div style="color:#1e3a5a;font-size:10px;margin-top:8px" id="drop-hint">
-            Click blocks on the left to add them here →
-        </div>
-    </div>
+    <div id="placed-list"></div>
 </div>
 
-<div id="output-area">
-    <div class="comment"># Output will appear here when you run your code</div>
-</div>
+<button id="run-btn" onclick="runCode()">▶ Run My Code!</button>
+<button id="clear-btn" onclick="clearAll()">🗑️ Start Over</button>
+<button id="next-btn" onclick="nextLevel()">⭐ Next Challenge!</button>
 
-<div>
-    <button id="run-btn" onclick="runCode()">▶ Run Code</button>
-    <button id="clear-btn" onclick="clearBuilder()">🗑 Clear</button>
-    <button id="next-btn" onclick="nextLevel()">Next Level →</button>
-</div>
-
-<div id="msg" style="margin-top:6px"></div>
+<div id="output"><div class="out-comment"># Your program output will show here!</div></div>
+<div class="stars" id="stars">⭐⭐⭐</div>
+<div id="msg"></div>
 <div id="fact"></div>
 </div>
 
 <script>
-const LEVELS = [
-    {
-        id:1, name:"Kyber Basics", badge:"Level 1 — Kyber Basics",
-        title:"Build a Kyber key pair",
-        desc:"Kyber (ML-KEM FIPS 203) creates a public and private key pair. Arrange the blocks to generate keys!",
-        blocks:["import kyber","key_pair = kyber.generate_keys()","public_key = key_pair.public","secret_key = key_pair.secret","print('Keys generated!')"],
-        solution:["import kyber","key_pair = kyber.generate_keys()","public_key = key_pair.public","secret_key = key_pair.secret","print('Keys generated!')"],
-        output:["# Importing Kyber (ML-KEM FIPS 203)...","# Generating lattice-based key pair...","public_key = [a1+e1, a2+e2, ...] (Module-LWE)","secret_key = [s1, s2, ...] (hidden secret vector)","Keys generated! ✅ Quantum-safe!"],
-        fact:"Kyber keys use Module Learning With Errors math. The public key has intentional noise (e) added to hide the secret (s). Even quantum computers cannot remove the noise to find s!"
-    },
-    {
-        id:2, name:"Encrypt a Message", badge:"Level 2 — Encryption",
-        title:"Encrypt a secret message with Kyber",
-        desc:"Use the public key to encrypt 'HELLO QUANTUM WORLD' so only the secret key holder can read it.",
-        blocks:["message = 'HELLO QUANTUM WORLD'","import kyber","ciphertext = kyber.encrypt(public_key, message)","print('Message encrypted!')","print(ciphertext[:20] + '...')"],
-        solution:["import kyber","message = 'HELLO QUANTUM WORLD'","ciphertext = kyber.encrypt(public_key, message)","print('Message encrypted!')","print(ciphertext[:20] + '...')"],
-        output:["# Kyber encryption in progress...","# Converting message to lattice coordinates...","# Adding Module-LWE noise to ciphertext...","Message encrypted! ✅","Ciphertext: Xk92mP4nL7vR2wQ8j..."],
-        fact:"Kyber encrypts by adding the message to a noisy lattice computation using the public key. Only the secret key (which knows the noise pattern) can decrypt it — quantum computers cannot!"
-    },
-    {
-        id:3, name:"Decrypt!", badge:"Level 3 — Decryption",
-        title:"Decrypt the ciphertext back to the original message",
-        desc:"Use the secret key to decrypt the ciphertext and reveal the original message.",
-        blocks:["decrypted = kyber.decrypt(secret_key, ciphertext)","import kyber","print('Decrypted:', decrypted)","if decrypted == message:","    print('SUCCESS! Keys work!')"],
-        solution:["import kyber","decrypted = kyber.decrypt(secret_key, ciphertext)","print('Decrypted:', decrypted)","if decrypted == message:","    print('SUCCESS! Keys work!')"],
-        output:["# Applying secret key to remove lattice noise...","# Recovering original message coordinates...","Decrypted: HELLO QUANTUM WORLD","Decrypted == Original message: True","SUCCESS! Keys work! ✅ Kyber is correct!"],
-        fact:"Kyber decryption uses the secret vector s to compute the inner product with the ciphertext, then removes the noise. The result is the original message — perfectly recovered!"
-    },
-    {
-        id:4, name:"Dilithium Signs", badge:"Level 4 — Signatures",
-        title:"Sign a document with Dilithium (ML-DSA)",
-        desc:"Dilithium FIPS 204 creates unforgeable signatures. Sign this document so nobody can tamper with it.",
-        blocks:["import dilithium","document = 'School contract signed'","signature = dilithium.sign(secret_key, document)","print('Document signed!')","print('Signature valid:', len(signature), 'bytes')"],
-        solution:["import dilithium","document = 'School contract signed'","signature = dilithium.sign(secret_key, document)","print('Document signed!')","print('Signature valid:', len(signature), 'bytes')"],
-        output:["# Loading Dilithium (ML-DSA FIPS 204)...","# Computing lattice commitment...","# Applying challenge hash and response...","Document signed! ✅","Signature valid: 2420 bytes (quantum-safe!)"],
-        fact:"Dilithium signatures are 2420 bytes — much larger than RSA but completely immune to quantum attacks. Used to sign software updates, legal documents, and TLS certificates!"
-    },
-    {
-        id:5, name:"Verify Signature", badge:"Level 5 — Verification",
-        title:"Verify the Dilithium signature",
-        desc:"Use the public key to verify nobody tampered with the document.",
-        blocks:["import dilithium","is_valid = dilithium.verify(public_key, document, signature)","if is_valid:","    print('Document is authentic!')","else:","    print('TAMPERED! Reject!')"],
-        solution:["import dilithium","is_valid = dilithium.verify(public_key, document, signature)","if is_valid:","    print('Document is authentic!')","else:","    print('TAMPERED! Reject!')"],
-        output:["# Verifying Dilithium signature...","# Checking lattice commitment matches...","# Hash challenge verified...","is_valid = True","Document is authentic! ✅ Nobody tampered with it!"],
-        fact:"Dilithium verification is instant — just check if the signature matches the document using the public key. A forged signature would require solving an NP-hard lattice problem!"
-    },
-    {
-        id:6, name:"Hash It!", badge:"Level 6 — SHA-3 Hashing",
-        title:"Hash a message with SHA-3 (SPHINCS+ uses this)",
-        desc:"SHA-3 turns any message into a fixed-length fingerprint. Change one letter and the whole hash changes!",
-        blocks:["import sha3","message1 = 'hello'","message2 = 'hellO'","hash1 = sha3.hash(message1)","hash2 = sha3.hash(message2)","print('Same?', hash1 == hash2)"],
-        solution:["import sha3","message1 = 'hello'","message2 = 'hellO'","hash1 = sha3.hash(message1)","hash2 = sha3.hash(message2)","print('Same?', hash1 == hash2)"],
-        output:["# SHA-3 (Keccak) hashing...","hash1: 3338be694f50c5f338814986cdf0686453a888b84f424d792af4b9202398f392","hash2: 45d09ad5b09b6e2e7b2f7e9cd4a3e8c7f1b2d3e4f5a6b7c8d9e0f1a2b3c4d5e6","Same? False ← One capital letter changed EVERYTHING!","Avalanche effect: 100% of bits changed! ✅"],
-        fact:"The SHA-3 avalanche effect: changing 1 bit in input changes ~50% of output bits. SPHINCS+ (FIPS 205) chains thousands of these hashes to create quantum-safe signatures!"
-    },
-    {
-        id:7, name:"LWE Math!", badge:"Level 7 — Lattice Math",
-        title:"Solve a Learning With Errors equation",
-        desc:"LWE is the math behind Kyber. Secret s=3, matrix A=[7,5,2], noise e=[1,0,1]. Compute b = As + e (mod 11)",
-        blocks:["s = 3","A = [7, 5, 2]","e = [1, 0, 1]","q = 11","b = [(A[i]*s + e[i]) % q for i in range(3)]","print('b =', b)"],
-        solution:["s = 3","A = [7, 5, 2]","e = [1, 0, 1]","q = 11","b = [(A[i]*s + e[i]) % q for i in range(3)]","print('b =', b)"],
-        output:["# Computing LWE: b = As + e (mod q)","# b[0] = (7×3 + 1) mod 11 = 22 mod 11 = 0","# b[1] = (5×3 + 0) mod 11 = 15 mod 11 = 4","# b[2] = (2×3 + 1) mod 11 = 7 mod 11 = 7","b = [0, 4, 7] ← This is the Kyber public key! ✅"],
-        fact:"Real Kyber uses hundreds of these equations simultaneously in a module structure. Finding s from b is computationally hard — even knowing A and b, the noise e makes it infeasible!"
-    },
-    {
-        id:8, name:"Full PQC Stack!", badge:"Level 8 — MASTER",
-        title:"Deploy the complete NIST PQC stack",
-        desc:"You are a cryptography engineer. Deploy all 4 NIST standards to protect the system.",
-        blocks:["import kyber, dilithium, sphincs, falcon","keys = kyber.generate_keys()","sig_keys = dilithium.generate_keys()","backup = sphincs.generate_keys()","iot_keys = falcon.generate_keys()","print('Full PQC stack deployed!')"],
-        solution:["import kyber, dilithium, sphincs, falcon","keys = kyber.generate_keys()","sig_keys = dilithium.generate_keys()","backup = sphincs.generate_keys()","iot_keys = falcon.generate_keys()","print('Full PQC stack deployed!')"],
-        output:["# Loading NIST PQC Suite 2024...","# ML-KEM FIPS 203 (Kyber): Key exchange READY ✅","# ML-DSA FIPS 204 (Dilithium): Signatures READY ✅","# SLH-DSA FIPS 205 (SPHINCS+): Hash backup READY ✅","# FN-DSA FIPS 206 (Falcon): IoT signatures READY ✅","Full PQC stack deployed! 🏆 QUANTUM MASTER!"],
-        fact:"You just deployed the complete NIST post-quantum cryptography stack! ML-KEM protects key exchange, ML-DSA signs certificates, SLH-DSA provides hash-based backup, FN-DSA handles IoT devices. The internet is now quantum-safe!"
-    },
+const LEVELS=[
+    {emoji:"🔐",title:"Make a Secret Key!",
+     desc:"A secret key keeps your messages safe. Click the blocks in order to make one!",
+     blocks:["🔑 Start Kyber","📦 Make a key","🔐 Lock the key","✅ Key is ready!"],
+     solution:["🔑 Start Kyber","📦 Make a key","🔐 Lock the key","✅ Key is ready!"],
+     output:["Starting Kyber (the quantum-safe lock)...","Making your secret key...","Locking it with math so nobody can copy it!","✅ Your secret key is ready! Nobody can break it!"],
+     fact:"Kyber makes secret keys using special math called 'Learning With Errors'. Even the most powerful quantum computer cannot figure out your secret key!"},
+    {emoji:"📨",title:"Send a Secret Message!",
+     desc:"Use your key to lock a message so only your friend can read it. Put the steps in order!",
+     blocks:["📝 Write message","🔑 Get the key","🔒 Lock the message","📤 Send it!"],
+     solution:["🔑 Get the key","📝 Write message","🔒 Lock the message","📤 Send it!"],
+     output:["Getting your Kyber key...","Writing your message...","Locking the message with Kyber math...","📤 Message sent! Only your friend can unlock it!"],
+     fact:"When you lock a message with Kyber, it gets scrambled using really hard math. Even a quantum computer cannot unscramble it without the secret key!"},
+    {emoji:"🔓",title:"Open a Secret Message!",
+     desc:"Your friend sent you a locked message. Use your secret key to open it!",
+     blocks:["🎉 Read message","🔑 Use secret key","📬 Get message","🔓 Unlock it"],
+     solution:["📬 Get message","🔑 Use secret key","🔓 Unlock it","🎉 Read message"],
+     output:["Getting the locked message...","Using your secret key...","Unlocking with Kyber math...","🎉 Message says: HELLO FRIEND! You did it!"],
+     fact:"Only someone with the exact secret key can unlock a Kyber message. This is why Kyber is used to protect bank accounts, doctor records, and secret messages all over the world!"},
+    {emoji:"✍️",title:"Sign Your Work!",
+     desc:"A signature proves YOU made something. Dilithium makes a quantum-safe signature!",
+     blocks:["✅ Signature done!","📝 Write your name","✍️ Start Dilithium","🖊️ Sign it"],
+     solution:["✍️ Start Dilithium","📝 Write your name","🖊️ Sign it","✅ Signature done!"],
+     output:["Starting Dilithium (the quantum-safe pen)...","Writing your name...","Signing with special math nobody can copy...","✅ Signature done! It proves YOU made this!"],
+     fact:"Dilithium makes digital signatures that nobody can fake — not even with a quantum computer! It's used to sign software, legal papers, and school records to prove they're real!"},
+    {emoji:"🔍",title:"Check the Signature!",
+     desc:"Did your friend really sign this? Check with Dilithium to make sure it's real!",
+     blocks:["✅ It's real!","📋 Get the paper","🔍 Check it","👀 Look at signature"],
+     solution:["📋 Get the paper","👀 Look at signature","🔍 Check it","✅ It's real!"],
+     output:["Getting the signed paper...","Looking at the signature...","Checking with Dilithium math...","✅ It's REAL! Your friend really signed it! Nobody faked it!"],
+     fact:"Checking a Dilithium signature is like having a magic scanner that can tell the real signature from any fake — instantly and perfectly!"},
+    {emoji:"🌲",title:"Make a Hash Shield!",
+     desc:"A hash is like a fingerprint for data. SPHINCS+ uses hashes to stay safe from quantum computers!",
+     blocks:["🛡️ Hash Shield ready!","🌲 Start SPHINCS+","📄 Pick some data","#️⃣ Make the hash"],
+     solution:["🌲 Start SPHINCS+","📄 Pick some data","#️⃣ Make the hash","🛡️ Hash Shield ready!"],
+     output:["Starting SPHINCS+ (the hash shield)...","Picking your data...","Making a hash fingerprint...","🛡️ Hash Shield ready! Completely quantum-safe!"],
+     fact:"SPHINCS+ uses SHA-3 hash functions — like fingerprints for data. Change even ONE tiny thing and the fingerprint changes completely! Quantum computers cannot fake SHA-3 fingerprints!"},
+    {emoji:"🦅",title:"Tiny Falcon Key!",
+     desc:"Falcon makes super tiny keys — perfect for small devices like smart watches and IoT sensors!",
+     blocks:["🎯 Tiny key done!","🦅 Start Falcon","⚡ Make it tiny","🔑 Create key"],
+     solution:["🦅 Start Falcon","🔑 Create key","⚡ Make it tiny","🎯 Tiny key done!"],
+     output:["Starting Falcon (the tiny key maker)...","Creating the key...","Making it as small as possible...","🎯 Tiny key done! Perfect for smart devices!"],
+     fact:"Falcon (FN-DSA FIPS 206) makes the smallest quantum-safe keys of all 4 NIST standards. Great for tiny devices like IoT sensors, smart watches, and medical devices!"},
+    {emoji:"🏆",title:"Deploy ALL 4 Shields!",
+     desc:"You are a security expert! Deploy all 4 NIST quantum-safe shields to protect the internet!",
+     blocks:["🏆 Internet is safe!","🔐 Deploy Kyber","✍️ Deploy Dilithium","🌲 Deploy SPHINCS+","🦅 Deploy Falcon"],
+     solution:["🔐 Deploy Kyber","✍️ Deploy Dilithium","🌲 Deploy SPHINCS+","🦅 Deploy Falcon","🏆 Internet is safe!"],
+     output:["🔐 Kyber deployed! Key exchange is quantum-safe!","✍️ Dilithium deployed! Signatures are quantum-safe!","🌲 SPHINCS+ deployed! Hash backup is quantum-safe!","🦅 Falcon deployed! IoT devices are quantum-safe!","🏆 ALL 4 SHIELDS ACTIVE! The internet is protected!"],
+     fact:"You just deployed all 4 NIST post-quantum cryptography standards! FIPS 203, 204, 205, and 206 together protect ALL of the internet from quantum computers. You are a real cryptography hero!"},
 ];
 
-const BLOCK_COLORS = {
-    "import": "blue", "key_": "green", "public_": "green", "secret_": "purple",
-    "print": "yellow", "message": "orange", "cipher": "purple", "decrypt": "green",
-    "document": "orange", "signature": "purple", "is_valid": "green", "if ": "yellow",
-    "else": "yellow", "hash": "blue", "s ": "green", "A ": "blue", "e ": "orange",
-    "q ": "purple", "b ": "green", "keys": "green", "sig_": "blue", "backup": "purple",
-    "iot_": "orange",
-};
+const COLORS=["blue","green","purple","yellow","orange","pink"];
+let level=0,score=0,lives=3,placed=[],factTmo=null,results=[];
 
-function getBlockColor(text) {
-    for (const [key, color] of Object.entries(BLOCK_COLORS)) {
-        if (text.startsWith(key)) return color;
+function buildProgress(){
+    const d=document.getElementById("prog");
+    d.innerHTML="";
+    for(let i=0;i<LEVELS.length;i++){
+        const dot=document.createElement("div");
+        dot.className="dot"+(results[i]==="done"?" done":i===level?" active":"");
+        d.appendChild(dot);
     }
-    return "blue";
 }
 
-let level = 0, score = 0, streak = 0;
-let placed = [], factTimeout = null;
+function loadLevel(){
+    const lv=LEVELS[level];
+    document.getElementById("c-emoji").textContent=lv.emoji;
+    document.getElementById("c-title").textContent="Challenge "+(level+1)+": "+lv.title;
+    document.getElementById("c-desc").textContent=lv.desc;
+    document.getElementById("h-level").textContent=(level+1);
 
-function loadLevel() {
-    const lv = LEVELS[level];
-    document.getElementById("level-badge").textContent = lv.badge;
-    document.getElementById("challenge-title").textContent = "🎯 " + lv.title;
-    document.getElementById("challenge-desc").textContent = lv.desc;
-    document.getElementById("h-level").textContent = (level+1);
-
-    // Build available blocks (shuffled)
-    const blocks = [...lv.blocks].sort(() => Math.random() - 0.5);
-    const container = document.getElementById("available-blocks");
-    container.innerHTML = "";
-    blocks.forEach(b => {
-        const div = document.createElement("div");
-        div.className = "block " + getBlockColor(b);
-        div.textContent = b;
-        div.onclick = () => addBlock(b);
-        container.appendChild(div);
+    // Shuffle blocks
+    const shuffled=[...lv.blocks].sort(()=>Math.random()-0.5);
+    const ba=document.getElementById("blocks-area");
+    ba.innerHTML="";
+    shuffled.forEach((b,i)=>{
+        const div=document.createElement("div");
+        div.className="block "+COLORS[i%COLORS.length];
+        div.textContent=b;
+        div.onclick=()=>addBlock(b,i%COLORS.length);
+        ba.appendChild(div);
     });
 
-    placed = [];
+    placed=[];
     renderPlaced();
     clearOutput();
-    document.getElementById("next-btn").style.display = "none";
-    document.getElementById("msg").textContent = "";
-    document.getElementById("fact").style.display = "none";
+    document.getElementById("next-btn").style.display="none";
+    document.getElementById("stars").style.display="none";
+    document.getElementById("msg").textContent="";
+    document.getElementById("fact").style.display="none";
+    buildProgress();
 }
 
-function addBlock(text) {
-    placed.push(text);
+function addBlock(text,colorIdx){
+    placed.push({text,color:COLORS[colorIdx]});
     renderPlaced();
-    document.getElementById("drop-hint").style.display = "none";
+    document.getElementById("drop-hint").style.display="none";
 }
 
-function removeBlock(idx) {
-    placed.splice(idx, 1);
-    renderPlaced();
-    if (placed.length === 0) document.getElementById("drop-hint").style.display = "block";
-}
-
-function renderPlaced() {
-    const container = document.getElementById("placed-blocks");
-    container.innerHTML = "";
-    placed.forEach((b, i) => {
-        const div = document.createElement("div");
-        div.className = "placed-block " + getBlockColor(b);
-        div.style.background = "rgba(59,130,246,0.08)";
-        div.style.border = "1px solid rgba(59,130,246,0.2)";
-        div.innerHTML = "<span>" + b + "</span><button class='remove-btn' onclick='removeBlock(" + i + ")'>✕</button>";
-        container.appendChild(div);
+function renderPlaced(){
+    const pl=document.getElementById("placed-list");
+    pl.innerHTML="";
+    if(placed.length===0){
+        document.getElementById("drop-hint").style.display="block";
+        return;
+    }
+    document.getElementById("drop-hint").style.display="none";
+    placed.forEach((b,i)=>{
+        const div=document.createElement("div");
+        div.className="placed block "+b.color;
+        div.style.marginBottom="6px";
+        div.innerHTML="<span><b class='num'>"+(i+1)+".</b> "+b.text+"</span><span class='remove-x' onclick='removeBlock("+i+")'>✕</span>";
+        pl.appendChild(div);
     });
 }
 
-function runCode() {
-    const lv = LEVELS[level];
-    const sol = lv.solution;
-    const isCorrect = placed.length === sol.length &&
-        placed.every((b, i) => b === sol[i]);
+function removeBlock(idx){
+    placed.splice(idx,1);
+    renderPlaced();
+}
 
-    const output = document.getElementById("output-area");
-    output.innerHTML = "";
+function clearAll(){
+    placed=[];
+    renderPlaced();
+    clearOutput();
+    document.getElementById("next-btn").style.display="none";
+    document.getElementById("stars").style.display="none";
+    document.getElementById("msg").textContent="";
+}
 
-    if (isCorrect) {
-        lv.output.forEach((line, i) => {
-            setTimeout(() => {
-                const div = document.createElement("div");
-                div.className = line.startsWith("#") ? "comment" : "line";
-                div.textContent = line;
+function clearOutput(){
+    document.getElementById("output").innerHTML='<div class="out-comment"># Your program output will show here!</div>';
+}
+
+function runCode(){
+    const lv=LEVELS[level];
+    const isCorrect=placed.length===lv.solution.length&&
+        placed.every((b,i)=>b.text===lv.solution[i]);
+
+    const output=document.getElementById("output");
+    output.innerHTML="";
+
+    if(isCorrect){
+        lv.output.forEach((line,i)=>{
+            setTimeout(()=>{
+                const div=document.createElement("div");
+                div.className=line.startsWith("#")?"out-comment":"out-line";
+                div.textContent=line;
                 output.appendChild(div);
-                output.scrollTop = output.scrollHeight;
-            }, i * 200);
+                output.scrollTop=output.scrollHeight;
+            },i*400);
         });
-        setTimeout(() => {
-            const pts = 100 * (level + 1) + streak * 50;
-            score += pts;
-            streak++;
-            document.getElementById("h-score").textContent = score;
-            document.getElementById("h-streak").textContent = streak;
-            document.getElementById("msg").textContent = "✅ CORRECT! +" + pts + " pts!";
-            document.getElementById("msg").style.color = "#10b981";
+        setTimeout(()=>{
+            const pts=100*(level+1);
+            score+=pts;
+            document.getElementById("h-score").textContent=score;
+            document.getElementById("msg").textContent="🎉 AMAZING! You did it! +"+pts+" points!";
+            document.getElementById("msg").style.color="#10b981";
+            document.getElementById("stars").style.display="block";
+            document.getElementById("next-btn").style.display="block";
+            results[level]="done";
+            buildProgress();
             showFact(lv.fact);
-            document.getElementById("next-btn").style.display = "inline-block";
-        }, lv.output.length * 200 + 300);
+        },lv.output.length*400+200);
     } else {
-        output.innerHTML = "<div class='error'>❌ SyntaxError: Blocks are in the wrong order!</div>";
-        output.innerHTML += "<div class='comment'># Hint: Think about what needs to come first...</div>";
-        streak = 0;
-        document.getElementById("h-streak").textContent = 0;
-        document.getElementById("msg").textContent = "Wrong order — try rearranging the blocks!";
-        document.getElementById("msg").style.color = "#ef4444";
+        output.innerHTML='<div class="out-error">❌ Hmm, the blocks are in the wrong order!</div><div class="out-comment"># Try again! Think about what needs to happen first.</div>';
+        lives=Math.max(0,lives-1);
+        document.getElementById("h-lives").textContent=lives;
+        document.getElementById("msg").textContent="Try a different order! You've got this! 💪";
+        document.getElementById("msg").style.color="#f59e0b";
+        if(lives<=0){
+            output.innerHTML+='<div class="out-comment"># Hint: Look at the challenge description for clues!</div>';
+            lives=3;document.getElementById("h-lives").textContent=3;
+        }
     }
 }
 
-function clearBuilder() {
-    placed = [];
-    renderPlaced();
-    clearOutput();
-    document.getElementById("drop-hint").style.display = "block";
-    document.getElementById("next-btn").style.display = "none";
-}
-
-function clearOutput() {
-    document.getElementById("output-area").innerHTML =
-        "<div class='comment'># Output will appear here when you run your code</div>";
-}
-
-function nextLevel() {
-    if (level < LEVELS.length - 1) {
-        level++;
-        loadLevel();
-    } else {
-        document.getElementById("msg").textContent = "🏆 ALL 8 LEVELS COMPLETE! You are a PQC Master! Score: " + score;
-        document.getElementById("msg").style.color = "#fbbf24";
+function nextLevel(){
+    if(level<LEVELS.length-1){level++;loadLevel();}
+    else{
+        document.getElementById("msg").textContent="🏆 YOU FINISHED ALL 8 CHALLENGES! You are a Cryptography Hero! Score: "+score;
+        document.getElementById("msg").style.color="#fbbf24";
     }
 }
 
-function showFact(text) {
-    const el = document.getElementById("fact");
-    el.textContent = "🔐 " + text;
-    el.style.display = "block";
-    if (factTimeout) clearTimeout(factTimeout);
-    factTimeout = setTimeout(() => el.style.display = "none", 8000);
+function showFact(text){
+    const el=document.getElementById("fact");
+    el.textContent="🔐 Fun Fact: "+text;
+    el.style.display="block";
+    if(factTmo)clearTimeout(factTmo);
+    factTmo=setTimeout(()=>el.style.display="none",10000);
 }
 
 loadLevel();
 </script>
 </body>
 </html>
-""", height=780)
+""", height=860)
+
+
+def render_cipher_quest():
+    """Middle School 6-8: Cipher Quest — fill in ONE blank per challenge, rest is provided."""
+    import streamlit as st
+    import streamlit.components.v1 as components
+    from modules.trial import trial_gate
+    if not trial_gate("cipher_quest", "Cipher Quest"):
+        return
+    st.subheader("🎮 Cipher Quest!")
+    st.markdown(
+        "**Fill in ONE blank per challenge** to crack the code! "
+        "Everything else is already written for you. "
+        "Learn why we need quantum-safe encryption!"
+    )
+    components.html(r"""
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:#020d14;font-family:'Segoe UI',sans-serif;color:white;}
+#wrap{max-width:560px;margin:0 auto;padding:12px;}
+.hud{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-bottom:8px;}
+.hb{background:#071520;border:1px solid #1a3a5a;border-radius:10px;padding:7px;text-align:center;font-size:10px;color:#60a5fa;}
+.hb b{display:block;font-size:15px;color:white;}
+.quest-card{background:#071520;border:2px solid #1d4ed8;border-radius:14px;padding:14px;margin-bottom:10px;}
+.quest-header{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+.quest-emoji{font-size:2rem;}
+.quest-title{font-size:14px;font-weight:bold;color:#60a5fa;}
+.diff{display:inline-block;border-radius:4px;padding:2px 8px;font-size:9px;font-weight:bold;margin-top:2px;}
+.easy{background:#059669;}.medium{background:#d97706;}.hard{background:#dc2626;}
+.quest-desc{font-size:11px;color:#94a3b8;line-height:1.7;margin-bottom:10px;
+    background:#050e1a;border-radius:8px;padding:10px;}
+.code-block{background:#020d14;border:1px solid #1a3a5a;border-radius:8px;
+    padding:10px;font-family:'Fira Code',monospace;font-size:11px;
+    color:#60a5fa;line-height:2;margin-bottom:8px;}
+.code-line{display:block;color:#60a5fa;}
+.code-comment{display:block;color:#475569;}
+.blank-wrap{display:inline-flex;align-items:center;gap:4px;}
+.blank{background:#0a1f35;border:2px solid #3b82f6;border-radius:6px;
+    color:#10b981;font-family:'Fira Code',monospace;font-size:12px;
+    padding:4px 8px;width:120px;outline:none;text-align:center;}
+.blank:focus{border-color:#60a5fa;box-shadow:0 0 8px rgba(59,130,246,0.3);}
+.run-btn{width:100%;padding:12px;background:linear-gradient(135deg,#1d4ed8,#06b6d4);
+    border:none;border-radius:10px;color:white;font-size:14px;font-weight:bold;
+    cursor:pointer;margin-bottom:6px;transition:all 0.2s;}
+.run-btn:hover{filter:brightness(1.15);}
+.hint-btn{width:100%;padding:8px;background:#7c3aed;border:none;border-radius:8px;
+    color:white;font-size:12px;cursor:pointer;margin-bottom:6px;}
+.next-btn{width:100%;padding:12px;background:linear-gradient(135deg,#059669,#10b981);
+    border:none;border-radius:10px;color:white;font-size:14px;font-weight:bold;
+    cursor:pointer;margin-bottom:8px;display:none;}
+.output{background:#020d14;border:2px solid #00ff4130;border-radius:8px;
+    padding:10px;font-family:'Fira Code',monospace;font-size:11px;
+    color:#00ff41;min-height:50px;margin-bottom:8px;line-height:1.7;}
+#msg{font-size:12px;min-height:18px;margin:4px 0;text-align:center;font-weight:bold;padding:6px;}
+#fact{background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.3);
+    border-radius:10px;padding:10px;margin:4px 0;font-size:10px;color:#93c5fd;
+    display:none;line-height:1.6;}
+.progress{display:flex;gap:5px;justify-content:center;margin:8px 0;}
+.pdot{width:13px;height:13px;border-radius:50%;background:#1e293b;border:1px solid #334155;}
+.pdot.done{background:#10b981;}.pdot.active{background:#3b82f6;}
+</style>
+</head>
+<body>
+<div id="wrap">
+<div class="hud">
+    <div class="hb">⭐ Score<br><b id="h-score">0</b></div>
+    <div class="hb">🏆 Quest<br><b id="h-level">1</b>/8</div>
+    <div class="hb">🔥 Streak<br><b id="h-streak">0</b></div>
+</div>
+<div class="progress" id="prog"></div>
+
+<div class="quest-card" id="quest-card">
+    <div class="quest-header">
+        <div class="quest-emoji" id="q-emoji">🔐</div>
+        <div>
+            <div class="quest-title" id="q-title">Quest 1</div>
+            <span class="diff easy" id="q-diff">EASY</span>
+        </div>
+    </div>
+    <div class="quest-desc" id="q-desc"></div>
+    <div class="code-block" id="code-block"></div>
+    <button class="run-btn" onclick="runQuest()">▶ Run Code!</button>
+    <button class="hint-btn" onclick="showHint()">💡 Show Hint (-25 pts)</button>
+    <button class="next-btn" id="next-btn" onclick="nextQuest()">Next Quest →</button>
+    <div class="output" id="output"># Output shows here when you run!</div>
+</div>
+
+<div id="msg"></div>
+<div id="fact"></div>
+</div>
+
+<script>
+const QUESTS=[
+    {
+        emoji:"🔤",title:"Decode ROT13",diff:"easy",
+        desc:"The enemy scrambled a message using ROT13 — each letter is shifted by 13 places. Fill in the shift number to decode it!",
+        before:"# ROT13 decoder\nmessage = 'URYYB JBEYQ'\nshift = ",
+        blank:"13",
+        after:"\nresult = ''\nfor c in message:\n    if c.isalpha():\n        result += chr((ord(c) - 65 + (26-shift)) % 26 + 65)\n    else:\n        result += c\nprint('Decoded:', result)",
+        hint:"ROT13 uses a shift of 13. The answer is just the number 13!",
+        check:"13",
+        output:"> Decoding message...\n> Applying shift of 13...\n> Decoded: HELLO WORLD\n> ✅ ROT13 cracked! (took 0.001 seconds)",
+        fact:"ROT13 has only 26 possible keys — a computer tries all of them instantly! Kyber has 2^256 possible keys — even quantum computers cannot try them all!"
+    },
+    {
+        emoji:"➕",title:"Modular Math",diff:"easy",
+        desc:"Modular math (mod) is the foundation of Kyber! Compute 22 mod 11. Fill in the modulus number.",
+        before:"# Modular arithmetic — the math inside Kyber!\nnumber = 22\nmodulus = ",
+        blank:"11",
+        after:"\nresult = number % modulus\nprint('22 mod', modulus, '=', result)\nprint('This is one step in Kyber key generation!')",
+        hint:"22 ÷ 11 = 2 with remainder 0. The modulus is 11!",
+        check:"11",
+        output:"> Computing 22 mod 11...\n> 22 ÷ 11 = 2 remainder 0\n> 22 mod 11 = 0\n> ✅ This is one step in Kyber key generation!",
+        fact:"Kyber uses modular math with huge numbers (q=3329) and 256-dimensional polynomials. The modular math makes it impossible to reverse-engineer the secret key!"
+    },
+    {
+        emoji:"🔢",title:"Count the Keys",diff:"easy",
+        desc:"Caesar cipher has only 25 possible keys. Fill in 25 to make the loop try all of them!",
+        before:"# Brute force Caesar cipher\nciphertext = 'Khoor'\nfor shift in range(1, ",
+        blank:"26",
+        after:"):\n    decoded = ''\n    for c in ciphertext:\n        if c.isalpha():\n            base = 65 if c.isupper() else 97\n            decoded += chr((ord(c) - base - shift) % 26 + base)\n        else:\n            decoded += c\n    if shift == 3:\n        print('Shift', shift, ':', decoded, '← THE ANSWER!')\nprint('Done! Caesar has only 25 keys.')",
+        hint:"We want to try shifts 1 through 25, so range(1, 26) goes up to but not including 26!",
+        check:"26",
+        output:"> Trying all 25 Caesar shifts...\n> Shift 1 : Jgnnq\n> Shift 2 : Ifmmp\n> Shift 3 : Hello ← THE ANSWER!\n> ...\n> Done! Caesar has only 25 keys.\n> ✅ Cracked in 0.001 seconds!",
+        fact:"A computer cracks Caesar in 0.001 seconds. RSA-2048 takes millions of years classically — but Shor's Algorithm on a quantum computer cracks it in seconds! Kyber is immune to both!"
+    },
+    {
+        emoji:"#️⃣",title:"SHA-3 Hash",diff:"medium",
+        desc:"SHA-3 is the hash function inside SPHINCS+. Hash the word 'kyber' using sha3_256. Fill in the algorithm name!",
+        before:"# SHA-3 hashing — used in SPHINCS+ (FIPS 205)\nimport hashlib\nword = 'kyber'\nhash_result = hashlib.",
+        blank:"sha3_256",
+        after:"(word.encode()).hexdigest()\nprint('Word:', word)\nprint('Hash:', hash_result[:32], '...')\nprint('Length:', len(hash_result), 'characters')",
+        hint:"The function name is sha3_256 (SHA-3 with 256 bits of output)!",
+        check:"sha3_256",
+        output:"> Hashing 'kyber' with SHA-3...\n> Word: kyber\n> Hash: 3338be694f50c5f338814986cdf06864 ...\n> Length: 64 characters\n> ✅ SHA-3 hash complete! One-way — impossible to reverse!",
+        fact:"SHA-3 is completely one-way — you cannot reverse a hash to find the original word. SPHINCS+ chains thousands of SHA-3 hashes together to create quantum-safe digital signatures!"
+    },
+    {
+        emoji:"🧮",title:"LWE Equation",diff:"medium",
+        desc:"Learning With Errors (LWE) is the math behind Kyber! Compute b = (7 × s + e) mod q. Fill in the secret s=3!",
+        before:"# LWE — the math that makes Kyber quantum-safe!\nA = 7      # public number\ne = 1      # small noise\nq = 11     # modulus\ns = ",
+        blank:"3",
+        after:"      # SECRET — this is what we protect!\nb = (A * s + e) % q\nprint('A =', A, '(public)')\nprint('s =', s, '(SECRET — hidden!)')\nprint('e =', e, '(noise — hides the secret)')\nprint('b =', b, '(public — safe to share)')\nprint('Can you find s from just A and b? Impossible!')",
+        hint:"The secret s = 3. Just type the number 3!",
+        check:"3",
+        output:"> Computing LWE equation...\n> A = 7 (public)\n> s = 3 (SECRET — hidden!)\n> e = 1 (noise — hides the secret)\n> (7 × 3 + 1) mod 11 = 22 mod 11 = 0... wait: 22 mod 11 = 0\n> b = 0 (public — safe to share)\n> ✅ Can you find s from just A=7 and b=0? Impossible!",
+        fact:"Real Kyber uses 256 of these equations simultaneously with much bigger numbers. Finding s from A and b is called the LWE problem — it's mathematically proven to be quantum-hard!"
+    },
+    {
+        emoji:"🔑",title:"Key Size Check",diff:"medium",
+        desc:"Kyber-768 has a public key of 1184 bytes. Fill in the number to check if it's big enough to be quantum-safe!",
+        before:"# Key sizes matter for quantum security!\nrsa_key_bytes = 256      # RSA-2048 = 256 bytes\nkyber_key_bytes = ",
+        blank:"1184",
+        after:"  # Kyber-768 public key\nif kyber_key_bytes > rsa_key_bytes:\n    print('Kyber key is larger but QUANTUM-SAFE!')\n    print('RSA:', rsa_key_bytes, 'bytes — broken by Shor')\n    print('Kyber:', kyber_key_bytes, 'bytes — quantum immune!')\n    print('Worth the extra size for quantum safety!')",
+        hint:"Kyber-768 public key = 1184 bytes. Type 1184!",
+        check:"1184",
+        output:"> Comparing key sizes...\n> Kyber key is larger but QUANTUM-SAFE!\n> RSA: 256 bytes — broken by Shor's Algorithm\n> Kyber: 1184 bytes — quantum immune!\n> Worth the extra size for quantum safety!\n> ✅ Kyber wins!",
+        fact:"Kyber keys are 3-5x larger than RSA keys, but they're completely immune to quantum attacks. The NSM-10 law requires all US government systems to switch to Kyber by 2035!"
+    },
+    {
+        emoji:"🌊",title:"Shor's Threat",diff:"hard",
+        desc:"Shor's Algorithm finds prime factors. RSA uses two primes p=53 and q=61. Their product n=3233 is the RSA key. Fill in p×q!",
+        before:"# Why RSA is vulnerable to quantum computers\n# RSA key: n = p × q (two secret primes)\np = 53    # secret prime 1\nq = 61    # secret prime 2\nn = ",
+        blank:"p * q",
+        after:"\nprint('RSA key n =', n)\nprint('Classical computer: millions of years to factor', n)\nprint('Quantum Shor Algorithm: finds p and q instantly!')\nprint('p =', p, ', q =', q)\nprint('This is why we NEED Kyber (ML-KEM FIPS 203)!')",
+        hint:"n = p times q, so write p * q in Python!",
+        check:"p * q",
+        output:"> Computing RSA key...\n> RSA key n = 3233\n> Classical computer: millions of years to factor 3233\n> Quantum Shor Algorithm: finds p and q instantly!\n> p = 53 , q = 61\n> This is why we NEED Kyber (ML-KEM FIPS 203)!\n> ✅ RSA is broken by quantum — Kyber is safe!",
+        fact:"Real RSA uses primes with 150+ digits. Classical computers need millions of years to factor them. Shor's Algorithm on a quantum computer finds the factors in seconds — that's why NIST chose Kyber!"
+    },
+    {
+        emoji:"🏆",title:"PQC Champion!",diff:"hard",
+        desc:"Name all 4 NIST post-quantum standards! Fill in the missing FIPS number for Falcon (FN-DSA)!",
+        before:"# All 4 NIST Post-Quantum Standards (2024)\nnist_standards = [\n    ('ML-KEM',  'FIPS 203', 'Kyber — key exchange'),\n    ('ML-DSA',  'FIPS 204', 'Dilithium — signatures'),\n    ('SLH-DSA', 'FIPS 205', 'SPHINCS+ — hash backup'),\n    ('FN-DSA',  'FIPS ",
+        blank:"206",
+        after:"', 'Falcon — tiny signatures'),\n]\nfor name, fips, desc in nist_standards:\n    print(fips, '-', name, ':', desc)\nprint('All 4 quantum-safe standards deployed!')\nprint('The internet is protected!')",
+        hint:"The 4 FIPS numbers are 203, 204, 205, and 206. Falcon is the last one!",
+        check:"206",
+        output:"> NIST Post-Quantum Standards 2024:\n> FIPS 203 - ML-KEM : Kyber — key exchange\n> FIPS 204 - ML-DSA : Dilithium — signatures\n> FIPS 205 - SLH-DSA : SPHINCS+ — hash backup\n> FIPS 206 - FN-DSA : Falcon — tiny signatures\n> All 4 quantum-safe standards deployed!\n> ✅ The internet is protected!",
+        fact:"You just named all 4 NIST post-quantum cryptography standards! These were finalized in August 2024 and will replace all RSA and elliptic curve encryption by 2035. You are a PQC expert!"
+    },
+];
+
+let level=0,score=0,streak=0,hintUsed=false,factTmo=null,results=[];
+
+function buildProgress(){
+    const d=document.getElementById("prog");
+    d.innerHTML="";
+    for(let i=0;i<QUESTS.length;i++){
+        const dot=document.createElement("div");
+        dot.className="pdot"+(results[i]==="done"?" done":i===level?" active":"");
+        d.appendChild(dot);
+    }
+}
+
+function loadQuest(){
+    const q=QUESTS[level];
+    document.getElementById("q-emoji").textContent=q.emoji;
+    document.getElementById("q-title").textContent="Quest "+(level+1)+": "+q.title;
+    document.getElementById("q-diff").textContent=q.diff.toUpperCase();
+    document.getElementById("q-diff").className="diff "+q.diff;
+    document.getElementById("q-desc").textContent=q.desc;
+    document.getElementById("h-level").textContent=(level+1);
+    hintUsed=false;
+
+    // Build code block with input
+    const cb=document.getElementById("code-block");
+    const lines=(q.before+"\u2588\u2588\u2588"+q.after).split("\n");
+    cb.innerHTML="";
+
+    let inputInserted=false;
+    (q.before+"\n__BLANK__\n"+q.after).split("\n").forEach(line=>{
+        if(line==="__BLANK__"){
+            if(!inputInserted){
+                const span=document.createElement("span");
+                span.className="blank-wrap";
+                span.innerHTML='<input class="blank" id="blank-input" placeholder="???" />';
+                cb.appendChild(span);
+                cb.appendChild(document.createElement("br"));
+                inputInserted=true;
+            }
+        } else {
+            const span=document.createElement("span");
+            span.className=line.trim().startsWith("#")?"code-comment":"code-line";
+            span.textContent=line;
+            cb.appendChild(span);
+            cb.appendChild(document.createElement("br"));
+        }
+    });
+
+    // Actually rebuild cleanly
+    cb.innerHTML="";
+    const before_lines=q.before.split("\n");
+    before_lines.forEach(line=>{
+        const span=document.createElement("span");
+        span.className=line.trim().startsWith("#")?"code-comment":"code-line";
+        span.textContent=line;
+        cb.appendChild(span);
+        cb.appendChild(document.createElement("br"));
+    });
+    // Add input
+    const inputSpan=document.createElement("span");
+    inputSpan.className="blank-wrap";
+    inputSpan.innerHTML='<input class="blank" id="blank-input" placeholder="fill in!" />';
+    cb.appendChild(inputSpan);
+    // After lines
+    const after_lines=q.after.split("\n");
+    after_lines.forEach(line=>{
+        cb.appendChild(document.createElement("br"));
+        const span=document.createElement("span");
+        span.className=line.trim().startsWith("#")?"code-comment":"code-line";
+        span.textContent=line;
+        cb.appendChild(span);
+    });
+
+    document.getElementById("output").textContent="# Output shows here when you run!";
+    document.getElementById("output").style.color="#00ff41";
+    document.getElementById("next-btn").style.display="none";
+    document.getElementById("msg").textContent="";
+    document.getElementById("fact").style.display="none";
+    buildProgress();
+}
+
+function runQuest(){
+    const q=QUESTS[level];
+    const input=(document.getElementById("blank-input")||{value:""}).value.trim();
+    const output=document.getElementById("output");
+
+    if(!input){output.textContent="# Type your answer in the blank first!";return;}
+
+    if(input===q.check){
+        const hintPen=hintUsed?25:0;
+        const pts=150*(level+1)-hintPen;
+        score+=pts;streak++;
+        results[level]="done";
+        output.textContent=q.output;
+        output.style.color="#00ff41";
+        document.getElementById("h-score").textContent=score;
+        document.getElementById("h-streak").textContent=streak;
+        document.getElementById("msg").textContent="✅ Correct! +"+pts+" pts!"+(streak>1?" 🔥×"+streak:"");
+        document.getElementById("msg").style.color="#10b981";
+        document.getElementById("next-btn").style.display="block";
+        showFact(q.fact);
+        buildProgress();
+    } else {
+        output.textContent="❌ Not quite! Try again.\n# Hint: "+q.hint;
+        output.style.color="#ef4444";
+        streak=0;
+        document.getElementById("h-streak").textContent=0;
+        document.getElementById("msg").textContent="Close! Read the description again. 💪";
+        document.getElementById("msg").style.color="#f59e0b";
+    }
+}
+
+function showHint(){
+    const q=QUESTS[level];
+    hintUsed=true;
+    score=Math.max(0,score-25);
+    document.getElementById("output").textContent="💡 Hint: "+q.hint;
+    document.getElementById("output").style.color="#a78bfa";
+    document.getElementById("h-score").textContent=score;
+}
+
+function nextQuest(){
+    if(level<QUESTS.length-1){level++;loadQuest();}
+    else{
+        document.getElementById("msg").textContent="🏆 ALL 8 QUESTS COMPLETE! PQC Champion! Score: "+score;
+        document.getElementById("msg").style.color="#fbbf24";
+    }
+}
+
+function showFact(text){
+    const el=document.getElementById("fact");
+    el.textContent="🔐 Did you know? "+text;
+    el.style.display="block";
+    if(factTmo)clearTimeout(factTmo);
+    factTmo=setTimeout(()=>el.style.display="none",10000);
+}
+
+loadQuest();
+</script>
+</body>
+</html>
+""", height=820)
 
 
 def render_pqc_python_lab():
-    """High School 9-12: PQC Python Lab — write real Python code to implement PQC concepts."""
+    """High School 9-12: PQC Python Lab — guided real Python with step-by-step comments."""
     import streamlit as st
     from modules.trial import trial_gate
     if not trial_gate("pqc_python_lab", "PQC Python Lab"):
         return
     st.subheader("🐍 PQC Python Lab")
     st.markdown(
-        "**Write real Python code** to implement post-quantum cryptography! "
-        "Each challenge teaches actual LWE math, hashing, and key generation. "
-        "The AI evaluates your solution."
+        "**Write real Python code** to learn post-quantum cryptography! "
+        "Every challenge has step-by-step comments guiding you through the code. "
+        "Run your code and see the real output!"
     )
 
     challenges = [
         {
-            "id": 1,
-            "title": "Caesar Cipher Breaker",
-            "difficulty": "Easy",
-            "desc": "Write Python to brute-force a Caesar cipher. This shows why simple ciphers fail — then we'll see why Kyber is different.",
-            "starter": "def break_caesar(ciphertext):\n    # Try all 25 possible shifts\n    # Return the decrypted text\n    for shift in range(1, 26):\n        # YOUR CODE HERE\n        pass\n\nresult = break_caesar('Khoor Zruog')\nprint(result)",
-            "solution_hint": "Use chr((ord(c) - shift - 65) % 26 + 65) for uppercase letters",
-            "expected": "Hello World",
-            "fact": "Caesar cipher: 25 keys. Kyber has 2^128 keys even against quantum. That's why we need post-quantum crypto!",
+            "id": 1, "title": "Caesar Cipher Decoder", "difficulty": "🟢 Beginner",
+            "concept": "Why simple ciphers fail",
+            "desc": "Decode a Caesar cipher by trying all 25 shifts. This shows why old ciphers are weak — then we'll learn what makes Kyber strong.",
+            "starter": """# CHALLENGE 1: Decode a Caesar Cipher
+# A Caesar cipher shifts each letter by a fixed amount
+# Caesar only has 25 possible shifts — easy to crack!
+
+ciphertext = 'Khoor Zruog'  # This is a hidden message!
+
+# Step 1: Loop through all possible shifts (1 to 25)
+for shift in range(1, 26):
+    decoded = ''
+    
+    # Step 2: Decode each character
+    for c in ciphertext:
+        if c.isalpha():
+            # Step 3: Shift the letter back
+            base = 65 if c.isupper() else 97
+            decoded += chr((ord(c) - base - shift) % 26 + base)
+        else:
+            decoded += c  # Keep spaces and punctuation
+    
+    # Step 4: Print each attempt
+    print(f'Shift {shift:2d}: {decoded}')
+
+print('\\nOnly one of these makes sense — that is the answer!')
+print('Kyber has 2^256 keys, not just 25 — impossible to brute force!')""",
+            "hint": "Just run the code as-is! All the logic is already there. Look for the shift that produces a real English phrase.",
+            "expected_output": "Hello World",
+            "fact": "Caesar cipher: 25 keys, cracked in milliseconds. Kyber: 2^256 keys, quantum computers still cannot crack it. That's a difference of about 10^77 times harder!",
         },
         {
-            "id": 2,
-            "title": "LWE Baby Step",
-            "difficulty": "Medium",
-            "desc": "Implement a baby LWE problem. Given A=[3,5,7], s=4, q=11, compute b = (A*s + noise) mod q with noise=[1,0,2]",
-            "starter": "def lwe_compute(A, s, e, q):\n    # Compute b[i] = (A[i] * s + e[i]) mod q\n    b = []\n    for i in range(len(A)):\n        # YOUR CODE HERE\n        pass\n    return b\n\nA = [3, 5, 7]\ns = 4\ne = [1, 0, 2]\nq = 11\nb = lwe_compute(A, s, e, q)\nprint('b =', b)  # Expected: [2, 9, 2]",
-            "solution_hint": "b[i] = (A[i] * s + e[i]) % q",
-            "expected": "[2, 9, 2]",
-            "fact": "This is the core math of Kyber! Real Kyber uses 256-dimensional vectors. Finding s from b and A is computationally infeasible even with quantum computers.",
+            "id": 2, "title": "LWE Math Core", "difficulty": "🟢 Beginner",
+            "concept": "The math inside Kyber",
+            "desc": "Implement Learning With Errors (LWE) — the mathematical foundation of Kyber. This is the actual math that makes Kyber quantum-safe!",
+            "starter": """# CHALLENGE 2: Learning With Errors (LWE)
+# This is the REAL math inside Kyber (ML-KEM FIPS 203)!
+# LWE: given A and b, find s — even quantum computers can't do it!
+
+import random
+
+# === SETUP ===
+q = 11          # Modulus (Kyber uses q = 3329)
+s = 3           # SECRET — this is what we're protecting
+A = [7, 5, 2]   # Public matrix (random numbers)
+e = [1, 0, 1]   # Small noise/error (makes it hard to solve)
+
+# === COMPUTE PUBLIC KEY ===
+# b[i] = (A[i] * s + e[i]) mod q
+# This hides s inside the math!
+b = []
+for i in range(len(A)):
+    value = (A[i] * s + e[i]) % q
+    b.append(value)
+    print(f'b[{i}] = ({A[i]} × {s} + {e[i]}) mod {q} = {A[i]*s+e[i]} mod {q} = {value}')
+
+print(f'\\nPublic key b = {b}')
+print(f'Anyone can see A = {A} and b = {b}')
+print(f'But s = {s} is HIDDEN — try to find it just from A and b!')
+print('\\nThis is why Kyber is quantum-safe: LWE is mathematically proven hard!')""",
+            "hint": "Just run this code — everything is already written! Observe how b hides the secret s.",
+            "expected_output": "Public key b",
+            "fact": "Real Kyber uses 256-dimensional polynomial rings instead of simple lists, making it exponentially harder. NIST proved in 2024 that M-LWE cannot be solved even by quantum computers!",
         },
         {
-            "id": 3,
-            "title": "SHA-3 Avalanche",
-            "difficulty": "Medium",
-            "desc": "Use Python's hashlib to demonstrate the SHA-3 avalanche effect. Hash 'hello' and 'hellO' and count how many hex characters differ.",
-            "starter": "import hashlib\n\ndef sha3_hash(text):\n    return hashlib.sha3_256(text.encode()).hexdigest()\n\nhash1 = sha3_hash('hello')\nhash2 = sha3_hash('hellO')\n\n# Count differing characters\ndiff = sum(1 for a, b in zip(hash1, hash2) if a != b)\nprint('Hash 1:', hash1[:16] + '...')\nprint('Hash 2:', hash2[:16] + '...')\nprint('Characters different:', diff, 'out of', len(hash1))\nprint('Avalanche %:', round(diff/len(hash1)*100), '%')",
-            "solution_hint": "This code is already complete — just run it!",
-            "expected": "Avalanche",
-            "fact": "SHA-3 avalanche effect: changing 1 character changes ~50% of all output bits. SPHINCS+ (FIPS 205) chains thousands of SHA-3 hashes to build quantum-safe signatures!",
+            "id": 3, "title": "SHA-3 Avalanche Effect", "difficulty": "🟡 Intermediate",
+            "concept": "How SPHINCS+ stays quantum-safe",
+            "desc": "Demonstrate the SHA-3 avalanche effect. Change ONE character in a message and watch the entire hash change completely. This is why SPHINCS+ is quantum-safe!",
+            "starter": """# CHALLENGE 3: SHA-3 Avalanche Effect
+# SHA-3 is the hash function inside SPHINCS+ (SLH-DSA FIPS 205)
+# Avalanche effect: change 1 bit → ~50% of output changes!
+
+import hashlib
+
+def sha3_hash(text):
+    # Hash any text with SHA-3 (256-bit output)
+    return hashlib.sha3_256(text.encode()).hexdigest()
+
+# === TEST THE AVALANCHE EFFECT ===
+message1 = 'hello quantum world'   # Original message
+message2 = 'Hello quantum world'   # Changed ONE letter (capital H)!
+
+hash1 = sha3_hash(message1)
+hash2 = sha3_hash(message2)
+
+print('Original message :', message1)
+print('Modified message :', message2)
+print('(Only the H changed!)')
+print()
+print('Hash 1:', hash1)
+print('Hash 2:', hash2)
+print()
+
+# Count how many characters are different
+different = sum(1 for a, b in zip(hash1, hash2) if a != b)
+percentage = round(different / len(hash1) * 100)
+
+print(f'Different characters: {different} out of {len(hash1)}')
+print(f'Avalanche effect: {percentage}% of hash changed!')
+print()
+print('SPHINCS+ chains thousands of these hashes together.')
+print('Even quantum computers cannot fake or reverse SHA-3!')""",
+            "hint": "Run this code as-is! The avalanche effect will show you that changing 1 character changes roughly 50% of the hash output.",
+            "expected_output": "Avalanche effect",
+            "fact": "SHA-3 uses a sponge construction (Keccak) that's completely different from SHA-2. Grover's Algorithm gives quantum a 2x speedup, but SHA3-256 still has 128-bit quantum security — enough for FIPS 205!",
         },
         {
-            "id": 4,
-            "title": "Modular Arithmetic",
-            "difficulty": "Medium",
-            "desc": "Implement modular exponentiation — the math behind RSA. Then show why it's quantum-vulnerable.",
-            "starter": "def mod_exp(base, exp, mod):\n    # Implement fast modular exponentiation\n    # base^exp mod mod\n    result = 1\n    base = base % mod\n    while exp > 0:\n        if exp % 2 == 1:\n            result = (result * base) % mod\n        exp = exp // 2\n        base = (base * base) % mod\n    return result\n\n# RSA uses: c = m^e mod n\nm = 42  # message\ne = 17  # public exponent\nn = 3233  # p*q where p=53, q=61\nc = mod_exp(m, e, n)\nprint('Encrypted:', c)\n# Decrypt: m = c^d mod n where d=2753\nd = 2753\ndecrypted = mod_exp(c, d, n)\nprint('Decrypted:', decrypted)\nprint('Correct:', decrypted == m)",
-            "solution_hint": "This code is already complete — run it and observe!",
-            "expected": "Correct: True",
-            "fact": "RSA security depends on factoring n=3233 into p=53 and q=61. Classical: hard. Shor's Algorithm on quantum computer: trivial. That's why NIST replaced RSA with Kyber!",
+            "id": 4, "title": "RSA vs Kyber Key Sizes", "difficulty": "🟡 Intermediate",
+            "concept": "Why key sizes matter",
+            "desc": "Compare RSA and Kyber key sizes and security levels. Understand why we need to migrate before quantum computers arrive.",
+            "starter": """# CHALLENGE 4: RSA vs Kyber Security Comparison
+# Understanding why we NEED to migrate to post-quantum crypto
+
+# === KEY SIZE DATA ===
+algorithms = [
+    # (Name, Key Size bytes, Classical Security bits, Quantum Security bits)
+    ('RSA-2048',    256,  112, 0),    # 0 quantum bits = broken by Shor!
+    ('RSA-4096',    512,  140, 0),    # Still 0 quantum security!
+    ('ECDSA-256',    32,  128, 0),    # Elliptic curve also broken!
+    ('Kyber-512',   800,  128, 128),  # FIPS 203 Level 1
+    ('Kyber-768',  1184,  192, 128),  # FIPS 203 Level 3 (recommended)
+    ('Kyber-1024', 1568,  256, 256),  # FIPS 203 Level 5 (top security)
+]
+
+print('=' * 65)
+print(f'{"Algorithm":<14} {"Key(bytes)":>10} {"Classical":>10} {"Quantum":>10}')
+print('=' * 65)
+
+for name, key_size, classical_bits, quantum_bits in algorithms:
+    status = '✅ SAFE' if quantum_bits > 0 else '❌ BROKEN'
+    print(f'{name:<14} {key_size:>10} {classical_bits:>9}b {quantum_bits:>9}b  {status}')
+
+print('=' * 65)
+print()
+print('RSA quantum security = 0 because Shor\\'s Algorithm solves it!')
+print('Kyber quantum security = 128+ bits because M-LWE is quantum-hard!')
+print()
+print('US agencies must migrate to Kyber by 2035 (NSM-10 mandate).')
+print('The clock is ticking — migrate NOW before quantum computers arrive!')""",
+            "hint": "Run this code as-is! Study the table carefully — notice how all RSA/ECDSA algorithms have 0 quantum security bits.",
+            "expected_output": "quantum-hard",
+            "fact": "NSM-10 (National Security Memorandum 10) requires ALL US federal agencies to migrate from RSA to Kyber and other NIST PQC standards by 2035. The professionals doing this migration are in classrooms today!",
         },
         {
-            "id": 5,
-            "title": "LWE Key Generation",
-            "difficulty": "Hard",
-            "desc": "Implement a simplified Kyber-style key generation using LWE. Generate a random matrix A, secret s, error e, and compute public key b.",
-            "starter": "import random\n\ndef generate_lwe_keys(n=4, q=97):\n    # Generate random matrix A (n x n)\n    A = [[random.randint(0, q-1) for _ in range(n)] for _ in range(n)]\n    \n    # Generate secret vector s\n    s = [random.randint(0, 2) for _ in range(n)]\n    \n    # Generate small error vector e\n    e = [random.randint(0, 1) for _ in range(n)]\n    \n    # Compute public key b = A*s + e (mod q)\n    # YOUR CODE HERE: compute b\n    b = []\n    for i in range(n):\n        val = sum(A[i][j] * s[j] for j in range(n))\n        b.append((val + e[i]) % q)\n    \n    return {'public': (A, b), 'secret': s}\n\nkeys = generate_lwe_keys()\nprint('Secret key s:', keys['secret'])\nprint('Public key b:', keys['public'][1])\nprint('Matrix A (first row):', keys['public'][0][0])\nprint('Keys generated! ✅')",
-            "solution_hint": "b[i] = (sum(A[i][j]*s[j] for j in range(n)) + e[i]) % q",
-            "expected": "Keys generated! ✅",
-            "fact": "This is simplified Kyber key generation! Real ML-KEM uses 256-dimensional polynomial rings instead of vectors, making it even harder to break. NIST standardized this as FIPS 203 in 2024!",
+            "id": 5, "title": "Build a Mini Key Exchange", "difficulty": "🔴 Advanced",
+            "concept": "How Kyber protects the internet",
+            "desc": "Simulate how Kyber key exchange works. Alice and Bob agree on a shared secret without ever sending it — even if someone intercepts every message, they cannot find the secret!",
+            "starter": """# CHALLENGE 5: Mini Kyber Key Exchange Simulation
+# This shows HOW Kyber protects HTTPS, VPNs, and encrypted messaging
+
+import random
+
+# === SETUP: Public parameters (everyone knows these) ===
+q = 97        # Modulus
+n = 4         # Dimensions (real Kyber uses n=256)
+random.seed(42)
+
+def dot_product_mod(v1, v2, q):
+    '''Compute dot product of two vectors mod q'''
+    return sum(v1[i] * v2[i] for i in range(len(v1))) % q
+
+# === ALICE generates her key pair ===
+print('=== ALICE (SERVER) ===')
+# Alice's secret key (never shared!)
+alice_secret = [random.randint(0, 2) for _ in range(n)]
+# Public matrix A (everyone sees this)
+A = [[random.randint(0, q-1) for _ in range(n)] for _ in range(n)]
+# Alice's public key: b = A*s + small_error (mod q)
+alice_error = [random.randint(0, 1) for _ in range(n)]
+alice_public = [(dot_product_mod(A[i], alice_secret, q) + alice_error[i]) % q for i in range(n)]
+print(f'Alice secret key: {alice_secret} (NEVER SHARED)')
+print(f'Alice public key: {alice_public} (broadcast to world)')
+
+# === BOB sends an encrypted message ===
+print()
+print('=== BOB (CLIENT) ===')
+bob_secret = [random.randint(0, 2) for _ in range(n)]
+bob_error = [random.randint(0, 1) for _ in range(n)]
+# Bob computes a shared value using Alice's public key
+shared_approx = (dot_product_mod(alice_public, bob_secret, q) + bob_error[0]) % q
+print(f'Bob computes shared value: {shared_approx}')
+
+# === ALICE recovers the shared secret ===
+print()
+print('=== KEY AGREEMENT ===')
+alice_recover = dot_product_mod(alice_secret, bob_secret, q)
+print(f'Alice recovers: {alice_recover}')
+print(f'Values close: {abs(shared_approx - alice_recover) < 5}')
+print()
+print('KEY EXCHANGE COMPLETE!')
+print('Alice and Bob now share a secret nobody else knows.')
+print('Even if an attacker saw everything, they cannot compute the secret!')
+print('This is how Kyber protects HTTPS connections in your browser!')""",
+            "hint": "Run this code! The output shows Alice and Bob establishing a shared secret. The key insight: an eavesdropper sees alice_public and bob messages, but cannot compute the shared secret without alice_secret.",
+            "expected_output": "KEY EXCHANGE COMPLETE",
+            "fact": "Google Chrome and Cloudflare already use X25519+Kyber hybrid key exchange in TLS 1.3, protecting ~20% of all internet traffic! This code simulates the exact concept, just simplified for learning.",
         },
     ]
 
@@ -9991,389 +10445,95 @@ def render_pqc_python_lab():
     idx = min(st.session_state.lab_level, len(challenges)-1)
     ch = challenges[idx]
 
+    # Progress bar
+    progress = (idx) / len(challenges)
+    st.progress(progress)
+
     col1, col2, col3 = st.columns(3)
     col1.metric("⭐ Score", st.session_state.lab_score)
-    col2.metric("🏆 Level", str(idx+1) + "/" + str(len(challenges)))
-    col3.metric("🎯 Difficulty", ch["difficulty"])
+    col2.metric("🏆 Challenge", str(idx+1) + "/" + str(len(challenges)))
+    col3.metric("📊 Level", ch["difficulty"])
 
-    st.markdown(f"### Challenge {ch['id']}: {ch['title']}")
-    st.markdown(f"**{ch['desc']}**")
+    st.markdown(f"### {ch['id']}. {ch['title']}")
+    st.markdown(f"**Concept:** {ch['concept']}")
+    st.info(ch["desc"])
 
-    if ch["difficulty"] == "Easy":
-        st.success("🟢 Easy — great starting point!")
-    elif ch["difficulty"] == "Medium":
-        st.warning("🟡 Medium — requires Python knowledge")
-    else:
-        st.error("🔴 Hard — advanced Python + math")
+    # Show all challenge navigation
+    cols = st.columns(len(challenges))
+    for i, c in enumerate(challenges):
+        status = "✅" if i < idx else ("🔵" if i == idx else "⬜")
+        cols[i].markdown(f"<div style='text-align:center;font-size:10px;color:#475569'>{status}<br>Ch.{i+1}</div>", unsafe_allow_html=True)
+
+    st.markdown("---")
+    st.markdown("#### ✏️ Your Code:")
+    st.markdown("<div style='font-size:11px;color:#475569;margin-bottom:4px'>📌 Read the comments — they guide you step by step!</div>", unsafe_allow_html=True)
 
     code = st.text_area(
-        "✏️ Write your Python code:",
+        "Python code:",
         value=ch["starter"],
-        height=250,
-        key="lab_code_" + str(idx)
+        height=320,
+        key="lab_code_" + str(idx),
+        label_visibility="collapsed"
     )
 
-    col_a, col_b, col_c = st.columns(3)
+    col_a, col_b, col_c = st.columns([2,1,1])
     with col_a:
-        run = st.button("▶ Run Code", type="primary", use_container_width=True, key="lab_run_"+str(idx))
+        run = st.button("▶ Run Code", type="primary", use_container_width=True, key="run_"+str(idx))
     with col_b:
-        hint = st.button("💡 Hint", use_container_width=True, key="lab_hint_"+str(idx))
+        hint_btn = st.button("💡 Hint", use_container_width=True, key="hint_"+str(idx))
     with col_c:
         if idx < len(challenges)-1:
-            nxt = st.button("Next Challenge →", use_container_width=True, key="lab_next_"+str(idx))
+            nxt = st.button("Next →", use_container_width=True, key="next_"+str(idx))
         else:
             nxt = False
 
-    if hint:
-        st.info("💡 " + ch["solution_hint"])
+    if hint_btn:
+        st.info("💡 " + ch["hint"])
 
     if run:
+        import io, contextlib
         try:
-            import io, contextlib
-            output = io.StringIO()
+            output_buf = io.StringIO()
             safe_globals = {
                 "__builtins__": {
-                    "print": print, "range": range, "len": len,
-                    "sum": sum, "zip": zip, "round": round,
-                    "chr": chr, "ord": ord, "str": str, "int": int,
-                    "list": list, "dict": dict, "enumerate": enumerate,
-                    "abs": abs, "min": min, "max": max, "True": True,
-                    "False": False, "None": None,
+                    "print": lambda *a,**k: print(*a,**k, file=output_buf),
+                    "range": range, "len": len, "sum": sum, "zip": zip,
+                    "round": round, "chr": chr, "ord": ord, "str": str,
+                    "int": int, "float": float, "list": list, "dict": dict,
+                    "enumerate": enumerate, "abs": abs, "min": min, "max": max,
+                    "True": True, "False": False, "None": None,
+                    "f": None,
                 },
                 "hashlib": __import__("hashlib"),
                 "random": __import__("random"),
             }
-            with contextlib.redirect_stdout(output):
-                exec(code, safe_globals)
-            result = output.getvalue()
-            st.code(result, language="text")
-
-            if ch["expected"].lower() in result.lower() or len(result) > 10:
-                pts = 150 * (idx + 1)
-                st.session_state.lab_score += pts
-                st.success("✅ Great work! +" + str(pts) + " pts!")
-                st.info("🔐 " + ch["fact"])
+            exec(code, safe_globals)
+            result = output_buf.getvalue()
+            if result:
+                st.code(result, language="text")
+                if ch["expected_output"].lower() in result.lower() or len(result) > 30:
+                    pts = 200 * (idx + 1)
+                    st.session_state.lab_score += pts
+                    st.success("🎉 Excellent work! +" + str(pts) + " pts!")
+                    st.info("🔐 " + ch["fact"])
+                    if idx < len(challenges) - 1:
+                        if st.button("🚀 Continue to Challenge " + str(idx+2), type="primary", key="auto_next_"+str(idx)):
+                            st.session_state.lab_level = idx + 1
+                            st.rerun()
+                else:
+                    st.warning("Code ran! Check the output matches what's expected.")
             else:
-                st.warning("Code ran but check your output matches the expected result!")
+                st.warning("Code ran but produced no output. Make sure you have print() statements!")
         except Exception as ex:
             st.error("❌ Error: " + str(ex))
-            st.info("💡 " + ch["solution_hint"])
+            st.info("💡 " + ch["hint"])
 
     if nxt:
         st.session_state.lab_level = min(idx + 1, len(challenges)-1)
         st.rerun()
 
+    if idx == len(challenges) - 1 and st.session_state.lab_score > 0:
+        st.balloons()
+        st.success("🏆 You completed the PQC Python Lab! Score: " + str(st.session_state.lab_score))
 
-def render_cipher_quest():
-    """Middle School 6-8: Cipher Quest — AI-powered coding game to encrypt/decrypt messages."""
-    import streamlit as st
-    import streamlit.components.v1 as components
-    from modules.trial import trial_gate
-    if not trial_gate("cipher_quest", "Cipher Quest"):
-        return
-    st.subheader("🎮 Cipher Quest — Code Your Way to Quantum Safety!")
-    st.markdown(
-        "**Write code to crack ciphers and build quantum-safe ones!** "
-        "Start with simple Caesar ciphers and work your way up to real LWE math. "
-        "Each level shows why classical ciphers fail against quantum computers."
-    )
-    components.html(r"""
-<!DOCTYPE html>
-<html>
-<head>
-<style>
-*{margin:0;padding:0;box-sizing:border-box;}
-body{background:#020d14;font-family:'Segoe UI',sans-serif;color:white;}
-#wrap{max-width:560px;margin:0 auto;padding:10px;}
-.hud{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-bottom:8px;}
-.hb{background:#071520;border:1px solid #1a3a5a;border-radius:8px;padding:5px;text-align:center;font-size:9px;color:#60a5fa;}
-.hb b{display:block;font-size:13px;color:white;}
-.quest-card{background:#071520;border:2px solid #1d4ed8;border-radius:12px;padding:14px;margin-bottom:8px;}
-.quest-title{font-size:13px;font-weight:bold;color:#60a5fa;margin-bottom:4px;}
-.quest-desc{font-size:10px;color:#94a3b8;line-height:1.6;margin-bottom:8px;}
-.cipher-display{background:#020d14;border:1px solid #1d4ed850;border-radius:8px;
-    padding:10px;font-family:'Fira Code',monospace;font-size:12px;
-    color:#fbbf24;letter-spacing:2px;margin:8px 0;text-align:center;}
-.input-area{width:100%;background:#020d14;border:2px solid #1d4ed8;border-radius:8px;
-    color:#10b981;font-family:'Fira Code',monospace;font-size:12px;padding:8px;
-    outline:none;resize:vertical;min-height:60px;}
-.input-area:focus{border-color:#60a5fa;}
-.btn-row{display:flex;gap:6px;margin:8px 0;flex-wrap:wrap;}
-.btn{padding:7px 14px;border-radius:8px;border:none;cursor:pointer;
-    font-size:11px;font-weight:bold;color:white;transition:all 0.15s;}
-.btn-run{background:linear-gradient(135deg,#1d4ed8,#06b6d4);}
-.btn-hint{background:#7c3aed;}
-.btn-next{background:#059669;display:none;}
-.output-box{background:#020d14;border:1px solid #00ff4130;border-radius:8px;
-    padding:8px;font-family:'Fira Code',monospace;font-size:10px;
-    color:#00ff41;min-height:40px;margin:6px 0;}
-#msg{font-size:11px;min-height:18px;margin:4px 0;text-align:center;font-weight:bold;}
-#fact{background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.3);
-    border-radius:8px;padding:7px 10px;margin:4px 0;font-size:10px;color:#93c5fd;
-    display:none;line-height:1.5;}
-.progress{display:flex;gap:4px;justify-content:center;margin:6px 0;flex-wrap:wrap;}
-.pdot{width:12px;height:12px;border-radius:50%;background:#1e293b;border:1px solid #334155;}
-.pdot.done{background:#10b981;}.pdot.active{background:#3b82f6;}
-.diff-badge{display:inline-block;border-radius:4px;padding:2px 8px;font-size:9px;font-weight:bold;margin-left:6px;}
-.easy{background:#059669;}.medium{background:#d97706;}.hard{background:#dc2626;}
-</style>
-</head>
-<body>
-<div id="wrap">
-<div class="hud">
-    <div class="hb">⭐ Score<br><b id="h-score">0</b></div>
-    <div class="hb">🏆 Level<br><b id="h-level">1</b>/10</div>
-    <div class="hb">🔥 Streak<br><b id="h-streak">0</b></div>
-    <div class="hb">⏱️ Time<br><b id="h-time">--</b></div>
-</div>
 
-<div class="progress" id="progress"></div>
-
-<div class="quest-card" id="quest-card">
-    <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
-        <span class="quest-title" id="q-title">Quest 1</span>
-        <span class="diff-badge easy" id="q-diff">EASY</span>
-    </div>
-    <div class="quest-desc" id="q-desc"></div>
-    <div class="cipher-display" id="q-cipher"></div>
-    <div style="font-size:9px;color:#475569;margin-bottom:4px">✏️ Write your solution:</div>
-    <textarea class="input-area" id="q-input" placeholder="# Write your code here..."></textarea>
-    <div class="btn-row">
-        <button class="btn btn-run" onclick="runQuest()">▶ Run</button>
-        <button class="btn btn-hint" onclick="showHint()">💡 Hint (-25pts)</button>
-        <button class="btn btn-next" id="next-btn" onclick="nextQuest()">Next Quest →</button>
-    </div>
-    <div class="output-box" id="output"># Output appears here...</div>
-</div>
-
-<div id="msg"></div>
-<div id="fact"></div>
-</div>
-
-<script>
-const QUESTS = [
-    {
-        title:"Decode ROT13",
-        diff:"easy",
-        desc:"The enemy encrypted 'ATTACK AT DAWN' with ROT13. Write Python to decode it. ROT13 shifts each letter by 13 positions.",
-        cipher:"NGGNPX NG QNJA",
-        answer:"ATTACK AT DAWN",
-        hint:"Apply shift of 13 to each letter. A=65 in ASCII. Use chr((ord(c)-65+13)%26+65) for uppercase.",
-        fact:"ROT13 has only 1 possible key — trivially broken. Kyber has 2^256 possible keys even against quantum computers!"
-    },
-    {
-        title:"Caesar Brute Force",
-        diff:"easy",
-        desc:"Find the shift used to encrypt 'Khoor'. Try all 25 shifts and print them all. The real word is a common greeting!",
-        cipher:"Khoor",
-        answer:"Hello",
-        hint:"Loop shift from 1 to 25. For each shift, decode by subtracting shift from each letter char code.",
-        fact:"Caesar: 25 keys. A laptop cracks it in milliseconds. Quantum computers crack RSA-2048 the same way — that's why we need Kyber!"
-    },
-    {
-        title:"Modular Math",
-        diff:"easy",
-        desc:"Compute (7 × 3 + 1) mod 11. This is one LWE equation from Kyber's key generation. Print the result.",
-        cipher:"(7 × 3 + 1) mod 11 = ?",
-        answer:"0",
-        hint:"In Python: (7 * 3 + 1) % 11",
-        fact:"(7×3+1)=22, 22 mod 11 = 0. Kyber uses thousands of these equations simultaneously — solving them all at once is called the Module-LWE problem and it's quantum-hard!"
-    },
-    {
-        title:"Vigenère Crack",
-        diff:"medium",
-        desc:"Decode 'LXFOPVEFRNHR' encrypted with Vigenère key 'LEMON'. Vigenère shifts each letter by the corresponding key letter.",
-        cipher:"LXFOPVEFRNHR",
-        answer:"ATTACKATDAWN",
-        hint:"For each position i: shift = ord(key[i % len(key)]) - ord('A'). Decode: chr((ord(c) - shift - 65) % 26 + 65)",
-        fact:"Vigenère was unbreakable for 300 years — until Kasiski cracked it in 1863. Today it falls in seconds. Classical crypto always breaks eventually. NIST designed Kyber to resist quantum computers forever!"
-    },
-    {
-        title:"SHA-3 Hash",
-        diff:"medium",
-        desc:"Use Python's hashlib to SHA-3 hash the string 'kyber'. Print the first 16 characters of the hex digest.",
-        cipher:"sha3_256('kyber') = ?",
-        answer:"3338",
-        hint:"import hashlib; h = hashlib.sha3_256('kyber'.encode()).hexdigest(); print(h[:16])",
-        fact:"SHA-3 uses Keccak sponge construction — completely different from SHA-2. SPHINCS+ (FIPS 205) chains thousands of SHA-3 hashes to build quantum-safe signatures!"
-    },
-    {
-        title:"LWE Equation",
-        diff:"medium",
-        desc:"Compute LWE: s=5, A=[3,7,2], e=[1,0,1], q=13. Print b = [(A[i]*s + e[i]) % q for each i]",
-        cipher:"b = (A×s + e) mod 13",
-        answer:"[3, 10, 11]",
-        hint:"b = [(A[i]*s + e[i]) % q for i in range(len(A))]",
-        fact:"(3×5+1)%13=3, (7×5+0)%13=9... wait: 7×5=35, 35%13=9, +0=9. Try it! This is the exact math that protects Kyber key exchange."
-    },
-    {
-        title:"Prime Check",
-        diff:"medium",
-        desc:"Write is_prime(n) and print all primes between 40 and 60. RSA uses large primes — Shor's Algorithm finds them instantly!",
-        cipher:"Primes between 40-60?",
-        answer:"41 43 47 53 59",
-        hint:"def is_prime(n): return all(n%i!=0 for i in range(2,int(n**0.5)+1) if n>1)",
-        fact:"RSA uses two 150-digit primes. Factoring their product is hard classically but trivial with Shor's Algorithm. That's why NIST replaced RSA with Kyber's lattice math!"
-    },
-    {
-        title:"Key Size Compare",
-        diff:"hard",
-        desc:"Print a comparison table of key sizes: RSA-2048=256 bytes, Kyber-512=800 bytes, Kyber-768=1184 bytes, Kyber-1024=1568 bytes",
-        cipher:"Which is smaller: RSA vs Kyber?",
-        answer:"RSA",
-        hint:"Use f-strings: print(f'{name:<15} {size:>6} bytes  {note}')",
-        fact:"Kyber keys are 3-6x larger than RSA but completely quantum-safe. The 2035 NIST deadline means ALL internet traffic must switch to Kyber-sized keys. Worth it!"
-    },
-    {
-        title:"XOR Cipher",
-        diff:"hard",
-        desc:"Implement XOR cipher: encrypt 'KYBER' with key 42 by XORing each character's ASCII value. Print the encrypted bytes.",
-        cipher:"XOR('KYBER', 42) = ?",
-        answer:"[27, 115, 120, 99, 121]",
-        hint:"[ord(c) ^ 42 for c in 'KYBER']",
-        fact:"XOR is the foundation of stream ciphers and OTP. Kyber uses polynomial ring arithmetic instead — much harder to break because it's based on the LWE lattice problem!"
-    },
-    {
-        title:"Full PQC Compare",
-        diff:"hard",
-        desc:"Print a security comparison: RSA-2048 vs Kyber-768. Show classical security bits (112 vs 128) and quantum security bits (0 vs 128).",
-        cipher:"RSA vs Kyber quantum security?",
-        answer:"128",
-        hint:"Use print() with formatted strings showing algorithm, classical_bits, quantum_bits",
-        fact:"RSA-2048 has 112 classical bits of security but 0 quantum bits — Shor breaks it completely! Kyber-768 has 128 classical AND 128 quantum security bits. The future is post-quantum!"
-    },
-];
-
-let level=0, score=0, streak=0, hintUsed=false;
-let timerInterval=null, timeLeft=0, startTime=0;
-let results=[], factTimeout=null;
-
-function buildProgress(){
-    const d=document.getElementById("progress");
-    d.innerHTML="";
-    for(let i=0;i<QUESTS.length;i++){
-        const dot=document.createElement("div");
-        dot.className="pdot"+(results[i]==="done"?" done":i===level?" active":"");
-        d.appendChild(dot);
-    }
-}
-
-function loadQuest(){
-    const q=QUESTS[level];
-    document.getElementById("q-title").textContent="Quest "+(level+1)+": "+q.title;
-    document.getElementById("q-diff").textContent=q.diff.toUpperCase();
-    document.getElementById("q-diff").className="diff-badge "+q.diff;
-    document.getElementById("q-desc").textContent=q.desc;
-    document.getElementById("q-cipher").textContent=q.cipher;
-    document.getElementById("q-input").value="";
-    document.getElementById("output").textContent="# Output appears here...";
-    document.getElementById("next-btn").style.display="none";
-    document.getElementById("h-level").textContent=(level+1);
-    hintUsed=false;
-    startTime=Date.now();
-    timeLeft=60;
-    clearInterval(timerInterval);
-    timerInterval=setInterval(()=>{
-        timeLeft=Math.max(0,60-Math.floor((Date.now()-startTime)/1000));
-        document.getElementById("h-time").textContent=timeLeft+"s";
-        document.getElementById("h-time").style.color=timeLeft<15?"#ef4444":timeLeft<30?"#f59e0b":"white";
-    },500);
-    buildProgress();
-    document.getElementById("msg").textContent="";
-    document.getElementById("fact").style.display="none";
-}
-
-function runQuest(){
-    const q=QUESTS[level];
-    const code=document.getElementById("q-input").value.trim();
-    const output=document.getElementById("output");
-    if(!code){output.textContent="# Write some code first!";return;}
-
-    // Simulate execution check — look for answer in code or check pattern
-    const codeLC=code.toLowerCase();
-    const hasAnswer=codeLC.includes(q.answer.toLowerCase())||
-        codeLC.includes(q.answer.replace(/\s/g,"").toLowerCase());
-
-    // Check for key patterns
-    const patterns={
-        "Decode ROT13":["13","rot","chr","ord"],
-        "Caesar Brute Force":["range","shift","ord","chr"],
-        "Modular Math":["7","3","11","mod","%"],
-        "Vigenère Crack":["lemon","vigen","shift","ord","chr"],
-        "SHA-3 Hash":["hashlib","sha3","hexdigest","kyber"],
-        "LWE Equation":["5","13","range","append","mod","%"],
-        "Prime Check":["prime","range","sqrt","41","43","47"],
-        "Key Size Compare":["2048","800","1184","kyber","rsa"],
-        "XOR Cipher":["xor","^","42","kyber","ord"],
-        "Full PQC Compare":["128","rsa","kyber","quantum","classical"],
-    };
-
-    const pats=patterns[q.title]||[];
-    const matchCount=pats.filter(p=>codeLC.includes(p)).length;
-    const isGood=matchCount>=Math.min(2,pats.length)||hasAnswer;
-
-    if(isGood){
-        clearInterval(timerInterval);
-        const timePts=Math.max(0,timeLeft)*2;
-        const hintPen=hintUsed?25:0;
-        const pts=100*(level+1)+timePts-hintPen;
-        score+=pts;streak++;
-        results[level]="done";
-        document.getElementById("h-score").textContent=score;
-        document.getElementById("h-streak").textContent=streak;
-        output.textContent="✅ Code looks correct!\n> Running...\n> Output: "+q.answer+"\n> +"+pts+" pts!";
-        output.style.color="#10b981";
-        document.getElementById("msg").textContent="✅ Correct! +"+pts+" pts"+(streak>1?" 🔥×"+streak:"");
-        document.getElementById("msg").style.color="#10b981";
-        showFact(q.fact);
-        document.getElementById("next-btn").style.display="inline-block";
-        buildProgress();
-        updateHUD();
-    } else {
-        output.textContent="❌ Not quite right yet.\n# Check: does your code produce "+q.answer+"?\n# Hint: "+q.hint;
-        output.style.color="#ef4444";
-        score=Math.max(0,score-20);streak=0;
-        document.getElementById("h-streak").textContent=0;
-        document.getElementById("msg").textContent="Try again! Check the hint.";
-        document.getElementById("msg").style.color="#f59e0b";
-        updateHUD();
-    }
-}
-
-function showHint(){
-    const q=QUESTS[level];
-    hintUsed=true;
-    score=Math.max(0,score-25);
-    document.getElementById("output").textContent="💡 Hint: "+q.hint;
-    document.getElementById("output").style.color="#a78bfa";
-    updateHUD();
-}
-
-function nextQuest(){
-    if(level<QUESTS.length-1){
-        level++;
-        loadQuest();
-    } else {
-        clearInterval(timerInterval);
-        document.getElementById("msg").textContent="🏆 ALL 10 QUESTS COMPLETE! Score: "+score+" — PQC Champion!";
-        document.getElementById("msg").style.color="#fbbf24";
-    }
-}
-
-function updateHUD(){
-    document.getElementById("h-score").textContent=score;
-    document.getElementById("h-streak").textContent=streak;
-}
-
-function showFact(text){
-    const el=document.getElementById("fact");
-    el.textContent="🔐 "+text;el.style.display="block";
-    if(factTimeout)clearTimeout(factTimeout);
-    factTimeout=setTimeout(()=>el.style.display="none",7000);
-}
-
-loadQuest();
-</script>
-</body>
-</html>
-""", height=720)
