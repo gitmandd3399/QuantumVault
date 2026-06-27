@@ -509,6 +509,7 @@ def main():
         "🛡️ Code the Shield",
         "🐍 PQC Python Lab",
         "🎮 Cipher Quest",
+        "⚛️ PQC Live Demo",
     ]
 
     GRADE_MAP = {
