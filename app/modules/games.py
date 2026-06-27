@@ -4708,7 +4708,7 @@ function pickOpt(i){
 
 function checkDecode(){
     const m=MISSIONS[cur];
-    const v=document.getElementById("decode-in").value.trim().toUpperCase().replace(/\s/g,"");
+    const v=document.getElementById("decode-in").value.trim().toUpperCase().replace(/\\s/g,"");
     if(v===m.answer){captureFlag(m);}
     else{setMsg("// DECRYPTION FAILED — CHECK YOUR ROT13 //","#ff0040");score=Math.max(0,score-20);updateHUD();}
 }
@@ -9431,8 +9431,8 @@ function selectOption(i){
 
 function submitFlag(){
     const m=MISSIONS[currentMission];
-    const answer=document.getElementById("flag-answer").value.trim().toUpperCase().replace(/\s/g,"");
-    const correct=m.flag.replace(/\s/g,"");
+    const answer=document.getElementById("flag-answer").value.trim().toUpperCase().replace(/\\s/g,"");
+    const correct=m.flag.replace(/\\s/g,"");
     if(answer===correct){
         captureFlag(m);
     } else {
