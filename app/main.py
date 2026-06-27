@@ -134,6 +134,7 @@ def sidebar():
             ("🟢", "Elementary (K-5)",    "🟢 Elementary (K–5)"),
             ("🟡", "Middle School (6-8)", "🟡 Middle School (6–8)"),
             ("🔴", "High School (9-12)",  "🔴 High School (9–12)"),
+            ("🦸", "Story Adventure",   "🦸 Story Adventure"),
         ]},
         {"label": "🎮 GAMES", "color": "#f59e0b", "items": [
             ("🔤", "Secret Message",    "🔤 Secret Message Maker"),
