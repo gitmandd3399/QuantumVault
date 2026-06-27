@@ -226,11 +226,11 @@ def sidebar():
     st.sidebar.markdown("---")
 
     xp = st.session_state.xp
-    level = get_level(xp)
+    xp_rank = get_level(xp)
     progress = get_level_progress(xp)
     next_xp = get_next_level_xp(xp)
 
-    st.sidebar.markdown(f"### {level}")
+    st.sidebar.markdown(f"### {xp_rank}")
     bar_filled = int(progress * 10)
     bar_empty = 10 - bar_filled
     bar_visual = "🟦" * bar_filled + "⬜" * bar_empty
