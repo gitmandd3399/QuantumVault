@@ -661,6 +661,8 @@ def main():
         render_threat_thermometer()
     elif "Algo Battle" in level:
         render_algo_battle()
+    elif "Story Adventure" in level:
+        render_story_adventure()
     elif "PQC Live Demo" in level:
         render_pqc_demo()
     elif "Career Explorer" in level:
