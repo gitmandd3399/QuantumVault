@@ -184,35 +184,45 @@ def sidebar():
     ]
 
     current = st.session_state.get("level", "")
+
+    def get_active_section(cur):
+        for sec in SECTIONS:
+            for _, _, route in sec["items"]:
+                if route == cur:
+                    return sec["label"]
+        return None
+
+    active_sec = get_active_section(current)
+
     for sec in SECTIONS:
         c = sec["color"]
-        st.sidebar.markdown(
-            f"<div style='background:{c}18;border-left:3px solid {c};"
-            f"border-radius:0 6px 6px 0;padding:4px 10px;margin:8px 0 2px'>"
-            f"<span style='font-size:0.68rem;font-weight:bold;color:{c};"
-            f"letter-spacing:1.5px;text-transform:uppercase'>{sec['label']}</span>"
-            f"</div>",
-            unsafe_allow_html=True
-        )
-        for emoji, label, route in sec["items"]:
-            is_active = current == route
-            if is_active:
-                st.sidebar.markdown(
-                    f"<div style='background:{c}25;border:1px solid {c}60;"
-                    f"border-radius:8px;padding:6px 12px;margin:2px 0;"
-                    f"font-size:0.82rem;color:white;font-weight:bold'>"
-                    f"{emoji} {label} ◀</div>",
-                    unsafe_allow_html=True
-                )
-            else:
-                if st.sidebar.button(
-                    f"{emoji} {label}", key=f"nav_{route}",
-                    use_container_width=True,
-                ):
-                    st.session_state.level = route
-                    st.rerun()
-
-
+        is_open = (active_sec == sec["label"])
+        with st.sidebar.expander(sec["label"], expanded=is_open):
+            for emoji, label, route in sec["items"]:
+                if route.startswith("─"):
+                    st.markdown(
+                        f"<div style='color:#475569;font-size:10px;"
+                        f"padding:2px 0;border-top:1px solid #1e293b;"
+                        f"margin:3px 0'>{label}</div>",
+                        unsafe_allow_html=True
+                    )
+                    continue
+                if route == current:
+                    st.markdown(
+                        f"<div style='background:{c}20;border-left:3px solid {c};"
+                        f"padding:5px 8px;border-radius:4px;color:{c};"
+                        f"font-size:12px;font-weight:bold;margin:2px 0'>"
+                        f"{emoji} {label} ◀</div>",
+                        unsafe_allow_html=True
+                    )
+                else:
+                    if st.button(
+                        f"{emoji} {label}",
+                        key=f"nav_{route}",
+                        use_container_width=True,
+                    ):
+                        st.session_state.level = route
+                        st.rerun()
     st.sidebar.markdown("---")
 
     xp = st.session_state.xp
