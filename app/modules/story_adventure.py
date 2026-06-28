@@ -626,15 +626,156 @@ function prevPage(){
     if(cur>0){cur--;renderSpread();spawnSparkles(window.innerWidth/2,200,8);}
 }
 
-// ── READ ALOUD ───────────────────────────────────────────────────────────────
+// ── READ ALOUD — Dramatic Storytelling Voice ─────────────────────────────────
 function readPage(){
     window.speechSynthesis.cancel();
-    var text=SPREADS[cur].join(' ').replace(/<br>/g,' ').replace(/[*_#]/g,'');
-    var msg=new SpeechSynthesisUtterance(text);
-    msg.rate=0.88;msg.pitch=1.15;
-    window.speechSynthesis.speak(msg);
-    document.getElementById('read-btn').textContent='🔊 Reading...';
-    msg.onend=function(){document.getElementById('read-btn').textContent='🔊 Read Aloud';};
+
+    // Get raw text from current spread
+    var raw = SPREADS[cur].join(' ')
+        .replace(/<br>/g,' ')
+        .replace(/[*_#]/g,'')
+        .replace(/\s+/g,' ')
+        .trim();
+
+    // Add dramatic pauses using SSML-style text manipulation
+    // We split into sentences and add pauses between them
+    var dramatic = raw
+        // Add longer pause after exclamation
+        .replace(/!/g, '! ... ')
+        // Add pause after question marks
+        .replace(/\?/g, '? ... ')
+        // Add slight pause after commas
+        .replace(/,/g, ', ')
+        // Add pause at ellipsis
+        .replace(/\.\.\./g, ' ... ')
+        // Capitalize BOOM WHOOSH CRASH for emphasis
+        .replace(/(BOOM|WHOOSH|CRASH|ZAP|POW|WOW|GASP)/gi, function(m){return m.toUpperCase();});
+
+    // Split into chunks for more control
+    // We read sentence by sentence for better dramatic effect
+    var sentences = dramatic.match(/[^.!?]+[.!?]+/g) || [dramatic];
+
+    var btnEl = document.getElementById('read-btn');
+    btnEl.textContent = '🔊 Reading...';
+    btnEl.style.background = 'linear-gradient(135deg,#059669,#10b981)';
+
+    var idx = 0;
+
+    // Pick best available voice — prefer female/story voices
+    function getBestVoice(){
+        var voices = window.speechSynthesis.getVoices();
+        // Priority list of good storytelling voices
+        var preferred = [
+            'Samantha',      // macOS — warm female
+            'Karen',         // macOS Australian
+            'Moira',         // macOS Irish — great for stories
+            'Fiona',         // macOS Scottish
+            'Victoria',      // macOS
+            'Allison',       // macOS
+            'Ava',           // macOS
+            'Susan',         // Windows
+            'Zira',          // Windows female
+            'Google UK English Female',
+            'Google US English',
+        ];
+        for(var i=0;i<preferred.length;i++){
+            for(var j=0;j<voices.length;j++){
+                if(voices[j].name.indexOf(preferred[i])!==-1) return voices[j];
+            }
+        }
+        // Fall back to any female voice
+        for(var j=0;j<voices.length;j++){
+            if(voices[j].name.toLowerCase().indexOf('female')!==-1) return voices[j];
+        }
+        return voices[0] || null;
+    }
+
+    // Read sentence by sentence for dramatic pausing control
+    function readNext(){
+        if(idx >= sentences.length){
+            btnEl.textContent = '🔊 Read Aloud';
+            btnEl.style.background = 'linear-gradient(135deg,#1d4ed8,#3b82f6)';
+            spawnSparkles(window.innerWidth/2, 300, 6);
+            return;
+        }
+
+        var sentence = sentences[idx].trim();
+        idx++;
+
+        if(!sentence){ readNext(); return; }
+
+        var msg = new SpeechSynthesisUtterance(sentence);
+
+        // Voice settings
+        var voice = getBestVoice();
+        if(voice) msg.voice = voice;
+
+        // Base storytelling settings
+        msg.volume = 1.0;
+
+        // Vary rate and pitch based on content for drama
+        if(sentence.indexOf('!') !== -1){
+            // Exciting sentences — slightly faster and higher
+            msg.rate = 0.95;
+            msg.pitch = 1.3;
+        } else if(sentence.indexOf('?') !== -1){
+            // Questions — slightly slower, rising pitch
+            msg.rate = 0.82;
+            msg.pitch = 1.2;
+        } else if(sentence.toLowerCase().indexOf('once upon') !== -1 ||
+                  sentence.toLowerCase().indexOf('long ago') !== -1){
+            // Opening — slow and warm
+            msg.rate = 0.72;
+            msg.pitch = 1.0;
+        } else if(sentence.toLowerCase().indexOf('the end') !== -1){
+            // Ending — slow and warm
+            msg.rate = 0.68;
+            msg.pitch = 0.95;
+        } else {
+            // Normal storytelling pace
+            msg.rate = 0.80;
+            msg.pitch = 1.1;
+        }
+
+        // When sentence ends, move to next after a small pause
+        msg.onend = function(){
+            // Pause length depends on punctuation
+            var pause = 200;
+            if(sentence.indexOf('!') !== -1) pause = 450;
+            if(sentence.indexOf('?') !== -1) pause = 380;
+            if(sentence.indexOf('...') !== -1) pause = 600;
+            setTimeout(readNext, pause);
+        };
+
+        msg.onerror = function(){ readNext(); };
+
+        window.speechSynthesis.speak(msg);
+    }
+
+    // Small delay to let voices load
+    setTimeout(function(){
+        if(window.speechSynthesis.getVoices().length === 0){
+            // Voices not loaded yet — fallback to single utterance
+            var msg = new SpeechSynthesisUtterance(raw);
+            msg.rate = 0.82;
+            msg.pitch = 1.15;
+            window.speechSynthesis.speak(msg);
+            msg.onend = function(){
+                btnEl.textContent = '🔊 Read Aloud';
+                btnEl.style.background = 'linear-gradient(135deg,#1d4ed8,#3b82f6)';
+            };
+        } else {
+            readNext();
+        }
+    }, 100);
+}
+
+// Stop reading button
+function stopReading(){
+    window.speechSynthesis.cancel();
+    var btnEl = document.getElementById('read-btn');
+    btnEl.textContent = '🔊 Read Aloud';
+    btnEl.style.background = 'linear-gradient(135deg,#1d4ed8,#3b82f6)';
 }
 
 // ── STAR TAP ─────────────────────────────────────────────────────────────────
