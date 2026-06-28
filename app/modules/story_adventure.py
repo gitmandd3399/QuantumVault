@@ -626,157 +626,202 @@ function prevPage(){
     if(cur>0){cur--;renderSpread();spawnSparkles(window.innerWidth/2,200,8);}
 }
 
-// ── READ ALOUD — Dramatic Storytelling Voice ─────────────────────────────────
-function readPage(){
-    window.speechSynthesis.cancel();
+// ── READ ALOUD — Natural Human Storyteller Voice ────────────────────────────
+var isReading = false;
 
-    // Get raw text from current spread
-    var raw = SPREADS[cur].join(' ')
+function getBestVoice(){
+    // What this does:
+    // Gets all available voices from the browser
+    // Tries each preferred voice name in order
+    // Returns the first match found
+    // Different devices have different voices available
+    var voices = window.speechSynthesis.getVoices();
+    var preferred = [
+        'Samantha',
+        'Moira',
+        'Karen',
+        'Fiona',
+        'Victoria',
+        'Allison',
+        'Ava',
+        'Serena',
+        'Tessa',
+        'Veena',
+        'Zira',
+        'Hazel',
+        'Susan',
+        'Google UK English Female',
+        'Google US English',
+        'Microsoft Zira',
+        'Microsoft Hazel',
+    ];
+    for(var i=0;i<preferred.length;i++){
+        for(var j=0;j<voices.length;j++){
+            if(voices[j].name===preferred[i]) return voices[j];
+        }
+    }
+    // Try partial match
+    for(var j=0;j<voices.length;j++){
+        var n=voices[j].name.toLowerCase();
+        if(n.indexOf('female')!==-1||n.indexOf('woman')!==-1||
+           n.indexOf('girl')!==-1||n.indexOf('samantha')!==-1||
+           n.indexOf('karen')!==-1||n.indexOf('moira')!==-1)
+            return voices[j];
+    }
+    // Last resort - any non-default voice
+    for(var j=0;j<voices.length;j++){
+        if(!voices[j].default) return voices[j];
+    }
+    return voices.length>0?voices[0]:null;
+}
+
+function preprocessText(text){
+    // What this does:
+    // Cleans up the text and adds natural pauses
+    // by inserting commas and periods where humans
+    // would naturally pause when telling a story
+    return text
         .replace(/<br>/g,' ')
         .replace(/[*_#]/g,'')
         .replace(/\s+/g,' ')
+        // Add breathing room after these words
+        .replace(/(and then|but then|suddenly|meanwhile|finally|however|therefore)/gi,
+            function(m){return m+', ';})
+        // Make ellipsis into a real pause
+        .replace(/\.\.\./g,'. ')
+        // Clean up double spaces
+        .replace(/\s+/g,' ')
         .trim();
+}
 
-    // Add dramatic pauses using SSML-style text manipulation
-    // We split into sentences and add pauses between them
-    var dramatic = raw
-        // Add longer pause after exclamation
-        .replace(/!/g, '! ... ')
-        // Add pause after question marks
-        .replace(/\?/g, '? ... ')
-        // Add slight pause after commas
-        .replace(/,/g, ', ')
-        // Add pause at ellipsis
-        .replace(/\.\.\./g, ' ... ')
-        // Capitalize BOOM WHOOSH CRASH for emphasis
-        .replace(/(BOOM|WHOOSH|CRASH|ZAP|POW|WOW|GASP)/gi, function(m){return m.toUpperCase();});
+function readPage(){
+    // What this does:
+    // Stops any current speech first
+    // Preprocesses the text for natural delivery
+    // Speaks sentence by sentence with pauses between
+    // Updates button to show reading state
+    window.speechSynthesis.cancel();
+    isReading = true;
 
-    // Split into chunks for more control
-    // We read sentence by sentence for better dramatic effect
-    var sentences = dramatic.match(/[^.!?]+[.!?]+/g) || [dramatic];
+    var raw = preprocessText(SPREADS[cur].join(' '));
+
+    // Split into sentences
+    // What this does: regex matches text up to and including
+    // a sentence-ending punctuation mark
+    var sentences = raw.match(/[^.!?]+[.!?]*/g) || [raw];
+    sentences = sentences.filter(function(s){return s.trim().length>2;});
 
     var btnEl = document.getElementById('read-btn');
-    btnEl.textContent = '🔊 Reading...';
-    btnEl.style.background = 'linear-gradient(135deg,#059669,#10b981)';
+    btnEl.textContent = '⏹ Stop';
+    btnEl.onclick = stopReading;
+    btnEl.style.background = 'linear-gradient(135deg,#dc2626,#ef4444)';
 
     var idx = 0;
 
-    // Pick best available voice — prefer female/story voices
-    function getBestVoice(){
-        var voices = window.speechSynthesis.getVoices();
-        // Priority list of good storytelling voices
-        var preferred = [
-            'Samantha',      // macOS — warm female
-            'Karen',         // macOS Australian
-            'Moira',         // macOS Irish — great for stories
-            'Fiona',         // macOS Scottish
-            'Victoria',      // macOS
-            'Allison',       // macOS
-            'Ava',           // macOS
-            'Susan',         // Windows
-            'Zira',          // Windows female
-            'Google UK English Female',
-            'Google US English',
-        ];
-        for(var i=0;i<preferred.length;i++){
-            for(var j=0;j<voices.length;j++){
-                if(voices[j].name.indexOf(preferred[i])!==-1) return voices[j];
-            }
-        }
-        // Fall back to any female voice
-        for(var j=0;j<voices.length;j++){
-            if(voices[j].name.toLowerCase().indexOf('female')!==-1) return voices[j];
-        }
-        return voices[0] || null;
-    }
-
-    // Read sentence by sentence for dramatic pausing control
-    function readNext(){
-        if(idx >= sentences.length){
-            btnEl.textContent = '🔊 Read Aloud';
-            btnEl.style.background = 'linear-gradient(135deg,#1d4ed8,#3b82f6)';
-            spawnSparkles(window.innerWidth/2, 300, 6);
+    function speakNext(){
+        if(!isReading || idx>=sentences.length){
+            finishReading();
             return;
         }
 
         var sentence = sentences[idx].trim();
         idx++;
+        if(!sentence){speakNext();return;}
 
-        if(!sentence){ readNext(); return; }
+        var utt = new SpeechSynthesisUtterance(sentence);
 
-        var msg = new SpeechSynthesisUtterance(sentence);
-
-        // Voice settings
+        // What this does:
+        // Sets voice properties based on sentence type
+        // Exciting sentences get faster rate and higher pitch
+        // Slow sentences get lower rate for suspense
         var voice = getBestVoice();
-        if(voice) msg.voice = voice;
+        if(voice) utt.voice = voice;
+        utt.volume = 1.0;
+        utt.lang = 'en-US';
 
-        // Base storytelling settings
-        msg.volume = 1.0;
+        var isExciting = /[!]/.test(sentence);
+        var isQuestion = /[?]/.test(sentence);
+        var isOpening = /once upon|long ago|far away/i.test(sentence);
+        var isEnding = /the end|lived happily|ever after/i.test(sentence);
+        var isSuspense = /suddenly|darkness|danger|beware|careful/i.test(sentence);
 
-        // Vary rate and pitch based on content for drama
-        if(sentence.indexOf('!') !== -1){
-            // Exciting sentences — slightly faster and higher
-            msg.rate = 0.95;
-            msg.pitch = 1.3;
-        } else if(sentence.indexOf('?') !== -1){
-            // Questions — slightly slower, rising pitch
-            msg.rate = 0.82;
-            msg.pitch = 1.2;
-        } else if(sentence.toLowerCase().indexOf('once upon') !== -1 ||
-                  sentence.toLowerCase().indexOf('long ago') !== -1){
-            // Opening — slow and warm
-            msg.rate = 0.72;
-            msg.pitch = 1.0;
-        } else if(sentence.toLowerCase().indexOf('the end') !== -1){
-            // Ending — slow and warm
-            msg.rate = 0.68;
-            msg.pitch = 0.95;
+        if(isOpening){
+            // Slow warm opening
+            utt.rate = 0.72;
+            utt.pitch = 0.95;
+        } else if(isEnding){
+            // Slow gentle ending
+            utt.rate = 0.68;
+            utt.pitch = 0.90;
+        } else if(isExciting){
+            // Fast exciting delivery
+            utt.rate = 1.05;
+            utt.pitch = 1.25;
+        } else if(isQuestion){
+            // Slightly slower with rising feel
+            utt.rate = 0.82;
+            utt.pitch = 1.15;
+        } else if(isSuspense){
+            // Slow dramatic suspense
+            utt.rate = 0.70;
+            utt.pitch = 0.88;
         } else {
-            // Normal storytelling pace
-            msg.rate = 0.80;
-            msg.pitch = 1.1;
+            // Natural storytelling pace
+            utt.rate = 0.82;
+            utt.pitch = 1.05;
         }
 
-        // When sentence ends, move to next after a small pause
-        msg.onend = function(){
-            // Pause length depends on punctuation
-            var pause = 200;
-            if(sentence.indexOf('!') !== -1) pause = 450;
-            if(sentence.indexOf('?') !== -1) pause = 380;
-            if(sentence.indexOf('...') !== -1) pause = 600;
-            setTimeout(readNext, pause);
+        // What this does:
+        // When each sentence finishes, waits a natural pause
+        // then reads the next sentence
+        // Pause length varies by punctuation type
+        utt.onend = function(){
+            if(!isReading) return;
+            var pause = 180;
+            if(isExciting) pause = 420;
+            if(isQuestion) pause = 350;
+            if(isEnding) pause = 600;
+            if(isSuspense) pause = 500;
+            setTimeout(speakNext, pause);
         };
 
-        msg.onerror = function(){ readNext(); };
-
-        window.speechSynthesis.speak(msg);
+        utt.onerror = function(){ setTimeout(speakNext, 100); };
+        window.speechSynthesis.speak(utt);
     }
 
-    // Small delay to let voices load
+    // What this does:
+    // Waits 150ms for browser voices to fully load
+    // before starting to speak
     setTimeout(function(){
-        if(window.speechSynthesis.getVoices().length === 0){
-            // Voices not loaded yet — fallback to single utterance
-            var msg = new SpeechSynthesisUtterance(raw);
-            msg.rate = 0.82;
-            msg.pitch = 1.15;
-            window.speechSynthesis.speak(msg);
-            msg.onend = function(){
-                btnEl.textContent = '🔊 Read Aloud';
-                btnEl.style.background = 'linear-gradient(135deg,#1d4ed8,#3b82f6)';
-            };
-        } else {
-            readNext();
-        }
-    }, 100);
+        window.speechSynthesis.getVoices();
+        speakNext();
+    }, 150);
 }
 
-// Stop reading button
 function stopReading(){
+    // What this does:
+    // Cancels all pending speech
+    // Resets button back to read aloud state
+    isReading = false;
     window.speechSynthesis.cancel();
+    finishReading();
+}
+
+function finishReading(){
+    isReading = false;
     var btnEl = document.getElementById('read-btn');
     btnEl.textContent = '🔊 Read Aloud';
+    btnEl.onclick = readPage;
     btnEl.style.background = 'linear-gradient(135deg,#1d4ed8,#3b82f6)';
 }
+
+// What this does:
+// Pre-loads voices when page opens
+// Some browsers need this call to populate the voice list
+window.speechSynthesis.onvoiceschanged = function(){
+    window.speechSynthesis.getVoices();
+};
+
 
 // ── STAR TAP ─────────────────────────────────────────────────────────────────
 function litStar(el){
