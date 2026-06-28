@@ -66,8 +66,15 @@ if "free_module" not in st.session_state:
 # ── Developer override ────────────────────────────────────────────────────────
 _dev_password = st.secrets.get("DEV_PASSWORD", "")
 if _dev_password:
-    if st.sidebar.text_input("Dev unlock:", type="password", key="dev_unlock") == _dev_password:
-        st.session_state.plan_type = "paid"
+    _dev_input = st.sidebar.text_input(
+        "🔑 Admin:", type="password", key="dev_unlock",
+        label_visibility="collapsed",
+        placeholder="Admin access..."
+    )
+    if _dev_input == _dev_password:
+        st.session_state.plan_type = "admin"
+        st.session_state.mfa_verified = True
+        st.session_state.is_admin = True
         st.session_state.free_module = None
 
 
