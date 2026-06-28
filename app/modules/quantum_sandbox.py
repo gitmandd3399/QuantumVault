@@ -193,28 +193,28 @@ function createMob(x, y, template) {
         parts: {
             body: {x, y,       vx:0, vy:0, r:14, color:template.color},
             head: {x, y:-28,   vx:0, vy:0, r:10, color:template.color},
-            larm: {x:x-14,y:-8,vx:0,vy:0, r:5,  color:template.color},
-            rarm: {x:x+14,y:-8,vx:0,vy:0, r:5,  color:template.color},
-            lleg: {x:x-8, y:16,vx:0,vy:0, r:5,  color:template.color},
-            rleg: {x:x+8, y:16,vx:0,vy:0, r:5,  color:template.color},
+            larm: {x:x-26,y:-6,vx:0,vy:0, r:5,  color:template.color},
+            rarm: {x:x+26,y:-6,vx:0,vy:0, r:5,  color:template.color},
+            lleg: {x:x-10,y:28,vx:0,vy:0, r:6,  color:template.color},
+            rleg: {x:x+10,y:28,vx:0,vy:0, r:6,  color:template.color},
         },
         // Joint rest lengths (distance between connected parts)
         joints:[
-            {a:'head',b:'body', len:22},
-            {a:'larm',b:'body', len:14},
-            {a:'rarm',b:'body', len:14},
-            {a:'lleg',b:'body', len:18},
-            {a:'rleg',b:'body', len:18},
+            {a:'head',b:'body', len:24},
+            {a:'larm',b:'body', len:26},
+            {a:'rarm',b:'body', len:26},
+            {a:'lleg',b:'body', len:30},
+            {a:'rleg',b:'body', len:30},
         ],
         collapsed: false,
         collapseTimer: 0,
     };
     // Initialize part positions relative to body
     mob.parts.head.x = x; mob.parts.head.y = y - 28;
-    mob.parts.larm.x = x-16; mob.parts.larm.y = y - 6;
-    mob.parts.rarm.x = x+16; mob.parts.rarm.y = y - 6;
-    mob.parts.lleg.x = x-8;  mob.parts.lleg.y = y + 16;
-    mob.parts.rleg.x = x+8;  mob.parts.rleg.y = y + 16;
+    mob.parts.larm.x = x-26; mob.parts.larm.y = y - 6;
+    mob.parts.rarm.x = x+26; mob.parts.rarm.y = y - 6;
+    mob.parts.lleg.x = x-10; mob.parts.lleg.y = y + 28;
+    mob.parts.rleg.x = x+10; mob.parts.rleg.y = y + 28;
     return mob;
 }
 
