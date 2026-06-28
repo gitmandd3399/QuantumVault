@@ -5572,312 +5572,734 @@ from utils.security import sanitize_input
 
 
 def render_code_shield():
-    """K-5: Code the Shield — big colorful click blocks, zero typing."""
+    """K-5: Code the Shield — UPGRADED 2026 — Fortnite-style shield building with incoming attacks!"""
     import streamlit as st
     import streamlit.components.v1 as components
     from modules.trial import trial_gate
     if not trial_gate("code_shield", "Code the Shield"):
         return
     st.subheader("🛡️ Code the Shield!")
-    st.markdown("**Click the blocks in the right order** to build a Kyber shield! No typing needed — just click!")
+    st.markdown(
+        "**Shor Bots are attacking!** Click the right blocks to build your "
+        "quantum shield before they break through! No typing — just click!"
+    )
     components.html(r"""
 <!DOCTYPE html>
 <html>
 <head>
+<meta charset="UTF-8">
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
-body{background:#020d14;font-family:'Segoe UI',sans-serif;color:white;}
-#wrap{max-width:560px;margin:0 auto;padding:12px;}
-.hud{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:10px;}
-.hb{background:#071520;border:2px solid #1a3a5a;border-radius:12px;padding:8px;text-align:center;font-size:11px;color:#60a5fa;}
-.hb b{display:block;font-size:18px;color:white;}
-.challenge-box{background:#071520;border:2px solid #fbbf24;border-radius:14px;padding:14px;margin-bottom:12px;text-align:center;}
-.challenge-emoji{font-size:3rem;margin-bottom:6px;}
-.challenge-title{font-size:15px;font-weight:bold;color:#fbbf24;margin-bottom:4px;}
-.challenge-desc{font-size:12px;color:#94a3b8;line-height:1.6;}
-.section-label{font-size:11px;color:#475569;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;text-align:center;}
-#blocks-area{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;}
-.block{padding:14px 10px;border-radius:14px;cursor:pointer;text-align:center;
-    font-size:12px;font-weight:bold;transition:all 0.2s;border:3px solid transparent;
-    line-height:1.4;}
+body{background:#020d14;font-family:'Segoe UI',sans-serif;color:white;overflow:hidden;}
+#wrap{max-width:560px;margin:0 auto;padding:10px;}
+
+/* HUD */
+.hud{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-bottom:8px;}
+.hb{background:#071520;border:1px solid #1a3a5a;border-radius:8px;
+    padding:5px 3px;text-align:center;font-size:9px;color:#60a5fa;}
+.hb b{display:block;font-size:15px;color:white;}
+
+/* ATTACK METER */
+#attack-wrap{background:#071520;border:1px solid #ef444440;border-radius:8px;
+    padding:6px 10px;margin-bottom:8px;display:flex;align-items:center;gap:8px;}
+#attack-label{font-size:10px;color:#ef4444;white-space:nowrap;}
+#attack-bar-bg{flex:1;height:10px;background:#1e293b;border-radius:5px;}
+#attack-bar{height:10px;border-radius:5px;
+    background:linear-gradient(90deg,#10b981,#fbbf24,#ef4444);
+    transition:width 0.2s;width:0%;}
+#shor-status{font-size:10px;color:#ef4444;white-space:nowrap;}
+
+/* CHALLENGE BOX */
+.challenge-box{background:#071520;border:2px solid #fbbf24;border-radius:12px;
+    padding:12px;margin-bottom:8px;text-align:center;}
+.ch-emoji{font-size:2.5rem;display:block;margin-bottom:4px;
+    animation:float 2s ease-in-out infinite;}
+@keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-6px);}}
+.ch-title{font-size:14px;font-weight:bold;color:#fbbf24;margin-bottom:3px;}
+.ch-desc{font-size:11px;color:#94a3b8;line-height:1.5;}
+
+/* PROGRESS */
+.progress-dots{display:flex;gap:5px;justify-content:center;margin-bottom:8px;}
+.dot{width:14px;height:14px;border-radius:50%;background:#1e293b;
+    border:2px solid #334155;transition:all 0.3s;}
+.dot.done{background:#10b981;border-color:#10b981;}
+.dot.active{background:#3b82f6;border-color:#60a5fa;
+    box-shadow:0 0 8px #3b82f6;}
+.dot.fail{background:#ef4444;border-color:#ef4444;}
+
+/* BLOCKS GRID */
+#blocks-area{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px;}
+.block{padding:12px 8px;border-radius:12px;cursor:pointer;text-align:center;
+    font-size:11px;font-weight:bold;transition:all 0.15s;border:3px solid transparent;
+    line-height:1.4;position:relative;overflow:hidden;}
 .block:hover{transform:scale(1.05);filter:brightness(1.2);}
-.block:active{transform:scale(0.97);}
+.block:active{transform:scale(0.95);}
+.block.selected{transform:scale(0.95);opacity:0.6;}
+.block .b-emoji{font-size:22px;display:block;margin-bottom:4px;}
+.block .b-name{font-size:10px;font-weight:bold;}
+.block .b-desc{font-size:9px;opacity:0.7;margin-top:2px;}
+
+/* BLOCK COLORS */
 .block.blue{background:#1d4ed830;border-color:#3b82f6;color:#93c5fd;}
 .block.green{background:#05301530;border-color:#10b981;color:#6ee7b7;}
 .block.purple{background:#2e1a4030;border-color:#8b5cf6;color:#c4b5fd;}
 .block.yellow{background:#1a1a0030;border-color:#fbbf24;color:#fde68a;}
+.block.red{background:#2a000030;border-color:#ef4444;color:#fca5a5;}
 .block.orange{background:#1a0a0030;border-color:#f97316;color:#fed7aa;}
-.block.pink{background:#2a0a1a30;border-color:#ec4899;color:#fbcfe8;}
-#builder-area{background:#071520;border:3px dashed #1d4ed8;border-radius:14px;
-    min-height:120px;padding:10px;margin-bottom:10px;}
-.placed{padding:12px 14px;border-radius:10px;margin-bottom:6px;font-size:12px;
-    font-weight:bold;display:flex;justify-content:space-between;align-items:center;
-    cursor:pointer;}
-.placed .num{font-size:10px;color:#475569;margin-right:6px;}
-.remove-x{font-size:16px;opacity:0.5;}
-.remove-x:hover{opacity:1;}
-#run-btn{width:100%;padding:14px;background:linear-gradient(135deg,#1d4ed8,#06b6d4);
-    border:none;border-radius:12px;color:white;font-size:16px;font-weight:bold;
-    cursor:pointer;margin-bottom:6px;transition:all 0.2s;}
+.block.correct-flash{animation:correctFlash 0.5s ease;}
+.block.wrong-flash{animation:wrongFlash 0.4s ease;}
+@keyframes correctFlash{0%,100%{transform:scale(1);}50%{transform:scale(1.15);filter:brightness(1.5);}}
+@keyframes wrongFlash{0%,25%,75%,100%{transform:translateX(0);}50%{transform:translateX(-8px);}75%{transform:translateX(8px);}}
+
+/* BUILDER */
+#builder-area{background:#071520;border:3px dashed #1d4ed8;border-radius:12px;
+    min-height:90px;padding:8px;margin-bottom:8px;position:relative;}
+#builder-label{font-size:9px;color:#334155;text-align:center;
+    position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+    pointer-events:none;}
+.placed{padding:8px 12px;border-radius:8px;margin-bottom:4px;
+    font-size:11px;font-weight:bold;display:flex;justify-content:space-between;
+    align-items:center;cursor:pointer;animation:slideIn 0.2s ease;}
+@keyframes slideIn{from{opacity:0;transform:translateX(-10px);}to{opacity:1;transform:translateX(0);}}
+.placed .p-num{font-size:9px;color:#475569;margin-right:6px;min-width:16px;}
+.placed .p-x{font-size:14px;opacity:0.4;transition:opacity 0.1s;}
+.placed .p-x:hover{opacity:1;}
+
+/* BUTTONS */
+.btn-row{display:flex;gap:6px;margin-bottom:6px;}
+#run-btn{flex:2;padding:12px;background:linear-gradient(135deg,#1d4ed8,#06b6d4);
+    border:none;border-radius:10px;color:white;font-size:14px;font-weight:bold;
+    cursor:pointer;transition:all 0.15s;}
 #run-btn:hover{filter:brightness(1.15);transform:translateY(-1px);}
-#clear-btn{width:100%;padding:10px;background:#334155;border:none;border-radius:10px;
-    color:white;font-size:13px;cursor:pointer;margin-bottom:8px;}
-#next-btn{width:100%;padding:14px;background:linear-gradient(135deg,#059669,#10b981);
-    border:none;border-radius:12px;color:white;font-size:16px;font-weight:bold;
-    cursor:pointer;margin-bottom:8px;display:none;}
-#output{background:#051018;border:2px solid #1a3a5a;border-radius:10px;padding:12px;
-    font-size:12px;min-height:60px;margin-bottom:8px;line-height:1.7;}
-.out-line{color:#10b981;margin:2px 0;}
-.out-comment{color:#475569;margin:2px 0;}
-.out-error{color:#ef4444;margin:2px 0;}
-#msg{font-size:13px;min-height:20px;margin:4px 0;text-align:center;font-weight:bold;padding:6px;}
-#fact{background:rgba(59,130,246,0.1);border:2px solid rgba(59,130,246,0.3);
-    border-radius:10px;padding:10px 12px;margin:6px 0;font-size:11px;color:#93c5fd;
-    display:none;line-height:1.6;}
-.stars{font-size:24px;text-align:center;margin:6px 0;display:none;}
-.progress-dots{display:flex;gap:6px;justify-content:center;margin:8px 0;}
-.dot{width:14px;height:14px;border-radius:50%;background:#1e293b;border:2px solid #334155;}
-.dot.done{background:#10b981;border-color:#10b981;}
-.dot.active{background:#3b82f6;border-color:#60a5fa;}
+#clear-btn{flex:1;padding:12px;background:#334155;border:none;border-radius:10px;
+    color:white;font-size:12px;cursor:pointer;transition:all 0.15s;}
+#clear-btn:hover{filter:brightness(1.2);}
+#next-btn{width:100%;padding:12px;background:linear-gradient(135deg,#059669,#10b981);
+    border:none;border-radius:10px;color:white;font-size:14px;font-weight:bold;
+    cursor:pointer;display:none;animation:pulse 1s infinite;}
+@keyframes pulse{0%,100%{transform:scale(1);}50%{transform:scale(1.02);}}
+
+/* OUTPUT */
+#output{background:#051018;border:1px solid #1a3a5a;border-radius:8px;
+    padding:10px;font-size:11px;min-height:50px;margin-bottom:6px;
+    font-family:'Fira Code',monospace;line-height:1.8;}
+.out-ok{color:#10b981;}
+.out-err{color:#ef4444;}
+.out-comment{color:#475569;}
+.out-warn{color:#fbbf24;}
+
+/* MESSAGE */
+#msg{font-size:12px;min-height:18px;text-align:center;font-weight:bold;
+    padding:4px;margin-bottom:4px;}
+
+/* FACT */
+#fact{background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.3);
+    border-radius:8px;padding:8px 10px;font-size:10px;color:#93c5fd;
+    display:none;line-height:1.5;margin-bottom:6px;}
+
+/* STARS */
+#stars{font-size:28px;text-align:center;margin:6px 0;display:none;}
+
+/* SHIELD VISUAL */
+#shield-visual{text-align:center;font-size:3rem;margin:4px 0;
+    transition:all 0.3s;filter:drop-shadow(0 0 0px transparent);}
+#shield-visual.built{filter:drop-shadow(0 0 15px #10b981);}
+#shield-visual.broken{filter:drop-shadow(0 0 15px #ef4444);
+    animation:shieldBreak 0.5s ease;}
+@keyframes shieldBreak{0%{transform:scale(1);}50%{transform:scale(1.3) rotate(15deg);}100%{transform:scale(1) rotate(0deg);}}
+
+/* TOAST */
+#toast{position:fixed;top:14px;left:50%;transform:translateX(-50%);
+    background:#071520;border:2px solid #10b981;border-radius:10px;
+    padding:7px 14px;font-size:11px;color:#10b981;font-weight:bold;
+    z-index:100;opacity:0;transition:opacity 0.3s;pointer-events:none;text-align:center;}
+#toast.show{opacity:1;}
+
+/* CONFETTI */
+.cp{position:fixed;pointer-events:none;z-index:999;width:8px;height:8px;
+    border-radius:2px;animation:cf linear forwards;}
+@keyframes cf{0%{transform:translateY(-20px) rotate(0deg);opacity:1;}
+    100%{transform:translateY(600px) rotate(720deg);opacity:0;}}
+
+/* GAME OVER */
+#gameover{display:none;text-align:center;padding:20px;}
+#gameover h2{color:#ef4444;font-size:20px;margin-bottom:8px;}
+#gameover p{color:#94a3b8;font-size:11px;margin-bottom:12px;}
 </style>
 </head>
 <body>
 <div id="wrap">
+
+<!-- HUD -->
 <div class="hud">
     <div class="hb">⭐ Score<br><b id="h-score">0</b></div>
     <div class="hb">🏆 Level<br><b id="h-level">1</b>/8</div>
+    <div class="hb">🔥 Streak<br><b id="h-streak">0</b></div>
     <div class="hb">❤️ Lives<br><b id="h-lives">3</b></div>
 </div>
 
-<div class="progress-dots" id="prog"></div>
-
-<div class="challenge-box">
-    <div class="challenge-emoji" id="c-emoji">🔐</div>
-    <div class="challenge-title" id="c-title">Challenge 1</div>
-    <div class="challenge-desc" id="c-desc"></div>
+<!-- ATTACK METER -->
+<div id="attack-wrap">
+    <span id="attack-label">☠️ Shor Bot:</span>
+    <div id="attack-bar-bg"><div id="attack-bar"></div></div>
+    <span id="shor-status">Waiting...</span>
 </div>
 
-<div class="section-label">👇 Click blocks to add them to your code</div>
+<!-- SHIELD VISUAL -->
+<div id="shield-visual">🛡️</div>
+
+<!-- CHALLENGE -->
+<div class="challenge-box">
+    <span class="ch-emoji" id="ch-emoji">🔐</span>
+    <div class="ch-title" id="ch-title">Loading...</div>
+    <div class="ch-desc" id="ch-desc">Click START to begin!</div>
+</div>
+
+<!-- PROGRESS DOTS -->
+<div class="progress-dots" id="progress-dots"></div>
+
+<!-- BLOCKS -->
 <div id="blocks-area"></div>
 
-<div class="section-label">🔨 Your code (click a block to remove it)</div>
+<!-- BUILDER -->
 <div id="builder-area">
-    <div id="drop-hint" style="text-align:center;color:#1e3a5a;font-size:12px;padding:20px 0">
-        👆 Click blocks above to build your code here!
-    </div>
-    <div id="placed-list"></div>
+    <div id="builder-label">Click blocks above to add them here →</div>
+    <div id="placed-blocks"></div>
 </div>
 
-<button id="run-btn" onclick="runCode()">▶ Run My Code!</button>
-<button id="clear-btn" onclick="clearAll()">🗑️ Start Over</button>
-<button id="next-btn" onclick="nextLevel()">⭐ Next Challenge!</button>
+<!-- BUTTONS -->
+<div class="btn-row">
+    <button id="run-btn" onclick="runCode()">⚡ BUILD SHIELD!</button>
+    <button id="clear-btn" onclick="clearBuilder()">🗑️ Clear</button>
+</div>
+<button id="next-btn" onclick="nextLevel()">➡️ Next Level!</button>
 
-<div id="output"><div class="out-comment"># Your program output will show here!</div></div>
-<div class="stars" id="stars">⭐⭐⭐</div>
+<!-- OUTPUT -->
+<div id="output"><span class="out-comment">// Click blocks to build your shield...</span></div>
+
+<!-- MESSAGE -->
 <div id="msg"></div>
+
+<!-- FACT -->
 <div id="fact"></div>
+
+<!-- STARS -->
+<div id="stars"></div>
+
+<!-- GAME OVER -->
+<div id="gameover">
+    <h2>💀 Network Compromised!</h2>
+    <p id="go-msg">The Shor Bots broke through your defenses!</p>
+    <button onclick="resetGame()"
+        style="padding:10px 20px;background:#1d4ed8;border:none;border-radius:8px;
+        color:white;font-size:13px;font-weight:bold;cursor:pointer;">
+        🔄 Try Again!
+    </button>
 </div>
+
+</div>
+<div id="toast"></div>
 
 <script>
-const LEVELS=[
-    {emoji:"🔐",title:"Make a Secret Key!",
-     desc:"A secret key keeps your messages safe. Click the blocks in order to make one!",
-     blocks:["🔑 Start Kyber","📦 Make a key","🔐 Lock the key","✅ Key is ready!"],
-     solution:["🔑 Start Kyber","📦 Make a key","🔐 Lock the key","✅ Key is ready!"],
-     output:["Starting Kyber (the quantum-safe lock)...","Making your secret key...","Locking it with math so nobody can copy it!","✅ Your secret key is ready! Nobody can break it!"],
-     fact:"Kyber makes secret keys using special math called 'Learning With Errors'. Even the most powerful quantum computer cannot figure out your secret key!"},
-    {emoji:"📨",title:"Send a Secret Message!",
-     desc:"Use your key to lock a message so only your friend can read it. Put the steps in order!",
-     blocks:["📝 Write message","🔑 Get the key","🔒 Lock the message","📤 Send it!"],
-     solution:["🔑 Get the key","📝 Write message","🔒 Lock the message","📤 Send it!"],
-     output:["Getting your Kyber key...","Writing your message...","Locking the message with Kyber math...","📤 Message sent! Only your friend can unlock it!"],
-     fact:"When you lock a message with Kyber, it gets scrambled using really hard math. Even a quantum computer cannot unscramble it without the secret key!"},
-    {emoji:"🔓",title:"Open a Secret Message!",
-     desc:"Your friend sent you a locked message. Use your secret key to open it!",
-     blocks:["🎉 Read message","🔑 Use secret key","📬 Get message","🔓 Unlock it"],
-     solution:["📬 Get message","🔑 Use secret key","🔓 Unlock it","🎉 Read message"],
-     output:["Getting the locked message...","Using your secret key...","Unlocking with Kyber math...","🎉 Message says: HELLO FRIEND! You did it!"],
-     fact:"Only someone with the exact secret key can unlock a Kyber message. This is why Kyber is used to protect bank accounts, doctor records, and secret messages all over the world!"},
-    {emoji:"✍️",title:"Sign Your Work!",
-     desc:"A signature proves YOU made something. Dilithium makes a quantum-safe signature!",
-     blocks:["✅ Signature done!","📝 Write your name","✍️ Start Dilithium","🖊️ Sign it"],
-     solution:["✍️ Start Dilithium","📝 Write your name","🖊️ Sign it","✅ Signature done!"],
-     output:["Starting Dilithium (the quantum-safe pen)...","Writing your name...","Signing with special math nobody can copy...","✅ Signature done! It proves YOU made this!"],
-     fact:"Dilithium makes digital signatures that nobody can fake — not even with a quantum computer! It's used to sign software, legal papers, and school records to prove they're real!"},
-    {emoji:"🔍",title:"Check the Signature!",
-     desc:"Did your friend really sign this? Check with Dilithium to make sure it's real!",
-     blocks:["✅ It's real!","📋 Get the paper","🔍 Check it","👀 Look at signature"],
-     solution:["📋 Get the paper","👀 Look at signature","🔍 Check it","✅ It's real!"],
-     output:["Getting the signed paper...","Looking at the signature...","Checking with Dilithium math...","✅ It's REAL! Your friend really signed it! Nobody faked it!"],
-     fact:"Checking a Dilithium signature is like having a magic scanner that can tell the real signature from any fake — instantly and perfectly!"},
-    {emoji:"🌲",title:"Make a Hash Shield!",
-     desc:"A hash is like a fingerprint for data. SPHINCS+ uses hashes to stay safe from quantum computers!",
-     blocks:["🛡️ Hash Shield ready!","🌲 Start SPHINCS+","📄 Pick some data","#️⃣ Make the hash"],
-     solution:["🌲 Start SPHINCS+","📄 Pick some data","#️⃣ Make the hash","🛡️ Hash Shield ready!"],
-     output:["Starting SPHINCS+ (the hash shield)...","Picking your data...","Making a hash fingerprint...","🛡️ Hash Shield ready! Completely quantum-safe!"],
-     fact:"SPHINCS+ uses SHA-3 hash functions — like fingerprints for data. Change even ONE tiny thing and the fingerprint changes completely! Quantum computers cannot fake SHA-3 fingerprints!"},
-    {emoji:"🦅",title:"Tiny Falcon Key!",
-     desc:"Falcon makes super tiny keys — perfect for small devices like smart watches and IoT sensors!",
-     blocks:["🎯 Tiny key done!","🦅 Start Falcon","⚡ Make it tiny","🔑 Create key"],
-     solution:["🦅 Start Falcon","🔑 Create key","⚡ Make it tiny","🎯 Tiny key done!"],
-     output:["Starting Falcon (the tiny key maker)...","Creating the key...","Making it as small as possible...","🎯 Tiny key done! Perfect for smart devices!"],
-     fact:"Falcon (FN-DSA FIPS 206) makes the smallest quantum-safe keys of all 4 NIST standards. Great for tiny devices like IoT sensors, smart watches, and medical devices!"},
-    {emoji:"🏆",title:"Deploy ALL 4 Shields!",
-     desc:"You are a security expert! Deploy all 4 NIST quantum-safe shields to protect the internet!",
-     blocks:["🏆 Internet is safe!","🔐 Deploy Kyber","✍️ Deploy Dilithium","🌲 Deploy SPHINCS+","🦅 Deploy Falcon"],
-     solution:["🔐 Deploy Kyber","✍️ Deploy Dilithium","🌲 Deploy SPHINCS+","🦅 Deploy Falcon","🏆 Internet is safe!"],
-     output:["🔐 Kyber deployed! Key exchange is quantum-safe!","✍️ Dilithium deployed! Signatures are quantum-safe!","🌲 SPHINCS+ deployed! Hash backup is quantum-safe!","🦅 Falcon deployed! IoT devices are quantum-safe!","🏆 ALL 4 SHIELDS ACTIVE! The internet is protected!"],
-     fact:"You just deployed all 4 NIST post-quantum cryptography standards! FIPS 203, 204, 205, and 206 together protect ALL of the internet from quantum computers. You are a real cryptography hero!"},
+// ── LEVELS ───────────────────────────────────────────────────────────────────
+const LEVELS = [
+    {
+        emoji:'🔐', title:'Build a Kyber Shield!',
+        desc:'Kyber (ML-KEM FIPS 203) protects key exchange. Click the RIGHT blocks to build it!',
+        answer:['INIT_KYBER','SET_PARAMS','GENERATE_KEYS','ACTIVATE'],
+        blocks:[
+            {id:'INIT_KYBER',   emoji:'⚙️', name:'Initialize Kyber', desc:'Start the ML-KEM algorithm', color:'blue'},
+            {id:'SET_PARAMS',   emoji:'📐', name:'Set Parameters',   desc:'Configure security level 3', color:'blue'},
+            {id:'GENERATE_KEYS',emoji:'🔑', name:'Generate Keys',    desc:'Create public+private key pair', color:'green'},
+            {id:'ACTIVATE',     emoji:'✅', name:'Activate Shield',  desc:'Deploy quantum protection!', color:'green'},
+            {id:'USE_RSA',      emoji:'💀', name:'Use RSA Instead',  desc:'Old algorithm — quantum vulnerable!', color:'red'},
+            {id:'SKIP_KEYS',    emoji:'⚠️', name:'Skip Key Gen',     desc:'Never skip key generation!', color:'red'},
+        ],
+        fact:'🔐 ML-KEM (Kyber FIPS 203) protects key exchange using Module-LWE lattice math — impossible for quantum computers to break!',
+        time:30, pts:100,
+    },
+    {
+        emoji:'✍️', title:'Sign with Dilithium!',
+        desc:'Dilithium (ML-DSA FIPS 204) creates digital signatures. Build the signing process!',
+        answer:['LOAD_MESSAGE','HASH_SHA3','SIGN_DILITHIUM','VERIFY'],
+        blocks:[
+            {id:'LOAD_MESSAGE',    emoji:'📄', name:'Load Message',     desc:'Get the document to sign', color:'blue'},
+            {id:'HASH_SHA3',       emoji:'#️⃣', name:'Hash with SHA-3', desc:'Create a message fingerprint', color:'purple'},
+            {id:'SIGN_DILITHIUM',  emoji:'✍️', name:'Sign with ML-DSA', desc:'Apply Dilithium signature', color:'blue'},
+            {id:'VERIFY',          emoji:'✅', name:'Verify Signature', desc:'Confirm the signature is valid', color:'green'},
+            {id:'USE_ECDSA',       emoji:'💀', name:'Use ECDSA',        desc:'Quantum vulnerable — Shor breaks it!', color:'red'},
+            {id:'SKIP_HASH',       emoji:'⚠️', name:'Skip Hashing',     desc:'Never skip the hash step!', color:'red'},
+        ],
+        fact:'✍️ ML-DSA (Dilithium FIPS 204) creates digital signatures that NO quantum computer can forge — protecting software updates and certificates!',
+        time:28, pts:150,
+    },
+    {
+        emoji:'🌲', title:'Build SPHINCS+ Backup!',
+        desc:'SPHINCS+ is the hash-based backup signature. No lattice math needed — just SHA-3!',
+        answer:['INIT_SHA3','BUILD_TREE','SIGN_LEAF','PUBLISH'],
+        blocks:[
+            {id:'INIT_SHA3',   emoji:'#️⃣', name:'Init SHA-3',      desc:'Start the hash function chain', color:'purple'},
+            {id:'BUILD_TREE',  emoji:'🌲', name:'Build Hash Tree', desc:'Create Merkle tree structure', color:'green'},
+            {id:'SIGN_LEAF',   emoji:'🍃', name:'Sign Leaf Node',  desc:'Sign at tree leaf position', color:'green'},
+            {id:'PUBLISH',     emoji:'📡', name:'Publish Root',    desc:'Share the tree root hash', color:'blue'},
+            {id:'USE_RSA2',    emoji:'💀', name:'Use RSA',         desc:'Broken by Shor Algorithm!', color:'red'},
+            {id:'WRONG_ORDER', emoji:'⚠️', name:'Publish First',   desc:'Must build tree before publishing!', color:'red'},
+        ],
+        fact:'🌲 SPHINCS+ (FIPS 205) chains thousands of SHA-3 hashes into a Merkle tree — even if ALL lattice math breaks, SPHINCS+ stays safe!',
+        time:28, pts:150,
+    },
+    {
+        emoji:'🦅', title:'Deploy Falcon for IoT!',
+        desc:'Falcon uses NTRU lattices and makes the SMALLEST signatures — perfect for tiny devices!',
+        answer:['DETECT_DEVICE','LOAD_NTRU','COMPRESS_SIG','DEPLOY'],
+        blocks:[
+            {id:'DETECT_DEVICE', emoji:'📱', name:'Detect Device',   desc:'Check device memory limits', color:'blue'},
+            {id:'LOAD_NTRU',     emoji:'🦅', name:'Load NTRU Lattice',desc:'Use Falcon FN-DSA FIPS 206', color:'yellow'},
+            {id:'COMPRESS_SIG',  emoji:'🗜️', name:'Compress Sig',    desc:'Falcon sigs are 3x smaller!', color:'yellow'},
+            {id:'DEPLOY',        emoji:'🚀', name:'Deploy to IoT',   desc:'Send to smart device', color:'green'},
+            {id:'USE_BIG_SIG',   emoji:'💀', name:'Use SPHINCS+',    desc:'Too large for small devices!', color:'red'},
+            {id:'SKIP_CHECK',    emoji:'⚠️', name:'Skip Device Check',desc:'Always check device limits!', color:'red'},
+        ],
+        fact:'🦅 Falcon (FN-DSA FIPS 206) signatures are ~666 bytes vs Dilithium\'s 3293 bytes — 5x smaller, perfect for IoT sensors and smart cards!',
+        time:26, pts:200,
+    },
+    {
+        emoji:'🏰', title:'Secure a TLS Connection!',
+        desc:'TLS protects websites. Build a quantum-safe HTTPS connection step by step!',
+        answer:['CLIENT_HELLO','KYBER_KEM','DILITHIUM_CERT','ENCRYPTED_DATA'],
+        blocks:[
+            {id:'CLIENT_HELLO',    emoji:'👋', name:'Client Hello',     desc:'Browser greets the server', color:'blue'},
+            {id:'KYBER_KEM',       emoji:'🔐', name:'Kyber Key Exchange',desc:'Share secret using ML-KEM', color:'green'},
+            {id:'DILITHIUM_CERT',  emoji:'✍️', name:'Verify Certificate',desc:'Check server identity with ML-DSA', color:'blue'},
+            {id:'ENCRYPTED_DATA',  emoji:'🔒', name:'Send Encrypted Data',desc:'Data protected by shared secret!', color:'green'},
+            {id:'USE_RSA_TLS',     emoji:'💀', name:'Use RSA for TLS',  desc:'Quantum vulnerable key exchange!', color:'red'},
+            {id:'SKIP_CERT',       emoji:'⚠️', name:'Skip Certificate', desc:'Never skip identity verification!', color:'red'},
+        ],
+        fact:'🌐 Google Chrome + Cloudflare already use Kyber (ML-KEM) in TLS — protecting 20% of all internet traffic from future quantum attacks!',
+        time:24, pts:200,
+    },
+    {
+        emoji:'💾', title:'Protect a Database!',
+        desc:'Databases store sensitive data. Encrypt them with the right PQC algorithm!',
+        answer:['SCAN_DATA','KYBER_ENCRYPT','HASH_RECORDS','BACKUP_KEYS'],
+        blocks:[
+            {id:'SCAN_DATA',     emoji:'🔍', name:'Scan Database',    desc:'Find sensitive records', color:'blue'},
+            {id:'KYBER_ENCRYPT', emoji:'🔐', name:'Encrypt with Kyber',desc:'Apply ML-KEM encryption', color:'green'},
+            {id:'HASH_RECORDS',  emoji:'#️⃣', name:'Hash Records',     desc:'Create SHA-3 integrity hashes', color:'purple'},
+            {id:'BACKUP_KEYS',   emoji:'💾', name:'Backup Keys Safely',desc:'Store keys in HSM', color:'yellow'},
+            {id:'USE_AES128',    emoji:'⚠️', name:'Use AES-128',      desc:'Grover halves security to 64 bits!', color:'red'},
+            {id:'NO_BACKUP',     emoji:'💀', name:'Skip Key Backup',  desc:'Lost keys = lost data forever!', color:'red'},
+        ],
+        fact:'💾 AES-256 stays safe against Grover (128-bit quantum security) but RSA/ECC key exchange must be replaced with Kyber — databases need BOTH!',
+        time:22, pts:250,
+    },
+    {
+        emoji:'🚀', title:'Launch a Satellite!',
+        desc:'Satellites need quantum-safe crypto that works for 20+ years — long after quantum computers arrive!',
+        answer:['GENERATE_LONGTERM','FALCON_SIGN','SPHINCS_BACKUP','LAUNCH'],
+        blocks:[
+            {id:'GENERATE_LONGTERM',emoji:'🔑', name:'Generate Long-term Keys',desc:'Keys that last 20 years', color:'blue'},
+            {id:'FALCON_SIGN',      emoji:'🦅', name:'Sign with Falcon',        desc:'Compact FIPS 206 signatures', color:'yellow'},
+            {id:'SPHINCS_BACKUP',   emoji:'🌲', name:'SPHINCS+ Backup Sig',     desc:'Hash-based backup protection', color:'green'},
+            {id:'LAUNCH',           emoji:'🚀', name:'Launch Satellite',         desc:'Deploy with full PQC protection!', color:'green'},
+            {id:'USE_RSA_SAT',      emoji:'💀', name:'Use RSA for 20 Years',    desc:'Quantum will break this in 5 years!', color:'red'},
+            {id:'SKIP_BACKUP',      emoji:'⚠️', name:'Skip SPHINCS+ Backup',   desc:'Always have a backup scheme!', color:'red'},
+        ],
+        fact:'🚀 Real satellites launched today must survive quantum computers — NASA and ESA are already testing PQC standards for space communications!',
+        time:20, pts:300,
+    },
+    {
+        emoji:'🌍', title:'Secure the Internet!',
+        desc:'FINAL MISSION: Deploy all 4 NIST PQC standards to protect global infrastructure!',
+        answer:['DEPLOY_KYBER','DEPLOY_DILITHIUM','DEPLOY_SPHINCS','DEPLOY_FALCON'],
+        blocks:[
+            {id:'DEPLOY_KYBER',     emoji:'🔐', name:'Deploy ML-KEM',    desc:'FIPS 203 — Key Exchange', color:'green'},
+            {id:'DEPLOY_DILITHIUM', emoji:'✍️', name:'Deploy ML-DSA',    desc:'FIPS 204 — Signatures', color:'blue'},
+            {id:'DEPLOY_SPHINCS',   emoji:'🌲', name:'Deploy SLH-DSA',   desc:'FIPS 205 — Hash Backup', color:'purple'},
+            {id:'DEPLOY_FALCON',    emoji:'🦅', name:'Deploy FN-DSA',    desc:'FIPS 206 — Compact Sigs', color:'yellow'},
+            {id:'KEEP_RSA',         emoji:'💀', name:'Keep RSA',         desc:'Quantum destroys RSA!', color:'red'},
+            {id:'PARTIAL_DEPLOY',   emoji:'⚠️', name:'Deploy Only 2',    desc:'Need ALL 4 standards!', color:'red'},
+        ],
+        fact:'🌍 NIST finalized all 4 PQC standards in August 2024. NSM-10 requires all US federal agencies to migrate by 2035. The quantum-safe internet starts NOW!',
+        time:18, pts:500,
+    },
 ];
 
-const COLORS=["blue","green","purple","yellow","orange","pink"];
-let level=0,score=0,lives=3,placed=[],factTmo=null,results=[];
+// ── SHOR BOT TAUNTS ──────────────────────────────────────────────────────────
+const TAUNTS = [
+    '🤖 "Warming up qubits..."',
+    '🤖 "Found your RSA key!"',
+    '🤖 "Shor Algorithm active!"',
+    '🤖 "Your time is running out!"',
+    '🤖 "Almost through your defenses!"',
+    '🤖 "QUANTUM SUPREMACY!"',
+];
 
-function buildProgress(){
-    const d=document.getElementById("prog");
-    d.innerHTML="";
-    for(let i=0;i<LEVELS.length;i++){
-        const dot=document.createElement("div");
-        dot.className="dot"+(results[i]==="done"?" done":i===level?" active":"");
-        d.appendChild(dot);
-    }
-}
+// ── GAME STATE ────────────────────────────────────────────────────────────────
+let currentLevel = 0;
+let placedBlocks = [];
+let score = 0, streak = 0, lives = 3;
+let attackPct = 0, attackTimer = null;
+let levelDone = false;
 
-function loadLevel(){
-    const lv=LEVELS[level];
-    document.getElementById("c-emoji").textContent=lv.emoji;
-    document.getElementById("c-title").textContent="Challenge "+(level+1)+": "+lv.title;
-    document.getElementById("c-desc").textContent=lv.desc;
-    document.getElementById("h-level").textContent=(level+1);
+// ── INIT ─────────────────────────────────────────────────────────────────────
+function initLevel() {
+    const lv = LEVELS[currentLevel];
+    levelDone = false;
+    placedBlocks = [];
+    attackPct = 0;
 
+    // Update challenge box
+    document.getElementById('ch-emoji').textContent = lv.emoji;
+    document.getElementById('ch-title').textContent = lv.title;
+    document.getElementById('ch-desc').textContent = lv.desc;
+    document.getElementById('h-level').textContent = (currentLevel+1)+'/8';
+
+    // Shield visual
+    document.getElementById('shield-visual').textContent = lv.emoji;
+    document.getElementById('shield-visual').className = '';
+
+    // Build blocks
+    const area = document.getElementById('blocks-area');
+    area.innerHTML = '';
     // Shuffle blocks
-    const shuffled=[...lv.blocks].sort(()=>Math.random()-0.5);
-    const ba=document.getElementById("blocks-area");
-    ba.innerHTML="";
-    shuffled.forEach((b,i)=>{
-        const div=document.createElement("div");
-        div.className="block "+COLORS[i%COLORS.length];
-        div.textContent=b;
-        div.onclick=()=>addBlock(b,i%COLORS.length);
-        ba.appendChild(div);
+    const shuffled = [...lv.blocks].sort(() => Math.random()-0.5);
+    shuffled.forEach(b => {
+        const div = document.createElement('div');
+        div.className = 'block '+b.color;
+        div.id = 'blk-'+b.id;
+        div.innerHTML =
+            '<span class="b-emoji">'+b.emoji+'</span>'+
+            '<div class="b-name">'+b.name+'</div>'+
+            '<div class="b-desc">'+b.desc+'</div>';
+        div.onclick = () => addBlock(b, div);
+        area.appendChild(div);
     });
 
-    placed=[];
-    renderPlaced();
-    clearOutput();
-    document.getElementById("next-btn").style.display="none";
-    document.getElementById("stars").style.display="none";
-    document.getElementById("msg").textContent="";
-    document.getElementById("fact").style.display="none";
-    buildProgress();
+    // Clear builder
+    clearBuilder();
+    document.getElementById('output').innerHTML =
+        '<span class="out-comment">// '+lv.desc+'</span>';
+    document.getElementById('next-btn').style.display = 'none';
+    document.getElementById('run-btn').style.display = 'block';
+    document.getElementById('fact').style.display = 'none';
+    document.getElementById('stars').style.display = 'none';
+    document.getElementById('gameover').style.display = 'none';
+    document.getElementById('blocks-area').style.display = 'grid';
+
+    // Build progress dots
+    const dots = document.getElementById('progress-dots');
+    dots.innerHTML = '';
+    LEVELS.forEach((_, i) => {
+        const d = document.createElement('div');
+        d.className = 'dot'+(i<currentLevel?' done':i===currentLevel?' active':'');
+        dots.appendChild(d);
+    });
+
+    // Start attack timer
+    clearInterval(attackTimer);
+    attackPct = 0;
+    updateAttack();
+    const steps = lv.time * 10;
+    let step = 0;
+    let tauntIdx = 0;
+    attackTimer = setInterval(() => {
+        if (levelDone) { clearInterval(attackTimer); return; }
+        step++;
+        attackPct = Math.min(100, (step/steps)*100);
+        updateAttack();
+        // Taunts
+        if (step % Math.floor(steps/5) === 0) {
+            document.getElementById('shor-status').textContent =
+                TAUNTS[tauntIdx++ % TAUNTS.length];
+        }
+        if (attackPct >= 100) {
+            clearInterval(attackTimer);
+            timeUp();
+        }
+    }, 100);
+
+    setMsg('🛡️ Click blocks in the RIGHT ORDER to build your shield!', '#60a5fa');
+    updateHUD();
 }
 
-function addBlock(text,colorIdx){
-    placed.push({text,color:COLORS[colorIdx]});
-    renderPlaced();
-    document.getElementById("drop-hint").style.display="none";
+// ── BLOCK INTERACTION ─────────────────────────────────────────────────────────
+function addBlock(block, el) {
+    if (levelDone) return;
+    placedBlocks.push(block);
+    el.classList.add('selected');
+
+    // Add to builder
+    const pb = document.getElementById('placed-blocks');
+    document.getElementById('builder-label').style.display = 'none';
+    const div = document.createElement('div');
+    div.className = 'placed';
+    div.style.background = el.classList.contains('green')?'#05301530':
+                            el.classList.contains('blue')?'#1d4ed830':
+                            el.classList.contains('purple')?'#2e1a4030':
+                            el.classList.contains('yellow')?'#1a1a0030':
+                            el.classList.contains('red')?'#2a000030':'#1e293b';
+    div.style.borderLeft = '3px solid '+(
+        el.classList.contains('green')?'#10b981':
+        el.classList.contains('blue')?'#3b82f6':
+        el.classList.contains('purple')?'#8b5cf6':
+        el.classList.contains('yellow')?'#fbbf24':'#ef4444');
+    div.innerHTML =
+        '<span class="p-num">'+placedBlocks.length+'.</span>'+
+        '<span>'+block.emoji+' '+block.name+'</span>'+
+        '<span class="p-x" onclick="removeBlock('+(placedBlocks.length-1)+')">✕</span>';
+    pb.appendChild(div);
+    updateHUD();
 }
 
-function renderPlaced(){
-    const pl=document.getElementById("placed-list");
-    pl.innerHTML="";
-    if(placed.length===0){
-        document.getElementById("drop-hint").style.display="block";
+function removeBlock(idx) {
+    placedBlocks.splice(idx, 1);
+    rebuildPlaced();
+}
+
+function rebuildPlaced() {
+    const pb = document.getElementById('placed-blocks');
+    pb.innerHTML = '';
+    if (placedBlocks.length === 0) {
+        document.getElementById('builder-label').style.display = 'block';
+        // Re-enable all blocks
+        document.querySelectorAll('.block').forEach(b => b.classList.remove('selected'));
         return;
     }
-    document.getElementById("drop-hint").style.display="none";
-    placed.forEach((b,i)=>{
-        const div=document.createElement("div");
-        div.className="placed block "+b.color;
-        div.style.marginBottom="6px";
-        div.innerHTML="<span><b class='num'>"+(i+1)+".</b> "+b.text+"</span><span class='remove-x' onclick='removeBlock("+i+")'>✕</span>";
-        pl.appendChild(div);
+    placedBlocks.forEach((block, i) => {
+        const div = document.createElement('div');
+        div.className = 'placed';
+        div.style.borderLeft = '3px solid #3b82f6';
+        div.innerHTML =
+            '<span class="p-num">'+(i+1)+'.</span>'+
+            '<span>'+block.emoji+' '+block.name+'</span>'+
+            '<span class="p-x" onclick="removeBlock('+i+')">✕</span>';
+        pb.appendChild(div);
     });
 }
 
-function removeBlock(idx){
-    placed.splice(idx,1);
-    renderPlaced();
+function clearBuilder() {
+    placedBlocks = [];
+    document.getElementById('placed-blocks').innerHTML = '';
+    document.getElementById('builder-label').style.display = 'block';
+    document.querySelectorAll('.block').forEach(b => b.classList.remove('selected'));
+    updateHUD();
 }
 
-function clearAll(){
-    placed=[];
-    renderPlaced();
-    clearOutput();
-    document.getElementById("next-btn").style.display="none";
-    document.getElementById("stars").style.display="none";
-    document.getElementById("msg").textContent="";
-}
+// ── RUN CODE ──────────────────────────────────────────────────────────────────
+function runCode() {
+    if (levelDone) return;
+    const lv = LEVELS[currentLevel];
+    const out = document.getElementById('output');
+    out.innerHTML = '';
 
-function clearOutput(){
-    document.getElementById("output").innerHTML='<div class="out-comment"># Your program output will show here!</div>';
-}
+    if (placedBlocks.length === 0) {
+        out.innerHTML = '<span class="out-err">ERROR: No blocks selected! Click blocks to build your shield.</span>';
+        setMsg('❌ Add some blocks first!', '#ef4444');
+        return;
+    }
 
-function runCode(){
-    const lv=LEVELS[level];
-    const isCorrect=placed.length===lv.solution.length&&
-        placed.every((b,i)=>b.text===lv.solution[i]);
+    // Check answer
+    const userIds = placedBlocks.map(b => b.id);
+    const correct = lv.answer;
+    let allCorrect = true;
+    let firstError = -1;
 
-    const output=document.getElementById("output");
-    output.innerHTML="";
+    // Output each step
+    userIds.forEach((id, i) => {
+        const block = lv.blocks.find(b => b.id === id);
+        const isCorrect = id === correct[i];
+        if (!isCorrect && firstError === -1) firstError = i;
+        if (!isCorrect) allCorrect = false;
 
-    if(isCorrect){
-        lv.output.forEach((line,i)=>{
-            setTimeout(()=>{
-                const div=document.createElement("div");
-                div.className=line.startsWith("#")?"out-comment":"out-line";
-                div.textContent=line;
-                output.appendChild(div);
-                output.scrollTop=output.scrollHeight;
-            },i*400);
-        });
-        setTimeout(()=>{
-            const pts=100*(level+1);
-            score+=pts;
-            document.getElementById("h-score").textContent=score;
-            document.getElementById("msg").textContent="🎉 AMAZING! You did it! +"+pts+" points!";
-            document.getElementById("msg").style.color="#10b981";
-            document.getElementById("stars").style.display="block";
-            document.getElementById("next-btn").style.display="block";
-            results[level]="done";
-            buildProgress();
-            showFact(lv.fact);
-        },lv.output.length*400+200);
-    } else {
-        output.innerHTML='<div class="out-error">❌ Hmm, the blocks are in the wrong order!</div><div class="out-comment"># Try again! Think about what needs to happen first.</div>';
-        lives=Math.max(0,lives-1);
-        document.getElementById("h-lives").textContent=lives;
-        document.getElementById("msg").textContent="Try a different order! You've got this! 💪";
-        document.getElementById("msg").style.color="#f59e0b";
-        if(lives<=0){
-            output.innerHTML+='<div class="out-comment"># Hint: Look at the challenge description for clues!</div>';
-            lives=3;document.getElementById("h-lives").textContent=3;
+        const line = document.createElement('div');
+        if (isCorrect) {
+            line.className = 'out-ok';
+            line.textContent = '✅ Step '+(i+1)+': '+block.emoji+' '+block.name+' — CORRECT!';
+        } else if (id.includes('RSA')||id.includes('ECDSA')||id.includes('KEEP')||id.includes('USE')) {
+            line.className = 'out-err';
+            line.textContent = '❌ Step '+(i+1)+': '+block.emoji+' '+block.name+' — QUANTUM VULNERABLE!';
+        } else {
+            line.className = 'out-warn';
+            line.textContent = '⚠️ Step '+(i+1)+': '+block.emoji+' '+block.name+' — Wrong order!';
         }
+        out.appendChild(line);
+    });
+
+    // Check if all 4 required steps are included
+    const hasAll = correct.every(id => userIds.includes(id));
+
+    if (allCorrect && userIds.length === correct.length) {
+        // Perfect!
+        levelWin(true);
+    } else if (hasAll && userIds.length === correct.length) {
+        // Right blocks wrong order
+        const errLine = document.createElement('div');
+        errLine.className = 'out-warn';
+        errLine.textContent = '⚠️ Right blocks but wrong order! Try rearranging.';
+        out.appendChild(errLine);
+        setMsg('⚠️ Right blocks, wrong order! Clear and try again.', '#fbbf24');
+        streak = 0; updateHUD();
+    } else {
+        // Wrong blocks
+        const errLine = document.createElement('div');
+        errLine.className = 'out-err';
+        errLine.textContent = '❌ Shield failed! Check for quantum-vulnerable blocks!';
+        out.appendChild(errLine);
+        setMsg('❌ Shield failed! Remove the wrong blocks!', '#ef4444');
+        // Flash wrong blocks
+        placedBlocks.forEach(b => {
+            if (!correct.includes(b.id)) {
+                const el = document.getElementById('blk-'+b.id);
+                if (el) { el.classList.add('wrong-flash'); setTimeout(()=>el.classList.remove('wrong-flash'),400); }
+            }
+        });
+        lives--; updateHUD();
+        if (lives <= 0) gameOver();
     }
 }
 
-function nextLevel(){
-    if(level<LEVELS.length-1){level++;loadLevel();}
-    else{
-        document.getElementById("msg").textContent="🏆 YOU FINISHED ALL 8 CHALLENGES! You are a Cryptography Hero! Score: "+score;
-        document.getElementById("msg").style.color="#fbbf24";
+function levelWin(perfect) {
+    clearInterval(attackTimer);
+    levelDone = true;
+    const lv = LEVELS[currentLevel];
+    streak++;
+    const timeBonus = Math.round((1 - attackPct/100) * 50);
+    const streakBonus = streak >= 3 ? 30 : 0;
+    const pts = lv.pts + timeBonus + streakBonus;
+    score += pts;
+
+    document.getElementById('shield-visual').textContent = '🛡️';
+    document.getElementById('shield-visual').className = 'built';
+    document.getElementById('stars').textContent = streak>=3?'⭐⭐⭐':'⭐⭐';
+    document.getElementById('stars').style.display = 'block';
+
+    showFact(lv.fact);
+    setMsg('🎉 SHIELD BUILT! +'+pts+' pts'+(streakBonus?' (Streak Bonus!)':''), '#10b981');
+    document.getElementById('next-btn').style.display = 'block';
+    document.getElementById('run-btn').style.display = 'none';
+    document.getElementById('shor-status').textContent = '🤖 "BLOCKED! Retreat!"';
+    updateAttack(0);
+    updateHUD();
+    showToast('🛡️ Shield Built! +'+pts+' pts!');
+    if (streak >= 3) confetti();
+
+    // Add success line to output
+    const out = document.getElementById('output');
+    const line = document.createElement('div');
+    line.className = 'out-ok';
+    line.textContent = '🛡️ SHIELD ACTIVATED! Shor Bot blocked!';
+    out.appendChild(line);
+}
+
+function timeUp() {
+    if (levelDone) return;
+    levelDone = true;
+    lives--;
+    document.getElementById('shield-visual').className = 'broken';
+    document.getElementById('shor-status').textContent = '🤖 "BREACHED! RSA is mine!"';
+    setMsg('💀 Too slow! Shor Bot broke through!', '#ef4444');
+    streak = 0; updateHUD();
+    if (lives <= 0) { setTimeout(gameOver, 1000); return; }
+    setTimeout(()=>{
+        document.getElementById('next-btn').style.display = 'block';
+        document.getElementById('next-btn').textContent = '➡️ Try Next Level';
+        document.getElementById('run-btn').style.display = 'none';
+    }, 1000);
+}
+
+function nextLevel() {
+    currentLevel++;
+    if (currentLevel >= LEVELS.length) {
+        // Victory!
+        document.getElementById('blocks-area').style.display = 'none';
+        document.getElementById('builder-area').style.display = 'none';
+        document.getElementById('btn-row').style.display = 'none';
+        document.getElementById('next-btn').style.display = 'none';
+        document.getElementById('output').innerHTML =
+            '<span class="out-ok">🌍 ALL 4 NIST PQC STANDARDS DEPLOYED!</span><br>'+
+            '<span class="out-ok">🏆 Final Score: '+score+'</span><br>'+
+            '<span class="out-ok">🎉 The internet is quantum-safe!</span>';
+        setMsg('👑 QUANTUM CHAMPION! You protected the internet!', '#fbbf24');
+        confetti();
+        showToast('👑 All 8 levels complete! Score: '+score);
+        return;
+    }
+    initLevel();
+}
+
+function gameOver() {
+    clearInterval(attackTimer);
+    document.getElementById('gameover').style.display = 'block';
+    document.getElementById('go-msg').textContent =
+        'Score: '+score+' | Streak: '+streak+' | Level: '+(currentLevel+1)+'/8';
+    setMsg('', '');
+}
+
+function resetGame() {
+    currentLevel = 0; score = 0; streak = 0; lives = 3;
+    document.getElementById('gameover').style.display = 'none';
+    document.getElementById('builder-area').style.display = 'block';
+    document.getElementById('blocks-area').style.display = 'grid';
+    document.getElementById('run-btn').style.display = 'block';
+    initLevel();
+}
+
+// ── UI HELPERS ────────────────────────────────────────────────────────────────
+function updateHUD() {
+    document.getElementById('h-score').textContent = score;
+    document.getElementById('h-streak').textContent = streak;
+    document.getElementById('h-lives').textContent = '❤️'.repeat(Math.max(0,lives));
+}
+
+function updateAttack(pct) {
+    const p = pct !== undefined ? pct : attackPct;
+    document.getElementById('attack-bar').style.width = p+'%';
+}
+
+function setMsg(m, c) {
+    const el = document.getElementById('msg');
+    el.textContent = m;
+    el.style.color = c || '#60a5fa';
+}
+
+let factTimer = null;
+function showFact(t) {
+    const el = document.getElementById('fact');
+    el.textContent = t; el.style.display = 'block';
+    if (factTimer) clearTimeout(factTimer);
+    factTimer = setTimeout(() => el.style.display='none', 7000);
+}
+
+let toastTimer = null;
+function showToast(m) {
+    const el = document.getElementById('toast');
+    el.textContent = m; el.classList.add('show');
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => el.classList.remove('show'), 2500);
+}
+
+function confetti() {
+    const colors = ['#fbbf24','#10b981','#3b82f6','#8b5cf6','#ef4444','#f97316'];
+    for (let i=0; i<20; i++) {
+        setTimeout(() => {
+            const el = document.createElement('div');
+            el.className = 'cp';
+            el.style.left = Math.random()*100+'vw';
+            el.style.background = colors[Math.floor(Math.random()*colors.length)];
+            el.style.animationDuration = (1+Math.random()*2)+'s';
+            document.body.appendChild(el);
+            setTimeout(() => el.remove(), 3000);
+        }, i*50);
     }
 }
 
-function showFact(text){
-    const el=document.getElementById("fact");
-    el.textContent="🔐 Fun Fact: "+text;
-    el.style.display="block";
-    if(factTmo)clearTimeout(factTmo);
-    factTmo=setTimeout(()=>el.style.display="none",10000);
-}
-
-loadLevel();
+// ── START ─────────────────────────────────────────────────────────────────────
+initLevel();
 </script>
 </body>
 </html>
-""", height=860)
-
+""", height=820)
 
 def render_cipher_quest():
     """Middle School 6-8: Cipher Quest — fill in ONE blank per challenge, rest is provided."""
