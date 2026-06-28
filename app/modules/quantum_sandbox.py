@@ -1,13 +1,10 @@
 def render_quantum_sandbox():
-    """Free game: Quantum Sandbox — physics-based PQC playground."""
+    """Quantum Sandbox — Melon-style physics playground with PQC theme."""
     import streamlit as st
     import streamlit.components.v1 as components
 
     st.subheader("🧪 Quantum Sandbox")
-    st.markdown(
-        "**Free play!** Drop bombs, build shields, trigger chain reactions. "
-        "No rules — just quantum chaos! Learn PQC by experimenting."
-    )
+    st.markdown("**No rules. No score. Just quantum chaos!** Drag objects from the left panel onto the world.")
 
     components.html(r"""
 <!DOCTYPE html>
@@ -15,587 +12,786 @@ def render_quantum_sandbox():
 <head>
 <meta charset="UTF-8">
 <style>
-*{margin:0;padding:0;box-sizing:border-box;}
-body{background:#020d14;font-family:'Segoe UI',sans-serif;color:white;overflow:hidden;}
-#wrap{display:flex;flex-direction:column;align-items:center;padding:8px;max-width:580px;margin:0 auto;}
+*{margin:0;padding:0;box-sizing:border-box;user-select:none;}
+body{background:#020d14;font-family:'Segoe UI',sans-serif;overflow:hidden;}
 
-/* HUD */
-.hud{display:grid;grid-template-columns:repeat(4,1fr);gap:3px;width:100%;margin-bottom:6px;}
-.hb{background:#071520;border:1px solid #1a3a5a;border-radius:8px;padding:5px 3px;
-    text-align:center;font-size:9px;color:#60a5fa;}
-.hb b{display:block;font-size:13px;color:white;}
+#game{display:flex;width:100%;height:580px;position:relative;}
 
-/* TOOLBAR */
-#toolbar{display:flex;gap:4px;flex-wrap:wrap;justify-content:center;
-    width:100%;margin-bottom:6px;}
-.tool-btn{padding:6px 10px;border-radius:8px;border:2px solid #1a3a5a;
-    background:#071520;color:#94a3b8;font-size:11px;cursor:pointer;
-    transition:all 0.15s;text-align:center;min-width:70px;}
-.tool-btn:hover{border-color:#3b82f6;color:white;background:#0a1f35;}
-.tool-btn.active{border-color:#fbbf24;background:#1a1500;color:#fbbf24;}
-.tool-btn .t-emoji{font-size:16px;display:block;margin-bottom:2px;}
+/* ── LEFT SPAWN PANEL ── */
+#spawn-panel{
+    width:110px;flex-shrink:0;
+    background:#071520;
+    border-right:2px solid #1a3a5a;
+    display:flex;flex-direction:column;
+    overflow:hidden;
+}
+#panel-title{
+    background:#0a1f35;padding:8px 6px;
+    font-size:10px;color:#60a5fa;font-weight:bold;
+    letter-spacing:1px;text-align:center;
+    border-bottom:1px solid #1a3a5a;
+}
+#panel-cats{
+    display:flex;gap:2px;padding:4px;
+    border-bottom:1px solid #1a3a5a;
+    flex-wrap:wrap;justify-content:center;
+}
+.cat-btn{
+    padding:3px 6px;border-radius:4px;border:1px solid #1a3a5a;
+    background:transparent;color:#475569;font-size:9px;cursor:pointer;
+    transition:all 0.1s;
+}
+.cat-btn:hover,.cat-btn.active{background:#1d4ed820;border-color:#3b82f6;color:#60a5fa;}
+#spawn-items{
+    flex:1;overflow-y:auto;padding:4px;
+    scrollbar-width:thin;scrollbar-color:#1a3a5a transparent;
+}
+.spawn-item{
+    display:flex;flex-direction:column;align-items:center;
+    padding:6px 4px;border-radius:8px;border:1px solid #1a3a5a;
+    background:#071520;cursor:grab;margin-bottom:4px;
+    transition:all 0.15s;color:#94a3b8;font-size:9px;text-align:center;
+}
+.spawn-item:hover{background:#0a1f35;border-color:#3b82f6;color:white;
+    transform:scale(1.05);}
+.spawn-item:active{cursor:grabbing;}
+.spawn-item .si-emoji{font-size:20px;margin-bottom:2px;}
 
-/* CANVAS */
-#gc{border:2px solid #1d4ed8;border-radius:12px;display:block;cursor:crosshair;
-    box-shadow:0 0 20px rgba(59,130,246,0.15);}
+/* ── WORLD CANVAS ── */
+#world{flex:1;position:relative;overflow:hidden;cursor:crosshair;}
+#cv{display:block;width:100%;height:100%;}
 
-/* INFO BAR */
-#info-bar{background:#071520;border:1px solid #1a3a5a;border-radius:8px;
-    padding:6px 12px;width:100%;margin-top:5px;font-size:11px;
-    color:#60a5fa;text-align:center;min-height:28px;}
+/* ── TOP HUD ── */
+#hud{
+    position:absolute;top:6px;left:6px;right:6px;
+    display:flex;gap:4px;pointer-events:none;z-index:10;
+}
+.hud-pill{
+    background:#071520cc;border:1px solid #1a3a5a;
+    border-radius:20px;padding:3px 10px;font-size:10px;color:#60a5fa;
+}
 
-/* BOTTOM BUTTONS */
-.btns{display:flex;gap:5px;flex-wrap:wrap;justify-content:center;margin-top:6px;}
-.btn{padding:7px 14px;border-radius:8px;border:none;cursor:pointer;
-    font-size:11px;font-weight:bold;color:white;transition:all 0.15s;}
-.btn:hover{filter:brightness(1.2);}
-.btn-reset{background:linear-gradient(135deg,#334155,#475569);}
-.btn-chaos{background:linear-gradient(135deg,#dc2626,#ef4444);}
-.btn-shield{background:linear-gradient(135deg,#059669,#10b981);}
-.btn-spawn{background:linear-gradient(135deg,#1d4ed8,#3b82f6);}
+/* ── CONTEXT MENU ── */
+#ctx-menu{
+    position:absolute;background:#071520;border:1px solid #1d4ed8;
+    border-radius:8px;padding:4px;z-index:100;display:none;
+    box-shadow:0 4px 20px rgba(0,0,0,0.5);min-width:120px;
+}
+.ctx-item{
+    padding:6px 12px;font-size:11px;color:#94a3b8;cursor:pointer;
+    border-radius:4px;transition:all 0.1s;
+}
+.ctx-item:hover{background:#0a1f35;color:white;}
 
-/* FACT BOX */
-#fact{background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.3);
-    border-radius:8px;padding:7px 10px;margin-top:5px;font-size:10px;
-    color:#93c5fd;display:none;line-height:1.5;width:100%;text-align:center;}
+/* ── TOOLBAR ── */
+#toolbar{
+    position:absolute;bottom:6px;left:50%;transform:translateX(-50%);
+    display:flex;gap:4px;z-index:10;
+    background:#071520cc;border:1px solid #1a3a5a;
+    border-radius:20px;padding:4px 8px;
+}
+.tool{
+    padding:5px 10px;border-radius:12px;border:1px solid #1a3a5a;
+    background:transparent;color:#60a5fa;font-size:10px;cursor:pointer;
+    transition:all 0.15s;
+}
+.tool:hover{background:#1d4ed820;border-color:#3b82f6;}
+.tool.active{background:#1d4ed8;border-color:#60a5fa;color:white;}
+
+/* ── FACT TOAST ── */
+#toast{
+    position:absolute;bottom:50px;left:50%;transform:translateX(-50%);
+    background:#071520ee;border:1px solid #3b82f6;border-radius:8px;
+    padding:7px 14px;font-size:10px;color:#93c5fd;
+    z-index:20;opacity:0;transition:opacity 0.3s;
+    max-width:300px;text-align:center;pointer-events:none;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+#toast.show{opacity:1;}
 </style>
 </head>
 <body>
-<div id="wrap">
+<div id="game">
 
-<div class="hud">
-    <div class="hb">🌐 Nodes<br><b id="h-nodes">0</b></div>
-    <div class="hb">🔐 Shields<br><b id="h-shields">0</b></div>
-    <div class="hb">💥 Destroyed<br><b id="h-destroyed">0</b></div>
-    <div class="hb">⚡ Zaps<br><b id="h-zaps">0</b></div>
-</div>
+  <!-- SPAWN PANEL -->
+  <div id="spawn-panel">
+    <div id="panel-title">⬛ SPAWN</div>
+    <div id="panel-cats">
+      <button class="cat-btn active" onclick="setCat('agents')">🤖</button>
+      <button class="cat-btn" onclick="setCat('weapons')">💥</button>
+      <button class="cat-btn" onclick="setCat('props')">🏗️</button>
+      <button class="cat-btn" onclick="setCat('effects')">✨</button>
+    </div>
+    <div id="spawn-items"></div>
+  </div>
 
-<!-- TOOLBAR -->
-<div id="toolbar">
-    <div class="tool-btn active" onclick="setTool('shor')" id="tool-shor">
-        <span class="t-emoji">☠️</span>Shor Bomb
-    </div>
-    <div class="tool-btn" onclick="setTool('kyber')" id="tool-kyber">
-        <span class="t-emoji">🔐</span>Kyber Shield
-    </div>
-    <div class="tool-btn" onclick="setTool('zap')" id="tool-zap">
-        <span class="t-emoji">⚡</span>Quantum Zap
-    </div>
-    <div class="tool-btn" onclick="setTool('grover')" id="tool-grover">
-        <span class="t-emoji">🌊</span>Grover Wave
-    </div>
-    <div class="tool-btn" onclick="setTool('repair')" id="tool-repair">
-        <span class="t-emoji">🔧</span>Repair
-    </div>
-    <div class="tool-btn" onclick="setTool('spawn')" id="tool-spawn">
-        <span class="t-emoji">💻</span>Add Node
-    </div>
-</div>
+  <!-- WORLD -->
+  <div id="world">
+    <canvas id="cv"></canvas>
 
-<canvas id="gc" width="560" height="360"></canvas>
+    <!-- HUD -->
+    <div id="hud">
+      <div class="hud-pill">🤖 <span id="h-obj">0</span> objects</div>
+      <div class="hud-pill">💥 <span id="h-exp">0</span> explosions</div>
+      <div class="hud-pill" id="h-fps">60 fps</div>
+    </div>
 
-<div id="info-bar">👆 Click on the canvas to use your selected tool!</div>
-<div id="fact"></div>
+    <!-- TOOLBAR -->
+    <div id="toolbar">
+      <button class="tool active" onclick="setTool('place')" id="t-place">✋ Place</button>
+      <button class="tool" onclick="setTool('move')" id="t-move">🖐 Move</button>
+      <button class="tool" onclick="setTool('delete')" id="t-delete">🗑 Delete</button>
+      <button class="tool" onclick="resetWorld()" id="t-reset">🔄 Reset</button>
+      <button class="tool" onclick="toggleGravity()" id="t-grav">🌍 Gravity</button>
+      <button class="tool" onclick="explodeAll()" id="t-chaos">💥 CHAOS!</button>
+    </div>
 
-<div class="btns">
-    <button class="btn btn-reset" onclick="resetSandbox()">🔄 Reset</button>
-    <button class="btn btn-shield" onclick="shieldAll()">🔐 Shield All</button>
-    <button class="btn btn-chaos" onclick="chaosMode()">🎲 CHAOS!</button>
-    <button class="btn btn-spawn" onclick="spawnWave()">🌊 Spawn Wave</button>
-</div>
+    <!-- CONTEXT MENU -->
+    <div id="ctx-menu">
+      <div class="ctx-item" onclick="ctxDelete()">🗑️ Delete</div>
+      <div class="ctx-item" onclick="ctxFreeze()">❄️ Freeze</div>
+      <div class="ctx-item" onclick="ctxExplode()">💥 Explode</div>
+      <div class="ctx-item" onclick="ctxShield()">🔐 Add Shield</div>
+      <div class="ctx-item" onclick="closeCtx()">✕ Close</div>
+    </div>
+
+    <!-- TOAST -->
+    <div id="toast"></div>
+  </div>
+
 </div>
 
 <script>
-const cv = document.getElementById('gc');
+// ── CANVAS SETUP ──────────────────────────────────────────────────────────────
+const cv = document.getElementById('cv');
 const cx = cv.getContext('2d');
-const W = 560, H = 360;
+let W, H;
+function resize(){
+    const rect = document.getElementById('world').getBoundingClientRect();
+    W = cv.width = rect.width;
+    H = cv.height = rect.height;
+}
+resize();
+window.addEventListener('resize', resize);
+
+// ── SPAWN CATEGORIES ──────────────────────────────────────────────────────────
+const CATEGORIES = {
+    agents: [
+        {emoji:'🤖', name:'Quantum Bot',  type:'agent',  mass:3, hp:100, color:'#3b82f6'},
+        {emoji:'👾', name:'Shor Agent',   type:'enemy',  mass:3, hp:80,  color:'#ef4444'},
+        {emoji:'🦾', name:'Cyber Guard',  type:'agent',  mass:4, hp:120, color:'#10b981'},
+        {emoji:'👽', name:'Q-Alien',      type:'enemy',  mass:2, hp:60,  color:'#8b5cf6'},
+        {emoji:'🧑‍💻', name:'Hacker',     type:'agent',  mass:3, hp:90,  color:'#f59e0b'},
+        {emoji:'🦅', name:'Falcon Bot',   type:'agent',  mass:2, hp:80,  color:'#06b6d4'},
+    ],
+    weapons: [
+        {emoji:'💣', name:'Shor Bomb',    type:'bomb',   mass:2, blast:80,  color:'#ef4444'},
+        {emoji:'⚡', name:'Q-Zapper',     type:'zapper', mass:1, blast:40,  color:'#fbbf24'},
+        {emoji:'🔥', name:'Laser',        type:'laser',  mass:1, blast:50,  color:'#f97316'},
+        {emoji:'💥', name:'Mega Bomb',    type:'bomb',   mass:4, blast:160, color:'#dc2626'},
+        {emoji:'🌊', name:'Grover Wave',  type:'wave',   mass:1, blast:30,  color:'#8b5cf6'},
+        {emoji:'🎇', name:'Sparkle Mine', type:'mine',   mass:2, blast:60,  color:'#fbbf24'},
+    ],
+    props: [
+        {emoji:'🏛️', name:'Server',      type:'prop',   mass:8,  hp:200, color:'#334155'},
+        {emoji:'💾', name:'Data Vault',   type:'prop',   mass:6,  hp:150, color:'#1d4ed8'},
+        {emoji:'📡', name:'Antenna',      type:'prop',   mass:3,  hp:80,  color:'#475569'},
+        {emoji:'🔐', name:'Kyber Shield', type:'shield', mass:5,  hp:300, color:'#10b981'},
+        {emoji:'🧱', name:'Wall Block',   type:'wall',   mass:10, hp:400, color:'#64748b'},
+        {emoji:'🚀', name:'Q-Drone',      type:'drone',  mass:2,  hp:60,  color:'#06b6d4'},
+        {emoji:'🏦', name:'Bank Node',    type:'prop',   mass:7,  hp:180, color:'#ca8a04'},
+        {emoji:'⚙️', name:'Mechanism',   type:'prop',   mass:4,  hp:100, color:'#475569'},
+    ],
+    effects: [
+        {emoji:'✨', name:'Sparkles',     type:'effect', mass:0.1, color:'#fbbf24'},
+        {emoji:'🌀', name:'Vortex',       type:'vortex', mass:0.1, color:'#8b5cf6'},
+        {emoji:'❄️', name:'Freeze Ray',   type:'freeze', mass:0.1, color:'#60a5fa'},
+        {emoji:'🌪️', name:'Tornado',     type:'tornado',mass:0.1, color:'#94a3b8'},
+        {emoji:'☠️', name:'Shor Ray',     type:'ray',    mass:0.1, color:'#ef4444'},
+        {emoji:'🛡️', name:'Force Field', type:'field',  mass:0.1, color:'#10b981'},
+    ],
+};
+
+const FACTS = [
+    "🔐 Kyber (ML-KEM FIPS 203) protects data like a shield — even quantum computers can't break it!",
+    "☠️ Shor's Algorithm can break RSA encryption — that's why we need post-quantum crypto!",
+    "⚡ Quantum computers use qubits that can be 0 AND 1 at the same time — superposition!",
+    "🌊 Grover's Algorithm speeds up searches — but Kyber is designed to resist it!",
+    "🦅 Falcon (FIPS 206) makes tiny signatures perfect for small IoT devices!",
+    "🏛️ Servers need Dilithium (ML-DSA FIPS 204) signatures to verify all messages!",
+    "💾 Data vaults use ML-KEM to protect encryption keys — the keys to your secrets!",
+    "🌀 Entanglement lets quantum computers try millions of keys simultaneously!",
+    "🔧 NIST mandated quantum-safe crypto by 2035 — NSM-10 executive order!",
+    "🛡️ SPHINCS+ (FIPS 205) uses hash trees — secure even if math is broken!",
+];
 
 // ── GAME STATE ────────────────────────────────────────────────────────────────
-let nodes = [], edges = [], particles = [], lasers = [], waves = [];
-let currentTool = 'shor';
-let destroyed = 0, zaps = 0, shieldsPlaced = 0;
-let frameId = null, factTimeout = null;
+let objects = [];
+let particles = [];
+let explosions = [];
+let currentTool = 'place';
+let currentCat = 'agents';
+let selectedItem = null;
+let dragObj = null;
+let dragOffX = 0, dragOffY = 0;
+let ctxObj = null;
+let gravityOn = true;
+let totalExplosions = 0;
+let frameCount = 0, fpsTime = performance.now(), fps = 60;
 
-// ── NODE TYPES ────────────────────────────────────────────────────────────────
-const NODE_EMOJIS = ['🏦','🏥','🏛️','⚡','📡','🌍','🔭','🚀','🏫','💊'];
-const SHIELD_TYPES = [
-    {name:'ML-KEM',  color:'#10b981', hp:5},
-    {name:'ML-DSA',  color:'#3b82f6', hp:4},
-    {name:'SPHINCS+',color:'#8b5cf6', hp:3},
-    {name:'Falcon',  color:'#f59e0b', hp:4},
-];
-const FACTS = [
-    "☠️ Shor's Algorithm can factor RSA keys instantly on a quantum computer!",
-    "🔐 ML-KEM (Kyber FIPS 203) uses lattice math — immune to Shor's Algorithm!",
-    "⚡ Grover's Algorithm gives quantum a speedup but can't break Kyber!",
-    "💥 Cascade failures happen when connected nodes share vulnerabilities!",
-    "🛡️ Dilithium (ML-DSA FIPS 204) signs every packet — no forgery possible!",
-    "🌊 Harvest-Now-Decrypt-Later: enemies collect data NOW to decrypt LATER!",
-    "🔧 NIST mandates migration to PQC by 2035 — NSM-10 law!",
-    "🦅 Falcon (FN-DSA FIPS 206) makes the smallest quantum-safe signatures!",
-];
+// ── SPAWN PANEL ───────────────────────────────────────────────────────────────
+let selectedSpawnItem = CATEGORIES.agents[0];
 
-// ── GENERATE INITIAL NETWORK ─────────────────────────────────────────────────
-function genNetwork(count){
-    nodes = []; edges = [];
-    // Center hub
-    nodes.push(makeNode(W/2, H/2, true));
-    // Ring nodes
-    const R = 120;
-    for(let i=0;i<Math.min(count-1,8);i++){
-        const a = (i/(count-1))*Math.PI*2 - Math.PI/2;
-        nodes.push(makeNode(
-            W/2 + R*Math.cos(a),
-            H/2 + R*Math.sin(a),
-            false
-        ));
-    }
-    // Random outer nodes
-    for(let i=nodes.length;i<count;i++){
-        const a = Math.random()*Math.PI*2;
-        const r = 60 + Math.random()*130;
-        nodes.push(makeNode(
-            Math.max(30, Math.min(W-30, W/2+r*Math.cos(a))),
-            Math.max(30, Math.min(H-30, H/2+r*Math.sin(a))),
-            false
-        ));
-    }
-    // Connect hub to all
-    for(let i=1;i<nodes.length;i++) addEdge(0,i);
-    // Connect nearby nodes
-    for(let i=0;i<nodes.length;i++){
-        for(let j=i+1;j<nodes.length;j++){
-            const d = dist(nodes[i],nodes[j]);
-            if(d<160 && !edges.find(e=>(e.a===i&&e.b===j)||(e.a===j&&e.b===i))){
-                addEdge(i,j);
-            }
-        }
-    }
+function setCat(cat){
+    currentCat = cat;
+    document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active'));
+    event.target.classList.add('active');
+    buildPanel();
 }
 
-function makeNode(x,y,isHub){
-    return {
+function buildPanel(){
+    const items = CATEGORIES[currentCat];
+    const container = document.getElementById('spawn-items');
+    container.innerHTML = '';
+    items.forEach(item=>{
+        const div = document.createElement('div');
+        div.className = 'spawn-item';
+        div.innerHTML = `<span class="si-emoji">${item.emoji}</span>${item.name}`;
+        div.title = item.name;
+        div.onclick = ()=>{ selectedSpawnItem=item; showToast('Selected: '+item.name); };
+        div.draggable = true;
+        div.ondragstart = e=>{ selectedSpawnItem=item; };
+        container.appendChild(div);
+    });
+}
+buildPanel();
+
+// ── OBJECT CREATION ───────────────────────────────────────────────────────────
+function spawnObject(x, y, item){
+    const obj = {
         x, y,
-        vx: (Math.random()-0.5)*0.3,
-        vy: (Math.random()-0.5)*0.3,
-        emoji: NODE_EMOJIS[Math.floor(Math.random()*NODE_EMOJIS.length)],
-        shield: null,
-        shieldHp: 0,
-        hp: 100,
-        maxHp: 100,
-        destroyed: false,
-        pulse: Math.random()*Math.PI*2,
-        wobble: 0,
-        isHub,
+        vx: (Math.random()-0.5)*2,
+        vy: -1,
+        w: item.type==='wall'?80:40,
+        h: item.type==='wall'?40:40,
+        emoji: item.emoji,
+        name: item.name,
+        type: item.type,
+        mass: item.mass||3,
+        hp: item.hp||100,
+        maxHp: item.hp||100,
+        color: item.color||'#3b82f6',
+        frozen: false,
+        shielded: item.type==='shield',
+        blast: item.blast||0,
+        rotation: 0,
+        rotVel: (Math.random()-0.5)*0.02,
         id: Math.random(),
+        age: 0,
+        activated: false,
     };
-}
+    objects.push(obj);
+    updateHUD();
 
-function addEdge(a,b){
-    edges.push({a,b,stress:0,broken:false,zap:0});
-}
-
-function dist(a,b){ return Math.hypot(a.x-b.x, a.y-b.y); }
-
-// ── TOOL SELECTION ────────────────────────────────────────────────────────────
-function setTool(tool){
-    currentTool = tool;
-    document.querySelectorAll('.tool-btn').forEach(b=>b.classList.remove('active'));
-    document.getElementById('tool-'+tool)?.classList.add('active');
-    const info = {
-        shor:   '☠️ Shor Bomb — click a node to destroy it with a quantum explosion!',
-        kyber:  '🔐 Kyber Shield — click a node to protect it with ML-KEM lattice armor!',
-        zap:    '⚡ Quantum Zap — click a node to send lightning through all connections!',
-        grover: '🌊 Grover Wave — click anywhere to send a weakening wave across the network!',
-        repair: '🔧 Repair — click a destroyed node to bring it back online!',
-        spawn:  '💻 Add Node — click anywhere to spawn a new network node!',
-    };
-    setInfo(info[tool]||'Select a tool above');
-}
-
-// ── CANVAS CLICK ──────────────────────────────────────────────────────────────
-cv.addEventListener('click', e=>{
-    const rect = cv.getBoundingClientRect();
-    const mx = (e.clientX-rect.left)*(W/rect.width);
-    const my = (e.clientY-rect.top)*(H/rect.height);
-
-    if(currentTool === 'spawn'){
-        const n = makeNode(mx, my, false);
-        // Connect to nearest 2 nodes
-        const sorted = [...nodes].sort((a,b)=>dist({x:mx,y:my},a)-dist({x:mx,y:my},b));
-        nodes.push(n);
-        const ni = nodes.length-1;
-        sorted.slice(0,2).forEach(nb=>{
-            const bi = nodes.indexOf(nb);
-            if(bi>=0) addEdge(ni,bi);
-        });
-        spawnParticles(mx,my,'#3b82f6',6);
-        setInfo('💻 New node spawned! It connects to nearby nodes automatically.');
-        updateHUD(); return;
+    // Auto activate effects
+    if(['bomb','mine','zapper','laser','wave','ray'].includes(item.type)){
+        setTimeout(()=>activateObject(obj), 800+Math.random()*600);
+    }
+    if(item.type==='drone'){
+        obj.vx = (Math.random()-0.5)*3;
+        obj.vy = -3;
     }
 
-    if(currentTool === 'grover'){
-        waves.push({x:mx,y:my,r:0,maxR:300,alpha:1,color:'#8b5cf6'});
-        // Weaken all unshielded nodes
-        nodes.forEach(n=>{
-            if(!n.destroyed&&!n.shield){
-                n.hp = Math.max(10, n.hp-20);
-                n.wobble = 8;
+    showFactRandom();
+    return obj;
+}
+
+// ── ACTIVATION ────────────────────────────────────────────────────────────────
+function activateObject(obj){
+    if(!obj||!objects.includes(obj)) return;
+    obj.activated = true;
+
+    if(obj.type==='bomb'||obj.type==='mine'){
+        doExplosion(obj.x, obj.y, obj.blast||80);
+        objects = objects.filter(o=>o!==obj);
+    } else if(obj.type==='zapper'){
+        // Shoot lightning to nearest object
+        const nearest = objects.filter(o=>o!==obj&&o.type!=='zapper')
+            .sort((a,b)=>dist2(a,obj)-dist2(b,obj))[0];
+        if(nearest){
+            spawnLightning(obj.x,obj.y,nearest.x,nearest.y);
+            if(!nearest.shielded) nearest.hp-=40;
+            if(nearest.hp<=0) objects=objects.filter(o=>o!==nearest);
+        }
+        objects=objects.filter(o=>o!==obj);
+    } else if(obj.type==='wave'){
+        // Grover wave — weaken all non-shielded
+        explosions.push({x:obj.x,y:obj.y,r:0,maxR:250,alpha:0.7,color:'#8b5cf6',type:'wave'});
+        objects.forEach(o=>{
+            if(o!==obj&&!o.shielded&&o.hp){
+                o.hp-=25; o.vx+=(Math.random()-0.5)*3; o.vy-=2;
             }
         });
-        spawnParticles(mx,my,'#8b5cf6',10);
-        showFact(FACTS[Math.floor(Math.random()*FACTS.length)]);
-        setInfo('🌊 Grover Wave weakened all unshielded nodes! Deploy Kyber shields to protect them!');
-        updateHUD(); return;
-    }
-
-    // Find clicked node
-    const node = nodes.find(n=>dist({x:mx,y:my},n)<22 && !n.destroyed);
-    const deadNode = nodes.find(n=>dist({x:mx,y:my},n)<22 && n.destroyed);
-
-    if(currentTool==='repair' && deadNode){
-        deadNode.destroyed=false; deadNode.hp=100;
-        deadNode.shield=null; deadNode.shieldHp=0;
-        spawnParticles(deadNode.x,deadNode.y,'#10b981',10);
-        destroyed=Math.max(0,destroyed-1);
-        edges.forEach(edge=>{
-            const ni=nodes.indexOf(deadNode);
-            if(edge.a===ni||edge.b===ni){edge.broken=false;edge.stress=0;}
+        objects=objects.filter(o=>o!==obj);
+    } else if(obj.type==='freeze'){
+        objects.forEach(o=>{ if(o!==obj) o.frozen=true; });
+        setTimeout(()=>objects.forEach(o=>o.frozen=false), 3000);
+        objects=objects.filter(o=>o!==obj);
+    } else if(obj.type==='tornado'){
+        // Fling nearby objects
+        objects.forEach(o=>{
+            if(o!==obj){
+                const angle=Math.atan2(o.y-obj.y,o.x-obj.x);
+                o.vx+=Math.cos(angle+Math.PI/2)*5;
+                o.vy+=Math.sin(angle+Math.PI/2)*5-3;
+            }
         });
-        setInfo('🔧 Node repaired and back online!');
-        updateHUD(); return;
-    }
-
-    if(!node) return;
-    const ni = nodes.indexOf(node);
-
-    if(currentTool==='shor'){
-        shorBomb(node, ni);
-    } else if(currentTool==='kyber'){
-        deployShield(node);
-    } else if(currentTool==='zap'){
-        quantumZap(node, ni);
-    }
-});
-
-// ── SHOR BOMB ─────────────────────────────────────────────────────────────────
-function shorBomb(node, ni){
-    if(node.shield){
-        node.shieldHp--;
-        spawnParticles(node.x,node.y,'#10b981',8);
-        setInfo('🛡️ '+node.shield.name+' shield blocked the Shor Bomb! '+(node.shieldHp)+' hits left.');
-        if(node.shieldHp<=0){
-            node.shield=null;
-            setInfo('💥 Shield destroyed! Node is now vulnerable!');
+        objects=objects.filter(o=>o!==obj);
+        explosions.push({x:obj.x,y:obj.y,r:0,maxR:120,alpha:0.8,color:'#94a3b8',type:'wave'});
+    } else if(obj.type==='vortex'){
+        objects.forEach(o=>{
+            if(o!==obj){
+                const dx=obj.x-o.x, dy=obj.y-o.y;
+                const d=Math.sqrt(dx*dx+dy*dy)||1;
+                o.vx+=dx/d*2; o.vy+=dy/d*2;
+            }
+        });
+        objects=objects.filter(o=>o!==obj);
+    } else if(obj.type==='ray'||obj.type==='laser'){
+        // Shoot ray right
+        for(let i=0;i<8;i++){
+            particles.push({
+                x:obj.x,y:obj.y,
+                vx:Math.cos(i*Math.PI/4)*6,
+                vy:Math.sin(i*Math.PI/4)*6,
+                r:5,alpha:1,color:obj.color,type:'ray'
+            });
         }
-        showFact('🔐 This is exactly how Kyber works — the lattice math absorbs quantum attacks!');
-        return;
+        objects=objects.filter(o=>o!==obj);
+    } else if(obj.type==='field'){
+        // Force field — push nearby objects away
+        objects.forEach(o=>{
+            if(o!==obj){
+                const dx=o.x-obj.x, dy=o.y-obj.y;
+                const d=Math.sqrt(dx*dx+dy*dy)||1;
+                if(d<150){ o.vx+=dx/d*4; o.vy+=dy/d*4; }
+            }
+        });
+        objects=objects.filter(o=>o!==obj);
+        explosions.push({x:obj.x,y:obj.y,r:0,maxR:150,alpha:0.6,color:'#10b981',type:'wave'});
     }
-    node.destroyed=true; node.hp=0;
-    destroyed++;
-    spawnParticles(node.x,node.y,'#ef4444',20);
-    waves.push({x:node.x,y:node.y,r:0,maxR:80,alpha:1,color:'#ef4444'});
-    // Cascade: stress connected nodes
-    edges.forEach(edge=>{
-        if(edge.a===ni||edge.b===ni){
-            edge.broken=true; edge.stress=1;
-            const other=nodes[edge.a===ni?edge.b:edge.a];
-            if(other&&!other.destroyed&&!other.shield){
-                other.hp=Math.max(0,other.hp-30);
-                other.wobble=12;
-                if(other.hp<=0){
-                    other.destroyed=true; destroyed++;
-                    spawnParticles(other.x,other.y,'#f97316',12);
+    updateHUD();
+}
+
+// ── EXPLOSION ────────────────────────────────────────────────────────────────
+function doExplosion(x, y, radius){
+    totalExplosions++;
+    explosions.push({x,y,r:0,maxR:radius,alpha:1,color:'#ef4444',type:'explosion'});
+    // Spawn particles
+    for(let i=0;i<20;i++){
+        const a=Math.random()*Math.PI*2, s=2+Math.random()*6;
+        particles.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s-2,
+            r:3+Math.random()*4,alpha:1,
+            color:['#ef4444','#f97316','#fbbf24'][Math.floor(Math.random()*3)],
+            type:'debris'});
+    }
+    // Affect objects
+    objects.forEach(o=>{
+        const dx=o.x-x, dy=o.y-y, d=Math.sqrt(dx*dx+dy*dy)||1;
+        if(d<radius){
+            const force=(1-d/radius)*12;
+            if(!o.frozen){ o.vx+=dx/d*force; o.vy+=dy/d*force-force*0.5; }
+            if(!o.shielded){ o.hp-=(1-d/radius)*60; }
+            if(o.type==='bomb'&&!o.activated&&d<radius*0.5){
+                o.activated=true;
+                setTimeout(()=>doExplosion(o.x,o.y,o.blast||80),200);
+                objects=objects.filter(ob=>ob!==o);
+            }
+        }
+    });
+    objects=objects.filter(o=>o.hp>0||o.type==='wall'||o.type==='shield');
+    updateHUD();
+}
+
+// ── LIGHTNING ────────────────────────────────────────────────────────────────
+let lightnings=[];
+function spawnLightning(x1,y1,x2,y2){
+    lightnings.push({x1,y1,x2,y2,alpha:1,segments:makeLightningSegs(x1,y1,x2,y2)});
+}
+function makeLightningSegs(x1,y1,x2,y2){
+    const segs=[{x:x1,y:y1}];
+    const steps=8;
+    for(let i=1;i<steps;i++){
+        const t=i/steps;
+        segs.push({
+            x:x1+(x2-x1)*t+(Math.random()-0.5)*30,
+            y:y1+(y2-y1)*t+(Math.random()-0.5)*30
+        });
+    }
+    segs.push({x:x2,y:y2});
+    return segs;
+}
+function dist2(a,b){ return (a.x-b.x)**2+(a.y-b.y)**2; }
+
+// ── PHYSICS ───────────────────────────────────────────────────────────────────
+const GRAVITY = 0.35;
+const FRICTION = 0.82;
+const GROUND_Y = () => H - 50;
+
+function physicsUpdate(){
+    objects.forEach(o=>{
+        if(o.frozen) return;
+        o.age++;
+
+        // Gravity
+        if(gravityOn && o.type!=='drone' && o.type!=='effect'){
+            o.vy += GRAVITY * (o.mass/3);
+        }
+        // Drone hovers
+        if(o.type==='drone'){
+            o.vy += Math.sin(o.age*0.05)*0.2;
+            o.vx *= 0.99;
+        }
+
+        // Move
+        o.x += o.vx; o.y += o.vy;
+        o.rotation += o.rotVel;
+
+        // Floor collision
+        const gy = GROUND_Y() - o.h/2;
+        if(o.y > gy){
+            o.y = gy;
+            o.vy *= -0.4;
+            o.vx *= FRICTION;
+            o.rotVel *= 0.8;
+            if(Math.abs(o.vy)<0.5) o.vy=0;
+        }
+
+        // Wall collision
+        if(o.x < o.w/2){ o.x=o.w/2; o.vx*=-0.6; }
+        if(o.x > W-o.w/2){ o.x=W-o.w/2; o.vx*=-0.6; }
+        if(o.y < o.h/2){ o.y=o.h/2; o.vy*=-0.5; }
+
+        // Object-object collision (simple AABB)
+        objects.forEach(other=>{
+            if(other===o) return;
+            const dx=other.x-o.x, dy=other.y-o.y;
+            const overlapX=( o.w/2+other.w/2)-Math.abs(dx);
+            const overlapY=( o.h/2+other.h/2)-Math.abs(dy);
+            if(overlapX>0&&overlapY>0){
+                if(overlapX<overlapY){
+                    const sign=dx>0?1:-1;
+                    o.x-=sign*overlapX*0.3;
+                    other.x+=sign*overlapX*0.3;
+                    const relVx=o.vx-other.vx;
+                    o.vx-=relVx*0.3; other.vx+=relVx*0.3;
+                } else {
+                    const sign=dy>0?1:-1;
+                    o.y-=sign*overlapY*0.3;
+                    other.y+=sign*overlapY*0.3;
+                    const relVy=o.vy-other.vy;
+                    o.vy-=relVy*0.3; other.vy+=relVy*0.3;
                 }
             }
-        }
+        });
     });
-    showFact("☠️ Shor's Algorithm destroyed the RSA key in milliseconds! This is why we need Kyber!");
-    setInfo('💥 BOOM! Shor Bomb destroyed a node and triggered cascade failures!');
-    updateHUD();
-}
 
-// ── KYBER SHIELD ─────────────────────────────────────────────────────────────
-function deployShield(node){
-    if(node.shield){
-        setInfo('🔐 This node already has a '+node.shield.name+' shield!'); return;
-    }
-    const sh = SHIELD_TYPES[Math.floor(Math.random()*SHIELD_TYPES.length)];
-    node.shield=sh; node.shieldHp=sh.hp; node.hp=100;
-    shieldsPlaced++;
-    spawnParticles(node.x,node.y,sh.color,12);
-    showFact('🔐 '+sh.name+' shield deployed! Uses lattice math that quantum computers cannot break!');
-    setInfo('🔐 '+sh.name+' shield active! This node is now quantum-safe!');
-    updateHUD();
-}
-
-// ── QUANTUM ZAP ───────────────────────────────────────────────────────────────
-function quantumZap(node, ni){
-    zaps++;
-    const connected=[];
-    edges.forEach(e=>{
-        if(e.a===ni) connected.push(e.b);
-        if(e.b===ni) connected.push(e.a);
-        if(e.a===ni||e.b===ni) e.zap=1;
+    // Particles
+    particles.forEach(p=>{
+        p.x+=p.vx; p.y+=p.vy; p.alpha-=0.025;
+        if(gravityOn) p.vy+=0.15;
+        p.r*=0.97;
     });
-    connected.forEach(ci=>{
-        const cn=nodes[ci];
-        if(cn&&!cn.destroyed){
-            lasers.push({x1:node.x,y1:node.y,x2:cn.x,y2:cn.y,
-                color:'#fbbf24',alpha:1,width:3});
-            if(!cn.shield){ cn.hp=Math.max(0,cn.hp-15); cn.wobble=6; }
-            else{ cn.shieldHp--; if(cn.shieldHp<=0) cn.shield=null; }
-        }
-    });
-    spawnParticles(node.x,node.y,'#fbbf24',8);
-    showFact("⚡ Quantum Zap travels through network connections — just like real cyberattacks propagate through networks!");
-    setInfo('⚡ Quantum Zap sent through '+connected.length+' connections!');
-    updateHUD();
-}
-
-// ── CHAOS MODE ────────────────────────────────────────────────────────────────
-function chaosMode(){
-    let count=0;
-    nodes.forEach((n,i)=>{
-        if(!n.destroyed&&Math.random()<0.5){
-            setTimeout(()=>{ if(!n.shield){ shorBomb(n,i); } }, count*200);
-            count++;
-        }
-    });
-    showFact('🎲 CHAOS MODE! This simulates a full-scale quantum computer attack on your network!');
-    setInfo('🎲 CHAOS! Random Shor Bombs dropping across the network!');
-}
-
-// ── SHIELD ALL ────────────────────────────────────────────────────────────────
-function shieldAll(){
-    nodes.forEach(n=>{
-        if(!n.destroyed&&!n.shield){
-            const sh=SHIELD_TYPES[Math.floor(Math.random()*SHIELD_TYPES.length)];
-            n.shield=sh; n.shieldHp=sh.hp; n.hp=100;
-            shieldsPlaced++;
-            spawnParticles(n.x,n.y,sh.color,6);
-        }
-    });
-    showFact('🔐 All nodes shielded with NIST PQC algorithms! The network is now quantum-safe!');
-    setInfo('🔐 All nodes protected with quantum-safe shields! Try CHAOS mode now!');
-    updateHUD();
-}
-
-// ── SPAWN WAVE ────────────────────────────────────────────────────────────────
-function spawnWave(){
-    const types=['☠️ Shor Bot','🌀 Grover Drone','👾 CRQC Agent'];
-    for(let i=0;i<4;i++){
-        setTimeout(()=>{
-            const a=Math.random()*Math.PI*2, r=280;
-            const x=W/2+r*Math.cos(a), y=H/2+r*Math.sin(a);
-            waves.push({x,y,r:0,maxR:60,alpha:0.8,color:'#ef4444'});
-            // Attack random unshielded node
-            const targets=nodes.filter(n=>!n.destroyed&&!n.shield);
-            if(targets.length){
-                const t=targets[Math.floor(Math.random()*targets.length)];
-                const ti=nodes.indexOf(t);
-                lasers.push({x1:x,y1:y,x2:t.x,y2:t.y,color:'#ef4444',alpha:1,width:2});
-                setTimeout(()=>shorBomb(t,ti), 500);
-            }
-        }, i*600);
-    }
-    setInfo('🌊 Quantum attack wave incoming! Deploy shields to defend!');
-}
-
-// ── RESET ─────────────────────────────────────────────────────────────────────
-function resetSandbox(){
-    destroyed=0; zaps=0; shieldsPlaced=0;
-    particles=[]; lasers=[]; waves=[];
-    genNetwork(10);
-    updateHUD();
-    setInfo('🔄 Network reset! 10 nodes ready. Select a tool and click a node!');
-    document.getElementById('fact').style.display='none';
-}
-
-// ── PARTICLES ─────────────────────────────────────────────────────────────────
-function spawnParticles(x,y,color,n){
-    for(let i=0;i<n;i++){
-        const a=Math.random()*Math.PI*2, s=Math.random()*4+1;
-        particles.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,
-            r:Math.random()*4+1,alpha:1,color});
-    }
-}
-
-// ── UPDATE HUD ────────────────────────────────────────────────────────────────
-function updateHUD(){
-    document.getElementById('h-nodes').textContent=nodes.filter(n=>!n.destroyed).length;
-    document.getElementById('h-shields').textContent=nodes.filter(n=>n.shield&&!n.destroyed).length;
-    document.getElementById('h-destroyed').textContent=destroyed;
-    document.getElementById('h-zaps').textContent=zaps;
-}
-
-function setInfo(msg){ document.getElementById('info-bar').textContent=msg; }
-
-function showFact(text){
-    const el=document.getElementById('fact');
-    el.textContent=text; el.style.display='block';
-    if(factTimeout) clearTimeout(factTimeout);
-    factTimeout=setTimeout(()=>el.style.display='none',5000);
-}
-
-// ── GAME LOOP ─────────────────────────────────────────────────────────────────
-function update(){
-    // Update nodes
-    nodes.forEach(n=>{
-        if(n.destroyed) return;
-        n.pulse+=0.04;
-        if(n.wobble>0){ n.wobble*=0.85; }
-        // Gentle drift
-        n.x+=n.vx; n.y+=n.vy;
-        // Bounce off walls
-        if(n.x<25||n.x>W-25) n.vx*=-1;
-        if(n.y<25||n.y>H-25) n.vy*=-1;
-        n.x=Math.max(25,Math.min(W-25,n.x));
-        n.y=Math.max(25,Math.min(H-25,n.y));
-    });
-    // Update particles
-    particles.forEach(p=>{ p.x+=p.vx; p.y+=p.vy; p.alpha-=0.035; p.r*=0.96; });
     particles=particles.filter(p=>p.alpha>0);
-    // Update lasers
-    lasers.forEach(l=>l.alpha-=0.06);
-    lasers=lasers.filter(l=>l.alpha>0);
-    // Update waves
-    waves.forEach(w=>{ w.r+=4; w.alpha-=0.04; });
-    waves=waves.filter(w=>w.alpha>0);
-    // Update edge zap
-    edges.forEach(e=>{ if(e.zap>0) e.zap-=0.05; });
+
+    // Explosions / waves
+    explosions.forEach(e=>{ e.r+=e.type==='wave'?5:8; e.alpha-=0.04; });
+    explosions=explosions.filter(e=>e.alpha>0);
+
+    // Lightning
+    lightnings.forEach(l=>l.alpha-=0.08);
+    lightnings=lightnings.filter(l=>l.alpha>0);
 }
 
+// ── DRAW ─────────────────────────────────────────────────────────────────────
 function draw(){
     cx.clearRect(0,0,W,H);
-    // Background
-    cx.fillStyle='#020d14'; cx.fillRect(0,0,W,H);
+
+    // Sky gradient
+    const sky=cx.createLinearGradient(0,0,0,H);
+    sky.addColorStop(0,'#020d14');
+    sky.addColorStop(1,'#041020');
+    cx.fillStyle=sky; cx.fillRect(0,0,W,H);
+
     // Grid
-    cx.strokeStyle='#0a1f2e'; cx.lineWidth=0.4;
-    for(let x=0;x<W;x+=30){cx.beginPath();cx.moveTo(x,0);cx.lineTo(x,H);cx.stroke();}
-    for(let y=0;y<H;y+=30){cx.beginPath();cx.moveTo(0,y);cx.lineTo(W,y);cx.stroke();}
+    cx.strokeStyle='#0a1f2e'; cx.lineWidth=0.5;
+    for(let x=0;x<W;x+=40){cx.beginPath();cx.moveTo(x,0);cx.lineTo(x,H);cx.stroke();}
+    for(let y=0;y<H;y+=40){cx.beginPath();cx.moveTo(0,y);cx.lineTo(W,y);cx.stroke();}
 
-    // Draw waves
-    waves.forEach(w=>{
-        cx.beginPath(); cx.arc(w.x,w.y,w.r,0,Math.PI*2);
-        cx.strokeStyle=w.color+Math.floor(w.alpha*255).toString(16).padStart(2,'0');
-        cx.lineWidth=2; cx.stroke();
-    });
+    // Ground
+    const gy=GROUND_Y();
+    cx.fillStyle='#0a1f35';
+    cx.fillRect(0,gy,W,H-gy);
+    cx.strokeStyle='#1d4ed8'; cx.lineWidth=2;
+    cx.beginPath(); cx.moveTo(0,gy); cx.lineTo(W,gy); cx.stroke();
 
-    // Draw edges
-    edges.forEach(e=>{
-        const na=nodes[e.a], nb=nodes[e.b];
-        if(!na||!nb) return;
-        cx.beginPath(); cx.moveTo(na.x,na.y); cx.lineTo(nb.x,nb.y);
-        cx.setLineDash(e.broken?[4,4]:[]);
-        if(e.zap>0){
-            cx.strokeStyle='#fbbf24'; cx.lineWidth=2+e.zap*2;
-        } else if(e.broken){
-            cx.strokeStyle='#47556930'; cx.lineWidth=1;
+    // Ground detail lines
+    cx.strokeStyle='#0d2a4a'; cx.lineWidth=1;
+    for(let x=0;x<W;x+=20){
+        cx.beginPath();cx.moveTo(x,gy);cx.lineTo(x,H);cx.stroke();
+    }
+
+    // Explosions/waves
+    explosions.forEach(e=>{
+        cx.beginPath(); cx.arc(e.x,e.y,e.r,0,Math.PI*2);
+        if(e.type==='wave'){
+            cx.strokeStyle=e.color+Math.floor(e.alpha*200).toString(16).padStart(2,'0');
+            cx.lineWidth=3; cx.stroke();
         } else {
-            const bothShielded=nodes[e.a].shield&&nodes[e.b].shield;
-            cx.strokeStyle=bothShielded?'#10b98130':'#1d4ed820';
-            cx.lineWidth=1;
+            const grad=cx.createRadialGradient(e.x,e.y,0,e.x,e.y,e.r);
+            grad.addColorStop(0,'#fbbf24'+Math.floor(e.alpha*180).toString(16).padStart(2,'0'));
+            grad.addColorStop(0.4,'#ef4444'+Math.floor(e.alpha*140).toString(16).padStart(2,'0'));
+            grad.addColorStop(1,'transparent');
+            cx.fillStyle=grad; cx.fill();
         }
-        cx.stroke(); cx.setLineDash([]);
     });
 
-    // Draw lasers
-    lasers.forEach(l=>{
-        cx.beginPath(); cx.moveTo(l.x1,l.y1); cx.lineTo(l.x2,l.y2);
-        cx.strokeStyle=l.color+Math.floor(l.alpha*255).toString(16).padStart(2,'0');
-        cx.lineWidth=l.width; cx.stroke();
+    // Lightning
+    lightnings.forEach(l=>{
+        cx.beginPath();
+        cx.moveTo(l.segments[0].x,l.segments[0].y);
+        l.segments.slice(1).forEach(s=>cx.lineTo(s.x,s.y));
+        cx.strokeStyle='#fbbf24'+Math.floor(l.alpha*255).toString(16).padStart(2,'0');
+        cx.lineWidth=2+l.alpha*2; cx.stroke();
+        // Glow
+        cx.strokeStyle='#ffffff'+Math.floor(l.alpha*80).toString(16).padStart(2,'0');
+        cx.lineWidth=1; cx.stroke();
     });
 
-    // Draw nodes
-    nodes.forEach(n=>{
-        const wob=n.wobble||0;
-        const nx=n.x+(Math.random()-0.5)*wob*0.3;
-        const ny=n.y+(Math.random()-0.5)*wob*0.3;
+    // Objects
+    objects.forEach(o=>{
+        cx.save();
+        cx.translate(o.x,o.y);
+        cx.rotate(o.rotation);
 
-        if(n.destroyed){
-            // Destroyed node
-            cx.beginPath(); cx.arc(nx,ny,18,0,Math.PI*2);
-            cx.fillStyle='#1a0505'; cx.fill();
-            cx.strokeStyle='#ef444440'; cx.lineWidth=1; cx.stroke();
-            cx.font='14px serif'; cx.textAlign='center'; cx.textBaseline='middle';
-            cx.globalAlpha=0.3; cx.fillText('💀',nx,ny); cx.globalAlpha=1;
-            return;
-        }
+        // Shadow
+        cx.shadowColor='#000'; cx.shadowBlur=8; cx.shadowOffsetY=3;
 
         // Shield glow
-        const shColor=n.shield?n.shield.color:'#1d4ed8';
-        if(n.shield){
-            cx.shadowColor=shColor; cx.shadowBlur=15;
-            // Shield ring
-            cx.beginPath();
-            cx.arc(nx,ny,24+Math.sin(n.pulse)*2,0,Math.PI*2);
-            cx.strokeStyle=shColor+'60'; cx.lineWidth=2; cx.stroke();
+        if(o.shielded){
+            cx.shadowColor=o.color; cx.shadowBlur=20;
+            cx.beginPath(); cx.arc(0,0,o.w/2+4,0,Math.PI*2);
+            cx.strokeStyle=o.color+'60'; cx.lineWidth=3; cx.stroke();
         }
 
-        // Pulse ring
-        const pr=20+Math.sin(n.pulse)*3;
-        cx.beginPath(); cx.arc(nx,ny,pr,0,Math.PI*2);
-        cx.strokeStyle=(n.shield?shColor:'#ef4444')+'25';
-        cx.lineWidth=1; cx.stroke();
-
-        // HP arc
-        if(n.hp<100){
-            cx.beginPath();
-            cx.arc(nx,ny,22,-Math.PI/2,-Math.PI/2+(n.hp/100)*Math.PI*2);
-            cx.strokeStyle=n.hp>50?'#10b981':'#ef4444';
-            cx.lineWidth=3; cx.stroke();
+        // Body
+        if(o.type==='wall'){
+            cx.fillStyle='#1e293b';
+            cx.fillRect(-o.w/2,-o.h/2,o.w,o.h);
+            cx.strokeStyle='#475569'; cx.lineWidth=2;
+            cx.strokeRect(-o.w/2,-o.h/2,o.w,o.h);
+            // Brick pattern
+            cx.strokeStyle='#334155'; cx.lineWidth=0.5;
+            for(let bx=-o.w/2;bx<o.w/2;bx+=20){
+                cx.beginPath();cx.moveTo(bx,-o.h/2);cx.lineTo(bx,o.h/2);cx.stroke();
+            }
+        } else {
+            // Round body
+            cx.beginPath(); cx.arc(0,0,o.w/2,0,Math.PI*2);
+            cx.fillStyle='#071520'; cx.fill();
+            cx.strokeStyle=o.color; cx.lineWidth=o.shielded?3:2; cx.stroke();
         }
 
-        // Node body
-        cx.beginPath(); cx.arc(nx,ny,18,0,Math.PI*2);
-        cx.fillStyle=n.isHub?'#0d2a4a':'#071520';
-        cx.fill();
-        cx.strokeStyle=n.shield?shColor:(n.isHub?'#60a5fa':'#334155');
-        cx.lineWidth=n.isHub?3:2; cx.stroke();
-        cx.shadowBlur=0;
+        cx.shadowBlur=0; cx.shadowOffsetY=0;
 
         // Emoji
-        cx.font=(n.isHub?'16px':'13px')+' serif';
+        cx.font=(o.type==='wall'?'22px':'18px')+' serif';
         cx.textAlign='center'; cx.textBaseline='middle';
-        cx.fillText(n.emoji,nx,ny);
+        cx.fillText(o.emoji,0,0);
 
-        // Shield icon
-        if(n.shield){
-            cx.font='9px serif'; cx.fillStyle=shColor;
-            const icons={
-                'ML-KEM':'🔐','ML-DSA':'✍️','SPHINCS+':'🌲','Falcon':'🦅'
-            };
-            cx.fillText(icons[n.shield.name]||'🛡️',nx+14,ny-14);
-            // Shield HP bar
-            cx.fillStyle='#1e293b'; cx.fillRect(nx-12,ny-26,24,3);
-            cx.fillStyle=shColor;
-            cx.fillRect(nx-12,ny-26,24*(n.shieldHp/n.shield.hp),3);
+        // HP bar (if damaged)
+        if(o.hp&&o.hp<o.maxHp&&o.hp>0){
+            const bw=o.w;
+            cx.fillStyle='#1e293b';
+            cx.fillRect(-bw/2,o.h/2+4,bw,4);
+            const pct=o.hp/o.maxHp;
+            cx.fillStyle=pct>0.5?'#10b981':'#ef4444';
+            cx.fillRect(-bw/2,o.h/2+4,bw*pct,4);
         }
 
-        // Hub label
-        if(n.isHub){
-            cx.font='8px sans-serif'; cx.fillStyle='#60a5fa';
-            cx.fillText('HUB',nx,ny+26);
+        // Frozen indicator
+        if(o.frozen){
+            cx.font='14px serif'; cx.textAlign='center';
+            cx.fillText('❄️',0,-o.h/2-10);
         }
+
+        cx.restore();
     });
 
-    // Draw particles
+    // Particles
     particles.forEach(p=>{
         cx.beginPath(); cx.arc(p.x,p.y,p.r,0,Math.PI*2);
         cx.fillStyle=p.color+Math.floor(p.alpha*255).toString(16).padStart(2,'0');
         cx.fill();
     });
+
+    // Place preview
+    if(currentTool==='place' && mouseX>0){
+        cx.globalAlpha=0.5;
+        cx.font='24px serif'; cx.textAlign='center'; cx.textBaseline='middle';
+        cx.fillText(selectedSpawnItem.emoji, mouseX, mouseY);
+        cx.globalAlpha=1;
+    }
 }
 
-function loop(){ frameId=requestAnimationFrame(loop); update(); draw(); }
+// ── MOUSE ─────────────────────────────────────────────────────────────────────
+let mouseX=0, mouseY=0;
+const world = document.getElementById('world');
+
+function getWorldPos(e){
+    const r=cv.getBoundingClientRect();
+    return {
+        x:(e.clientX-r.left)*(W/r.width),
+        y:(e.clientY-r.top)*(H/r.height)
+    };
+}
+
+function getObjAt(x,y){
+    return [...objects].reverse().find(o=>{
+        const dx=Math.abs(o.x-x), dy=Math.abs(o.y-y);
+        return dx<o.w/2+5 && dy<o.h/2+5;
+    });
+}
+
+world.addEventListener('mousemove',e=>{
+    const p=getWorldPos(e); mouseX=p.x; mouseY=p.y;
+    if(dragObj && currentTool==='move'){
+        dragObj.x=p.x-dragOffX; dragObj.y=p.y-dragOffY;
+        dragObj.vx=0; dragObj.vy=0;
+    }
+});
+
+world.addEventListener('mousedown',e=>{
+    if(e.button===2) return;
+    const p=getWorldPos(e);
+
+    if(currentTool==='place'){
+        spawnObject(p.x, p.y, selectedSpawnItem);
+    } else if(currentTool==='move'){
+        const o=getObjAt(p.x,p.y);
+        if(o){ dragObj=o; dragOffX=p.x-o.x; dragOffY=p.y-o.y; o.frozen=true; }
+    } else if(currentTool==='delete'){
+        const o=getObjAt(p.x,p.y);
+        if(o){ objects=objects.filter(ob=>ob!==o); updateHUD(); }
+    }
+    closeCtx();
+});
+
+world.addEventListener('mouseup',e=>{
+    if(dragObj){ dragObj.frozen=false; dragObj.vy=-1; dragObj=null; }
+});
+
+// Right-click context menu
+world.addEventListener('contextmenu',e=>{
+    e.preventDefault();
+    const p=getWorldPos(e);
+    ctxObj=getObjAt(p.x,p.y);
+    if(ctxObj){
+        const menu=document.getElementById('ctx-menu');
+        menu.style.display='block';
+        menu.style.left=(e.clientX-world.getBoundingClientRect().left)+'px';
+        menu.style.top=(e.clientY-world.getBoundingClientRect().top)+'px';
+    }
+});
+
+document.addEventListener('click',()=>closeCtx());
+function closeCtx(){ document.getElementById('ctx-menu').style.display='none'; }
+function ctxDelete(){ if(ctxObj){objects=objects.filter(o=>o!==ctxObj);updateHUD();}closeCtx();}
+function ctxFreeze(){ if(ctxObj){ctxObj.frozen=!ctxObj.frozen;}closeCtx();}
+function ctxExplode(){ if(ctxObj){doExplosion(ctxObj.x,ctxObj.y,100);objects=objects.filter(o=>o!==ctxObj);updateHUD();}closeCtx();}
+function ctxShield(){ if(ctxObj){ctxObj.shielded=true;ctxObj.color='#10b981';}closeCtx();}
+
+// Drag from spawn panel
+world.addEventListener('dragover',e=>e.preventDefault());
+world.addEventListener('drop',e=>{
+    e.preventDefault();
+    const p=getWorldPos(e);
+    spawnObject(p.x,p.y,selectedSpawnItem);
+});
+
+// ── TOOLS ─────────────────────────────────────────────────────────────────────
+function setTool(t){
+    currentTool=t;
+    document.querySelectorAll('.tool').forEach(b=>b.classList.remove('active'));
+    document.getElementById('t-'+t)?.classList.add('active');
+    cv.style.cursor=t==='delete'?'crosshair':t==='move'?'grab':'crosshair';
+}
+
+function resetWorld(){
+    objects=[]; particles=[]; explosions=[]; lightnings=[];
+    totalExplosions=0; updateHUD();
+    showToast('🔄 World cleared! Start building!');
+}
+
+function toggleGravity(){
+    gravityOn=!gravityOn;
+    document.getElementById('t-grav').textContent=gravityOn?'🌍 Gravity':'🌌 Zero-G';
+    showToast(gravityOn?'🌍 Gravity ON — objects fall!':'🌌 Zero-G mode — objects float!');
+}
+
+function explodeAll(){
+    const toExplode=[...objects];
+    toExplode.forEach((o,i)=>{
+        setTimeout(()=>{
+            if(objects.includes(o)) doExplosion(o.x,o.y,o.blast||80);
+        },i*100);
+    });
+    showToast('💥 CHAOS MODE! Everything explodes!');
+}
+
+// ── HUD ───────────────────────────────────────────────────────────────────────
+function updateHUD(){
+    document.getElementById('h-obj').textContent=objects.length;
+    document.getElementById('h-exp').textContent=totalExplosions;
+}
+
+// ── TOAST ─────────────────────────────────────────────────────────────────────
+let toastTimeout=null;
+function showToast(msg){
+    const el=document.getElementById('toast');
+    el.textContent=msg; el.classList.add('show');
+    if(toastTimeout) clearTimeout(toastTimeout);
+    toastTimeout=setTimeout(()=>el.classList.remove('show'),3500);
+}
+
+let factIdx=0;
+function showFactRandom(){
+    if(Math.random()<0.4) showToast(FACTS[factIdx++%FACTS.length]);
+}
+
+// ── FPS ───────────────────────────────────────────────────────────────────────
+function updateFPS(){
+    frameCount++;
+    const now=performance.now();
+    if(now-fpsTime>=1000){
+        fps=Math.round(frameCount*1000/(now-fpsTime));
+        document.getElementById('h-fps').textContent=fps+' fps';
+        frameCount=0; fpsTime=now;
+    }
+}
+
+// ── GAME LOOP ─────────────────────────────────────────────────────────────────
+function loop(){
+    requestAnimationFrame(loop);
+    physicsUpdate();
+    draw();
+    updateFPS();
+}
 
 // ── INIT ─────────────────────────────────────────────────────────────────────
-genNetwork(10);
-updateHUD();
-setInfo('🧪 Welcome to Quantum Sandbox! Select a tool above and click a node!');
+showToast('🧪 Select an item from the panel and click or drag it onto the world!');
 loop();
 </script>
 </body>
 </html>
-""", height=720)
+""", height=640)
