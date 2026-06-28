@@ -3404,694 +3404,703 @@ showFact(FACTS[0]);
 """, height=720)
 
 def render_network_defender():
-    """Free game: Quantum Fortress — Strategic network defense with cascade failures and vulnerability meters."""
+    """Free game: Quantum Fortress — UPGRADED 2026 — Melon-style network defense."""
     import streamlit as st
     import streamlit.components.v1 as components
-    st.subheader("🏰 Quantum Fortress — Strategic Network Defense")
+    st.subheader("🏰 Quantum Fortress — Network Defense!")
     st.markdown(
-        "**Protect the network graph!** Nodes are connected — if one falls, "
-        "connected nodes get weaker. Deploy PQC shields strategically. "
-        "Watch the vulnerability meters. Survive all 12 waves!"
+        "**Protect your network from Shor Bots!** "
+        "Click nodes to deploy quantum shields. "
+        "Don't let the attackers reach the HUB!"
     )
     components.html(r"""
 <!DOCTYPE html>
 <html>
 <head>
+<meta charset="UTF-8">
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
-body{background:#020d14;font-family:'Segoe UI',sans-serif;color:white;overflow-x:hidden;}
+body{background:#020d14;font-family:'Segoe UI',sans-serif;color:white;overflow:hidden;}
 #wrap{display:flex;flex-direction:column;align-items:center;padding:8px;max-width:580px;margin:0 auto;}
 
 /* HUD */
-.hud{display:grid;grid-template-columns:repeat(5,1fr);gap:3px;width:100%;margin-bottom:5px;}
-.hb{background:#071520;border:1px solid #1a3a5a;border-radius:8px;padding:5px 3px;
-    text-align:center;font-size:9px;color:#60a5fa;transition:all 0.3s;}
+.hud{display:grid;grid-template-columns:repeat(5,1fr);gap:3px;width:100%;margin-bottom:6px;}
+.hb{background:#071520;border:1px solid #1a3a5a;border-radius:6px;padding:4px 2px;
+    text-align:center;font-size:8px;color:#60a5fa;}
 .hb b{display:block;font-size:13px;color:white;}
-.hb.danger b{color:#ef4444;}
-.hb.safe b{color:#10b981;}
 
-/* Wave banner */
-#wave-banner{width:100%;background:#071520;border:1px solid #1a3a5a;border-radius:8px;
-    padding:7px 12px;text-align:center;font-size:12px;color:#60a5fa;
-    font-weight:bold;margin-bottom:5px;min-height:32px;}
+/* WAVE BANNER */
+#wave-banner{width:100%;background:#071520;border:1px solid #1d4ed8;
+    border-radius:8px;padding:6px 12px;margin-bottom:6px;
+    display:flex;justify-content:space-between;align-items:center;font-size:11px;}
+#wave-text{color:#60a5fa;font-weight:bold;}
+#integrity-bar-wrap{flex:1;height:8px;background:#1e293b;border-radius:4px;margin:0 10px;}
+#integrity-bar{height:8px;border-radius:4px;background:linear-gradient(90deg,#10b981,#34d399);
+    transition:width 0.3s;}
+#integrity-pct{color:#10b981;font-size:10px;font-weight:bold;white-space:nowrap;}
 
-/* Canvas */
-#gc{border:2px solid #1d4ed8;border-radius:12px;display:block;cursor:pointer;
-    box-shadow:0 0 24px rgba(59,130,246,0.15);}
+/* CANVAS */
+#gc{border:2px solid #1d4ed8;border-radius:10px;display:block;cursor:pointer;
+    box-shadow:0 0 20px rgba(29,78,216,0.2);}
 
-/* Node info panel */
-#node-panel{background:#071520;border:1px solid #1a3a5a;border-radius:10px;
-    padding:8px 12px;width:100%;margin:5px 0;display:none;}
-#node-panel.visible{display:block;}
-#node-panel h4{color:#60a5fa;font-size:11px;margin-bottom:5px;}
-.vuln-bar-wrap{margin:4px 0;}
-.vuln-label{font-size:9px;color:#475569;display:flex;justify-content:space-between;}
-.vuln-bar{height:8px;background:#1e293b;border-radius:4px;overflow:hidden;margin-top:2px;}
-.vuln-fill{height:100%;border-radius:4px;transition:width 0.5s;}
-.shield-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-top:6px;}
-.shield-opt{padding:5px 4px;border-radius:6px;border:1px solid #1a3a5a;
-    background:#050e1a;font-size:9px;color:#60a5fa;cursor:pointer;
-    text-align:center;transition:all 0.15s;}
-.shield-opt:hover{border-color:#3b82f6;background:#0a1f35;}
-.shield-opt.active{border-color:#10b981;background:#071f15;color:#10b981;}
-.shield-opt.disabled{opacity:0.3;cursor:not-allowed;}
+/* SHIELD SELECTOR */
+#shield-bar{display:flex;gap:4px;justify-content:center;margin:6px 0;flex-wrap:wrap;}
+.shield-opt{padding:5px 10px;border-radius:8px;border:2px solid #1a3a5a;
+    background:#071520;color:#94a3b8;font-size:10px;cursor:pointer;
+    transition:all 0.15s;text-align:center;}
+.shield-opt:hover{border-color:#3b82f6;color:white;}
+.shield-opt.active{border-color:#fbbf24;background:#1a1500;color:#fbbf24;}
+.shield-opt .sh-emoji{font-size:16px;display:block;margin-bottom:2px;}
+.shield-opt .sh-count{font-size:9px;color:#475569;}
 
-/* Attack log */
-#log{background:#020d14;border:1px solid #0a1f2e;border-radius:8px;
-    padding:6px 8px;width:100%;height:60px;overflow-y:auto;
-    font-size:9px;color:#475569;margin:4px 0;font-family:monospace;}
-.log-attack{color:#ef4444;}
-.log-shield{color:#10b981;}
-.log-cascade{color:#f59e0b;}
-.log-wave{color:#60a5fa;font-weight:bold;}
-
-/* Messages */
-#msg{font-size:11px;min-height:18px;margin:3px;text-align:center;font-weight:bold;width:100%;}
-#fact{background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.25);
-    border-radius:8px;padding:7px 10px;margin:3px 0;font-size:10px;color:#93c5fd;
-    display:none;line-height:1.5;width:100%;}
-
-/* Buttons */
-.btns{display:flex;gap:5px;flex-wrap:wrap;justify-content:center;margin:5px 0;}
-.btn{padding:7px 16px;border-radius:8px;border:none;cursor:pointer;
+/* BUTTONS */
+.btns{display:flex;gap:4px;justify-content:center;flex-wrap:wrap;margin:4px 0;}
+.btn{padding:7px 14px;border-radius:8px;border:none;cursor:pointer;
     font-size:11px;font-weight:bold;color:white;transition:all 0.15s;}
-.btn:hover{filter:brightness(1.2);}
-.btn-start{background:linear-gradient(135deg,#1d4ed8,#06b6d4);}
-.btn-next{background:linear-gradient(135deg,#059669,#10b981);}
-.btn-next:disabled{background:#1e293b;color:#475569;cursor:not-allowed;}
-.btn-repair{background:linear-gradient(135deg,#7c3aed,#8b5cf6);}
+.btn:hover{filter:brightness(1.2);transform:translateY(-1px);}
+.btn:disabled{opacity:0.4;cursor:not-allowed;transform:none;}
+.btn-start{background:linear-gradient(135deg,#059669,#10b981);}
+.btn-blue{background:#1d4ed8;}
+.btn-red{background:#dc2626;}
 
-/* Legend */
-#legend{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;
-    margin:4px 0;font-size:9px;color:#475569;}
-.leg{display:flex;align-items:center;gap:3px;}
-.leg-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+/* FACT / MSG */
+#msg{font-size:10px;color:#34d399;text-align:center;min-height:16px;margin:3px 0;}
+#fact{background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.3);
+    border-radius:8px;padding:6px 10px;font-size:10px;color:#93c5fd;
+    width:100%;margin-top:4px;display:none;line-height:1.5;}
+
+/* TOAST */
+#toast{position:fixed;top:14px;left:50%;transform:translateX(-50%);
+    background:#071520;border:2px solid #10b981;border-radius:10px;
+    padding:7px 14px;font-size:11px;color:#10b981;font-weight:bold;
+    z-index:100;opacity:0;transition:opacity 0.3s;pointer-events:none;text-align:center;}
+#toast.show{opacity:1;}
+
+/* CONFETTI */
+.cp{position:fixed;pointer-events:none;z-index:999;width:8px;height:8px;
+    border-radius:2px;animation:cf linear forwards;}
+@keyframes cf{0%{transform:translateY(-20px) rotate(0deg);opacity:1;}
+    100%{transform:translateY(600px) rotate(720deg);opacity:0;}}
+
+/* GAME OVER / WIN SCREEN */
+#overlay{position:absolute;top:0;left:0;width:100%;height:100%;
+    background:rgba(0,0,0,0.8);border-radius:10px;display:none;
+    flex-direction:column;align-items:center;justify-content:center;z-index:10;}
+#overlay.show{display:flex;}
+#overlay h2{font-size:22px;margin-bottom:8px;}
+#overlay p{font-size:12px;color:#94a3b8;margin-bottom:12px;text-align:center;}
 </style>
 </head>
 <body>
 <div id="wrap">
 
+<!-- HUD -->
 <div class="hud">
-    <div class="hb" id="hb-score">⭐ Score<br><b id="h-score">0</b></div>
-    <div class="hb" id="hb-wave">🌊 Wave<br><b id="h-wave">1</b>/12</div>
-    <div class="hb" id="hb-shields">🛡️ Shields<br><b id="h-shields">5</b></div>
-    <div class="hb" id="hb-integrity">🔗 Integrity<br><b id="h-integrity">100%</b></div>
-    <div class="hb" id="hb-nodes">💻 Safe<br><b id="h-nodes">0/0</b></div>
+    <div class="hb">🌊 Wave<br><b id="h-wave">0</b>/12</div>
+    <div class="hb">⭐ Score<br><b id="h-score">0</b></div>
+    <div class="hb">🔐 Shields<br><b id="h-shields">5</b></div>
+    <div class="hb">💀 Attacks<br><b id="h-attacks">0</b></div>
+    <div class="hb">⚡ Blocked<br><b id="h-blocked">0</b></div>
 </div>
 
-<div id="wave-banner">🏰 Press START to defend the Quantum Fortress!</div>
-
-<canvas id="gc" width="560" height="360"></canvas>
-
-<div id="legend">
-    <div class="leg"><div class="leg-dot" style="background:#10b981"></div>Kyber</div>
-    <div class="leg"><div class="leg-dot" style="background:#3b82f6"></div>Dilithium</div>
-    <div class="leg"><div class="leg-dot" style="background:#8b5cf6"></div>SPHINCS+</div>
-    <div class="leg"><div class="leg-dot" style="background:#ef4444"></div>Vulnerable</div>
-    <div class="leg"><div class="leg-dot" style="background:#1e293b;border:1px solid #475569"></div>Compromised</div>
-    <div class="leg"><div class="leg-dot" style="background:#f59e0b"></div>Cascade Risk</div>
+<!-- WAVE BANNER / INTEGRITY -->
+<div id="wave-banner">
+    <span id="wave-text">Press START to begin!</span>
+    <div id="integrity-bar-wrap"><div id="integrity-bar" style="width:100%"></div></div>
+    <span id="integrity-pct">100%</span>
 </div>
 
-<div id="node-panel">
-    <h4 id="np-title">Node Selected</h4>
-    <div class="vuln-bar-wrap">
-        <div class="vuln-label"><span>Vulnerability</span><span id="np-vuln">0%</span></div>
-        <div class="vuln-bar"><div class="vuln-fill" id="np-vuln-fill" style="width:0%"></div></div>
+<!-- CANVAS WRAPPER -->
+<div style="position:relative;width:560px;">
+    <canvas id="gc" width="560" height="360"></canvas>
+    <div id="overlay">
+        <h2 id="overlay-title">Game Over</h2>
+        <p id="overlay-msg">The network fell!</p>
+        <button class="btn btn-start" onclick="resetGame()">🔄 Play Again</button>
     </div>
-    <div class="vuln-bar-wrap">
-        <div class="vuln-label"><span>Connections at Risk</span><span id="np-conn">0</span></div>
-    </div>
-    <div style="font-size:9px;color:#475569;margin-top:4px" id="np-status">Select a node to see options</div>
-    <div class="shield-grid" id="np-shields"></div>
 </div>
 
-<div id="log"></div>
+<!-- SHIELD SELECTOR -->
+<div id="shield-bar">
+    <div class="shield-opt active" onclick="selectShield('kyber',this)" id="sh-kyber">
+        <span class="sh-emoji">🔐</span>ML-KEM<br>
+        <span class="sh-count" id="cnt-kyber">∞</span>
+    </div>
+    <div class="shield-opt" onclick="selectShield('dilithium',this)" id="sh-dilithium">
+        <span class="sh-emoji">✍️</span>ML-DSA<br>
+        <span class="sh-count" id="cnt-dilithium">∞</span>
+    </div>
+    <div class="shield-opt" onclick="selectShield('sphincs',this)" id="sh-sphincs">
+        <span class="sh-emoji">🌲</span>SPHINCS+<br>
+        <span class="sh-count" id="cnt-sphincs">∞</span>
+    </div>
+    <div class="shield-opt" onclick="selectShield('falcon',this)" id="sh-falcon">
+        <span class="sh-emoji">🦅</span>Falcon<br>
+        <span class="sh-count" id="cnt-falcon">∞</span>
+    </div>
+</div>
 
-<div id="msg">Press START to begin!</div>
-<div id="fact"></div>
-
+<!-- BUTTONS -->
 <div class="btns">
-    <button class="btn btn-start" onclick="startGame()">🏰 START</button>
-    <button class="btn btn-repair" onclick="repairNode()">🔧 Repair (-150pts)</button>
-    <button class="btn btn-next" id="next-btn" onclick="nextWave()" disabled>Next Wave →</button>
+    <button class="btn btn-start" id="start-btn" onclick="startGame()">🏰 START GAME</button>
+    <button class="btn btn-blue" id="next-btn" onclick="nextWave()" disabled>Next Wave →</button>
+    <button class="btn btn-red" onclick="resetGame()">🔄 Reset</button>
 </div>
+
+<div id="msg">Click START to defend your network from Shor Bots!</div>
+<div id="fact"></div>
 </div>
+
+<div id="toast"></div>
 
 <script>
-const cv=document.getElementById("gc");
-const cx=cv.getContext("2d");
-const W=560,H=360;
+// ── CANVAS SETUP ──────────────────────────────────────────────────────────────
+const cv = document.getElementById('gc');
+const cx = cv.getContext('2d');
+const W = 560, H = 360;
 
-const WAVES=[
-    {w:1, name:"Quantum Probe",      nodes:5, edges:5, attackRate:0.15, spawnInt:4000, maxAttackers:2, shields:5, reward:300, desc:"Initial quantum probe — basic Shor bots scanning for RSA"},
-    {w:2, name:"Shor Scouts",        nodes:6, edges:6, attackRate:0.2,  spawnInt:3500, maxAttackers:3, shields:5, reward:350, desc:"Shor scouts found weak nodes — defend the connections!"},
-    {w:3, name:"Lattice Breach",     nodes:6, edges:7, attackRate:0.25, spawnInt:3000, maxAttackers:3, shields:5, reward:400, desc:"Cascade failure risk — shielding one node protects neighbors"},
-    {w:4, name:"Grover Surge",       nodes:7, edges:8, attackRate:0.3,  spawnInt:2800, maxAttackers:4, shields:4, reward:450, desc:"Grover speedup detected — attacks coming faster!"},
-    {w:5, name:"Multi-Vector",       nodes:7, edges:9, attackRate:0.35, spawnInt:2500, maxAttackers:5, shields:4, reward:500, desc:"Multiple simultaneous attack vectors — prioritize hubs!"},
-    {w:6, name:"RSA Collapse",       nodes:8, edges:10,attackRate:0.4,  spawnInt:2200, maxAttackers:5, shields:4, reward:600, desc:"All RSA nodes targeted — deploy Kyber on hub nodes first"},
-    {w:7, name:"Quantum Flood",      nodes:8, edges:11,attackRate:0.45, spawnInt:2000, maxAttackers:6, shields:4, reward:700, desc:"Flood attack — every node needs protection now"},
-    {w:8, name:"CRQC Advance",       nodes:9, edges:12,attackRate:0.5,  spawnInt:1800, maxAttackers:7, shields:3, reward:800, desc:"CRQC detected — cryptographically relevant quantum computer!"},
-    {w:9, name:"Pentagon Breach",    nodes:9, edges:13,attackRate:0.55, spawnInt:1600, maxAttackers:7, shields:3, reward:900, desc:"Critical infrastructure targeted — no node can fall"},
-    {w:10,name:"Global Assault",     nodes:10,edges:14,attackRate:0.6,  spawnInt:1400, maxAttackers:8, shields:3, reward:1000,desc:"World financial system attack — cascade failures everywhere"},
-    {w:11,name:"Quantum Apocalypse", nodes:10,edges:15,attackRate:0.65, spawnInt:1200, maxAttackers:9, shields:3, reward:1200,desc:"Final defense — every shield type needed"},
-    {w:12,name:"FINAL BOSS",         nodes:11,edges:16,attackRate:0.8,  spawnInt:1000, maxAttackers:10,shields:3, reward:2000,desc:"THE QUANTUM MONSTER — maximum attack on all nodes simultaneously!"},
+// ── SHIELD TYPES ──────────────────────────────────────────────────────────────
+const SHIELDS = {
+    kyber:     {name:'ML-KEM',   emoji:'🔐', color:'#10b981', hp:5, fips:'FIPS 203'},
+    dilithium: {name:'ML-DSA',   emoji:'✍️',  color:'#3b82f6', hp:4, fips:'FIPS 204'},
+    sphincs:   {name:'SPHINCS+', emoji:'🌲', color:'#8b5cf6', hp:6, fips:'FIPS 205'},
+    falcon:    {name:'Falcon',   emoji:'🦅', color:'#f59e0b', hp:4, fips:'FIPS 206'},
+};
+
+// ── WAVE CONFIGS ─────────────────────────────────────────────────────────────
+const WAVES = [
+    {name:'Quantum Probe',    nodeCount:5,  attackRate:1800, maxAtk:2,  reward:200, desc:'Basic Shor bots scanning for RSA!'},
+    {name:'Shor Scouts',      nodeCount:6,  attackRate:1600, maxAtk:3,  reward:250, desc:'Scouts found weak nodes!'},
+    {name:'Lattice Breach',   nodeCount:6,  attackRate:1400, maxAtk:3,  reward:300, desc:'Cascade failure risk!'},
+    {name:'Grover Surge',     nodeCount:7,  attackRate:1200, maxAtk:4,  reward:350, desc:'Grover speedup — attacks faster!'},
+    {name:'Multi-Vector',     nodeCount:7,  attackRate:1100, maxAtk:5,  reward:400, desc:'Multiple attack vectors!'},
+    {name:'RSA Apocalypse',   nodeCount:8,  attackRate:1000, maxAtk:5,  reward:450, desc:'RSA encryption is broken!'},
+    {name:'Quantum Storm',    nodeCount:8,  attackRate:900,  maxAtk:6,  reward:500, desc:'Full quantum storm incoming!'},
+    {name:'Shor Blitz',       nodeCount:9,  attackRate:800,  maxAtk:7,  reward:550, desc:'Blitz attack — shields are critical!'},
+    {name:'Entanglement',     nodeCount:9,  attackRate:700,  maxAtk:8,  reward:600, desc:'Entangled attackers share damage!'},
+    {name:'Quantum Supremacy',nodeCount:10, attackRate:600,  maxAtk:8,  reward:700, desc:'Quantum supremacy activated!'},
+    {name:'Final Protocol',   nodeCount:10, attackRate:500,  maxAtk:9,  reward:800, desc:'Final defense protocol!'},
+    {name:'LAST STAND',       nodeCount:12, attackRate:400,  maxAtk:10, reward:1000,desc:'LAST STAND — all or nothing!'},
 ];
 
-const SHIELDS=[
-    {name:"ML-KEM",    emoji:"🔐",color:"#10b981",desc:"Kyber FIPS 203 — strongest key exchange. Blocks 3 attacks.",  power:3, cost:1},
-    {name:"ML-DSA",    emoji:"✍️",color:"#3b82f6",desc:"Dilithium FIPS 204 — signature shield. Blocks 2 attacks.",    power:2, cost:1},
-    {name:"SLH-DSA",   emoji:"🌲",color:"#8b5cf6",desc:"SPHINCS+ FIPS 205 — hash backup. Blocks 2, cheap.",           power:2, cost:1},
-    {name:"FN-DSA",    emoji:"🦅",color:"#f59e0b",desc:"Falcon FIPS 206 — tiny but strong. Protects 2 neighbors.",    power:2, cost:1},
-    {name:"LWE Core",  emoji:"🧮",color:"#ec4899",desc:"LWE Core — ultimate. Blocks 5 attacks + heals neighbors.",    power:5, cost:2},
+// ── PQC FACTS ────────────────────────────────────────────────────────────────
+const FACTS = [
+    '🔐 ML-KEM (Kyber FIPS 203) protects key exchange — the most important step in any connection!',
+    '✍️ ML-DSA (Dilithium FIPS 204) signs every packet — Shor Bots cannot forge signatures!',
+    '🌲 SPHINCS+ (FIPS 205) uses hash trees — immune even if lattice math is ever broken!',
+    '🦅 Falcon (FIPS 206) makes the smallest signatures — perfect for IoT nodes!',
+    '💥 Cascade failures happen when nodes share RSA keys — PQC prevents this!',
+    '🌐 Every node in a real network needs its own PQC certificate to stay safe!',
+    '☠️ Shor\'s Algorithm attacks RSA by factoring the public key — Kyber has no such weakness!',
+    '🏆 NIST mandated PQC by 2035 — your network needs it NOW!',
 ];
 
-const NODE_TYPES=["🏦","🏥","🏛️","⚡","📡","🌍","🔭","🚀","🏫","💊","🔬"];
-const ATTACKER_EMOJIS=["☠️","🌀","👾","💀","🔥"];
+// ── GAME STATE ────────────────────────────────────────────────────────────────
+let nodes = [], edges = [], attackers = [], particles = [];
+let wave = 0, score = 0, shields = 5, blocked = 0, totalAttacks = 0;
+let integrity = 100, maxIntegrity = 100;
+let gameActive = false, gameOver = false;
+let selectedShield = 'kyber';
+let spawnTimer = null, frameId = null;
+let hoveredNode = null;
 
-let wave=1,score=0,shieldsLeft=5,gameActive=false,selectedNode=null;
-let nodes=[],edges=[],attackers=[],particles=[];
-let spawnInterval=null,attackInterval=null,factTimeout=null;
-let networkIntegrity=100,frameId=null;
+// ── GENERATE NETWORK ─────────────────────────────────────────────────────────
+function genNetwork(count) {
+    nodes = []; edges = [];
 
-// Generate random connected graph
-function genGraph(numNodes,numEdges){
-    nodes=[];edges=[];
-    const cx2=W/2,cy2=H/2-10;
-    const rings=[{r:0,count:1},{r:110,count:Math.min(5,numNodes-1)},{r:200,count:Math.max(0,numNodes-6)}];
-    let placed=0;
-    rings.forEach(ring=>{
-        for(let i=0;i<ring.count&&placed<numNodes;i++){
-            const angle=ring.r===0?0:(i/ring.count)*Math.PI*2-Math.PI/2;
-            nodes.push({
-                x:cx2+(ring.r===0?0:ring.r*Math.cos(angle)),
-                y:cy2+(ring.r===0?0:ring.r*Math.sin(angle)),
-                id:placed,
-                type:NODE_TYPES[placed%NODE_TYPES.length],
-                vulnerability:0,
-                shield:null,
-                shieldHp:0,
-                compromised:false,
-                cascadeRisk:false,
-                pulse:Math.random()*Math.PI*2,
-                connections:[],
-            });
-            placed++;
-        }
+    // Hub at center
+    nodes.push({
+        id: 0, x: W/2, y: H/2,
+        isHub: true, hp: 10, maxHp: 10,
+        shield: null, shieldHp: 0,
+        compromised: false, pulse: 0,
+        connections: [], emoji: '🏛️'
     });
 
-    // Always connect ring nodes to center
-    for(let i=1;i<Math.min(nodes.length,6);i++){
-        addEdge(0,i);
+    // Ring of nodes
+    const emojis = ['🏦','🏥','🏫','⚡','📡','🌍','🔭','🚀','💊','🏗️','🔬'];
+    for (let i = 1; i < count; i++) {
+        const angle = ((i-1) / (count-1)) * Math.PI * 2 - Math.PI/2;
+        const r = 110 + Math.random() * 50;
+        nodes.push({
+            id: i,
+            x: W/2 + r * Math.cos(angle),
+            y: H/2 + r * Math.sin(angle),
+            isHub: false, hp: 5, maxHp: 5,
+            shield: null, shieldHp: 0,
+            compromised: false, pulse: Math.random() * Math.PI * 2,
+            connections: [], emoji: emojis[(i-1) % emojis.length]
+        });
     }
-    // Add random edges
-    let attempts=0;
-    while(edges.length<numEdges&&attempts<200){
-        attempts++;
-        const a=Math.floor(Math.random()*nodes.length);
-        const b=Math.floor(Math.random()*nodes.length);
-        if(a!==b&&!edges.find(e=>(e.a===a&&e.b===b)||(e.a===b&&e.b===a))){
-            addEdge(a,b);
+
+    // Connect hub to all
+    for (let i = 1; i < nodes.length; i++) {
+        addEdge(0, i);
+    }
+    // Connect nearby nodes
+    for (let i = 1; i < nodes.length; i++) {
+        for (let j = i+1; j < nodes.length; j++) {
+            const d = dist(nodes[i], nodes[j]);
+            if (d < 170 && !edgeExists(i,j)) addEdge(i, j);
         }
     }
 }
 
-function addEdge(a,b){
-    edges.push({a,b,stressed:false,broken:false});
+function addEdge(a, b) {
+    edges.push({a, b, stress: 0});
     nodes[a].connections.push(b);
     nodes[b].connections.push(a);
 }
 
-function startGame(){
-    wave=1;score=0;shieldsLeft=5;networkIntegrity=100;gameActive=false;
-    selectedNode=null;
-    document.getElementById("node-panel").classList.remove("visible");
-    document.getElementById("next-btn").disabled=true;
-    clearTimers();
-    if(frameId) cancelAnimationFrame(frameId);
-    logMsg("wave","=== OPERATION QUANTUM FORTRESS INITIATED ===");
-    initWave();
-    loop();
+function edgeExists(a, b) {
+    return edges.some(e => (e.a===a&&e.b===b)||(e.a===b&&e.b===a));
 }
 
-function initWave(){
-    const cfg=WAVES[Math.min(wave-1,WAVES.length-1)];
-    genGraph(cfg.nodes,cfg.edges);
-    attackers=[];particles=[];
-    shieldsLeft+=cfg.shields;
-    networkIntegrity=100;
-    gameActive=true;
-    selectedNode=null;
-    document.getElementById("node-panel").classList.remove("visible");
-    document.getElementById("next-btn").disabled=true;
-    document.getElementById("wave-banner").textContent=
-        "🌊 Wave "+wave+"/12: "+cfg.name+" — "+cfg.desc;
-    logMsg("wave","Wave "+wave+": "+cfg.name);
-    updateHUD();
+function dist(a, b) { return Math.hypot(a.x-b.x, a.y-b.y); }
 
-    // Spawn attackers
-    spawnInterval=setInterval(()=>{
-        if(!gameActive) return;
-        if(attackers.length<cfg.maxAttackers){
-            spawnAttacker(cfg);
-        }
-    },cfg.spawnInt);
+// ── ATTACKERS ─────────────────────────────────────────────────────────────────
+function spawnAttacker() {
+    if (!gameActive) return;
+    const cfg = WAVES[wave-1];
+    if (attackers.length >= cfg.maxAtk) return;
 
-    // Attack tick
-    attackInterval=setInterval(()=>{
-        if(!gameActive) return;
-        tickAttacks(cfg);
-    },800);
-}
+    // Target weakest unshielded node
+    const targets = nodes.filter(n => !n.compromised);
+    if (!targets.length) return;
+    targets.sort((a,b) => (a.shield?1:0) - (b.shield?1:0) || a.hp - b.hp);
+    const target = targets[Math.floor(Math.random() * Math.min(3, targets.length))];
 
-function spawnAttacker(cfg){
-    // Pick most vulnerable unshielded node
-    const targets=nodes.filter(n=>!n.compromised&&n.shield===null);
-    if(!targets.length) return;
-    // Sort by vulnerability + connections
-    targets.sort((a,b)=>(b.vulnerability+b.connections.length)-(a.vulnerability+a.connections.length));
-    const target=targets[Math.floor(Math.random()*Math.min(3,targets.length))];
-
-    // Spawn from outside canvas
-    const angle=Math.random()*Math.PI*2;
-    const spawnR=320;
+    // Spawn from edge of screen
+    const angle = Math.random() * Math.PI * 2;
+    const r = 320;
     attackers.push({
-        x:W/2+spawnR*Math.cos(angle),
-        y:H/2-10+spawnR*Math.sin(angle),
-        targetId:target.id,
-        spd:cfg.attackRate*2.5+0.8,
-        emoji:ATTACKER_EMOJIS[Math.floor(Math.random()*ATTACKER_EMOJIS.length)],
-        color:"#ef4444",
-        id:Math.random(),
-        dead:false,
-        hp:1+Math.floor(wave/4),
+        x: W/2 + r * Math.cos(angle),
+        y: H/2 + r * Math.sin(angle),
+        targetId: target.id,
+        speed: 0.8 + wave * 0.08,
+        size: 14,
+        hp: 2 + Math.floor(wave/3),
+        maxHp: 2 + Math.floor(wave/3),
+        emoji: ['👾','🤖','💀','🌀','☠️'][Math.floor(Math.random()*5)],
+        alpha: 1,
     });
+    totalAttacks++;
+    updateHUD();
 }
 
-function tickAttacks(cfg){
-    // Increase vulnerability on unshielded nodes being targeted
-    attackers.forEach(atk=>{
-        if(atk.dead) return;
-        const node=nodes[atk.targetId];
-        if(!node||node.compromised) return;
-        if(node.shield){
-            // Shield absorbs — reduce shield hp
-            node.shieldHp--;
-            if(node.shieldHp<=0){
-                logMsg("attack","💥 "+node.type+" "+node.shield.name+" shield destroyed!");
-                node.shield=null;
-            } else {
-                spawnParticles(node.x,node.y,"#10b981",4);
-                score+=10;
-            }
-            atk.dead=true;
+function updateAttackers() {
+    attackers.forEach((a, ai) => {
+        const target = nodes[a.targetId];
+        if (!target || target.compromised) {
+            // Retarget
+            const alive = nodes.filter(n => !n.compromised);
+            if (alive.length) a.targetId = alive[Math.floor(Math.random()*alive.length)].id;
             return;
         }
-        node.vulnerability=Math.min(100,node.vulnerability+cfg.attackRate*18);
-        if(node.vulnerability>=100){
-            compromiseNode(node);
-            atk.dead=true;
-        }
-    });
-    attackers=attackers.filter(a=>!a.dead);
 
-    // Cascade: compromised nodes weaken neighbors
-    nodes.forEach(n=>{
-        if(n.compromised){
-            n.connections.forEach(cid=>{
-                const neighbor=nodes[cid];
-                if(!neighbor.compromised&&!neighbor.shield){
-                    neighbor.vulnerability=Math.min(100,neighbor.vulnerability+cfg.attackRate*8);
-                    neighbor.cascadeRisk=true;
-                    if(neighbor.vulnerability>=100) compromiseNode(neighbor);
-                }
-            });
-        }
-    });
-
-    // Check wave complete
-    const totalAlive=nodes.filter(n=>!n.compromised).length;
-    const totalCompromised=nodes.filter(n=>n.compromised).length;
-    networkIntegrity=Math.round(totalAlive/nodes.length*100);
-
-    if(totalCompromised>=Math.ceil(nodes.length*0.5)){
-        waveOver(false);
-    } else if(attackers.length===0&&nodes.filter(n=>!n.compromised&&n.vulnerability>0).length===0){
-        // All threats neutralized
-        waveOver(true);
-    }
-    updateHUD();
-}
-
-function compromiseNode(node){
-    node.compromised=true;
-    node.vulnerability=100;
-    node.cascadeRisk=false;
-    spawnParticles(node.x,node.y,"#ef4444",12);
-    logMsg("attack","💥 "+node.type+" COMPROMISED! Cascade risk to "+node.connections.length+" neighbors");
-    // Stress connected edges
-    edges.forEach(e=>{
-        if(e.a===node.id||e.b===node.id) e.stressed=true;
-    });
-    networkIntegrity=Math.round(nodes.filter(n=>!n.compromised).length/nodes.length*100);
-}
-
-function deployShield(shieldIdx){
-    if(selectedNode===null) return;
-    const node=nodes[selectedNode];
-    if(!node||node.compromised){setMsg("Cannot shield a compromised node!","#ef4444");return;}
-    const sh=SHIELDS[shieldIdx];
-    const cost=sh.cost;
-    if(shieldsLeft<cost){setMsg("Not enough shields! Need "+cost,"#f59e0b");return;}
-    if(node.shield){setMsg("Node already has a "+node.shield.name+" shield!","#f59e0b");return;}
-
-    shieldsLeft-=cost;
-    node.shield=sh;
-    node.shieldHp=sh.power;
-    node.vulnerability=Math.max(0,node.vulnerability-30);
-    node.cascadeRisk=false;
-    score+=75*wave;
-    spawnParticles(node.x,node.y,sh.color,10);
-    logMsg("shield","🔐 Deployed "+sh.emoji+" "+sh.name+" on "+node.type+" (+"+75*wave+"pts)");
-
-    // FN-DSA protects neighbors too
-    if(sh.name==="FN-DSA"){
-        node.connections.slice(0,2).forEach(cid=>{
-            nodes[cid].vulnerability=Math.max(0,nodes[cid].vulnerability-15);
-        });
-        logMsg("shield","🦅 Falcon protected "+Math.min(2,node.connections.length)+" neighbors too!");
-    }
-    // LWE Core heals neighbors
-    if(sh.name==="LWE Core"){
-        node.connections.forEach(cid=>{
-            nodes[cid].vulnerability=Math.max(0,nodes[cid].vulnerability-20);
-            nodes[cid].cascadeRisk=false;
-        });
-        logMsg("shield","🧮 LWE Core healed all connected nodes!");
-    }
-
-    showFact(sh.desc+" | "+["ML-KEM uses Module-LWE lattice math","ML-DSA uses Module-LWE + SIS","SPHINCS+ uses only SHA-3 hash chains","Falcon uses NTRU lattices — smallest signatures","LWE: find secret in noisy equations — quantum-hard"][shieldIdx]);
-    updateHUD();
-    updateNodePanel(node);
-}
-
-function repairNode(){
-    if(selectedNode===null){setMsg("Select a compromised node first!","#f59e0b");return;}
-    const node=nodes[selectedNode];
-    if(score<150){setMsg("Need 150pts to repair!","#f59e0b");return;}
-    score-=150;
-    node.compromised=false;
-    node.vulnerability=40;
-    edges.forEach(e=>{if(e.a===node.id||e.b===node.id)e.stressed=false;});
-    spawnParticles(node.x,node.y,"#10b981",8);
-    logMsg("shield","🔧 "+node.type+" repaired (-150pts)");
-    updateHUD();
-}
-
-function waveOver(success){
-    gameActive=false;
-    clearTimers();
-    if(success){
-        const bonus=WAVES[Math.min(wave-1,WAVES.length-1)].reward+shieldsLeft*50;
-        score+=bonus;
-        updateHUD();
-        document.getElementById("wave-banner").textContent=
-            "✅ Wave "+wave+" cleared! +"+bonus+"pts | Deploy shields to prep for Wave "+(wave+1);
-        logMsg("wave","Wave "+wave+" CLEARED! +"+bonus+"pts");
-        showFact("✅ Wave "+wave+" complete! The NIST PQC standards held the line. "+
-            ["Kyber protects key exchange","Dilithium signs every packet","SPHINCS+ is the hash backup","Falcon keeps IoT safe","All four standards work together"][Math.min(wave-1,4)]);
-        if(wave>=12){
-            document.getElementById("wave-banner").textContent="🏆 QUANTUM FORTRESS DEFENDED! Score: "+score;
-            logMsg("wave","=== OPERATION COMPLETE — QUANTUM FORTRESS SAVED ===");
+        // Move toward target
+        const dx = target.x - a.x, dy = target.y - a.y;
+        const d = Math.hypot(dx, dy);
+        if (d > 5) {
+            a.x += (dx/d) * a.speed;
+            a.y += (dy/d) * a.speed;
         } else {
-            document.getElementById("next-btn").disabled=false;
+            // Reached target — attack!
+            if (target.shield) {
+                // Shield absorbs hit
+                target.shieldHp--;
+                blocked++;
+                spawnParticles(target.x, target.y, SHIELDS[target.shield].color, 6);
+                showToast('🛡️ '+SHIELDS[target.shield].name+' shield blocked attack!');
+                if (target.shieldHp <= 0) {
+                    target.shield = null;
+                    showToast('💥 Shield destroyed!');
+                }
+                attackers.splice(ai, 1);
+                score += 50;
+            } else {
+                // Direct hit
+                target.hp -= 1;
+                spawnParticles(target.x, target.y, '#ef4444', 8);
+                if (target.hp <= 0) {
+                    compromiseNode(target);
+                    attackers.splice(ai, 1);
+                } else {
+                    attackers.splice(ai, 1);
+                }
+                integrity = Math.max(0, integrity - (target.isHub ? 20 : 8));
+                if (integrity <= 0) endGame(false);
+            }
+            updateHUD();
         }
-    } else {
-        document.getElementById("wave-banner").textContent=
-            "💀 Network compromised on Wave "+wave+"! Score: "+score;
-        logMsg("attack","=== NETWORK BREACH — QUANTUM MONSTER WINS ===");
-        showFact("☠️ Without post-quantum encryption, this is what happens when quantum computers attack. NIST FIPS 203-206 are the real-world solution — deploy them NOW before CRQCs arrive!");
-    }
+    });
 }
 
-function nextWave(){
-    wave++;
-    clearTimers();
-    attackers=[];
-    selectedNode=null;
-    document.getElementById("node-panel").classList.remove("visible");
-    document.getElementById("next-btn").disabled=true;
-    initWave();
-}
-
-function clearTimers(){
-    if(spawnInterval) clearInterval(spawnInterval);
-    if(attackInterval) clearInterval(attackInterval);
-}
-
-cv.addEventListener("click",e=>{
-    if(!gameActive) return;
-    const rect=cv.getBoundingClientRect();
-    const mx=(e.clientX-rect.left)*(W/rect.width);
-    const my=(e.clientY-rect.top)*(H/rect.height);
-    for(let n of nodes){
-        if(Math.hypot(mx-n.x,my-n.y)<20){
-            selectedNode=n.id;
-            document.getElementById("node-panel").classList.add("visible");
-            updateNodePanel(n);
-            return;
+function compromiseNode(node) {
+    node.compromised = true;
+    node.hp = 0;
+    spawnParticles(node.x, node.y, '#ef4444', 15);
+    showFact(FACTS[Math.floor(Math.random()*FACTS.length)]);
+    // Cascade — weaken connected nodes
+    node.connections.forEach(ci => {
+        const cn = nodes[ci];
+        if (cn && !cn.compromised) {
+            cn.hp = Math.max(1, cn.hp - 1);
+            spawnParticles(cn.x, cn.y, '#f97316', 4);
         }
-    }
-    selectedNode=null;
-    document.getElementById("node-panel").classList.remove("visible");
+    });
+    if (node.isHub) { integrity = 0; endGame(false); }
+    setMsg('💥 Node compromised! Cascade damage to connected nodes!');
+}
+
+// ── SHIELD PLACEMENT ─────────────────────────────────────────────────────────
+cv.addEventListener('click', e => {
+    if (!gameActive) return;
+    const rect = cv.getBoundingClientRect();
+    const mx = (e.clientX - rect.left) * (W / rect.width);
+    const my = (e.clientY - rect.top) * (H / rect.height);
+
+    const node = nodes.find(n => Math.hypot(n.x-mx, n.y-my) < 26 && !n.compromised);
+    if (!node) return;
+
+    if (shields <= 0) { showToast('❌ No shields left! Survive the wave to get more!'); return; }
+    if (node.shield) { showToast('🔐 Already shielded! Wait for it to expire.'); return; }
+
+    node.shield = selectedShield;
+    node.shieldHp = SHIELDS[selectedShield].hp;
+    shields--;
+    score += 10;
+    spawnParticles(node.x, node.y, SHIELDS[selectedShield].color, 10);
+    showToast('🔐 '+SHIELDS[selectedShield].name+' deployed! '+shields+' shields left.');
+    showFact('🔐 '+SHIELDS[selectedShield].name+' ('+SHIELDS[selectedShield].fips+') — '+
+        SHIELDS[selectedShield].emoji+' Provides '+SHIELDS[selectedShield].hp+' hits of protection!');
+    updateHUD();
 });
 
-function updateNodePanel(node){
-    document.getElementById("np-title").textContent=
-        node.type+" Node "+(node.id+1)+" — "+
-        (node.compromised?"💀 COMPROMISED":node.shield?"🔐 "+node.shield.name+" Shield":"⚠️ Vulnerable");
-    const vf=document.getElementById("np-vuln-fill");
-    vf.style.width=node.vulnerability+"%";
-    vf.style.background=node.vulnerability>70?"#ef4444":node.vulnerability>40?"#f59e0b":"#10b981";
-    document.getElementById("np-vuln").textContent=Math.round(node.vulnerability)+"%";
-    document.getElementById("np-conn").textContent=node.connections.length+" connections";
-    document.getElementById("np-status").textContent=
-        node.compromised?"Node compromised — use 🔧 Repair (-150pts)":
-        node.shield?"Shield active: "+node.shield.name+" ("+node.shieldHp+" hits left)":
-        "Select a shield to deploy:";
+// Mouse hover for highlight
+cv.addEventListener('mousemove', e => {
+    const rect = cv.getBoundingClientRect();
+    const mx = (e.clientX - rect.left) * (W / rect.width);
+    const my = (e.clientY - rect.top) * (H / rect.height);
+    hoveredNode = nodes.find(n => Math.hypot(n.x-mx, n.y-my) < 26) || null;
+    cv.style.cursor = hoveredNode ? 'pointer' : 'default';
+});
 
-    const sg=document.getElementById("np-shields");
-    sg.innerHTML="";
-    if(!node.compromised&&!node.shield){
-        SHIELDS.forEach((sh,i)=>{
-            const canAfford=shieldsLeft>=sh.cost;
-            const div=document.createElement("div");
-            div.className="shield-opt"+(canAfford?"":" disabled");
-            div.innerHTML=sh.emoji+"<br><b>"+sh.name+"</b><br>"+
-                "<span style='color:#475569'>Power:"+sh.power+" Cost:"+sh.cost+"</span>";
-            if(canAfford) div.onclick=()=>deployShield(i);
-            sg.appendChild(div);
-        });
+// ── PARTICLES ─────────────────────────────────────────────────────────────────
+function spawnParticles(x, y, color, n) {
+    for (let i = 0; i < n; i++) {
+        const a = Math.random() * Math.PI * 2;
+        const s = 1 + Math.random() * 4;
+        particles.push({x, y, vx: Math.cos(a)*s, vy: Math.sin(a)*s,
+            r: 2+Math.random()*3, alpha: 1, color});
     }
 }
 
-function spawnParticles(x,y,color,count){
-    for(let i=0;i<count;i++){
-        const a=Math.random()*Math.PI*2;
-        const s=Math.random()*3+1;
-        particles.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,r:Math.random()*3+1,alpha:1,color});
-    }
-}
+// ── DRAW ──────────────────────────────────────────────────────────────────────
+function draw() {
+    cx.clearRect(0, 0, W, H);
 
-function updateHUD(){
-    document.getElementById("h-score").textContent=score;
-    document.getElementById("h-wave").textContent=wave;
-    document.getElementById("h-shields").textContent=shieldsLeft;
-    const intEl=document.getElementById("h-integrity");
-    intEl.textContent=networkIntegrity+"%";
-    const hbInt=document.getElementById("hb-integrity");
-    hbInt.className="hb"+(networkIntegrity<40?" danger":networkIntegrity>70?" safe":"");
-    const safe=nodes.filter(n=>!n.compromised).length;
-    document.getElementById("h-nodes").textContent=safe+"/"+nodes.length;
-}
+    // Background
+    cx.fillStyle = '#020d14'; cx.fillRect(0, 0, W, H);
 
-function setMsg(m,c){
-    let el=document.getElementById("msg");
-    el.textContent=m;el.style.color=c||"#34d399";
-}
-
-function showFact(text,color){
-    let el=document.getElementById("fact");
-    el.textContent=text;el.style.display="block";
-    el.style.borderColor=(color||"#3b82f6")+"50";
-    if(factTimeout) clearTimeout(factTimeout);
-    factTimeout=setTimeout(()=>el.style.display="none",6000);
-}
-
-function logMsg(type,text){
-    const log=document.getElementById("log");
-    const div=document.createElement("div");
-    div.className="log-"+type;
-    div.textContent="> "+text;
-    log.appendChild(div);
-    log.scrollTop=log.scrollHeight;
-}
-
-function loop(){
-    frameId=requestAnimationFrame(loop);
-    update();
-    draw();
-}
-
-function update(){
-    nodes.forEach(n=>{n.pulse+=0.04;});
-    // Move attackers
-    attackers.forEach(a=>{
-        if(a.dead) return;
-        const tn=nodes[a.targetId];
-        if(!tn){a.dead=true;return;}
-        const dx=tn.x-a.x,dy=tn.y-a.y;
-        const dist=Math.hypot(dx,dy);
-        if(dist<18){a.dead=true;}
-        else{a.x+=dx/dist*a.spd;a.y+=dy/dist*a.spd;}
-    });
-    attackers=attackers.filter(a=>!a.dead||gameActive===false);
-    particles.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.alpha-=0.035;p.r*=0.96;});
-    particles=particles.filter(p=>p.alpha>0);
-}
-
-function draw(){
-    cx.clearRect(0,0,W,H);
-    cx.fillStyle="#020d14";cx.fillRect(0,0,W,H);
     // Grid
-    cx.strokeStyle="#0a1f2e";cx.lineWidth=0.4;
-    for(let x=0;x<W;x+=28){cx.beginPath();cx.moveTo(x,0);cx.lineTo(x,H);cx.stroke();}
-    for(let y=0;y<H;y+=28){cx.beginPath();cx.moveTo(0,y);cx.lineTo(W,y);cx.stroke();}
+    cx.strokeStyle = '#0a1f2e'; cx.lineWidth = 0.4;
+    for (let x = 0; x < W; x += 30) { cx.beginPath(); cx.moveTo(x,0); cx.lineTo(x,H); cx.stroke(); }
+    for (let y = 0; y < H; y += 30) { cx.beginPath(); cx.moveTo(0,y); cx.lineTo(W,y); cx.stroke(); }
 
-    if(nodes.length===0){
-        cx.fillStyle="#1d4ed8";cx.font="bold 15px sans-serif";cx.textAlign="center";cx.textBaseline="middle";
-        cx.fillText("🏰 QUANTUM FORTRESS",W/2,H/2-30);
-        cx.fillStyle="#60a5fa";cx.font="11px sans-serif";
-        cx.fillText("Strategic network defense with cascade failures",W/2,H/2);
-        cx.fillText("Click nodes to deploy Kyber/Dilithium/SPHINCS+ shields",W/2,H/2+20);
-        cx.fillStyle="#334155";cx.font="10px sans-serif";
-        cx.fillText("Press START to begin",W/2,H/2+50);
-        return;
-    }
-
-    // Draw edges
-    edges.forEach(e=>{
-        const na=nodes[e.a],nb=nodes[e.b];
-        cx.beginPath();cx.moveTo(na.x,na.y);cx.lineTo(nb.x,nb.y);
-        cx.setLineDash(e.broken?[4,4]:e.stressed?[2,2]:[]);
-        cx.strokeStyle=e.stressed?"#ef444440":e.broken?"#1e293b30":"#1d4ed820";
-        cx.lineWidth=e.stressed?1.5:1;
-        cx.stroke();
-        cx.setLineDash([]);
+    // Edges
+    edges.forEach(e => {
+        const na = nodes[e.a], nb = nodes[e.b];
+        if (!na || !nb) return;
+        cx.beginPath(); cx.moveTo(na.x, na.y); cx.lineTo(nb.x, nb.y);
+        const bothShielded = na.shield && nb.shield;
+        const eitherComp = na.compromised || nb.compromised;
+        cx.strokeStyle = eitherComp ? '#ef444430' : bothShielded ? '#10b98140' : '#1d4ed830';
+        cx.lineWidth = eitherComp ? 1 : bothShielded ? 2 : 1.5;
+        if (eitherComp) cx.setLineDash([4,4]); else cx.setLineDash([]);
+        cx.stroke(); cx.setLineDash([]);
     });
 
-    // Attacker path lines
-    attackers.forEach(a=>{
-        const tn=nodes[a.targetId];
-        if(!tn) return;
-        cx.beginPath();cx.moveTo(a.x,a.y);cx.lineTo(tn.x,tn.y);
-        cx.strokeStyle="#ef444415";cx.lineWidth=0.5;cx.stroke();
+    // Attackers
+    attackers.forEach(a => {
+        cx.font = '18px serif';
+        cx.textAlign = 'center'; cx.textBaseline = 'middle';
+        cx.fillText(a.emoji, a.x, a.y);
+        // HP bar
+        const bw = 24;
+        cx.fillStyle = '#1e293b'; cx.fillRect(a.x-bw/2, a.y-16, bw, 3);
+        cx.fillStyle = '#ef4444'; cx.fillRect(a.x-bw/2, a.y-16, bw*(a.hp/a.maxHp), 3);
     });
 
-    // Draw nodes
-    nodes.forEach(n=>{
-        const isSelected=n.id===selectedNode;
-        const pulseR=18+Math.sin(n.pulse)*2;
-        const shColor=n.shield?n.shield.color:"#ef4444";
+    // Nodes
+    nodes.forEach(n => {
+        n.pulse += 0.04;
+        const sh = n.shield ? SHIELDS[n.shield] : null;
+        const isHovered = n === hoveredNode;
 
-        // Outer pulse ring
-        if(!n.compromised){
-            cx.beginPath();cx.arc(n.x,n.y,pulseR+4,0,Math.PI*2);
-            cx.strokeStyle=(n.shield?shColor:(n.cascadeRisk?"#f59e0b":"#ef4444"))+"30";
-            cx.lineWidth=1;cx.stroke();
+        // Compromised
+        if (n.compromised) {
+            cx.beginPath(); cx.arc(n.x, n.y, 20, 0, Math.PI*2);
+            cx.fillStyle = '#1a0505'; cx.fill();
+            cx.strokeStyle = '#ef444440'; cx.lineWidth = 1; cx.stroke();
+            cx.font = '14px serif'; cx.textAlign = 'center'; cx.textBaseline = 'middle';
+            cx.globalAlpha = 0.4; cx.fillText('💀', n.x, n.y); cx.globalAlpha = 1;
+            return;
         }
 
-        // Vulnerability fill ring
-        if(!n.compromised&&n.vulnerability>0){
+        // Shield glow
+        if (sh) {
+            cx.shadowColor = sh.color; cx.shadowBlur = 15;
+            cx.beginPath(); cx.arc(n.x, n.y, 26+Math.sin(n.pulse)*2, 0, Math.PI*2);
+            cx.strokeStyle = sh.color+'50'; cx.lineWidth = 2; cx.stroke();
+            cx.shadowBlur = 0;
+        }
+
+        // Hover highlight
+        if (isHovered) {
+            cx.beginPath(); cx.arc(n.x, n.y, 28, 0, Math.PI*2);
+            cx.strokeStyle = '#ffffff30'; cx.lineWidth = 2; cx.stroke();
+        }
+
+        // Pulse ring
+        cx.beginPath(); cx.arc(n.x, n.y, 20+Math.sin(n.pulse)*2, 0, Math.PI*2);
+        cx.strokeStyle = (sh ? sh.color : n.isHub ? '#60a5fa' : '#334155')+'30';
+        cx.lineWidth = 1; cx.stroke();
+
+        // HP arc
+        if (n.hp < n.maxHp) {
             cx.beginPath();
-            cx.arc(n.x,n.y,22,−Math.PI/2,−Math.PI/2+(n.vulnerability/100)*Math.PI*2);
-            cx.strokeStyle=n.vulnerability>70?"#ef4444":n.vulnerability>40?"#f59e0b":"#3b82f6";
-            cx.lineWidth=4;cx.stroke();
+            cx.arc(n.x, n.y, 22, -Math.PI/2, -Math.PI/2 + (n.hp/n.maxHp)*Math.PI*2);
+            cx.strokeStyle = n.hp/n.maxHp > 0.5 ? '#10b981' : '#ef4444';
+            cx.lineWidth = 3; cx.stroke();
         }
 
         // Node body
-        cx.shadowColor=n.shield?shColor:n.cascadeRisk?"#f59e0b":"#1d4ed8";
-        cx.shadowBlur=n.compromised?0:isSelected?16:8;
-        cx.beginPath();cx.arc(n.x,n.y,18,0,Math.PI*2);
-        cx.fillStyle=n.compromised?"#1a0505":isSelected?"#0d2a4a":"#071520";
+        cx.beginPath(); cx.arc(n.x, n.y, 20, 0, Math.PI*2);
+        cx.fillStyle = n.isHub ? '#0d2a4a' : '#071520';
         cx.fill();
-        cx.strokeStyle=n.compromised?"#ef4444":isSelected?"#fbbf24":n.shield?shColor:n.cascadeRisk?"#f59e0b":"#334155";
-        cx.lineWidth=isSelected?3:2;cx.stroke();
-        cx.shadowBlur=0;
+        cx.strokeStyle = sh ? sh.color : n.isHub ? '#3b82f6' : '#334155';
+        cx.lineWidth = n.isHub ? 3 : 2; cx.stroke();
 
         // Emoji
-        cx.font="13px serif";cx.textAlign="center";cx.textBaseline="middle";
-        cx.globalAlpha=n.compromised?0.3:1;
-        cx.fillText(n.compromised?"💀":n.type,n.x,n.y);
-        cx.globalAlpha=1;
+        cx.font = (n.isHub ? '16px' : '14px') + ' serif';
+        cx.textAlign = 'center'; cx.textBaseline = 'middle';
+        cx.fillText(n.emoji, n.x, n.y);
 
-        // Shield icon above node
-        if(n.shield&&!n.compromised){
-            cx.font="10px serif";
-            cx.fillText(n.shield.emoji,n.x,n.y-26);
-            // Shield HP mini bar
-            cx.fillStyle="#1e293b";cx.fillRect(n.x-12,n.y-20,24,3);
-            cx.fillStyle=n.shield.color;cx.fillRect(n.x-12,n.y-20,24*(n.shieldHp/SHIELDS.find(s=>s.name===n.shield.name).power),3);
+        // Shield indicator
+        if (sh) {
+            cx.font = '10px serif';
+            cx.fillText(sh.emoji, n.x+14, n.y-14);
+            // Shield HP bar
+            cx.fillStyle = '#1e293b'; cx.fillRect(n.x-12, n.y-28, 24, 3);
+            cx.fillStyle = sh.color; cx.fillRect(n.x-12, n.y-28, 24*(n.shieldHp/sh.hp), 3);
         }
 
-        // Cascade risk indicator
-        if(n.cascadeRisk&&!n.compromised&&!n.shield){
-            cx.font="9px sans-serif";cx.fillStyle="#f59e0b";
-            cx.fillText("⚠",n.x+12,n.y-12);
+        // HUB label
+        if (n.isHub) {
+            cx.font = '8px sans-serif'; cx.fillStyle = '#60a5fa';
+            cx.textAlign = 'center'; cx.textBaseline = 'top';
+            cx.fillText('HUB', n.x, n.y+22);
         }
-    });
-
-    // Draw attackers
-    cx.textAlign="center";cx.textBaseline="middle";
-    attackers.forEach(a=>{
-        cx.shadowColor="#ef4444";cx.shadowBlur=8;
-        cx.font="14px serif";
-        cx.fillText(a.emoji,a.x,a.y);
-        cx.shadowBlur=0;
-        // HP bar
-        cx.fillStyle="#7f1d1d";cx.fillRect(a.x-10,a.y+10,20,3);
-        cx.fillStyle="#ef4444";cx.fillRect(a.x-10,a.y+10,20*(a.hp/3),3);
     });
 
     // Particles
-    particles.forEach(p=>{
-        cx.beginPath();cx.arc(p.x,p.y,p.r,0,Math.PI*2);
-        cx.fillStyle=p.color+Math.floor(p.alpha*255).toString(16).padStart(2,"0");
+    particles.forEach(p => {
+        cx.beginPath(); cx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+        cx.fillStyle = p.color + Math.floor(p.alpha*255).toString(16).padStart(2,'0');
         cx.fill();
     });
 
-    // Network integrity bar at bottom
-    const bw=W-40,bh=5,bx=20,by=H-8;
-    cx.fillStyle="#1e293b";cx.fillRect(bx,by,bw,bh);
-    cx.fillStyle=networkIntegrity>60?"#10b981":networkIntegrity>30?"#f59e0b":"#ef4444";
-    cx.fillRect(bx,by,bw*(networkIntegrity/100),bh);
-    cx.fillStyle="#60a5fa";cx.font="8px sans-serif";cx.textAlign="left";
-    cx.fillText("Network Integrity",bx,by-2);
+    // Wave complete check overlay
+    const allSafe = attackers.length === 0 && !gameOver;
+}
 
-    // Selected node highlight
-    if(selectedNode!==null&&nodes[selectedNode]){
-        const n=nodes[selectedNode];
-        cx.beginPath();cx.arc(n.x,n.y,24,0,Math.PI*2);
-        cx.strokeStyle="#fbbf24";cx.lineWidth=1.5;cx.setLineDash([3,3]);cx.stroke();
-        cx.setLineDash([]);
+// ── GAME LOOP ─────────────────────────────────────────────────────────────────
+function loop() {
+    frameId = requestAnimationFrame(loop);
+    if (gameActive) {
+        updateAttackers();
+        particles.forEach(p => {
+            p.x+=p.vx; p.y+=p.vy; p.vy+=0.1;
+            p.alpha-=0.025; p.r*=0.96;
+        });
+        particles = particles.filter(p => p.alpha > 0);
+
+        // Check wave clear
+        if (attackers.length === 0 && gameActive && waveClearTimer === null) {
+            waveClearTimer = setTimeout(checkWaveClear, 1500);
+        }
+    }
+    draw();
+}
+
+let waveClearTimer = null;
+
+function checkWaveClear() {
+    waveClearTimer = null;
+    if (!gameActive) return;
+    const allDown = nodes.every(n => n.compromised);
+    if (allDown) { endGame(false); return; }
+    if (attackers.length === 0) {
+        waveComplete();
     }
 }
 
-draw();
+// ── WAVE MANAGEMENT ───────────────────────────────────────────────────────────
+function startGame() {
+    wave = 0;
+    score = 0;
+    shields = 5;
+    blocked = 0;
+    totalAttacks = 0;
+    integrity = 100;
+    gameOver = false;
+    document.getElementById('overlay').classList.remove('show');
+    document.getElementById('start-btn').disabled = true;
+    document.getElementById('next-btn').disabled = true;
+    if (frameId) cancelAnimationFrame(frameId);
+    clearInterval(spawnTimer);
+    waveClearTimer = null;
+    nextWave();
+    loop();
+}
+
+function nextWave() {
+    wave++;
+    if (wave > 12) { endGame(true); return; }
+    const cfg = WAVES[wave-1];
+    genNetwork(cfg.nodeCount);
+    attackers = []; particles = [];
+    shields += 3;
+    waveClearTimer = null;
+    gameActive = true;
+
+    document.getElementById('wave-text').textContent =
+        '🌊 Wave '+wave+'/12: '+cfg.name+' — '+cfg.desc;
+    document.getElementById('next-btn').disabled = true;
+    document.getElementById('h-wave').textContent = wave;
+    updateHUD();
+    showToast('🌊 Wave '+wave+': '+cfg.name+'!');
+    showFact(FACTS[Math.floor(Math.random()*FACTS.length)]);
+
+    clearInterval(spawnTimer);
+    spawnTimer = setInterval(() => {
+        if (gameActive) spawnAttacker();
+    }, cfg.attackRate);
+}
+
+function waveComplete() {
+    clearInterval(spawnTimer);
+    gameActive = false;
+    const cfg = WAVES[wave-1];
+    score += cfg.reward;
+    shields += 2;
+    updateHUD();
+    showToast('🎉 Wave '+wave+' cleared! +'+cfg.reward+' pts!');
+    confetti();
+
+    if (wave >= 12) { endGame(true); return; }
+    document.getElementById('next-btn').disabled = false;
+    setMsg('✅ Wave '+wave+' cleared! Deploy more shields then click Next Wave!');
+}
+
+function endGame(won) {
+    clearInterval(spawnTimer);
+    gameActive = false;
+    gameOver = true;
+    document.getElementById('start-btn').disabled = false;
+
+    const overlay = document.getElementById('overlay');
+    overlay.classList.add('show');
+    document.getElementById('overlay-title').textContent = won ? '👑 NETWORK SECURED!' : '💥 NETWORK COMPROMISED!';
+    document.getElementById('overlay-msg').textContent =
+        (won ? '🎉 You defended all 12 waves! ' : '💀 The Shor Bots broke through! ') +
+        'Final Score: ' + score + ' | Blocked: ' + blocked + ' attacks';
+
+    if (won) confetti();
+}
+
+function resetGame() {
+    clearInterval(spawnTimer);
+    if (frameId) cancelAnimationFrame(frameId);
+    nodes=[]; edges=[]; attackers=[]; particles=[];
+    document.getElementById('overlay').classList.remove('show');
+    document.getElementById('start-btn').disabled = false;
+    document.getElementById('next-btn').disabled = true;
+    gameActive = false; gameOver = false; wave = 0;
+    score=0; shields=5; blocked=0; totalAttacks=0; integrity=100;
+    updateHUD();
+    setMsg('Click START to defend your network from Shor Bots!');
+    cx.clearRect(0,0,W,H);
+}
+
+// ── SHIELD SELECTION ──────────────────────────────────────────────────────────
+function selectShield(type, btn) {
+    selectedShield = type;
+    document.querySelectorAll('.shield-opt').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    showFact('Selected: '+SHIELDS[type].emoji+' '+SHIELDS[type].name+
+        ' ('+SHIELDS[type].fips+') — '+SHIELDS[type].hp+' hits of quantum protection!');
+}
+
+// ── HUD ───────────────────────────────────────────────────────────────────────
+function updateHUD() {
+    document.getElementById('h-wave').textContent = wave+'/12';
+    document.getElementById('h-score').textContent = score;
+    document.getElementById('h-shields').textContent = shields;
+    document.getElementById('h-attacks').textContent = totalAttacks;
+    document.getElementById('h-blocked').textContent = blocked;
+    const pct = Math.round(integrity);
+    document.getElementById('integrity-bar').style.width = pct+'%';
+    document.getElementById('integrity-bar').style.background =
+        pct>60?'linear-gradient(90deg,#10b981,#34d399)':
+        pct>30?'linear-gradient(90deg,#f59e0b,#fbbf24)':
+               'linear-gradient(90deg,#ef4444,#f97316)';
+    document.getElementById('integrity-pct').textContent = pct+'%';
+    document.getElementById('integrity-pct').style.color =
+        pct>60?'#10b981':pct>30?'#fbbf24':'#ef4444';
+}
+
+function setMsg(m) { document.getElementById('msg').textContent = m; }
+
+let factTimer = null;
+function showFact(t) {
+    const el = document.getElementById('fact');
+    el.textContent = t; el.style.display = 'block';
+    if (factTimer) clearTimeout(factTimer);
+    factTimer = setTimeout(() => el.style.display='none', 5000);
+}
+
+let toastTimer = null;
+function showToast(m) {
+    const el = document.getElementById('toast');
+    el.textContent = m; el.classList.add('show');
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => el.classList.remove('show'), 2500);
+}
+
+function confetti() {
+    const colors = ['#fbbf24','#10b981','#3b82f6','#8b5cf6','#ef4444','#f97316'];
+    for (let i=0; i<25; i++) {
+        setTimeout(() => {
+            const el = document.createElement('div');
+            el.className = 'cp';
+            el.style.left = Math.random()*100+'vw';
+            el.style.background = colors[Math.floor(Math.random()*colors.length)];
+            el.style.animationDuration = (1+Math.random()*2)+'s';
+            document.body.appendChild(el);
+            setTimeout(() => el.remove(), 3000);
+        }, i*40);
+    }
+}
+
+// ── INIT ─────────────────────────────────────────────────────────────────────
+updateHUD();
+setMsg('👆 Click START to defend your network from Shor Bots!');
 </script>
 </body>
 </html>
-""", height=900)
-
+""", height=680)
 
 def render_secret_message():
     """Free game: Secret Message Maker — K-5 cipher introduction — UPGRADED 2026!"""
