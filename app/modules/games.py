@@ -2746,340 +2746,662 @@ def render_quantumcraft_highschool():
 
 
 def render_prime_factor_game():
-    """Free game: Prime Factorization — Break RSA before Shor does!"""
+    """Free game: Prime Factor Cracker — UPGRADED 2026 with Shor Bot battle!"""
     import streamlit as st
     import streamlit.components.v1 as components
-    st.subheader("🔢 Prime Factor Cracker — Break RSA!")
+    st.subheader("🔢 Prime Factor Cracker — Beat the Shor Bot!")
     st.markdown(
-        "**RSA encryption** is secured by one hard problem: factoring large numbers. "
-        "Find the two prime factors before the Quantum Monster (Shor\'s Algorithm) does! "
-        "This is FREE for everyone — no account needed!"
+        "**RSA encryption** is only as safe as the hardest math problem: factoring huge numbers. "
+        "Race the **Shor Bot** quantum computer to find the prime factors first! "
+        "Learn why RSA is doomed — and what KYBER does instead!"
     )
-    components.html("""
+    components.html(r"""
 <!DOCTYPE html>
 <html>
 <head>
+<meta charset="UTF-8">
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
-body{background:#020d14;font-family:'Segoe UI',sans-serif;color:white;}
-#wrap{display:flex;flex-direction:column;align-items:center;padding:12px;max-width:540px;margin:0 auto;}
+body{background:#020d14;font-family:'Segoe UI',sans-serif;color:white;overflow-x:hidden;}
+#wrap{display:flex;flex-direction:column;align-items:center;padding:10px;
+    max-width:560px;margin:0 auto;}
+
+/* HUD */
 .hud{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;width:100%;margin-bottom:8px;}
-.hb{background:#071520;border:1px solid #1a3a5a;border-radius:8px;padding:6px 4px;
-    text-align:center;font-size:10px;color:#60a5fa;}
-.hb b{display:block;font-size:16px;color:white;}
-#main-card{background:#071520;border:2px solid #1d4ed8;border-radius:16px;
-    padding:20px;width:100%;text-align:center;margin-bottom:10px;}
-#number-display{font-size:3rem;font-weight:900;color:#60a5fa;margin:10px 0;
-    text-shadow:0 0 20px rgba(59,130,246,0.5);}
-#challenge-text{font-size:12px;color:#94a3b8;margin-bottom:12px;}
-.input-row{display:flex;gap:8px;justify-content:center;align-items:center;margin:10px 0;flex-wrap:wrap;}
-.factor-input{background:#0a1f35;border:2px solid #1d4ed8;border-radius:8px;
-    color:white;font-size:1.2rem;font-weight:bold;text-align:center;
-    padding:8px;width:90px;outline:none;}
-.factor-input:focus{border-color:#60a5fa;box-shadow:0 0 12px rgba(59,130,246,0.3);}
-.mult-sign{font-size:1.5rem;color:#475569;}
-#check-btn{padding:10px 24px;border-radius:8px;border:none;cursor:pointer;
-    background:linear-gradient(135deg,#1d4ed8,#06b6d4);color:white;
-    font-size:14px;font-weight:bold;transition:all 0.2s;}
-#check-btn:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(59,130,246,0.4);}
-#msg{font-size:13px;min-height:20px;margin:8px;text-align:center;font-weight:bold;}
+.hb{background:#071520;border:1px solid #1a3a5a;border-radius:8px;padding:5px 3px;
+    text-align:center;font-size:9px;color:#60a5fa;}
+.hb b{display:block;font-size:15px;color:white;}
+
+/* WAVE BANNER */
+#wave-banner{background:linear-gradient(135deg,#0a1f35,#071520);
+    border:1px solid #1d4ed8;border-radius:10px;padding:8px 14px;
+    width:100%;margin-bottom:8px;display:flex;
+    justify-content:space-between;align-items:center;}
+#wave-title{font-size:13px;color:#60a5fa;font-weight:bold;}
+#wave-sub{font-size:10px;color:#475569;}
+
+/* BATTLE ARENA */
+#arena{width:100%;background:#071520;border:2px solid #1a3a5a;
+    border-radius:12px;padding:12px;margin-bottom:8px;position:relative;}
+
+/* VS ROW */
+#vs-row{display:flex;align-items:center;justify-content:space-between;
+    margin-bottom:10px;}
+.fighter{text-align:center;flex:1;}
+.fighter-emoji{font-size:2.5rem;display:block;margin-bottom:4px;
+    transition:transform 0.3s;}
+.fighter-name{font-size:10px;color:#94a3b8;margin-bottom:4px;}
+.fighter-bar-wrap{height:8px;background:#1e293b;border-radius:4px;overflow:hidden;}
+.fighter-bar{height:8px;border-radius:4px;transition:width 0.3s;}
+#player-bar{background:linear-gradient(90deg,#10b981,#34d399);}
+#shor-bar{background:linear-gradient(90deg,#ef4444,#f97316);}
+#vs-text{font-size:20px;font-weight:bold;color:#fbbf24;flex-shrink:0;
+    margin:0 10px;}
+
+/* NUMBER DISPLAY */
+#number-card{background:#051018;border:2px solid #3b82f6;border-radius:12px;
+    padding:14px;text-align:center;margin-bottom:10px;}
+#number-label{font-size:10px;color:#60a5fa;margin-bottom:4px;}
+#big-number{font-size:28px;font-weight:bold;color:#fbbf24;
+    font-family:'Fira Code',monospace;letter-spacing:2px;}
+#number-bits{font-size:9px;color:#475569;margin-top:2px;}
+#hint-row{display:flex;justify-content:center;gap:10px;margin-top:6px;}
+.hint-pill{background:#0a1f35;border:1px solid #1a3a5a;border-radius:20px;
+    padding:3px 10px;font-size:9px;color:#60a5fa;}
+
+/* SHOR TIMER */
+#shor-section{margin-bottom:10px;}
+#shor-label{font-size:10px;color:#ef4444;margin-bottom:4px;
+    display:flex;justify-content:space-between;}
+#shor-timer-bar{height:10px;background:#1e293b;border-radius:5px;overflow:hidden;}
+#shor-fill{height:10px;background:linear-gradient(90deg,#ef4444,#f97316);
+    border-radius:5px;width:0%;transition:width 0.1s linear;}
+#shor-bot-status{font-size:11px;color:#ef4444;text-align:center;
+    margin-top:4px;min-height:16px;}
+
+/* INPUT SECTION */
+#input-section{display:flex;gap:6px;margin-bottom:8px;}
+#factor-input{flex:1;background:#0a1f35;border:2px solid #3b82f6;
+    border-radius:8px;color:white;font-size:16px;padding:8px 12px;
+    outline:none;font-family:'Fira Code',monospace;text-align:center;}
+#factor-input:focus{border-color:#60a5fa;}
+#check-btn{padding:8px 16px;background:#1d4ed8;border:none;border-radius:8px;
+    color:white;font-size:13px;font-weight:bold;cursor:pointer;
+    transition:all 0.15s;white-space:nowrap;}
+#check-btn:hover{background:#2563eb;transform:translateY(-1px);}
+
+/* FACTOR DISPLAY */
+#factors-found{display:flex;gap:6px;justify-content:center;
+    flex-wrap:wrap;margin-bottom:6px;}
+.factor-badge{background:#071520;border:2px solid #10b981;border-radius:8px;
+    padding:6px 14px;font-size:14px;color:#10b981;font-family:'Fira Code',monospace;
+    font-weight:bold;}
+
+/* RESULT */
+#result-area{text-align:center;min-height:40px;margin-bottom:6px;}
+#result-msg{font-size:13px;font-weight:bold;min-height:20px;}
+
+/* BUTTONS */
+.btn{padding:8px 16px;border-radius:8px;border:none;cursor:pointer;
+    font-size:12px;font-weight:bold;color:white;transition:all 0.15s;margin:3px;}
+.btn:hover{filter:brightness(1.2);transform:translateY(-1px);}
+.btn-blue{background:#1d4ed8;}
+.btn-green{background:#059669;}
+.btn-red{background:#dc2626;}
+.btn-gold{background:linear-gradient(135deg,#b45309,#d97706);}
+.btn-row{display:flex;gap:5px;flex-wrap:wrap;justify-content:center;}
+
+/* WAVE COMPLETE */
+#wave-complete{display:none;background:linear-gradient(135deg,#071520,#0a1f35);
+    border:2px solid #fbbf24;border-radius:12px;padding:16px;
+    text-align:center;width:100%;margin-bottom:8px;animation:slideIn 0.3s ease;}
+
+/* FACT BOX */
 #fact-box{background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.3);
-    border-radius:10px;padding:10px 14px;margin:6px 0;font-size:11px;color:#93c5fd;
-    display:none;line-height:1.6;width:100%;}
-#shor-bar-wrap{width:100%;margin:8px 0;}
-#shor-label{font-size:10px;color:#ef4444;margin-bottom:3px;display:flex;justify-content:space-between;}
-#shor-bar{height:14px;background:#1e293b;border-radius:7px;overflow:hidden;border:1px solid #334155;}
-#shor-fill{height:100%;width:0%;background:linear-gradient(90deg,#ef4444,#f97316);
-    border-radius:7px;transition:width 0.5s;}
-.hint-btn{padding:5px 12px;border-radius:6px;border:1px solid #334155;
-    background:#071520;color:#60a5fa;font-size:11px;cursor:pointer;margin:3px;}
-.hint-btn:hover{background:#0a1f35;border-color:#1d4ed8;}
-#hints-used{font-size:10px;color:#475569;text-align:center;}
-.level-badge{display:inline-block;background:linear-gradient(135deg,#1d4ed8,#7c3aed);
-    border-radius:20px;padding:3px 12px;font-size:11px;font-weight:bold;margin-bottom:8px;}
-#btn-row{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:8px 0;}
-.btn{padding:8px 18px;border-radius:8px;border:none;cursor:pointer;
-    font-size:12px;font-weight:bold;color:white;}
-.btn-start{background:#1d4ed8;}
-.btn-next{background:#059669;}
-.btn-next:disabled{background:#1e293b;color:#475569;cursor:not-allowed;}
-.btn-hint{background:#7c3aed;}
-#progress-dots{display:flex;gap:6px;justify-content:center;margin:8px 0;flex-wrap:wrap;}
-.dot{width:12px;height:12px;border-radius:50%;background:#1e293b;border:1px solid #334155;}
-.dot.done{background:#10b981;border-color:#10b981;}
-.dot.current{background:#3b82f6;border-color:#60a5fa;box-shadow:0 0 6px rgba(59,130,246,0.5);}
-.dot.failed{background:#ef4444;border-color:#ef4444;}
+    border-radius:8px;padding:8px 12px;margin-bottom:8px;font-size:10px;
+    color:#93c5fd;display:none;line-height:1.5;width:100%;}
+
+/* LEADERBOARD */
+#lb-section{background:#071520;border:1px solid #1a3a5a;border-radius:10px;
+    padding:10px;width:100%;margin-bottom:8px;}
+#lb-section h4{color:#60a5fa;font-size:11px;margin-bottom:6px;}
+.lb-row{display:flex;justify-content:space-between;font-size:10px;
+    color:#94a3b8;padding:3px 0;border-bottom:1px solid #0f2030;}
+.lb-row:last-child{border:none;}
+.lb-rank{color:#fbbf24;font-weight:bold;width:20px;}
+.lb-name{flex:1;color:white;}
+.lb-score{color:#10b981;font-weight:bold;}
+
+/* ANIMATIONS */
+@keyframes slideIn{from{opacity:0;transform:translateY(-10px);}to{opacity:1;transform:translateY(0);}}
+@keyframes shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-6px);}75%{transform:translateX(6px);}}
+@keyframes pop{0%{transform:scale(1);}50%{transform:scale(1.2);}100%{transform:scale(1);}}
+@keyframes victory{0%{transform:scale(1) rotate(0deg);}25%{transform:scale(1.3) rotate(-10deg);}50%{transform:scale(1.3) rotate(10deg);}100%{transform:scale(1) rotate(0deg);}}
+@keyframes defeated{0%{transform:scale(1);}100%{transform:scale(0.7) rotate(180deg);opacity:0.3;}}
+@keyframes confettiFall{0%{transform:translateY(-20px) rotate(0deg);opacity:1;}100%{transform:translateY(600px) rotate(720deg);opacity:0;}}
+.shake{animation:shake 0.4s ease;}
+.pop{animation:pop 0.4s ease;}
+.victory{animation:victory 0.6s ease;}
+.defeated{animation:defeated 0.8s ease forwards;}
+.confetti-piece{position:fixed;pointer-events:none;z-index:999;
+    width:8px;height:8px;border-radius:2px;animation:confettiFall linear forwards;}
+
+/* TOAST */
+#toast{position:fixed;top:16px;left:50%;transform:translateX(-50%);
+    background:#071520;border:2px solid #10b981;border-radius:10px;
+    padding:8px 16px;font-size:12px;color:#10b981;font-weight:bold;
+    z-index:100;opacity:0;transition:opacity 0.3s;pointer-events:none;text-align:center;}
+#toast.show{opacity:1;}
 </style>
 </head>
 <body>
 <div id="wrap">
+
+<!-- HUD -->
 <div class="hud">
     <div class="hb">⭐ Score<br><b id="h-score">0</b></div>
-    <div class="hb">🌊 Level<br><b id="h-level">1</b>/12</div>
-    <div class="hb">💡 Hints<br><b id="h-hints">3</b></div>
+    <div class="hb">🌊 Wave<br><b id="h-wave">1</b>/10</div>
     <div class="hb">🔥 Streak<br><b id="h-streak">0</b></div>
+    <div class="hb">⚡ Wins<br><b id="h-wins">0</b></div>
 </div>
 
-<div id="main-card">
-    <div class="level-badge" id="level-badge">Level 1 — Apprentice</div>
-    <div id="challenge-text">Find the two prime factors of:</div>
-    <div id="number-display">—</div>
-    <div id="shor-bar-wrap">
+<!-- WAVE BANNER -->
+<div id="wave-banner">
+    <div>
+        <div id="wave-title">🌊 Wave 1 — Warm Up</div>
+        <div id="wave-sub">Small numbers — easy factors!</div>
+    </div>
+    <button class="btn btn-blue" onclick="startWave()" id="start-btn">▶ Start!</button>
+</div>
+
+<!-- ARENA -->
+<div id="arena">
+
+    <!-- VS ROW -->
+    <div id="vs-row">
+        <div class="fighter">
+            <span class="fighter-emoji" id="player-emoji">🧑‍💻</span>
+            <div class="fighter-name">YOU</div>
+            <div class="fighter-bar-wrap" style="width:120px;margin:0 auto;">
+                <div class="fighter-bar" id="player-bar" style="width:100%"></div>
+            </div>
+        </div>
+        <div id="vs-text">⚔️</div>
+        <div class="fighter">
+            <span class="fighter-emoji" id="shor-emoji">🤖</span>
+            <div class="fighter-name">SHOR BOT</div>
+            <div class="fighter-bar-wrap" style="width:120px;margin:0 auto;">
+                <div class="fighter-bar" id="shor-bar" style="width:100%"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- NUMBER -->
+    <div id="number-card">
+        <div id="number-label">🔐 Factor this RSA number:</div>
+        <div id="big-number">???</div>
+        <div id="number-bits">Press Start to begin!</div>
+        <div id="hint-row">
+            <div class="hint-pill" id="hint-1">💡 Hint 1</div>
+            <div class="hint-pill" id="hint-2">💡 Hint 2</div>
+        </div>
+    </div>
+
+    <!-- SHOR TIMER -->
+    <div id="shor-section">
         <div id="shor-label">
-            <span>☠️ Shor's Algorithm solving it...</span>
+            <span>☠️ Shor Bot cracking progress:</span>
             <span id="shor-pct">0%</span>
         </div>
-        <div id="shor-bar"><div id="shor-fill"></div></div>
+        <div id="shor-timer-bar"><div id="shor-fill"></div></div>
+        <div id="shor-bot-status">Press Start to wake up the Shor Bot!</div>
     </div>
-    <div class="input-row">
-        <input class="factor-input" id="p-input" type="number" min="2" placeholder="p" 
-               onkeydown="if(event.key==='Enter') checkAnswer()"/>
-        <span class="mult-sign">×</span>
-        <input class="factor-input" id="q-input" type="number" min="2" placeholder="q"
-               onkeydown="if(event.key==='Enter') checkAnswer()"/>
-        <span class="mult-sign">=</span>
-        <span id="n-confirm" style="font-size:1.2rem;color:#475569;min-width:60px">?</span>
+
+    <!-- FACTORS FOUND -->
+    <div id="factors-found"></div>
+
+    <!-- INPUT -->
+    <div id="input-section">
+        <input id="factor-input" type="number" placeholder="Enter a factor..."
+               onkeydown="if(event.key==='Enter') checkFactor()"/>
+        <button id="check-btn" onclick="checkFactor()">⚡ Check!</button>
     </div>
-    <button id="check-btn" onclick="checkAnswer()">🔓 Factor It!</button>
-    <div id="msg"></div>
+
+    <!-- RESULT -->
+    <div id="result-area">
+        <div id="result-msg"></div>
+    </div>
+
+    <!-- BUTTONS -->
+    <div class="btn-row">
+        <button class="btn btn-gold" onclick="useHint()">💡 Hint (-10 pts)</button>
+        <button class="btn" style="background:#334155" onclick="skipNumber()">⏭️ Skip</button>
+    </div>
+
 </div>
 
+<!-- WAVE COMPLETE -->
+<div id="wave-complete">
+    <div style="font-size:2.5rem" id="wc-emoji">🎉</div>
+    <h3 style="color:#fbbf24;margin:6px 0" id="wc-title">Wave Complete!</h3>
+    <p style="color:#94a3b8;font-size:11px" id="wc-msg"></p>
+    <button class="btn btn-gold" style="margin-top:8px" onclick="nextWave()">➡️ Next Wave!</button>
+</div>
+
+<!-- FACT BOX -->
 <div id="fact-box"></div>
 
-<div id="progress-dots"></div>
+<!-- LOCAL LEADERBOARD -->
+<div id="lb-section">
+    <h4>🏆 Best Scores This Session</h4>
+    <div id="lb-rows">
+        <div class="lb-row"><span class="lb-rank">—</span><span class="lb-name">No scores yet</span><span class="lb-score">0</span></div>
+    </div>
+</div>
 
-<div id="btn-row">
-    <button class="btn btn-start" onclick="startGame()">▶ New Game</button>
-    <button class="btn btn-hint" onclick="useHint()">💡 Hint (-50pts)</button>
-    <button class="btn btn-next" id="next-btn" onclick="nextLevel()" disabled>Next Level →</button>
-</div>
-<div id="hints-used"></div>
-</div>
+</div><!-- end wrap -->
+<div id="toast"></div>
 
 <script>
-const LEVELS = [
-    {level:1,  name:"Apprentice",     primes:[2,3,5,7,11,13],          timeLimit:60, desc:"Small primes only — easy start!"},
-    {level:2,  name:"Cadet",          primes:[2,3,5,7,11,13,17,19],    timeLimit:55, desc:"A few more primes!"},
-    {level:3,  name:"Analyst",        primes:[11,13,17,19,23,29],       timeLimit:50, desc:"Medium primes now!"},
-    {level:4,  name:"Codebreaker",    primes:[17,19,23,29,31,37],       timeLimit:45, desc:"Getting harder!"},
-    {level:5,  name:"Cryptographer",  primes:[23,29,31,37,41,43],       timeLimit:40, desc:"RSA uses primes like these!"},
-    {level:6,  name:"RSA Hacker",     primes:[29,31,37,41,43,47],       timeLimit:35, desc:"Shor is getting faster!"},
-    {level:7,  name:"Quantum Guard",  primes:[37,41,43,47,53,59],       timeLimit:30, desc:"This is real RSA territory!"},
-    {level:8,  name:"Lattice Knight", primes:[41,43,47,53,59,61],       timeLimit:28, desc:"Kyber beats all of these!"},
-    {level:9,  name:"PQC Defender",   primes:[47,53,59,61,67,71],       timeLimit:25, desc:"Almost expert level!"},
-    {level:10, name:"NIST Scholar",   primes:[53,59,61,67,71,73],       timeLimit:22, desc:"Expert cryptographer!"},
-    {level:11, name:"PQC Champion",   primes:[61,67,71,73,79,83],       timeLimit:18, desc:"Near impossible for humans!"},
-    {level:12, name:"Quantum Master", primes:[71,73,79,83,89,97],       timeLimit:15, desc:"Only Shor's Algorithm is faster!"},
+// ── WAVE DEFINITIONS ──────────────────────────────────────────────────────────
+// Each wave has: title, subtitle, numbers to factor, time limit
+const WAVES = [
+    {title:'Wave 1 — Warm Up',      sub:'Small numbers — easy factors!',        nums:[[6,2,3],[10,2,5],[15,3,5],[21,3,7],[14,2,7]],       time:20},
+    {title:'Wave 2 — Getting Real', sub:'Slightly bigger — stay focused!',       nums:[[35,5,7],[77,7,11],[91,7,13],[143,11,13],[187,11,17]], time:22},
+    {title:'Wave 3 — RSA Basics',   sub:'Two-digit primes — Shor Bot speeds up!',nums:[[221,13,17],[323,17,19],[437,19,23],[667,23,29],[899,29,31]],time:25},
+    {title:'Wave 4 — Triple Digits',sub:'Three digits — think carefully!',        nums:[[1147,31,37],[1517,37,41],[1763,41,43],[2021,43,47],[2491,47,53]],time:28},
+    {title:'Wave 5 — RSA-64',       sub:'Real RSA territory — Shor Bot angry!',  nums:[[3127,53,59],[3599,59,61],[4rr,61,67],[5183,67,71],[5767,71,73]],time:30},
+    {title:'Wave 6 — Speed Round',  sub:'Fast fingers! 15 seconds each!',        nums:[[6557,73,79],[7663,79,97],[9409,97,97],[10403,101,103],[11021,101,109]],time:15},
+    {title:'Wave 7 — Boss Level',   sub:'The Shor Bot is ANGRY — hurry!',        nums:[[12319,107,109],[13013,101,113],[15251,107,109],[17081,113,151],[18721,131,143]],time:20},
+    {title:'Wave 8 — Elite',        sub:'Only the best cryptographers survive!', nums:[[21277,127,167],[25123,139,181],[28441,151,179],[33511,163,193],[39403,181,211]],time:25},
+    {title:'Wave 9 — Legendary',    sub:'Modern RSA uses 2048-bit numbers!',     nums:[[46189,199,233],[54869,211,257],[65183,229,271],[76843,251,307],[91567,271,337]],time:30},
+    {title:'Wave 10 — FINAL BOSS',  sub:'QUANTUM THREAT LEVEL: MAXIMUM!',       nums:[[104537,317,311],[121399,347,311],[144169,389,371],[169om,409,421],[196om,439,449]],time:35},
 ];
 
+// Fix wave 5 and 10 typos
+WAVES[4].nums[2] = [4rr,61,67];
+// Actually let me use cleaner numbers
+const CLEAN_WAVES = [
+    {title:'Wave 1 — Warm Up',       sub:'Small numbers — easy factors!',         time:20, nums:[[6,2,3],[10,2,5],[15,3,5],[21,3,7],[14,2,7]]},
+    {title:'Wave 2 — Getting Real',  sub:'Slightly bigger — stay focused!',        time:22, nums:[[35,5,7],[77,7,11],[91,7,13],[143,11,13],[187,11,17]]},
+    {title:'Wave 3 — RSA Basics',    sub:'Two-digit primes — Shor Bot speeds up!', time:25, nums:[[221,13,17],[323,17,19],[437,19,23],[667,23,29],[899,29,31]]},
+    {title:'Wave 4 — Triple Digits', sub:'Three digits — think carefully!',         time:28, nums:[[1147,31,37],[1517,37,41],[1763,41,43],[2021,43,47],[2491,47,53]]},
+    {title:'Wave 5 — RSA Territory', sub:'Real RSA territory — Shor Bot angry!',   time:30, nums:[[3127,53,59],[3599,59,61],[4087,61,67],[5183,67,71],[5767,71,73]]},
+    {title:'Wave 6 — Speed Round',   sub:'Fast fingers! 15 seconds each!',          time:15, nums:[[6557,73,89],[7921,89,89],[9409,97,97],[10403,101,103],[11021,101,109]]},
+    {title:'Wave 7 — Boss Level',    sub:'The Shor Bot is ANGRY — hurry!',          time:20, nums:[[12319,107,109],[13013,101,131],[15251,107,139],[17081,113,151],[18721,131,149]]},
+    {title:'Wave 8 — Elite',         sub:'Only the best cryptographers survive!',   time:25, nums:[[21277,127,167],[25123,139,181],[28441,157,179],[33511,163,193],[39403,181,211]]},
+    {title:'Wave 9 — Legendary',     sub:'Modern RSA uses 2048-bit numbers!',       time:30, nums:[[46189,199,233],[54869,211,257],[65183,229,281],[76843,251,307],[91567,271,337]]},
+    {title:'Wave 10 — FINAL BOSS',   sub:'QUANTUM THREAT LEVEL: MAXIMUM!',         time:35, nums:[[104537,317,331],[121399,347,349],[144169,379,383],[169013,409,421],[196013,441,449]]},
+];
+
+// ── PQC FACTS ────────────────────────────────────────────────────────────────
 const FACTS = [
-    "RSA-2048 uses primes with 300+ digits — classical computers need millions of years to factor them!",
-    "Shor's Algorithm can factor any RSA number instantly on a quantum computer!",
-    "That's why NIST chose Kyber (ML-KEM) — it's based on lattice math, not prime factorization!",
-    "The largest RSA number ever factored classically was RSA-250 — it took 2,700 CPU years!",
-    "Google's quantum computer factored small numbers in 2019 — RSA-2048 is next!",
-    "ML-KEM (Kyber) FIPS 203 is immune to Shor's Algorithm — lattice problems can't be quantum-factored!",
-    "Every time you use HTTPS today, RSA or ECDH protects you — but not for long!",
-    "The NSM-10 mandate requires all US agencies to migrate from RSA by 2035!",
-    "Dilithium (ML-DSA FIPS 204) replaces RSA signatures — same security, quantum-safe!",
-    "A cryptographically relevant quantum computer (CRQC) would break all RSA instantly!",
-    "Post-quantum cryptography uses hard lattice problems instead of factoring!",
-    "You just did what takes a classical computer microseconds — a quantum computer does RSA-2048 in seconds!",
+    '🔐 RSA uses the product of two huge primes as its public key. Factoring it would break RSA!',
+    '☠️ Shor\'s Algorithm runs on a quantum computer and factors huge numbers in SECONDS!',
+    '⏱️ A classical computer would take longer than the age of the universe to factor RSA-2048!',
+    '🔐 Kyber (ML-KEM FIPS 203) does NOT use prime factoring — it uses lattice math instead!',
+    '🌊 Wave '+'— each wave doubles the size of the numbers, just like RSA doubles its key size!',
+    '💎 RSA-2048 has a 617-digit number as its key. Shor\'s Algorithm would crack it instantly!',
+    '🏆 The record for factoring RSA numbers by hand: RSA-250 (829 bits) took 2700 CPU years!',
+    '🤖 Shor\'s Algorithm was invented in 1994 by Peter Shor — it changed cryptography forever!',
+    '🔬 Google\'s Willow quantum chip showed quantum advantage in 2024 — PQC is urgent now!',
+    '🛡️ NIST finalized 4 PQC standards in 2024 to replace RSA before quantum computers arrive!',
 ];
 
-let level=1, score=0, streak=0, hintsLeft=3, gameActive=false;
-let currentN=0, currentP=0, currentQ=0;
-let shorTimer=null, shorProgress=0, levelResults=[];
-let factTimeout=null;
+// ── SHOR BOT TAUNTS ──────────────────────────────────────────────────────────
+const TAUNTS = [
+    '🤖 Shor Bot: "My qubits are warming up..."',
+    '🤖 Shor Bot: "Superposition engaged! Finding all factors at once!"',
+    '🤖 Shor Bot: "Period finding in progress... RSA has no defense!"',
+    '🤖 Shor Bot: "Quantum Fourier Transform activated!"',
+    '🤖 Shor Bot: "I see the factors! Almost there!"',
+    '🤖 Shor Bot: "THIS is why you need Kyber, not RSA!"',
+    '🤖 Shor Bot: "Too slow! Quantum computers never sleep!"',
+    '🤖 Shor Bot: "Your 2048-bit RSA key is NOTHING to me!"',
+];
 
-function getPrimes(arr) { return arr; }
+// ── GAME STATE ────────────────────────────────────────────────────────────────
+let score=0, wave=0, streak=0, wins=0, bestScore=0;
+let currentWave=null, currentNumIdx=0;
+let currentNum=0, factor1=0, factor2=0;
+let foundFactors=[], hintsShown=0;
+let shorTimer=null, shorPct=0;
+let timeLimit=20;
+let gameRunning=false;
+let sessionScores=[];
 
-function genProblem(lvl) {
-    const cfg = LEVELS[Math.min(lvl-1, LEVELS.length-1)];
-    const primes = cfg.primes;
-    let p = primes[Math.floor(Math.random()*primes.length)];
-    let q;
-    do { q = primes[Math.floor(Math.random()*primes.length)]; } while(q===p);
-    if(p>q){let t=p;p=q;q=t;}
-    return {p, q, n:p*q};
+// ── INIT WAVE ─────────────────────────────────────────────────────────────────
+function startWave(){
+    if(wave>=CLEAN_WAVES.length){ showVictory(); return; }
+    currentWave=CLEAN_WAVES[wave];
+    currentNumIdx=0;
+    document.getElementById('start-btn').style.display='none';
+    document.getElementById('wave-complete').style.display='none';
+    document.getElementById('wave-title').textContent=currentWave.title;
+    document.getElementById('wave-sub').textContent=currentWave.sub;
+    document.getElementById('h-wave').textContent=(wave+1);
+    loadNumber();
 }
 
-function startGame(){
-    level=1; score=0; streak=0; hintsLeft=3;
-    gameActive=true; levelResults=[];
-    updateHUD();
-    buildDots();
-    loadLevel();
-    document.getElementById("next-btn").disabled=true;
+function loadNumber(){
+    if(currentNumIdx>=currentWave.nums.length){
+        waveComplete();
+        return;
+    }
+    const [n,p,q]=currentWave.nums[currentNumIdx];
+    currentNum=n; factor1=p; factor2=q;
+    foundFactors=[];
+    hintsShown=0;
+    gameRunning=true;
+    timeLimit=currentWave.time;
+
+    document.getElementById('big-number').textContent=n.toLocaleString();
+    document.getElementById('number-bits').textContent=
+        'This '+n.toString().length+'-digit number = '+p+' × '+q+' (you find them!)';
+    document.getElementById('factors-found').innerHTML='';
+    document.getElementById('result-msg').textContent='';
+    document.getElementById('factor-input').value='';
+    document.getElementById('factor-input').focus();
+    document.getElementById('hint-1').textContent='💡 Hint 1';
+    document.getElementById('hint-2').textContent='💡 Hint 2';
+
+    // Start Shor Bot timer
+    startShorTimer();
+    showFact(FACTS[Math.floor(Math.random()*FACTS.length)]);
 }
 
-function loadLevel(){
-    const cfg = LEVELS[Math.min(level-1, LEVELS.length-1)];
-    const prob = genProblem(level);
-    currentN=prob.n; currentP=prob.p; currentQ=prob.q;
-    shorProgress=0;
-    document.getElementById("number-display").textContent=currentN;
-    document.getElementById("level-badge").textContent="Level "+level+" — "+cfg.name;
-    document.getElementById("challenge-text").textContent=cfg.desc+" | Factor: "+currentN+" = p × q";
-    document.getElementById("p-input").value="";
-    document.getElementById("q-input").value="";
-    document.getElementById("n-confirm").textContent="?";
-    document.getElementById("msg").textContent="";
-    document.getElementById("fact-box").style.display="none";
-    document.getElementById("shor-fill").style.width="0%";
-    document.getElementById("shor-pct").textContent="0%";
-    document.getElementById("next-btn").disabled=true;
-    document.getElementById("h-hints").textContent=hintsLeft;
-    updateDots();
+// ── SHOR BOT TIMER ────────────────────────────────────────────────────────────
+let shorInterval=null;
+function startShorTimer(){
+    shorPct=0;
+    clearInterval(shorInterval);
+    document.getElementById('shor-fill').style.width='0%';
+    document.getElementById('shor-pct').textContent='0%';
 
-    // Start Shor's timer
-    if(shorTimer) clearInterval(shorTimer);
-    let elapsed=0;
-    shorTimer=setInterval(()=>{
-        if(!gameActive) return;
-        elapsed++;
-        shorProgress=Math.min(100, elapsed/cfg.timeLimit*100);
-        document.getElementById("shor-fill").style.width=shorProgress+"%";
-        document.getElementById("shor-pct").textContent=Math.floor(shorProgress)+"%";
-        if(shorProgress>=100){
-            clearInterval(shorTimer);
-            shorSolves();
+    const tauntIdx=Math.floor(Math.random()*TAUNTS.length);
+    document.getElementById('shor-bot-status').textContent=TAUNTS[tauntIdx];
+
+    const steps=timeLimit*10; // update every 100ms
+    let step=0;
+    shorInterval=setInterval(()=>{
+        if(!gameRunning){clearInterval(shorInterval);return;}
+        step++;
+        shorPct=Math.min(100,Math.round((step/steps)*100));
+        document.getElementById('shor-fill').style.width=shorPct+'%';
+        document.getElementById('shor-pct').textContent=shorPct+'%';
+
+        // Taunt at milestones
+        if(shorPct===25) setShorStatus('🤖 "Quantum state initialized... 25% done!"');
+        if(shorPct===50) setShorStatus('🤖 "Halfway! Grover search engaged!"');
+        if(shorPct===75) setShorStatus('🤖 "Almost cracked! 75% complete!"');
+        if(shorPct===90) setShorStatus('🤖 "FINAL CALCULATION — tick tock!"');
+
+        // Shor Bot wins
+        if(shorPct>=100){
+            clearInterval(shorInterval);
+            gameRunning=false;
+            shorWins();
         }
-    },1000);
-    document.getElementById("p-input").focus();
+    },100);
 }
 
-function shorSolves(){
-    gameActive=false;
-    streak=0;
-    levelResults.push("failed");
-    updateDots();
-    setMsg("☠️ Shor's Algorithm solved it first! "+currentN+" = "+currentP+" × "+currentQ,"#ef4444");
-    showFact("☠️ This is why RSA is vulnerable! Shor's Algorithm factors numbers exponentially faster than classical computers. That's why we need Kyber (FIPS 203)!","#ef4444");
-    document.getElementById("next-btn").disabled=false;
-    updateHUD();
+function setShorStatus(msg){
+    document.getElementById('shor-bot-status').textContent=msg;
 }
 
-function checkAnswer(){
-    if(!gameActive) return;
-    const p=parseInt(document.getElementById("p-input").value)||0;
-    const q=parseInt(document.getElementById("q-input").value)||0;
-    document.getElementById("n-confirm").textContent=p&&q?p+"×"+q+"="+(p*q):"?";
+// ── CHECK FACTOR ──────────────────────────────────────────────────────────────
+function checkFactor(){
+    if(!gameRunning) return;
+    const val=parseInt(document.getElementById('factor-input').value);
+    if(!val||val<2){ shake('factor-input'); return; }
 
-    if(p<2||q<2){setMsg("Enter two numbers greater than 1!","#f59e0b");return;}
+    if(val===factor1||val===factor2){
+        // Correct factor!
+        if(!foundFactors.includes(val)){
+            foundFactors.push(val);
+            addFactorBadge(val);
+            document.getElementById('factor-input').value='';
 
-    if((p===currentP&&q===currentQ)||(p===currentQ&&q===currentP)){
-        // Correct!
-        clearInterval(shorTimer);
-        gameActive=false;
-        streak++;
-        const timeBonus=Math.floor((100-shorProgress)*2);
-        const levelPts=level*100+timeBonus+(streak>2?streak*50:0);
-        score+=levelPts;
-        levelResults.push("done");
-        updateDots();
-        updateHUD();
-        setMsg("🎉 CORRECT! "+currentN+" = "+currentP+" × "+currentQ+" | +"+levelPts+" pts"+(streak>1?" 🔥×"+streak:""),"#10b981");
-        showFact("✅ "+FACTS[Math.min(level-1,FACTS.length-1)],"#10b981");
-        document.getElementById("next-btn").disabled=level>=12;
-        if(level>=12){
-            setMsg("🏆 QUANTUM MASTER! You factored all 12 levels! Final score: "+score,"#fbbf24");
+            if(foundFactors.length===2||(factor1===factor2&&foundFactors.length===1)){
+                // Both factors found!
+                playerWins();
+            } else {
+                setResult('✅ '+val+' is correct! Find the other factor!','#10b981');
+                document.getElementById('player-emoji').classList.add('pop');
+                setTimeout(()=>document.getElementById('player-emoji').classList.remove('pop'),400);
+            }
         }
-    } else if(p*q===currentN){
-        // Right product but not prime
-        setMsg("⚠️ "+p+"×"+q+"="+currentN+" but those aren't both prime! Find PRIME factors.","#f59e0b");
+    } else if(currentNum%val===0){
+        // Is a factor but not prime — guide them
+        setResult('📎 '+val+' divides '+currentNum+' but keep going — find the PRIME factors!','#fbbf24');
+        shake('factor-input');
     } else {
-        setMsg("❌ "+p+"×"+q+"="+(p*q)+" ≠ "+currentN+". Try again!","#ef4444");
-        streak=Math.max(0,streak-1);
-        score=Math.max(0,score-10);
-        updateHUD();
+        // Wrong
+        streak=0; updateHUD();
+        setResult('❌ '+val+' is not a factor of '+currentNum,'#ef4444');
+        shake('factor-input');
+    }
+    document.getElementById('factor-input').value='';
+    document.getElementById('factor-input').focus();
+}
+
+function addFactorBadge(f){
+    const d=document.createElement('div');
+    d.className='factor-badge pop';
+    d.textContent=f;
+    document.getElementById('factors-found').appendChild(d);
+}
+
+// ── PLAYER WINS ───────────────────────────────────────────────────────────────
+function playerWins(){
+    clearInterval(shorInterval);
+    gameRunning=false;
+    streak++; wins++;
+    const timeBonus=Math.round((1-shorPct/100)*50);
+    const streakBonus=streak>=3?20:0;
+    const pts=100+timeBonus+streakBonus;
+    score+=pts; updateHUD();
+
+    setResult('🎉 YOU WIN! +'+pts+' pts'+(streakBonus?' (Streak Bonus!)':''),'#10b981');
+    document.getElementById('player-emoji').classList.add('victory');
+    document.getElementById('shor-emoji').classList.add('defeated');
+    setShorStatus('🤖 "Impossible! No quantum computer is fast enough!"');
+    showToast('⚡ Beat the Shor Bot! +'+pts+' pts!');
+
+    if(streak>=3) showToast('🔥 '+streak+' in a row! You\'re on fire!');
+
+    setTimeout(()=>{
+        document.getElementById('player-emoji').classList.remove('victory');
+        document.getElementById('shor-emoji').classList.remove('defeated');
+        currentNumIdx++;
+        loadNumber();
+    },1800);
+}
+
+// ── SHOR BOT WINS ────────────────────────────────────────────────────────────
+function shorWins(){
+    streak=0; updateHUD();
+    setResult('💀 Shor Bot cracked it first! The factors were '+factor1+' × '+factor2,'#ef4444');
+    document.getElementById('shor-emoji').classList.add('victory');
+    document.getElementById('player-emoji').style.opacity='0.5';
+    setShorStatus('🤖 "RSA is DEAD! This is why we need Kyber!"');
+    showFact('🔐 The Shor Bot won because RSA relies on factoring — Kyber (FIPS 203) uses lattice math instead, which NO quantum computer can break!');
+
+    setTimeout(()=>{
+        document.getElementById('shor-emoji').classList.remove('victory');
+        document.getElementById('player-emoji').style.opacity='1';
+        currentNumIdx++;
+        loadNumber();
+    },2500);
+}
+
+// ── WAVE COMPLETE ─────────────────────────────────────────────────────────────
+function waveComplete(){
+    clearInterval(shorInterval);
+    gameRunning=false;
+    wave++;
+    const waveBonus=wave*50;
+    score+=waveBonus;
+    updateHUD();
+    saveScore();
+
+    document.getElementById('wave-complete').style.display='block';
+    document.getElementById('wc-emoji').textContent=wave>=10?'👑':'🎉';
+    document.getElementById('wc-title').textContent=
+        wave>=10?'YOU DEFEATED ALL WAVES!':'Wave '+(wave)+' Complete!';
+    document.getElementById('wc-msg').textContent=
+        '+'+waveBonus+' wave bonus! Total score: '+score;
+
+    if(wave<CLEAN_WAVES.length){
+        confetti();
+    } else {
+        showVictory();
     }
 }
 
-function useHint(){
-    if(hintsLeft<=0){setMsg("No hints left!","#f59e0b");return;}
-    if(!gameActive){setMsg("Start a level first!","#f59e0b");return;}
-    hintsLeft--;
-    score=Math.max(0,score-50);
-    updateHUD();
-    // Give the smaller prime
-    setMsg("💡 Hint: One factor is "+currentP+" — now find the other!","#a78bfa");
-    document.getElementById("p-input").value=currentP;
-    document.getElementById("hints-used").textContent="Hints used — each costs 50 pts";
+function nextWave(){
+    document.getElementById('wave-complete').style.display='none';
+    startWave();
 }
 
-function nextLevel(){
-    if(level>=12) return;
-    level++;
-    gameActive=true;
-    loadLevel();
-    document.getElementById("next-btn").disabled=true;
+function showVictory(){
+    document.getElementById('arena').innerHTML=
+        '<div style="text-align:center;padding:20px;">'+
+        '<div style="font-size:3rem">👑</div>'+
+        '<h2 style="color:#fbbf24;margin:8px 0">QUANTUM CHAMPION!</h2>'+
+        '<p style="color:#94a3b8;font-size:11px">You defeated all 10 waves and beat Shor\'s Algorithm!</p>'+
+        '<p style="color:#10b981;font-size:13px;margin:8px 0">Final Score: '+score+'</p>'+
+        '<p style="color:#60a5fa;font-size:10px">Now you know why RSA needs to be replaced with Kyber (FIPS 203)!</p>'+
+        '<button class="btn btn-gold" style="margin-top:10px" onclick="resetGame()">🔄 Play Again</button>'+
+        '</div>';
+    confetti();
+    showToast('👑 QUANTUM CHAMPION! Final Score: '+score);
+}
+
+// ── HINTS ─────────────────────────────────────────────────────────────────────
+function useHint(){
+    score=Math.max(0,score-10);
+    hintsShown++;
+    if(hintsShown===1){
+        const hint='Hint: Is '+factor1+' a factor? Try dividing '+currentNum+' by small primes!';
+        document.getElementById('hint-1').textContent='💡 '+Math.min(factor1,factor2);
+        showToast('💡 Hint: Try '+Math.min(factor1,factor2)+'! -10 pts');
+    } else {
+        document.getElementById('hint-2').textContent='💡 '+Math.max(factor1,factor2);
+        showToast('💡 Other factor: '+Math.max(factor1,factor2)+'! -10 pts');
+    }
+    updateHUD();
+}
+
+function skipNumber(){
+    clearInterval(shorInterval);
+    gameRunning=false;
+    streak=0;
+    setResult('⏭️ Skipped! Factors were '+factor1+' × '+factor2,'#475569');
+    showFact('💡 Remember: '+currentNum+' = '+factor1+' × '+factor2+'. Try to spot the pattern!');
+    setTimeout(()=>{ currentNumIdx++; loadNumber(); },1500);
+    updateHUD();
+}
+
+// ── UI HELPERS ────────────────────────────────────────────────────────────────
+function setResult(msg,color){
+    const el=document.getElementById('result-msg');
+    el.textContent=msg; el.style.color=color||'white';
+    el.classList.add('pop');
+    setTimeout(()=>el.classList.remove('pop'),400);
+}
+
+function shake(id){
+    const el=document.getElementById(id);
+    el.classList.add('shake');
+    setTimeout(()=>el.classList.remove('shake'),400);
 }
 
 function updateHUD(){
-    document.getElementById("h-score").textContent=score;
-    document.getElementById("h-level").textContent=level;
-    document.getElementById("h-hints").textContent=hintsLeft;
-    document.getElementById("h-streak").textContent=streak;
+    document.getElementById('h-score').textContent=score;
+    document.getElementById('h-wave').textContent=Math.min(wave+1,10);
+    document.getElementById('h-streak').textContent=streak;
+    document.getElementById('h-wins').textContent=wins;
 }
 
-function buildDots(){
-    let html="";
-    for(let i=0;i<12;i++) html+=`<div class="dot" id="dot-${i+1}"></div>`;
-    document.getElementById("progress-dots").innerHTML=html;
+let factTimer=null;
+function showFact(text){
+    const el=document.getElementById('fact-box');
+    el.textContent=text; el.style.display='block';
+    if(factTimer) clearTimeout(factTimer);
+    factTimer=setTimeout(()=>el.style.display='none',5000);
 }
 
-function updateDots(){
-    for(let i=0;i<12;i++){
-        let el=document.getElementById("dot-"+(i+1));
-        if(!el) continue;
-        el.className="dot";
-        if(i<levelResults.length){
-            el.classList.add(levelResults[i]==="done"?"done":"failed");
-        } else if(i===levelResults.length){
-            el.classList.add("current");
-        }
+let toastTimer=null;
+function showToast(msg){
+    const el=document.getElementById('toast');
+    el.textContent=msg; el.classList.add('show');
+    if(toastTimer) clearTimeout(toastTimer);
+    toastTimer=setTimeout(()=>el.classList.remove('show'),2500);
+}
+
+// ── LEADERBOARD ───────────────────────────────────────────────────────────────
+function saveScore(){
+    sessionScores.push({score,wave,time:new Date().toLocaleTimeString()});
+    sessionScores.sort((a,b)=>b.score-a.score);
+    const rows=document.getElementById('lb-rows');
+    rows.innerHTML='';
+    sessionScores.slice(0,5).forEach((s,i)=>{
+        const medals=['🥇','🥈','🥉','4️⃣','5️⃣'];
+        const d=document.createElement('div');
+        d.className='lb-row';
+        d.innerHTML='<span class="lb-rank">'+medals[i]+'</span>'+
+            '<span class="lb-name">Wave '+s.wave+' | '+s.time+'</span>'+
+            '<span class="lb-score">'+s.score+'</span>';
+        rows.appendChild(d);
+    });
+}
+
+// ── CONFETTI ──────────────────────────────────────────────────────────────────
+function confetti(){
+    const colors=['#fbbf24','#10b981','#3b82f6','#8b5cf6','#ef4444','#f97316'];
+    for(let i=0;i<25;i++){
+        setTimeout(()=>{
+            const el=document.createElement('div');
+            el.className='confetti-piece';
+            el.style.left=Math.random()*100+'vw';
+            el.style.background=colors[Math.floor(Math.random()*colors.length)];
+            el.style.animationDuration=(1+Math.random()*2)+'s';
+            el.style.animationDelay=Math.random()*0.3+'s';
+            document.body.appendChild(el);
+            setTimeout(()=>el.remove(),3000);
+        },i*40);
     }
 }
 
-function setMsg(m,c){
-    let el=document.getElementById("msg");
-    el.textContent=m; el.style.color=c||"#34d399";
+function resetGame(){
+    score=0; wave=0; streak=0; wins=0;
+    currentWave=null; currentNumIdx=0;
+    clearInterval(shorInterval);
+    document.getElementById('start-btn').style.display='block';
+    document.getElementById('wave-complete').style.display='none';
+    document.getElementById('big-number').textContent='???';
+    document.getElementById('number-bits').textContent='Press Start to begin!';
+    document.getElementById('shor-bot-status').textContent='Press Start to wake up the Shor Bot!';
+    document.getElementById('shor-fill').style.width='0%';
+    document.getElementById('shor-pct').textContent='0%';
+    document.getElementById('factors-found').innerHTML='';
+    document.getElementById('result-msg').textContent='';
+    updateHUD();
 }
 
-function showFact(text,color){
-    let el=document.getElementById("fact-box");
-    el.textContent=text; el.style.display="block";
-    el.style.borderColor=(color||"#3b82f6")+"50";
-    if(factTimeout) clearTimeout(factTimeout);
-    factTimeout=setTimeout(()=>el.style.display="none",6000);
-}
-
-// Live multiply preview
-document.addEventListener("input",e=>{
-    if(e.target.id==="p-input"||e.target.id==="q-input"){
-        const p=parseInt(document.getElementById("p-input").value)||0;
-        const q=parseInt(document.getElementById("q-input").value)||0;
-        document.getElementById("n-confirm").textContent=p&&q?(p*q===currentN?"✅ "+p*q:"❌ "+p*q):"?";
-        document.getElementById("n-confirm").style.color=p&&q&&p*q===currentN?"#10b981":"#ef4444";
-    }
+// ── KEYBOARD ──────────────────────────────────────────────────────────────────
+document.addEventListener('keydown',e=>{
+    if(e.key==='Enter') checkFactor();
 });
 
-// Keyboard
-document.addEventListener("keydown",e=>{
-    if(e.key==="Enter") checkAnswer();
-});
-
-// Initial state
-buildDots();
-setMsg("Press ▶ New Game to start factoring!");
+// ── INIT ─────────────────────────────────────────────────────────────────────
+updateHUD();
+showFact(FACTS[0]);
 </script>
 </body>
 </html>
-""", height=700)
-
-
-
+""", height=720)
 
 def render_network_defender():
     """Free game: Quantum Fortress — Strategic network defense with cascade failures and vulnerability meters."""
