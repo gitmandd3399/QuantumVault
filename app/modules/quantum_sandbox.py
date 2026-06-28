@@ -264,8 +264,8 @@ buildPanel();
 function spawnAt(x, y, item) {
     if (item.type === 'mob') {
         const mob = createMob(x, y, item);
-        mob.vx = (Math.random()-0.5)*2;
-        mob.vy = -1;
+        mob.vx = (Math.random()-0.5)*0.5;
+        mob.vy = -0.5;
         mobs.push(mob);
         showFactRandom();
     } else {
@@ -397,8 +397,8 @@ function ragdollImpact(mob, impX, impY, force) {
         const dx = part.x - impX, dy = part.y - impY;
         const d = Math.sqrt(dx*dx+dy*dy)||1;
         const f = force * (1 - Math.min(d/200, 1));
-        part.vx += (dx/d) * f * (0.5+Math.random()*0.5);
-        part.vy += (dy/d) * f * (0.5+Math.random()*0.5) - f*0.3;
+        part.vx += (dx/d) * f * (0.3+Math.random()*0.3);
+        part.vy += (dy/d) * f * (0.3+Math.random()*0.3) - f*0.2;
     });
     mob.collapsed = true;
     mob.collapseTimer = 60;
@@ -427,9 +427,15 @@ function updateMobs() {
                 if(Math.abs(p.vy)<0.5) p.vy=0;
             }
             // Wall collisions
-            if(p.x-p.r<0){p.x=p.r;p.vx*=-0.5;}
-            if(p.x+p.r>W){p.x=W-p.r;p.vx*=-0.5;}
-            if(p.y-p.r<0){p.y=p.r;p.vy*=-0.3;}
+            if(p.x-p.r<0){p.x=p.r;p.vx*=-0.3;}
+            if(p.x+p.r>W){p.x=W-p.r;p.vx*=-0.3;}
+            if(p.y-p.r<0){p.y=p.r;p.vy*=-0.2;}
+            // Air resistance damping
+            p.vx*=0.97; p.vy*=0.97;
+            // Cap velocity so mobs never fly off screen
+            const maxV=8;
+            if(Math.abs(p.vx)>maxV) p.vx=Math.sign(p.vx)*maxV;
+            if(Math.abs(p.vy)>maxV) p.vy=Math.sign(p.vy)*maxV;
         });
 
         // Apply joint constraints (keep parts connected)
@@ -741,7 +747,7 @@ function ctxAction(action){
         ctxTarget.shielded=true;ctxTarget.color='#10b981';
     } else if(action==='fling'){
         if(ctxTarget.parts){
-            Object.values(ctxTarget.parts).forEach(p=>{p.vy=-15;p.vx=(Math.random()-0.5)*8;});
+            Object.values(ctxTarget.parts).forEach(p=>{p.vy=-8;p.vx=(Math.random()-0.5)*4;});
             ctxTarget.collapsed=true;ctxTarget.collapseTimer=40;
         } else { ctxTarget.vy=-15; }
     }
