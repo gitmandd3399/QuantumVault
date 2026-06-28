@@ -37,6 +37,7 @@ from modules.games import render_prime_factor_game, render_network_defender, ren
 from modules.career_explorer import render_career_explorer
 from modules.pqc_demo import render_pqc_demo
 from modules.story_adventure import render_story_adventure
+from modules.quantum_sandbox import render_quantum_sandbox
 from modules.privacy_policy import render_privacy_policy, render_terms_of_service
 # ── Page config ───────────────────────────────────────────────────────────────
 st.set_page_config(
@@ -141,6 +142,7 @@ def sidebar():
             ("🔢", "Prime Factor",      "🔢 Prime Factor Cracker"),
             ("🌐", "Network Defender",  "🌐 Network Defender"),
             ("🧱", "Falling Blocks",    "🧱 Falling Blocks"),
+            ("🧪", "Quantum Sandbox",   "🧪 Quantum Sandbox"),
             ("🚩", "CTF Challenge",    "🚩 CTF Challenge"),
             ("─", "── Coding Games Trial ──", "─ Coding Games"),
             ("🛡️", "Code the Shield",   "🛡️ Code the Shield"),
