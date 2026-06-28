@@ -139,97 +139,480 @@ def get_fallback_story(hero_name, monster_name):
 
 
 def render_storybook(story_text, hero_emoji, monster_emoji):
-    """Renders story text inside a fairy tale book UI."""
+    """Interactive fairy tale storybook with page turning, animations, and read aloud."""
     import streamlit.components.v1 as components
 
+    # Clean story text for safe JavaScript embedding
+    # Replace characters that would break the JS string
     clean = (story_text
-             .replace("\\", "\\\\")
-             .replace("`", "'")
-             .replace("\n", "<br>")
-             .replace('"', "'")
+             .replace('\\', '\\\\')  # escape backslashes first
+             .replace('\r', '')       # remove carriage returns
+             .replace('"', "'")       # replace double quotes with single
+             .replace('`', "'")       # replace backticks with single quotes
+             .replace('\n', '<br>')   # convert newlines to HTML breaks
     )
 
     components.html("""
 <!DOCTYPE html>
 <html>
 <head>
+<meta charset="UTF-8">
 <style>
+/* ── RESET ── */
 *{margin:0;padding:0;box-sizing:border-box;}
-body{background:transparent;font-family:Georgia,serif;}
-#book-wrap{display:flex;justify-content:center;align-items:flex-start;padding:16px 8px;perspective:1500px;}
-#book{display:flex;width:100%;max-width:660px;min-height:380px;position:relative;filter:drop-shadow(0 12px 30px rgba(0,0,0,0.45));}
-#page-left{flex:1;background:linear-gradient(to right,#f5e6c8,#fdf3e3);border-radius:8px 0 0 8px;padding:26px 22px 26px 28px;position:relative;border:1px solid #c4a35a;border-right:none;min-height:380px;overflow:hidden;}
-#page-right{flex:1;background:linear-gradient(to left,#f5e6c8,#fdf3e3);border-radius:0 8px 8px 0;padding:26px 28px 26px 22px;position:relative;border:1px solid #c4a35a;border-left:none;min-height:380px;overflow:hidden;}
-#spine{width:22px;background:linear-gradient(to bottom,#7a5c10 0%,#c4a35a 20%,#f5d278 50%,#c4a35a 80%,#7a5c10 100%);box-shadow:inset -2px 0 4px rgba(0,0,0,0.3),inset 2px 0 4px rgba(0,0,0,0.3);position:relative;z-index:10;}
-#page-left::before,#page-right::before{content:'';position:absolute;inset:8px;border:1.5px solid #c4a35a60;border-radius:4px;pointer-events:none;}
-.page-num{text-align:center;font-size:10px;color:#8b6914;margin-bottom:6px;font-style:italic;letter-spacing:1px;}
-.stars{text-align:center;font-size:11px;color:#8b6914;margin-bottom:6px;letter-spacing:3px;}
-.chapter-title{text-align:center;font-size:14px;font-weight:bold;color:#5c3d0e;margin-bottom:8px;line-height:1.4;}
-.divider{text-align:center;color:#8b6914;font-size:14px;margin:6px 0;letter-spacing:3px;}
-.hero-badge{text-align:center;font-size:1.8rem;margin:6px 0 2px;}
-.hero-name{text-align:center;font-size:10px;color:#8b6914;font-style:italic;letter-spacing:1px;margin-bottom:10px;}
-.story-text{font-size:13px;line-height:1.8;color:#2c1810;text-align:justify;}
-.drop-cap{float:left;font-size:46px;line-height:0.75;padding-right:5px;padding-top:6px;color:#8b6914;font-weight:bold;}
-.end-div{text-align:center;color:#8b6914;font-size:13px;margin-top:10px;letter-spacing:3px;}
+body{background:transparent;font-family:Georgia,'Times New Roman',serif;
+     overflow:hidden;user-select:none;}
+
+/* ── OUTER WRAP ── */
+#wrap{
+    display:flex;flex-direction:column;align-items:center;
+    padding:12px 8px;position:relative;
+}
+
+/* ── BOOK CONTAINER ── */
+#book-outer{
+    position:relative;width:100%;max-width:680px;
+}
+
+/* ── OPEN BOOK ── */
+#book{
+    display:flex;width:100%;min-height:360px;
+    filter:drop-shadow(0 12px 28px rgba(0,0,0,0.45));
+    position:relative;
+}
+
+/* ── PAGE SHARED ── */
+.page{
+    flex:1;position:relative;overflow:hidden;
+    padding:22px 20px 40px 22px;min-height:360px;
+}
+
+/* ── LEFT PAGE ── */
+#page-1{
+    background:linear-gradient(105deg,#f0ddb0 0%,#fdf3e3 40%,#fdf8f0 100%);
+    border-radius:8px 0 0 8px;
+    border:1.5px solid #c4a35a;border-right:none;
+}
+
+/* ── RIGHT PAGE ── */
+#page-2{
+    background:linear-gradient(255deg,#f0ddb0 0%,#fdf3e3 40%,#fdf8f0 100%);
+    border-radius:0 8px 8px 0;
+    border:1.5px solid #c4a35a;border-left:none;
+}
+
+/* ── SPINE ── */
+#spine{
+    width:20px;flex-shrink:0;
+    background:linear-gradient(to bottom,#7a5c10,#c4a35a 25%,#f5d278 50%,#c4a35a 75%,#7a5c10);
+    box-shadow:inset -2px 0 6px rgba(0,0,0,0.25),inset 2px 0 6px rgba(0,0,0,0.25);
+    z-index:5;
+}
+
+/* ── INNER BORDER DECORATION ── */
+.page::before{
+    content:'';position:absolute;inset:8px;
+    border:1.5px solid #c4a35a50;border-radius:4px;pointer-events:none;
+}
+
+/* ── PAGE NUMBER ── */
+.pg-num{
+    text-align:center;font-size:10px;color:#8b6914;
+    font-style:italic;letter-spacing:1px;margin-bottom:4px;
+}
+
+/* ── STARS ROW ── */
+.stars-row{
+    text-align:center;font-size:13px;margin-bottom:5px;
+    letter-spacing:4px;
+}
+.star{
+    cursor:pointer;display:inline-block;
+    transition:transform 0.2s,filter 0.2s;
+    color:#c4a35a;
+}
+.star:hover,.star.lit{
+    color:#fbbf24;filter:drop-shadow(0 0 6px #fbbf24);
+    transform:scale(1.4) rotate(15deg);
+}
+
+/* ── CHAPTER TITLE ── */
+.ch-title{
+    text-align:center;font-size:14px;font-weight:bold;
+    color:#5c3d0e;line-height:1.4;margin-bottom:6px;
+}
+
+/* ── ORNAMENTAL DIVIDER ── */
+.ornament{
+    text-align:center;color:#8b6914;font-size:13px;
+    letter-spacing:3px;margin:4px 0 6px;
+}
+
+/* ── CHARACTER DISPLAY ── */
+#char-row{
+    display:flex;justify-content:center;align-items:center;
+    gap:12px;margin:4px 0 8px;
+}
+.char{
+    font-size:2rem;cursor:pointer;
+    transition:transform 0.2s;display:inline-block;
+}
+.char:hover{transform:scale(1.3) rotate(-10deg);}
+.char.bounce{animation:bounce 0.5s ease;}
+@keyframes bounce{
+    0%{transform:scale(1);}
+    30%{transform:scale(1.4) rotate(15deg);}
+    60%{transform:scale(0.9) rotate(-5deg);}
+    100%{transform:scale(1);}
+}
+.vs-text{font-size:11px;color:#8b6914;font-style:italic;}
+
+/* ── STORY TEXT ── */
+.story-body{
+    font-size:13px;line-height:1.85;color:#2c1810;
+    text-align:justify;
+}
+
+/* ── DROP CAP ── */
+.drop-cap{
+    float:left;font-size:44px;line-height:0.75;
+    padding-right:5px;padding-top:6px;
+    color:#8b6914;font-weight:bold;
+}
+
+/* ── END ORNAMENT ── */
+.end-orn{
+    text-align:center;color:#8b6914;
+    font-size:12px;letter-spacing:3px;
+    margin-top:8px;display:none;
+}
+
+/* ── BOTTOM CONTROLS ── */
+#controls{
+    display:flex;justify-content:space-between;align-items:center;
+    width:100%;max-width:680px;margin-top:10px;gap:8px;
+}
+
+/* ── NAV BUTTONS ── */
+.nav-btn{
+    padding:8px 18px;border-radius:24px;border:2px solid #c4a35a;
+    background:linear-gradient(135deg,#8b6914,#c4a35a);
+    color:#fdf3e3;font-size:13px;font-weight:bold;cursor:pointer;
+    font-family:Georgia,serif;letter-spacing:0.5px;
+    box-shadow:0 3px 8px rgba(0,0,0,0.25);
+    transition:all 0.15s;
+}
+.nav-btn:hover{transform:translateY(-2px);filter:brightness(1.15);}
+.nav-btn:active{transform:translateY(0);}
+.nav-btn:disabled{opacity:0.35;cursor:not-allowed;transform:none;}
+
+/* ── READ ALOUD BUTTON ── */
+#read-btn{
+    padding:8px 16px;border-radius:24px;
+    border:2px solid #3b82f6;
+    background:linear-gradient(135deg,#1d4ed8,#3b82f6);
+    color:white;font-size:12px;cursor:pointer;
+    font-family:Georgia,serif;
+    box-shadow:0 3px 8px rgba(59,130,246,0.3);
+    transition:all 0.15s;
+}
+#read-btn:hover{transform:translateY(-2px);filter:brightness(1.15);}
+
+/* ── PAGE INDICATOR ── */
+#page-indicator{
+    font-size:11px;color:#8b6914;font-style:italic;
+    text-align:center;min-width:80px;
+}
+
+/* ── PAGE FLIP ANIMATION ── */
+.page.flip-out{animation:flipOut 0.3s ease forwards;}
+.page.flip-in{animation:flipIn 0.3s ease forwards;}
+@keyframes flipOut{
+    0%{opacity:1;transform:perspective(800px) rotateY(0deg);}
+    100%{opacity:0;transform:perspective(800px) rotateY(-15deg);}
+}
+@keyframes flipIn{
+    0%{opacity:0;transform:perspective(800px) rotateY(15deg);}
+    100%{opacity:1;transform:perspective(800px) rotateY(0deg);}
+}
+
+/* ── SPARKLE PARTICLES ── */
+.sparkle{
+    position:fixed;pointer-events:none;z-index:9999;
+    font-size:14px;animation:sparkleAnim 0.8s ease forwards;
+}
+@keyframes sparkleAnim{
+    0%{opacity:1;transform:scale(1) translate(0,0);}
+    100%{opacity:0;transform:scale(0) translate(var(--tx),var(--ty));}
+}
+
+/* ── MAGIC WAND CURSOR TRAIL ── */
+.trail{
+    position:fixed;pointer-events:none;z-index:9998;
+    width:6px;height:6px;border-radius:50%;
+    animation:trailFade 0.6s ease forwards;
+}
+@keyframes trailFade{
+    0%{opacity:0.9;transform:scale(1);}
+    100%{opacity:0;transform:scale(0);}
+}
 </style>
 </head>
 <body>
-<div id="book-wrap">
-  <div id="book">
-    <div id="page-left">
-      <div class="page-num">~ Page 1 ~</div>
-      <div class="stars">✦ ✦ ✦</div>
-      <div class="chapter-title" id="story-title">Loading...</div>
-      <div class="divider">~ ❧ ~</div>
-      <div class="hero-badge">""" + hero_emoji + " ⚔️ " + monster_emoji + """</div>
-      <div class="hero-name">A Quantum Monster Adventure</div>
-      <div class="story-text" id="story-left"></div>
-    </div>
-    <div id="spine"></div>
-    <div id="page-right">
-      <div class="page-num">~ Page 2 ~</div>
-      <div class="stars">✦ ✦ ✦</div>
-      <div class="story-text" id="story-right"></div>
-      <div class="end-div" id="end-div" style="display:none">~ The End ✦ ~</div>
+
+<div id="wrap">
+
+  <!-- THE OPEN BOOK -->
+  <div id="book-outer">
+    <div id="book">
+
+      <!-- LEFT PAGE -->
+      <div class="page" id="page-1">
+        <div class="pg-num" id="pg-num-1">~ Page 1 ~</div>
+        <div class="stars-row" id="stars-1">
+          <span class="star" onclick="litStar(this)">✦</span>
+          <span class="star" onclick="litStar(this)">✦</span>
+          <span class="star" onclick="litStar(this)">✦</span>
+        </div>
+        <div class="ch-title" id="ch-title">📖 Loading...</div>
+        <div class="ornament">~ ❧ ~</div>
+        <div id="char-row">
+          <span class="char" id="hero-char" onclick="bounceChar(this)">""" + hero_emoji + """</span>
+          <span class="vs-text">✦ vs ✦</span>
+          <span class="char" id="monster-char" onclick="bounceChar(this)">""" + monster_emoji + """</span>
+        </div>
+        <div class="story-body" id="body-1"></div>
+        <div class="end-orn" id="end-orn-1"></div>
+      </div>
+
+      <!-- SPINE -->
+      <div id="spine"></div>
+
+      <!-- RIGHT PAGE -->
+      <div class="page" id="page-2">
+        <div class="pg-num" id="pg-num-2">~ Page 2 ~</div>
+        <div class="stars-row" id="stars-2">
+          <span class="star" onclick="litStar(this)">✦</span>
+          <span class="star" onclick="litStar(this)">✦</span>
+          <span class="star" onclick="litStar(this)">✦</span>
+        </div>
+        <div class="story-body" id="body-2"></div>
+        <div class="end-orn" id="end-orn-2"></div>
+      </div>
+
     </div>
   </div>
+
+  <!-- CONTROLS -->
+  <div id="controls">
+    <button class="nav-btn" id="prev-btn" onclick="prevPage()" disabled>◀ Previous</button>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+      <div id="page-indicator">Page 1 of 1</div>
+      <button id="read-btn" onclick="readPage()">🔊 Read This Page</button>
+    </div>
+    <button class="nav-btn" id="next-btn" onclick="nextPage()">Next ▶</button>
+  </div>
+
 </div>
+
 <script>
-var fullStory = """" + clean + """";
-function parseStory(text) {
-    var lines = text.split('<br>').filter(function(l){return l.trim();});
+// ── STORY DATA ──────────────────────────────────────────────────────────────
+var RAW = \"""" + clean + """\";
+
+// ── PARSE STORY INTO CHUNKS ─────────────────────────────────────────────────
+function parseStory(text){
+    var lines = text.split('<br>').map(function(l){return l.trim();}).filter(function(l){return l.length>0;});
     var title = '';
-    var body = [];
-    for (var i=0;i<lines.length;i++) {
-        var line = lines[i].trim();
-        if (line.indexOf('#') === 0) { title = line.replace(/^#+/,'').trim(); }
-        else if (line) { body.push(line); }
-    }
-    return {title:title, body:body};
-}
-function renderBook() {
-    var parsed = parseStory(fullStory);
-    document.getElementById('story-title').innerHTML = parsed.title || 'A Quantum Adventure';
-    var mid = Math.ceil(parsed.body.length / 2);
-    var leftLines = parsed.body.slice(0, mid);
-    var rightLines = parsed.body.slice(mid);
-    var leftHTML = '';
-    leftLines.forEach(function(line, i) {
-        if (i===0 && line.length>0) {
-            leftHTML += '<span class="drop-cap">'+line.charAt(0)+'</span>'+line.slice(1)+'<br><br>';
-        } else { leftHTML += line+'<br><br>'; }
+    var paras = [];
+    lines.forEach(function(line){
+        if(line.match(/^#+/)){
+            title = line.replace(/^#+/,'').replace(/[*_]/g,'').trim();
+        } else {
+            paras.push(line);
+        }
     });
-    document.getElementById('story-left').innerHTML = leftHTML;
-    var rightHTML = '';
-    rightLines.forEach(function(line){rightHTML += line+'<br><br>';});
-    document.getElementById('story-right').innerHTML = rightHTML;
-    document.getElementById('end-div').style.display='block';
+    return {title:title, paras:paras};
 }
-renderBook();
+
+// ── SPLIT PARAGRAPHS INTO PAGES (4 paragraphs per page spread) ─────────────
+var parsed = parseStory(RAW);
+var PARAS = parsed.paras;
+var TITLE = parsed.title || 'A Quantum Adventure';
+var CHUNK = 4; // paragraphs per page-spread (left+right = 1 spread)
+var SPREADS = [];
+
+for(var i=0;i<PARAS.length;i+=CHUNK){
+    SPREADS.push(PARAS.slice(i,i+CHUNK));
+}
+if(SPREADS.length===0) SPREADS.push(['Once upon a time...']);
+
+var currentSpread = 0;
+
+// ── RENDER CURRENT SPREAD ───────────────────────────────────────────────────
+function renderSpread(){
+    var spread = SPREADS[currentSpread];
+    var mid = Math.ceil(spread.length/2);
+    var leftParas = spread.slice(0,mid);
+    var rightParas = spread.slice(mid);
+
+    // Set title on spread 0
+    if(currentSpread===0){
+        document.getElementById('ch-title').textContent = TITLE;
+        document.getElementById('char-row').style.display='flex';
+    } else {
+        document.getElementById('ch-title').textContent = TITLE;
+        document.getElementById('char-row').style.display='none';
+    }
+
+    // Build left page HTML
+    var leftHTML = '';
+    leftParas.forEach(function(p,i){
+        if(i===0 && currentSpread===0 && p.length>0){
+            leftHTML += '<span class="drop-cap">'+p.charAt(0)+'</span>'+p.slice(1)+'<br><br>';
+        } else {
+            leftHTML += p+'<br><br>';
+        }
+    });
+
+    // Build right page HTML
+    var rightHTML = '';
+    rightParas.forEach(function(p){
+        rightHTML += p+'<br><br>';
+    });
+
+    // Animate page flip
+    var p1 = document.getElementById('page-1');
+    var p2 = document.getElementById('page-2');
+    p1.classList.add('flip-out');
+    p2.classList.add('flip-out');
+    setTimeout(function(){
+        document.getElementById('body-1').innerHTML = leftHTML;
+        document.getElementById('body-2').innerHTML = rightHTML;
+
+        // Page numbers
+        var spreadNum = currentSpread+1;
+        document.getElementById('pg-num-1').textContent = '~ Page '+(spreadNum*2-1)+' ~';
+        document.getElementById('pg-num-2').textContent = '~ Page '+(spreadNum*2)+' ~';
+        document.getElementById('page-indicator').textContent =
+            'Spread '+(currentSpread+1)+' of '+SPREADS.length;
+
+        // Show "The End" on last spread
+        var isLast = (currentSpread===SPREADS.length-1);
+        document.getElementById('end-orn-1').style.display='none';
+        document.getElementById('end-orn-2').style.display = isLast?'block':'none';
+        document.getElementById('end-orn-2').textContent = isLast?'~ The End ✦ ~':'';
+
+        p1.classList.remove('flip-out');
+        p2.classList.remove('flip-out');
+        p1.classList.add('flip-in');
+        p2.classList.add('flip-in');
+        setTimeout(function(){
+            p1.classList.remove('flip-in');
+            p2.classList.remove('flip-in');
+        },350);
+    },280);
+
+    // Update buttons
+    document.getElementById('prev-btn').disabled = (currentSpread===0);
+    document.getElementById('next-btn').disabled = (currentSpread===SPREADS.length-1);
+}
+
+// ── NAV FUNCTIONS ────────────────────────────────────────────────────────────
+function nextPage(){
+    if(currentSpread<SPREADS.length-1){
+        currentSpread++;
+        renderSpread();
+        spawnSparkles(window.innerWidth/2, window.innerHeight/2, 8);
+    }
+}
+function prevPage(){
+    if(currentSpread>0){
+        currentSpread--;
+        renderSpread();
+        spawnSparkles(window.innerWidth/2, window.innerHeight/2, 8);
+    }
+}
+
+// ── READ ALOUD ───────────────────────────────────────────────────────────────
+function readPage(){
+    window.speechSynthesis.cancel();
+    var spread = SPREADS[currentSpread];
+    var text = spread.join(' ').replace(/<br>/g,' ').replace(/[*_#]/g,'');
+    var msg = new SpeechSynthesisUtterance(text);
+    msg.rate = 0.88;
+    msg.pitch = 1.1;
+    msg.volume = 1.0;
+    window.speechSynthesis.speak(msg);
+    document.getElementById('read-btn').textContent = '🔊 Reading...';
+    msg.onend = function(){ document.getElementById('read-btn').textContent = '🔊 Read This Page'; };
+}
+
+// ── STAR INTERACTION ─────────────────────────────────────────────────────────
+function litStar(el){
+    el.classList.toggle('lit');
+    spawnSparkles(
+        el.getBoundingClientRect().left + 8,
+        el.getBoundingClientRect().top + 8,
+        5
+    );
+}
+
+// ── CHARACTER BOUNCE ─────────────────────────────────────────────────────────
+function bounceChar(el){
+    el.classList.remove('bounce');
+    void el.offsetWidth; // reflow trick to restart animation
+    el.classList.add('bounce');
+    spawnSparkles(
+        el.getBoundingClientRect().left + 20,
+        el.getBoundingClientRect().top + 10,
+        8
+    );
+    setTimeout(function(){ el.classList.remove('bounce'); },600);
+}
+
+// ── SPARKLE PARTICLES ────────────────────────────────────────────────────────
+var SPARKLE_CHARS = ['✨','⭐','🌟','💫','✦','★','✺'];
+function spawnSparkles(x, y, count){
+    for(var i=0;i<count;i++){
+        (function(){
+            var el = document.createElement('div');
+            el.className = 'sparkle';
+            el.textContent = SPARKLE_CHARS[Math.floor(Math.random()*SPARKLE_CHARS.length)];
+            var angle = Math.random()*Math.PI*2;
+            var dist = 30+Math.random()*50;
+            el.style.left = x+'px';
+            el.style.top = y+'px';
+            el.style.setProperty('--tx', Math.cos(angle)*dist+'px');
+            el.style.setProperty('--ty', Math.sin(angle)*dist+'px');
+            el.style.animationDelay = (Math.random()*0.2)+'s';
+            document.body.appendChild(el);
+            setTimeout(function(){ el.remove(); },900);
+        })();
+    }
+}
+
+// ── MAGIC CURSOR TRAIL ───────────────────────────────────────────────────────
+var TRAIL_COLORS = ['#fbbf24','#60a5fa','#10b981','#f97316','#a78bfa'];
+var trailCount = 0;
+document.addEventListener('mousemove',function(e){
+    if(trailCount%3!==0){ trailCount++; return; } // only every 3rd move
+    trailCount++;
+    var el = document.createElement('div');
+    el.className = 'trail';
+    el.style.left = e.clientX+'px';
+    el.style.top = e.clientY+'px';
+    el.style.background = TRAIL_COLORS[Math.floor(Math.random()*TRAIL_COLORS.length)];
+    document.body.appendChild(el);
+    setTimeout(function(){ el.remove(); },650);
+});
+
+// ── INIT ─────────────────────────────────────────────────────────────────────
+renderSpread();
 </script>
 </body>
 </html>
-""", height=460, scrolling=True)
+""", height=520, scrolling=False)
+
 
 
 def render_story_adventure():
