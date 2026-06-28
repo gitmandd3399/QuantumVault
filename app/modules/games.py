@@ -3772,382 +3772,754 @@ draw();
 
 
 def render_secret_message():
-    """Free game: Secret Message Maker — K-5 cipher introduction!"""
+    """Free game: Secret Message Maker — K-5 cipher introduction — UPGRADED 2026!"""
     import streamlit as st
     import streamlit.components.v1 as components
     st.subheader("🔤 Secret Message Maker!")
     st.markdown(
-        "**Type a secret message and encrypt it!** "
-        "Can you decode the mystery messages? "
-        "Learn why simple ciphers are NOT quantum-safe — and what is! "
-        "FREE for everyone!"
+        "**Encrypt messages, decode challenges, and become a Cipher Agent!** "
+        "Learn why simple ciphers are NOT quantum-safe — and what IS!"
     )
-    components.html("""
+    components.html(r"""
 <!DOCTYPE html>
 <html>
 <head>
+<meta charset="UTF-8">
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
-body{background:#020d14;font-family:'Segoe UI',sans-serif;color:white;}
-#wrap{display:flex;flex-direction:column;align-items:center;padding:12px;max-width:540px;margin:0 auto;}
-.hud{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;width:100%;margin-bottom:8px;}
-.hb{background:#071520;border:1px solid #1a3a5a;border-radius:8px;padding:6px 4px;text-align:center;font-size:10px;color:#60a5fa;}
-.hb b{display:block;font-size:16px;color:white;}
-.tabs{display:flex;gap:4px;width:100%;margin-bottom:8px;}
-.tab{flex:1;padding:8px;border-radius:8px;border:1px solid #1a3a5a;background:#071520;
-    color:#60a5fa;font-size:12px;font-weight:bold;cursor:pointer;text-align:center;}
+body{background:#020d14;font-family:'Segoe UI',sans-serif;color:white;overflow-x:hidden;}
+#wrap{display:flex;flex-direction:column;align-items:center;padding:10px;max-width:560px;margin:0 auto;}
+
+/* HUD */
+.hud{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;width:100%;margin-bottom:8px;}
+.hb{background:#071520;border:1px solid #1a3a5a;border-radius:8px;padding:5px 3px;
+    text-align:center;font-size:9px;color:#60a5fa;}
+.hb b{display:block;font-size:15px;color:white;}
+
+/* RANK BADGE */
+#rank-bar{background:#071520;border:1px solid #fbbf2440;border-radius:10px;
+    padding:6px 12px;width:100%;margin-bottom:8px;
+    display:flex;align-items:center;justify-content:space-between;}
+#rank-name{font-size:12px;color:#fbbf24;font-weight:bold;}
+#rank-xp-bar{flex:1;height:6px;background:#1e293b;border-radius:3px;margin:0 10px;}
+#rank-xp-fill{height:6px;background:linear-gradient(90deg,#fbbf24,#f97316);
+    border-radius:3px;transition:width 0.5s;width:0%;}
+#rank-next{font-size:9px;color:#475569;}
+
+/* TABS */
+.tabs{display:flex;gap:3px;width:100%;margin-bottom:8px;}
+.tab{flex:1;padding:7px 4px;border-radius:8px;border:1px solid #1a3a5a;
+    background:#071520;color:#60a5fa;font-size:11px;font-weight:bold;
+    cursor:pointer;text-align:center;transition:all 0.15s;}
+.tab:hover{border-color:#3b82f6;}
 .tab.active{background:#1d4ed8;border-color:#3b82f6;color:white;}
-.card{background:#071520;border:1px solid #1a3a5a;border-radius:12px;padding:14px;width:100%;margin-bottom:8px;}
-.card h4{color:#60a5fa;margin-bottom:8px;font-size:13px;}
+
+/* CARDS */
+.card{background:#071520;border:1px solid #1a3a5a;border-radius:12px;
+    padding:12px;width:100%;margin-bottom:8px;}
+.card h4{color:#60a5fa;margin-bottom:8px;font-size:12px;font-weight:bold;}
+
+/* INPUTS */
 .msg-input{width:100%;background:#0a1f35;border:2px solid #1d4ed8;border-radius:8px;
-    color:white;font-size:13px;padding:10px;outline:none;resize:none;font-family:'Segoe UI',sans-serif;}
+    color:white;font-size:13px;padding:9px;outline:none;resize:none;
+    font-family:'Segoe UI',sans-serif;}
 .msg-input:focus{border-color:#60a5fa;}
 .msg-output{width:100%;background:#051018;border:1px solid #1a3a5a;border-radius:8px;
-    color:#10b981;font-size:13px;padding:10px;min-height:50px;font-family:'Fira Code',monospace;
-    word-break:break-all;line-height:1.6;}
-.cipher-select{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0;}
-.cipher-btn{padding:5px 12px;border-radius:20px;border:1px solid #1a3a5a;
-    background:#071520;color:#60a5fa;font-size:11px;cursor:pointer;}
+    color:#10b981;font-size:13px;padding:9px;min-height:44px;
+    font-family:'Fira Code',monospace;word-break:break-all;line-height:1.6;
+    letter-spacing:1px;}
+
+/* CIPHER BUTTONS */
+.cipher-select{display:flex;gap:4px;flex-wrap:wrap;margin:6px 0;}
+.cipher-btn{padding:5px 10px;border-radius:20px;border:1px solid #1a3a5a;
+    background:#071520;color:#60a5fa;font-size:10px;cursor:pointer;
+    transition:all 0.1s;}
+.cipher-btn:hover{border-color:#3b82f6;}
 .cipher-btn.active{background:#1d4ed8;border-color:#3b82f6;color:white;}
-#msg{font-size:12px;color:#34d399;min-height:18px;margin:4px;text-align:center;font-weight:bold;}
-#fact-box{background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.3);
-    border-radius:8px;padding:8px 12px;margin:4px 0;font-size:11px;color:#93c5fd;
-    display:none;line-height:1.5;width:100%;}
-.challenge-card{background:#071520;border:2px solid #7c3aed;border-radius:12px;
-    padding:14px;width:100%;margin-bottom:8px;}
-.challenge-card h4{color:#a78bfa;margin-bottom:6px;font-size:13px;}
-.encrypted-msg{font-family:'Fira Code',monospace;font-size:14px;color:#fbbf24;
-    letter-spacing:2px;background:#051018;padding:10px;border-radius:6px;
-    word-break:break-all;margin:8px 0;}
-.decode-input{width:100%;background:#0a1f35;border:2px solid #7c3aed;border-radius:8px;
-    color:white;font-size:13px;padding:8px;outline:none;}
-.decode-input:focus{border-color:#a78bfa;}
-.btn{padding:8px 16px;border-radius:8px;border:none;cursor:pointer;
-    font-size:12px;font-weight:bold;color:white;margin:3px;}
+
+/* ACTION BUTTONS */
+.btn{padding:7px 14px;border-radius:8px;border:none;cursor:pointer;
+    font-size:11px;font-weight:bold;color:white;transition:all 0.15s;}
+.btn:hover{filter:brightness(1.2);transform:translateY(-1px);}
 .btn-blue{background:#1d4ed8;}
-.btn-purple{background:#7c3aed;}
 .btn-green{background:#059669;}
-.btn-row{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin:6px 0;}
+.btn-purple{background:#7c3aed;}
+.btn-gold{background:linear-gradient(135deg,#b45309,#d97706);}
+.btn-row{display:flex;gap:5px;flex-wrap:wrap;justify-content:center;margin:6px 0;}
+
+/* CHALLENGE */
+.challenge-card{background:#071520;border:2px solid #7c3aed;border-radius:12px;
+    padding:12px;width:100%;margin-bottom:8px;}
+.level-badge{display:inline-block;
+    background:linear-gradient(135deg,#7c3aed,#1d4ed8);
+    border-radius:20px;padding:3px 10px;font-size:10px;font-weight:bold;margin-bottom:6px;}
+.encrypted-msg{font-family:'Fira Code',monospace;font-size:15px;color:#fbbf24;
+    letter-spacing:3px;background:#051018;padding:10px;border-radius:6px;
+    word-break:break-all;margin:8px 0;text-align:center;line-height:1.8;}
+.decode-input{width:100%;background:#0a1f35;border:2px solid #7c3aed;
+    border-radius:8px;color:white;font-size:13px;padding:8px;outline:none;
+    margin-bottom:6px;}
+.decode-input:focus{border-color:#a78bfa;}
+
+/* PROGRESS DOTS */
+#progress{display:flex;gap:5px;justify-content:center;flex-wrap:wrap;margin:8px 0;}
+.pdot{width:14px;height:14px;border-radius:50%;background:#1e293b;
+    border:2px solid #334155;transition:all 0.3s;cursor:pointer;}
+.pdot.done{background:#10b981;border-color:#10b981;}
+.pdot.current{background:#3b82f6;border-color:#60a5fa;
+    box-shadow:0 0 8px #3b82f6;}
+.pdot.failed{background:#ef4444;border-color:#ef4444;}
+
+/* MESSAGES */
+#msg{font-size:11px;color:#34d399;min-height:18px;margin:4px;
+    text-align:center;font-weight:bold;}
+
+/* KEY MAP */
 .key-display{display:flex;gap:3px;flex-wrap:wrap;margin:6px 0;justify-content:center;}
 .key-pair{background:#0a1f35;border:1px solid #1a3a5a;border-radius:4px;
     padding:3px 5px;font-size:9px;color:#60a5fa;font-family:monospace;}
 .key-pair span{color:#10b981;}
-.level-badge{display:inline-block;background:linear-gradient(135deg,#7c3aed,#1d4ed8);
-    border-radius:20px;padding:3px 12px;font-size:11px;font-weight:bold;margin-bottom:6px;}
-#progress{display:flex;gap:4px;justify-content:center;flex-wrap:wrap;margin:6px 0;}
-.pdot{width:12px;height:12px;border-radius:50%;background:#1e293b;border:1px solid #334155;}
-.pdot.done{background:#10b981;}.pdot.current{background:#3b82f6;}
-.pdot.failed{background:#ef4444;}
+
+/* LEARN TAB */
+.learn-card{background:#071520;border:1px solid #1a3a5a;border-radius:10px;
+    padding:10px;margin-bottom:6px;cursor:pointer;transition:all 0.15s;}
+.learn-card:hover{border-color:#3b82f6;background:#0a1f35;}
+.learn-card h5{color:#60a5fa;font-size:12px;margin-bottom:4px;}
+.learn-card p{font-size:10px;color:#94a3b8;line-height:1.5;}
+.safe-badge{display:inline-block;padding:2px 8px;border-radius:10px;
+    font-size:9px;font-weight:bold;margin-left:6px;}
+.safe-yes{background:#05260f;color:#10b981;border:1px solid #10b981;}
+.safe-no{background:#300;color:#ef4444;border:1px solid #ef4444;}
+
+/* ANIMATIONS */
+@keyframes pop{0%{transform:scale(1);}50%{transform:scale(1.3);}100%{transform:scale(1);}}
+@keyframes shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-5px);}75%{transform:translateX(5px);}}
+@keyframes glow{0%,100%{box-shadow:0 0 5px #10b981;}50%{box-shadow:0 0 20px #10b981,0 0 40px #10b981;}}
+@keyframes slideIn{from{opacity:0;transform:translateY(-10px);}to{opacity:1;transform:translateY(0);}}
+.pop{animation:pop 0.3s ease;}
+.shake{animation:shake 0.4s ease;}
+.glow{animation:glow 1s ease infinite;}
+
+/* CONFETTI */
+.confetti-piece{position:fixed;pointer-events:none;z-index:999;
+    width:8px;height:8px;border-radius:2px;
+    animation:confettiFall linear forwards;}
+@keyframes confettiFall{
+    0%{transform:translateY(-20px) rotate(0deg);opacity:1;}
+    100%{transform:translateY(600px) rotate(720deg);opacity:0;}
+}
+
+/* TOAST */
+#toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);
+    background:#071520;border:2px solid #10b981;border-radius:10px;
+    padding:10px 18px;font-size:12px;color:#10b981;font-weight:bold;
+    z-index:100;opacity:0;transition:opacity 0.3s;pointer-events:none;
+    text-align:center;}
+#toast.show{opacity:1;}
+
+/* MORSE REFERENCE */
+.morse-ref{display:flex;flex-wrap:wrap;gap:3px;margin-top:6px;}
+.morse-char{background:#0a1f35;border:1px solid #1a3a5a;border-radius:4px;
+    padding:2px 4px;font-size:8px;font-family:monospace;color:#60a5fa;}
 </style>
 </head>
 <body>
 <div id="wrap">
+
+<!-- HUD -->
 <div class="hud">
-    <div class="hb">⭐ Score<br><b id="h-score">0</b></div>
+    <div class="hb">⭐ XP<br><b id="h-xp">0</b></div>
     <div class="hb">🏆 Level<br><b id="h-level">1</b>/12</div>
     <div class="hb">🔥 Streak<br><b id="h-streak">0</b></div>
+    <div class="hb">✅ Solved<br><b id="h-solved">0</b></div>
 </div>
 
+<!-- RANK BAR -->
+<div id="rank-bar">
+    <span id="rank-name">🔰 Rookie Agent</span>
+    <div id="rank-xp-bar"><div id="rank-xp-fill"></div></div>
+    <span id="rank-next">0/100 XP</span>
+</div>
+
+<!-- TABS -->
 <div class="tabs">
     <div class="tab active" onclick="showTab('encrypt')">🔐 Encrypt</div>
-    <div class="tab" onclick="showTab('decode')">🕵️ Decode Challenge</div>
+    <div class="tab" onclick="showTab('decode')">🕵️ Decode</div>
+    <div class="tab" onclick="showTab('daily')">🎯 Daily</div>
     <div class="tab" onclick="showTab('learn')">📚 Learn</div>
 </div>
 
+<div id="msg"></div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
 <!-- ENCRYPT TAB -->
+<!-- ═══════════════════════════════════════════════════════════ -->
 <div id="tab-encrypt">
     <div class="card">
-        <h4>Choose a cipher:</h4>
+        <h4>Choose your cipher:</h4>
         <div class="cipher-select">
             <button class="cipher-btn active" onclick="setCipher('substitution',this)">🔄 Substitution</button>
-            <button class="cipher-btn" onclick="setCipher('caesar',this)">⚔️ Caesar (+3)</button>
+            <button class="cipher-btn" onclick="setCipher('caesar',this)">⚔️ Caesar</button>
             <button class="cipher-btn" onclick="setCipher('reverse',this)">↩️ Reverse</button>
             <button class="cipher-btn" onclick="setCipher('morse',this)">📡 Morse</button>
+            <button class="cipher-btn" onclick="setCipher('vigenere',this)">🔑 Vigenère</button>
+            <button class="cipher-btn" onclick="setCipher('binary',this)">01 Binary</button>
         </div>
-        <div id="cipher-info" style="font-size:10px;color:#64748b;margin-bottom:8px;">
-            Each letter maps to a different letter — like a secret code!
-        </div>
+        <div id="cipher-info" style="font-size:10px;color:#64748b;"></div>
     </div>
+
     <div class="card">
         <h4>✏️ Type your message:</h4>
-        <textarea class="msg-input" id="plain-input" rows="3" 
-            placeholder="Type anything here..." 
+        <textarea class="msg-input" id="plain-input" rows="2"
+            placeholder="Type anything here..."
             oninput="encrypt()">Hello World</textarea>
     </div>
-    <div class="card">
+
+    <div class="card" id="output-card">
         <h4>🔐 Encrypted message:</h4>
         <div class="msg-output" id="cipher-output">—</div>
         <div class="btn-row" style="margin-top:8px">
             <button class="btn btn-blue" onclick="copyEncrypted()">📋 Copy</button>
-            <button class="btn btn-purple" onclick="showKeyMap()">🗝️ Show Key</button>
+            <button class="btn btn-purple" onclick="toggleKeyMap()">🗝️ Key</button>
+            <button class="btn btn-green" onclick="addXP(5);showToast('✨ +5 XP for encrypting!')">⭐ Encrypt!</button>
         </div>
-        <div id="key-map" style="display:none;margin-top:6px">
-            <div style="font-size:10px;color:#60a5fa;margin-bottom:4px">Cipher Key:</div>
+        <div id="key-map" style="display:none;margin-top:6px;animation:slideIn 0.3s ease">
+            <div style="font-size:10px;color:#60a5fa;margin-bottom:4px;">Cipher Key:</div>
             <div class="key-display" id="key-display"></div>
         </div>
-    </div>
-</div>
-
-<!-- DECODE TAB -->
-<div id="tab-decode" style="display:none">
-    <div class="challenge-card">
-        <div class="level-badge" id="challenge-badge">Level 1</div>
-        <h4 id="challenge-title">🕵️ Decode this secret message!</h4>
-        <div id="challenge-hint" style="font-size:10px;color:#64748b;margin-bottom:6px;"></div>
-        <div class="encrypted-msg" id="challenge-msg">—</div>
-        <input class="decode-input" id="decode-input" type="text" 
-               placeholder="Type your decoded message here..."
-               onkeydown="if(event.key==='Enter') checkDecode()"/>
-        <div class="btn-row" style="margin-top:8px">
-            <button class="btn btn-purple" onclick="checkDecode()">🔓 Submit Answer</button>
-            <button class="btn btn-blue" onclick="getDecodeHint()">💡 Hint</button>
-            <button class="btn btn-green" id="next-challenge" onclick="nextChallenge()" style="display:none">Next →</button>
+        <div id="morse-ref" style="display:none;margin-top:6px;">
+            <div style="font-size:10px;color:#60a5fa;margin-bottom:4px;">Morse Reference:</div>
+            <div class="morse-ref" id="morse-ref-content"></div>
         </div>
     </div>
-    <div id="progress"></div>
 </div>
 
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- DECODE TAB -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div id="tab-decode" style="display:none">
+    <div id="progress"></div>
+
+    <div class="challenge-card" id="challenge-area">
+        <div class="level-badge" id="challenge-badge">Level 1</div>
+        <div style="font-size:11px;color:#a78bfa;margin-bottom:4px;" id="challenge-cipher-label"></div>
+        <div style="font-size:10px;color:#64748b;margin-bottom:6px;" id="challenge-hint"></div>
+        <div class="encrypted-msg" id="challenge-msg">—</div>
+        <input class="decode-input" id="decode-input" type="text"
+               placeholder="Type your answer here..."
+               onkeydown="if(event.key==='Enter') checkDecode()"/>
+        <div class="btn-row">
+            <button class="btn btn-purple" onclick="checkDecode()">✅ Check Answer</button>
+            <button class="btn btn-blue" onclick="useHint()">💡 Hint (-5 XP)</button>
+            <button class="btn" style="background:#334155" onclick="skipChallenge()">⏭️ Skip</button>
+        </div>
+        <div id="hint-text" style="font-size:10px;color:#fbbf24;margin-top:4px;display:none;"></div>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- DAILY CHALLENGE TAB -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div id="tab-daily" style="display:none">
+    <div class="card">
+        <h4>🎯 Today's Cipher Mission</h4>
+        <div style="font-size:10px;color:#64748b;margin-bottom:8px;">
+            Complete today's special challenge for bonus XP and a badge!
+        </div>
+        <div style="background:#051018;border:2px solid #fbbf24;border-radius:8px;
+            padding:12px;margin-bottom:10px;">
+            <div style="font-size:10px;color:#fbbf24;margin-bottom:4px;">
+                🌟 BONUS MISSION — <span id="daily-cipher-name"></span></div>
+            <div class="encrypted-msg" id="daily-msg" style="font-size:16px;"></div>
+        </div>
+        <input class="decode-input" id="daily-input" type="text"
+               placeholder="Decode the secret message..."
+               style="border-color:#fbbf24;"
+               onkeydown="if(event.key==='Enter') checkDaily()"/>
+        <div class="btn-row" style="margin-top:6px;">
+            <button class="btn btn-gold" onclick="checkDaily()">🌟 Submit Answer</button>
+            <button class="btn btn-blue" onclick="showDailyHint()">💡 Hint</button>
+        </div>
+        <div id="daily-hint-text" style="font-size:10px;color:#fbbf24;margin-top:4px;display:none;"></div>
+        <div id="daily-result" style="margin-top:8px;"></div>
+    </div>
+    <div class="card">
+        <h4>📊 Your Stats</h4>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:10px;color:#94a3b8;">
+            <div>Total XP: <b id="stats-xp" style="color:white">0</b></div>
+            <div>Challenges: <b id="stats-solved" style="color:white">0</b></div>
+            <div>Best Streak: <b id="stats-streak" style="color:white">0</b></div>
+            <div>Rank: <b id="stats-rank" style="color:#fbbf24">Rookie</b></div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
 <!-- LEARN TAB -->
+<!-- ═══════════════════════════════════════════════════════════ -->
 <div id="tab-learn" style="display:none">
     <div class="card">
-        <h4>🔐 Why Simple Ciphers FAIL</h4>
-        <div style="font-size:11px;color:#94a3b8;line-height:1.7">
-            <p style="margin-bottom:6px">⚔️ <b style="color:#ef4444">Substitution Cipher:</b> Easy to crack with frequency analysis. 'E' is the most common letter in English — find the most common encrypted letter and you have your key!</p>
-            <p style="margin-bottom:6px">⚔️ <b style="color:#f59e0b">Caesar Cipher:</b> Only 25 possible keys — a computer tries all of them in milliseconds!</p>
-            <p style="margin-bottom:6px">⚔️ <b style="color:#f97316">RSA Encryption:</b> Was considered unbreakable — until quantum computers. Shor's Algorithm factors RSA keys in seconds!</p>
-            <p style="margin-bottom:6px">✅ <b style="color:#10b981">Kyber (ML-KEM FIPS 203):</b> Uses lattice math — even quantum computers can't break it! The hardest problem in all of cryptography!</p>
-        </div>
+        <h4>📚 Cipher History & Quantum Safety</h4>
     </div>
-    <div class="card">
-        <h4>📊 Cipher Strength Comparison</h4>
-        <div style="font-size:11px">
-            <div style="margin:4px 0">Substitution <div style="background:#ef4444;height:8px;width:10%;border-radius:4px;display:inline-block;margin-left:6px"></div> <span style="color:#ef4444">Weak</span></div>
-            <div style="margin:4px 0">Caesar &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <div style="background:#f59e0b;height:8px;width:15%;border-radius:4px;display:inline-block;margin-left:6px"></div> <span style="color:#f59e0b">Very Weak</span></div>
-            <div style="margin:4px 0">RSA-2048 &nbsp;&nbsp; <div style="background:#3b82f6;height:8px;width:70%;border-radius:4px;display:inline-block;margin-left:6px"></div> <span style="color:#3b82f6">Strong (classical)</span></div>
-            <div style="margin:4px 0">RSA vs Shor <div style="background:#ef4444;height:8px;width:10%;border-radius:4px;display:inline-block;margin-left:6px"></div> <span style="color:#ef4444">Broken by quantum!</span></div>
-            <div style="margin:4px 0">Kyber &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <div style="background:#10b981;height:8px;width:100%;border-radius:4px;display:inline-block;margin-left:6px"></div> <span style="color:#10b981">Quantum-Safe! ✅</span></div>
-        </div>
+    <div class="learn-card" onclick="expandLearn(this)">
+        <h5>⚔️ Caesar Cipher (100 BC) <span class="safe-badge safe-no">❌ NOT Quantum Safe</span></h5>
+        <p>Julius Caesar shifted letters by 3. Easy to break — only 25 possible keys!
+           A quantum computer breaks this in microseconds.</p>
+    </div>
+    <div class="learn-card" onclick="expandLearn(this)">
+        <h5>🔄 Substitution Cipher <span class="safe-badge safe-no">❌ NOT Quantum Safe</span></h5>
+        <p>Each letter maps to another. 400 septillion possible keys but frequency analysis breaks it easily.
+           Quantum computers use Grover's algorithm to search all keys instantly.</p>
+    </div>
+    <div class="learn-card" onclick="expandLearn(this)">
+        <h5>🔑 Vigenère Cipher (1553) <span class="safe-badge safe-no">❌ NOT Quantum Safe</span></h5>
+        <p>Uses a keyword to shift letters differently. Stronger than Caesar but still breakable
+           with the Kasiski test. Quantum computers destroy it.</p>
+    </div>
+    <div class="learn-card" onclick="expandLearn(this)">
+        <h5>📡 Morse Code (1836) <span class="safe-badge safe-no">❌ NOT Quantum Safe</span></h5>
+        <p>Dots and dashes — not even a cipher, just an encoding! Anyone with a chart can read it instantly.</p>
+    </div>
+    <div class="learn-card" onclick="expandLearn(this)" style="border-color:#10b981;">
+        <h5>🔐 ML-KEM Kyber (2024) <span class="safe-badge safe-yes">✅ QUANTUM SAFE!</span></h5>
+        <p>FIPS 203 — Uses lattice math with billions of dimensions. Not even quantum computers
+           using Shor's or Grover's algorithm can break it. This is the future!</p>
+    </div>
+    <div class="learn-card" onclick="expandLearn(this)" style="border-color:#10b981;">
+        <h5>✍️ ML-DSA Dilithium (2024) <span class="safe-badge safe-yes">✅ QUANTUM SAFE!</span></h5>
+        <p>FIPS 204 — Creates digital signatures no quantum computer can forge.
+           Used to sign software, documents, and certificates.</p>
+    </div>
+    <div style="background:#051018;border:1px solid #10b981;border-radius:8px;
+        padding:10px;margin-top:6px;font-size:10px;color:#34d399;text-align:center;">
+        🔐 The ciphers you learned today are for FUN and history.<br>
+        Real encryption uses <b>NIST PQC Standards (FIPS 203-206)</b> — unbreakable even by quantum computers!
     </div>
 </div>
 
-<div id="msg">Type a message to encrypt it!</div>
-<div id="fact-box"></div>
-</div>
+</div><!-- end wrap -->
+
+<!-- TOAST -->
+<div id="toast"></div>
 
 <script>
-let currentCipher = "substitution";
-let challengeLevel = 1;
-let score = 0, streak = 0;
-let challengeResults = [];
-let hintUsed = false;
-let factTimeout = null;
+// ── GAME STATE ────────────────────────────────────────────────────────────────
+let xp=0, level=1, streak=0, solved=0, bestStreak=0;
+let currentCipher='substitution';
+let challengeIdx=0;
+let hintsUsed=0;
+let dailyDone=false;
 
-const SUB_MAP = {
-    a:"q",b:"w",c:"e",d:"r",e:"t",f:"y",g:"u",h:"i",i:"o",j:"p",
-    k:"a",l:"s",m:"d",n:"f",o:"g",p:"h",q:"j",r:"k",s:"l",t:"z",
-    u:"x",v:"c",w:"v",x:"b",y:"n",z:"m"
-};
-const REV_SUB = Object.fromEntries(Object.entries(SUB_MAP).map(([k,v])=>[v,k]));
-
-const CHALLENGES = [
-    {level:1, cipher:"substitution", plain:"HELLO",      hint:"5 letters, a greeting!"},
-    {level:2, cipher:"caesar",       plain:"CAT",         hint:"A furry animal with 3 letters"},
-    {level:3, cipher:"substitution", plain:"QUANTUM",     hint:"Related to physics and computing!"},
-    {level:4, cipher:"reverse",      plain:"SECRET",      hint:"Something hidden — 6 letters"},
-    {level:5, cipher:"caesar",       plain:"KYBER",       hint:"A NIST post-quantum algorithm!"},
-    {level:6, cipher:"substitution", plain:"ENCRYPT",     hint:"What you do to a secret message"},
-    {level:7, cipher:"reverse",      plain:"LATTICE",     hint:"The math behind Kyber — 7 letters"},
-    {level:8, cipher:"caesar",       plain:"QUANTUM SAFE",hint:"Two words: describes Kyber"},
-    {level:9, cipher:"substitution", plain:"NIST FIPS",   hint:"The organization that standardized PQC"},
-    {level:10,cipher:"reverse",      plain:"SHOR ATTACK", hint:"Two words: how quantum breaks RSA"},
-    {level:11,cipher:"caesar",       plain:"POST QUANTUM",hint:"Two words: the new era of cryptography"},
-    {level:12,cipher:"substitution", plain:"KYBER WINS",  hint:"Two words: the quantum-safe future!"},
+// ── RANKS ─────────────────────────────────────────────────────────────────────
+const RANKS=[
+    {name:'🔰 Rookie Agent',   xp:0},
+    {name:'🕵️ Junior Spy',    xp:50},
+    {name:'🔐 Cipher Cadet',  xp:120},
+    {name:'⚡ Code Breaker',  xp:220},
+    {name:'🌟 Crypto Expert', xp:350},
+    {name:'🏆 Master Agent',  xp:500},
+    {name:'💎 Quantum Guard', xp:700},
 ];
 
-const CIPHER_INFO = {
-    substitution: "Each letter maps to a different letter — like a secret code!",
-    caesar: "Shift each letter 3 positions forward in the alphabet (A→D, B→E...)",
-    reverse: "Reverse the entire message!",
-    morse: "Convert to dots and dashes (Morse code)",
+// ── SUBSTITUTION KEY ──────────────────────────────────────────────────────────
+const SUB_KEY = (function(){
+    const alpha='ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+    const shuffled=[...alpha].sort(()=>0.5-Math.random());
+    const key={};
+    alpha.forEach((c,i)=>{ key[c]=shuffled[i]; key[c.toLowerCase()]=shuffled[i].toLowerCase(); });
+    return key;
+})();
+
+// ── VIGENERE KEY ──────────────────────────────────────────────────────────────
+const VIG_KEY='KYBER';
+
+// ── MORSE MAP ─────────────────────────────────────────────────────────────────
+const MORSE={
+    A:'.-',B:'-...',C:'-.-.',D:'-..', E:'.',F:'..-.',G:'--.',H:'....',
+    I:'..',J:'.---',K:'-.-',L:'.-..',M:'--',N:'-.',O:'---',P:'.--.',
+    Q:'--.-',R:'.-.',S:'...',T:'-',U:'..-',V:'...-',W:'.--',X:'-..-',
+    Y:'-.--',Z:'--..',
+    '0':'-----','1':'.----','2':'..---','3':'...--','4':'....-',
+    '5':'.....','6':'-....','7':'--...','8':'---..','9':'----.',
+    ' ':'/'
 };
 
-function applySubstitution(text){
-    return text.split("").map(c=>{
-        if(/[a-z]/.test(c)) return SUB_MAP[c]||c;
-        if(/[A-Z]/.test(c)) return (SUB_MAP[c.toLowerCase()]||c).toUpperCase();
+// ── CHALLENGES ────────────────────────────────────────────────────────────────
+const CHALLENGES=[
+    {cipher:'caesar',  msg:'KHOOR',         answer:'HELLO',      hint:'Shift each letter BACK by 3',       pts:10, label:'Caesar Cipher'},
+    {cipher:'reverse', msg:'TERCES',         answer:'SECRET',     hint:'Read the message backwards!',       pts:10, label:'Reverse Cipher'},
+    {cipher:'caesar',  msg:'ZRUOG',          answer:'WORLD',      hint:'Caesar shift back 3 letters',       pts:15, label:'Caesar Cipher'},
+    {cipher:'morse',   msg:'--. --- ---',    answer:'GOO',        hint:'G=--. O=---',                       pts:20, label:'Morse Code'},
+    {cipher:'caesar',  msg:'TXDQWXP',        answer:'QUANTUM',    hint:'Shift back 3 — Q becomes N... wait, forward 3!', pts:20, label:'Caesar Cipher'},
+    {cipher:'reverse', msg:'REPEHC',         answer:'CIPHER',     hint:'Reverse the letters!',              pts:20, label:'Reverse Cipher'},
+    {cipher:'morse',   msg:'.- -... -.-.', answer:'ABC',        hint:'A=.- B=-... C=-.-.',                pts:25, label:'Morse Code'},
+    {cipher:'caesar',  msg:'FUBSWR',         answer:'CRYPTO',     hint:'Caesar shift back 3',               pts:25, label:'Caesar Cipher'},
+    {cipher:'binary',  msg:'01001000 01001001', answer:'HI',     hint:'H=72=01001000 I=73=01001001',       pts:30, label:'Binary Code'},
+    {cipher:'reverse', msg:'RETAUQ',         answer:'QUATER',     hint:'Backwards!',                        pts:30, label:'Reverse Cipher'},
+    {cipher:'caesar',  msg:'ODLOKD',         answer:'LAILE',      hint:'Wait — shift back 3 carefully!',   pts:35, label:'Caesar Cipher'},
+    {cipher:'morse',   msg:'.-- --- .--',   answer:'WOW',        hint:'W=.-- O=---',                       pts:40, label:'Morse Code'},
+];
+
+// ── DAILY CHALLENGE ───────────────────────────────────────────────────────────
+const DAILY={
+    cipher:'substitution',
+    msg:'QUANTUM VAULT ACADEMY',
+    answer:'QUANTUM VAULT ACADEMY',
+    hint:'This one is NOT encrypted — some messages are already safe!',
+    pts:50,
+    label:'Special Mission'
+};
+
+// ── CIPHER FUNCTIONS ─────────────────────────────────────────────────────────
+function caesarEncrypt(text, shift){
+    return text.split('').map(c=>{
+        if(c>='A'&&c<='Z') return String.fromCharCode((c.charCodeAt(0)-65+shift)%26+65);
+        if(c>='a'&&c<='z') return String.fromCharCode((c.charCodeAt(0)-97+shift)%26+97);
         return c;
-    }).join("");
+    }).join('');
 }
 
-function applyCaesar(text, shift=3){
-    return text.split("").map(c=>{
-        if(/[a-zA-Z]/.test(c)){
-            const base=c<="Z"?65:97;
-            return String.fromCharCode((c.charCodeAt(0)-base+shift+26)%26+base);
-        }
-        return c;
-    }).join("");
+function substitutionEncrypt(text){
+    return text.split('').map(c=>SUB_KEY[c]||c).join('');
 }
 
-function applyReverse(text){ return text.split("").reverse().join(""); }
+function reverseEncrypt(text){ return text.split('').reverse().join(''); }
 
-function applyMorse(text){
-    const M={"A":".-","B":"-...","C":"-.-.","D":"-..","E":".","F":"..-.","G":"--.","H":"....","I":"..","J":".---","K":"-.-","L":".-..","M":"--","N":"-.","O":"---","P":".--.","Q":"--.-","R":".-.","S":"...","T":"-","U":"..-","V":"...-","W":".--","X":"-..-","Y":"-.--","Z":"--.."," ":"/"};
-    return text.toUpperCase().split("").map(c=>M[c]||c).join(" ");
+function morseEncrypt(text){
+    return text.toUpperCase().split('').map(c=>MORSE[c]||c).join(' ');
 }
 
-function applycipher(text, cipher){
-    switch(cipher){
-        case "substitution": return applySubstitution(text);
-        case "caesar": return applyCaesar(text);
-        case "reverse": return applyReverse(text);
-        case "morse": return applyMorse(text);
-        default: return text;
+function vigenereEncrypt(text){
+    let result='', ki=0;
+    for(let c of text){
+        if(c.match(/[a-zA-Z]/)){
+            const shift=VIG_KEY.charCodeAt(ki%VIG_KEY.length)-65;
+            const base=c>='a'?97:65;
+            result+=String.fromCharCode((c.toUpperCase().charCodeAt(0)-65+shift)%26+65);
+            ki++;
+        } else result+=c;
     }
+    return result;
 }
 
-function encryptChallenge(plain, cipher){ return applycipher(plain, cipher); }
-
-function setCipher(cipher, btn){
-    currentCipher = cipher;
-    document.querySelectorAll(".cipher-btn").forEach(b=>b.classList.remove("active"));
-    btn.classList.add("active");
-    document.getElementById("cipher-info").textContent = CIPHER_INFO[cipher];
-    encrypt();
+function binaryEncrypt(text){
+    return text.split('').map(c=>c.charCodeAt(0).toString(2).padStart(8,'0')).join(' ');
 }
 
 function encrypt(){
-    const input = document.getElementById("plain-input").value;
-    if(!input){document.getElementById("cipher-output").textContent="—";return;}
-    const encrypted = applycipher(input, currentCipher);
-    document.getElementById("cipher-output").textContent = encrypted;
+    const text=document.getElementById('plain-input').value;
+    let result='';
+    switch(currentCipher){
+        case 'caesar':      result=caesarEncrypt(text,3); break;
+        case 'substitution':result=substitutionEncrypt(text); break;
+        case 'reverse':     result=reverseEncrypt(text); break;
+        case 'morse':       result=morseEncrypt(text); break;
+        case 'vigenere':    result=vigenereEncrypt(text); break;
+        case 'binary':      result=binaryEncrypt(text); break;
+    }
+    const el=document.getElementById('cipher-output');
+    el.textContent=result||'—';
+    el.classList.add('pop');
+    setTimeout(()=>el.classList.remove('pop'),300);
+}
+
+// ── CIPHER SELECTION ─────────────────────────────────────────────────────────
+const CIPHER_INFO={
+    substitution:'🔄 Each letter swaps to a different letter using a secret key. 400 septillion possibilities!',
+    caesar:'⚔️ Shift every letter by 3. Julius Caesar used this in 100 BC!',
+    reverse:'↩️ Write your message backwards. Simple but surprising!',
+    morse:'📡 Dots and dashes — invented in 1836 for telegraph machines!',
+    vigenere:'🔑 Uses the keyword KYBER to shift each letter differently. Stronger than Caesar!',
+    binary:'01 Every character becomes 8 bits. How computers actually store text!',
+};
+
+function setCipher(c, btn){
+    currentCipher=c;
+    document.querySelectorAll('.cipher-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('cipher-info').textContent=CIPHER_INFO[c]||'';
+    document.getElementById('key-map').style.display='none';
+    document.getElementById('morse-ref').style.display='none';
+    encrypt();
+    addXP(2);
+    showToast('🔐 Switched to '+c+' cipher! +2 XP');
+}
+
+function toggleKeyMap(){
+    if(currentCipher==='morse'){
+        const ref=document.getElementById('morse-ref');
+        ref.style.display=ref.style.display==='none'?'block':'none';
+        // Build morse reference
+        const content=document.getElementById('morse-ref-content');
+        content.innerHTML='';
+        'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').forEach(c=>{
+            const d=document.createElement('div');
+            d.className='morse-char';
+            d.textContent=c+':'+MORSE[c];
+            content.appendChild(d);
+        });
+    } else {
+        const km=document.getElementById('key-map');
+        km.style.display=km.style.display==='none'?'block':'none';
+        // Build key map
+        const kd=document.getElementById('key-display');
+        kd.innerHTML='';
+        if(currentCipher==='substitution'){
+            'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').forEach(c=>{
+                const d=document.createElement('div');
+                d.className='key-pair';
+                d.innerHTML=c+'→<span>'+SUB_KEY[c]+'</span>';
+                kd.appendChild(d);
+            });
+        } else if(currentCipher==='caesar'){
+            'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').forEach((c,i)=>{
+                const shifted=String.fromCharCode((i+3)%26+65);
+                const d=document.createElement('div');
+                d.className='key-pair';
+                d.innerHTML=c+'→<span>'+shifted+'</span>';
+                kd.appendChild(d);
+            });
+        } else if(currentCipher==='vigenere'){
+            const d=document.createElement('div');
+            d.className='key-pair';
+            d.innerHTML='Key: <span>'+VIG_KEY+'</span>';
+            kd.appendChild(d);
+        }
+    }
 }
 
 function copyEncrypted(){
-    const text = document.getElementById("cipher-output").textContent;
+    const text=document.getElementById('cipher-output').textContent;
     if(navigator.clipboard) navigator.clipboard.writeText(text);
-    setMsg("📋 Copied to clipboard!","#10b981");
+    showToast('📋 Copied to clipboard!');
+    addXP(3);
 }
 
-function showKeyMap(){
-    const km = document.getElementById("key-map");
-    km.style.display = km.style.display==="none"?"block":"none";
-    const kd = document.getElementById("key-display");
-    kd.innerHTML = Object.entries(SUB_MAP).map(([k,v])=>
-        `<div class="key-pair">${k.toUpperCase()}→<span>${v.toUpperCase()}</span></div>`
-    ).join("");
-}
-
-function showTab(tab){
-    ["encrypt","decode","learn"].forEach(t=>{
-        document.getElementById("tab-"+t).style.display=t===tab?"block":"none";
-    });
-    document.querySelectorAll(".tab").forEach((t,i)=>{
-        t.classList.toggle("active",["encrypt","decode","learn"][i]===tab);
-    });
-    if(tab==="decode") loadChallenge();
-}
-
+// ── DECODE CHALLENGES ─────────────────────────────────────────────────────────
 function loadChallenge(){
-    const ch = CHALLENGES[Math.min(challengeLevel-1, CHALLENGES.length-1)];
-    const encrypted = encryptChallenge(ch.plain, ch.cipher);
-    document.getElementById("challenge-badge").textContent="Level "+challengeLevel+" — "+ch.cipher.charAt(0).toUpperCase()+ch.cipher.slice(1)+" Cipher";
-    document.getElementById("challenge-title").textContent="🕵️ Decode this "+ch.cipher+" message!";
-    document.getElementById("challenge-hint").textContent="Cipher: "+ch.cipher+" | Hint available if stuck";
-    document.getElementById("challenge-msg").textContent=encrypted;
-    document.getElementById("decode-input").value="";
-    document.getElementById("next-challenge").style.display="none";
-    hintUsed=false;
-    buildProgress();
-    updateHUD();
+    if(challengeIdx>=CHALLENGES.length){
+        document.getElementById('challenge-area').innerHTML=
+            '<div style="text-align:center;padding:20px;">'+
+            '<div style="font-size:3rem">🏆</div>'+
+            '<h3 style="color:#fbbf24;margin:8px 0">All Challenges Complete!</h3>'+
+            '<p style="color:#94a3b8;font-size:11px">You decoded all '+CHALLENGES.length+' messages!</p>'+
+            '<button class="btn btn-gold" style="margin-top:10px" onclick="resetChallenges()">🔄 Play Again</button>'+
+            '</div>';
+        confetti();
+        return;
+    }
+    const ch=CHALLENGES[challengeIdx];
+    document.getElementById('challenge-badge').textContent='Level '+(challengeIdx+1);
+    document.getElementById('challenge-cipher-label').textContent='Cipher: '+ch.label;
+    document.getElementById('challenge-hint').textContent='';
+    document.getElementById('challenge-msg').textContent=ch.msg;
+    document.getElementById('decode-input').value='';
+    document.getElementById('hint-text').style.display='none';
+    document.getElementById('hint-text').textContent='';
+    hintsUsed=0;
+    buildProgressDots();
+}
+
+function buildProgressDots(){
+    const p=document.getElementById('progress');
+    p.innerHTML='';
+    CHALLENGES.forEach((_,i)=>{
+        const d=document.createElement('div');
+        d.className='pdot'+(i<challengeIdx?' done':i===challengeIdx?' current':'');
+        d.title='Level '+(i+1);
+        p.appendChild(d);
+    });
 }
 
 function checkDecode(){
-    const answer = document.getElementById("decode-input").value.trim().toUpperCase();
-    const ch = CHALLENGES[Math.min(challengeLevel-1, CHALLENGES.length-1)];
-    if(answer === ch.plain.toUpperCase()){
-        const pts = hintUsed?50:100*(challengeLevel);
-        score += pts;
-        streak++;
-        challengeResults[challengeLevel-1]="done";
-        buildProgress();
-        updateHUD();
-        setMsg("🎉 CORRECT! +"+pts+" pts"+(streak>1?" 🔥×"+streak:"")+(hintUsed?" (hint used)":""),"#10b981");
-        showFact("✅ "+getCipherFact(ch.cipher),"#10b981");
-        document.getElementById("next-challenge").style.display="inline-block";
+    const input=document.getElementById('decode-input').value.trim().toUpperCase();
+    const ch=CHALLENGES[challengeIdx];
+    if(input===ch.answer.toUpperCase()){
+        // Correct!
+        streak++; solved++;
+        bestStreak=Math.max(bestStreak,streak);
+        const bonus=streak>=3?10:0;
+        addXP(ch.pts+bonus);
+        showToast('🎉 CORRECT! +'+(ch.pts+bonus)+' XP'+(bonus?' (Streak Bonus!)':''));
+        setMsg('🎉 Correct! '+(streak>=3?'🔥 '+streak+' streak! Bonus XP!':''));
+        document.getElementById('decode-input').classList.add('glow');
+        setTimeout(()=>{
+            document.getElementById('decode-input').classList.remove('glow');
+            challengeIdx++;
+            loadChallenge();
+        },1200);
+        if(streak===3) showToast('🔥 3 STREAK! Bonus XP unlocked!');
+        if(streak===5) confetti();
     } else {
+        // Wrong
         streak=0;
-        score=Math.max(0,score-10);
+        document.getElementById('decode-input').classList.add('shake');
+        setTimeout(()=>document.getElementById('decode-input').classList.remove('shake'),400);
+        setMsg('❌ Not quite! Try again...');
         updateHUD();
-        setMsg("❌ Not quite! The message is: "+ch.plain.length+" letters. Try again!","#ef4444");
     }
-}
-
-function getDecodeHint(){
-    const ch = CHALLENGES[Math.min(challengeLevel-1, CHALLENGES.length-1)];
-    hintUsed=true;
-    setMsg("💡 Hint: "+ch.hint+" | Cipher: "+ch.cipher,"#a78bfa");
-    score=Math.max(0,score-25);
     updateHUD();
 }
 
-function nextChallenge(){
-    if(challengeLevel>=12){
-        setMsg("🏆 ALL 12 CHALLENGES COMPLETE! You are a Cipher Master! Score: "+score,"#fbbf24");
-        return;
-    }
-    challengeLevel++;
+function useHint(){
+    const ch=CHALLENGES[challengeIdx];
+    hintsUsed++;
+    xp=Math.max(0,xp-5);
+    document.getElementById('hint-text').textContent='💡 Hint: '+ch.hint;
+    document.getElementById('hint-text').style.display='block';
+    showToast('💡 Hint used! -5 XP');
+    updateHUD();
+}
+
+function skipChallenge(){
+    streak=0;
+    challengeIdx++;
+    loadChallenge();
+    updateHUD();
+}
+
+function resetChallenges(){
+    challengeIdx=0;
     loadChallenge();
 }
 
-function getCipherFact(cipher){
-    const facts={
-        substitution:"Substitution ciphers were used by Julius Caesar 2,000 years ago — but frequency analysis breaks them in minutes!",
-        caesar:"Caesar cipher has only 25 possible keys — a quantum computer could try all of them in nanoseconds!",
-        reverse:"Simple reversals are the weakest cipher — but they teach the concept of transformation!",
-        morse:"Morse code is not encryption — it's an encoding. Anyone with a chart can decode it!",
-    };
-    return facts[cipher]||"Even complex classical ciphers fail against quantum computers — that's why we need Kyber!";
+// ── DAILY CHALLENGE ───────────────────────────────────────────────────────────
+function setupDaily(){
+    document.getElementById('daily-cipher-name').textContent=DAILY.label;
+    document.getElementById('daily-msg').textContent=DAILY.msg;
 }
 
-function buildProgress(){
-    let html="";
-    for(let i=0;i<12;i++){
-        let cls="pdot";
-        if(i<challengeResults.length) cls+=" "+(challengeResults[i]==="done"?"done":"failed");
-        else if(i===challengeLevel-1) cls+=" current";
-        html+=`<div class="${cls}"></div>`;
+function checkDaily(){
+    if(dailyDone){ showToast('✅ Daily challenge already completed!'); return; }
+    const input=document.getElementById('daily-input').value.trim().toUpperCase();
+    const result=document.getElementById('daily-result');
+    if(input===DAILY.answer.toUpperCase()){
+        dailyDone=true;
+        addXP(DAILY.pts);
+        result.innerHTML='<div style="text-align:center;padding:10px;">'+
+            '<div style="font-size:2rem">🌟</div>'+
+            '<div style="color:#fbbf24;font-weight:bold;font-size:13px">Daily Mission Complete!</div>'+
+            '<div style="color:#94a3b8;font-size:10px;margin-top:4px">+'+DAILY.pts+' Bonus XP!</div>'+
+            '</div>';
+        confetti();
+        showToast('🌟 Daily Mission Complete! +'+DAILY.pts+' XP!');
+    } else {
+        result.innerHTML='<div style="color:#ef4444;font-size:11px;text-align:center">Not quite! Keep trying!</div>';
+        streak=0; updateHUD();
     }
-    document.getElementById("progress").innerHTML=html;
+}
+
+function showDailyHint(){
+    document.getElementById('daily-hint-text').textContent='💡 '+DAILY.hint;
+    document.getElementById('daily-hint-text').style.display='block';
+}
+
+// ── LEARN TAB ─────────────────────────────────────────────────────────────────
+function expandLearn(el){
+    const p=el.querySelector('p');
+    p.style.display=p.style.display==='none'?'block':'none';
+    addXP(1);
+}
+
+// ── XP & RANKS ────────────────────────────────────────────────────────────────
+function addXP(amount){
+    xp+=amount;
+    // Check level up
+    const newLevel=CHALLENGES.filter((_,i)=>i<challengeIdx).length+1;
+    if(newLevel>level){
+        level=newLevel;
+        showToast('🎉 LEVEL UP! Level '+level+'!');
+        confetti();
+    }
+    updateHUD();
+}
+
+function getRank(){
+    let rank=RANKS[0];
+    for(const r of RANKS){ if(xp>=r.xp) rank=r; }
+    return rank;
+}
+
+function getNextRank(){
+    for(const r of RANKS){ if(r.xp>xp) return r; }
+    return null;
 }
 
 function updateHUD(){
-    document.getElementById("h-score").textContent=score;
-    document.getElementById("h-level").textContent=challengeLevel;
-    document.getElementById("h-streak").textContent=streak;
+    document.getElementById('h-xp').textContent=xp;
+    document.getElementById('h-level').textContent=Math.min(challengeIdx+1,12);
+    document.getElementById('h-streak').textContent=streak;
+    document.getElementById('h-solved').textContent=solved;
+
+    const rank=getRank();
+    const next=getNextRank();
+    document.getElementById('rank-name').textContent=rank.name;
+    document.getElementById('stats-rank').textContent=rank.name;
+    document.getElementById('stats-xp').textContent=xp;
+    document.getElementById('stats-solved').textContent=solved;
+    document.getElementById('stats-streak').textContent=bestStreak;
+
+    if(next){
+        const pct=Math.min(100,((xp-rank.xp)/(next.xp-rank.xp))*100);
+        document.getElementById('rank-xp-fill').style.width=pct+'%';
+        document.getElementById('rank-next').textContent=xp+'/'+next.xp+' XP';
+    } else {
+        document.getElementById('rank-xp-fill').style.width='100%';
+        document.getElementById('rank-next').textContent='MAX RANK! 💎';
+    }
 }
 
-function setMsg(m,c){
-    let el=document.getElementById("msg");
-    el.textContent=m; el.style.color=c||"#34d399";
+function setMsg(msg){ document.getElementById('msg').textContent=msg; }
+
+// ── TOAST ─────────────────────────────────────────────────────────────────────
+let toastTimer=null;
+function showToast(msg){
+    const el=document.getElementById('toast');
+    el.textContent=msg; el.classList.add('show');
+    if(toastTimer) clearTimeout(toastTimer);
+    toastTimer=setTimeout(()=>el.classList.remove('show'),2500);
 }
 
-function showFact(text,color){
-    let el=document.getElementById("fact-box");
-    el.textContent=text; el.style.display="block";
-    el.style.borderColor=(color||"#3b82f6")+"50";
-    if(factTimeout) clearTimeout(factTimeout);
-    factTimeout=setTimeout(()=>el.style.display="none",6000);
+// ── CONFETTI ──────────────────────────────────────────────────────────────────
+function confetti(){
+    const colors=['#fbbf24','#10b981','#3b82f6','#8b5cf6','#ef4444','#f97316'];
+    for(let i=0;i<30;i++){
+        setTimeout(()=>{
+            const el=document.createElement('div');
+            el.className='confetti-piece';
+            el.style.left=Math.random()*100+'vw';
+            el.style.background=colors[Math.floor(Math.random()*colors.length)];
+            el.style.animationDuration=(1+Math.random()*2)+'s';
+            el.style.animationDelay=Math.random()*0.5+'s';
+            el.style.borderRadius=Math.random()>0.5?'50%':'2px';
+            document.body.appendChild(el);
+            setTimeout(()=>el.remove(),3000);
+        },i*50);
+    }
 }
 
-// Init
+// ── TABS ──────────────────────────────────────────────────────────────────────
+function showTab(tab){
+    ['encrypt','decode','daily','learn'].forEach(t=>{
+        document.getElementById('tab-'+t).style.display=t===tab?'block':'none';
+    });
+    document.querySelectorAll('.tab').forEach((el,i)=>{
+        el.classList.toggle('active',['encrypt','decode','daily','learn'][i]===tab);
+    });
+    if(tab==='decode') loadChallenge();
+    if(tab==='daily') setupDaily();
+}
+
+// ── INIT ─────────────────────────────────────────────────────────────────────
+setCipher('substitution', document.querySelector('.cipher-btn'));
 encrypt();
-buildProgress();
+updateHUD();
+buildProgressDots();
+setMsg('🔐 Type a message above to encrypt it — or try the Decode tab!');
 </script>
 </body>
 </html>
-""", height=750)
-
+""", height=720)
 
 def render_ctf_game():
     """Free game: QuantumVault CTF v2 — Hacker terminal UI with dramatic story, animations, real challenges."""
