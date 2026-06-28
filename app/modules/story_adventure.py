@@ -137,6 +137,101 @@ def get_fallback_story(hero_name, monster_name):
         "**What we learned:** " + h["name"] + " (" + h["fips"] + ") uses " + h["power"] + " to protect us!"
     )
 
+
+def render_storybook(story_text, hero_emoji, monster_emoji):
+    """Renders story text inside a fairy tale book UI."""
+    import streamlit.components.v1 as components
+
+    clean = (story_text
+             .replace("\\", "\\\\")
+             .replace("`", "'")
+             .replace("\n", "<br>")
+             .replace('"', "'")
+    )
+
+    components.html("""
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:transparent;font-family:Georgia,serif;}
+#book-wrap{display:flex;justify-content:center;align-items:flex-start;padding:16px 8px;perspective:1500px;}
+#book{display:flex;width:100%;max-width:660px;min-height:380px;position:relative;filter:drop-shadow(0 12px 30px rgba(0,0,0,0.45));}
+#page-left{flex:1;background:linear-gradient(to right,#f5e6c8,#fdf3e3);border-radius:8px 0 0 8px;padding:26px 22px 26px 28px;position:relative;border:1px solid #c4a35a;border-right:none;min-height:380px;overflow:hidden;}
+#page-right{flex:1;background:linear-gradient(to left,#f5e6c8,#fdf3e3);border-radius:0 8px 8px 0;padding:26px 28px 26px 22px;position:relative;border:1px solid #c4a35a;border-left:none;min-height:380px;overflow:hidden;}
+#spine{width:22px;background:linear-gradient(to bottom,#7a5c10 0%,#c4a35a 20%,#f5d278 50%,#c4a35a 80%,#7a5c10 100%);box-shadow:inset -2px 0 4px rgba(0,0,0,0.3),inset 2px 0 4px rgba(0,0,0,0.3);position:relative;z-index:10;}
+#page-left::before,#page-right::before{content:'';position:absolute;inset:8px;border:1.5px solid #c4a35a60;border-radius:4px;pointer-events:none;}
+.page-num{text-align:center;font-size:10px;color:#8b6914;margin-bottom:6px;font-style:italic;letter-spacing:1px;}
+.stars{text-align:center;font-size:11px;color:#8b6914;margin-bottom:6px;letter-spacing:3px;}
+.chapter-title{text-align:center;font-size:14px;font-weight:bold;color:#5c3d0e;margin-bottom:8px;line-height:1.4;}
+.divider{text-align:center;color:#8b6914;font-size:14px;margin:6px 0;letter-spacing:3px;}
+.hero-badge{text-align:center;font-size:1.8rem;margin:6px 0 2px;}
+.hero-name{text-align:center;font-size:10px;color:#8b6914;font-style:italic;letter-spacing:1px;margin-bottom:10px;}
+.story-text{font-size:13px;line-height:1.8;color:#2c1810;text-align:justify;}
+.drop-cap{float:left;font-size:46px;line-height:0.75;padding-right:5px;padding-top:6px;color:#8b6914;font-weight:bold;}
+.end-div{text-align:center;color:#8b6914;font-size:13px;margin-top:10px;letter-spacing:3px;}
+</style>
+</head>
+<body>
+<div id="book-wrap">
+  <div id="book">
+    <div id="page-left">
+      <div class="page-num">~ Page 1 ~</div>
+      <div class="stars">✦ ✦ ✦</div>
+      <div class="chapter-title" id="story-title">Loading...</div>
+      <div class="divider">~ ❧ ~</div>
+      <div class="hero-badge">""" + hero_emoji + " ⚔️ " + monster_emoji + """</div>
+      <div class="hero-name">A Quantum Monster Adventure</div>
+      <div class="story-text" id="story-left"></div>
+    </div>
+    <div id="spine"></div>
+    <div id="page-right">
+      <div class="page-num">~ Page 2 ~</div>
+      <div class="stars">✦ ✦ ✦</div>
+      <div class="story-text" id="story-right"></div>
+      <div class="end-div" id="end-div" style="display:none">~ The End ✦ ~</div>
+    </div>
+  </div>
+</div>
+<script>
+var fullStory = """" + clean + """";
+function parseStory(text) {
+    var lines = text.split('<br>').filter(function(l){return l.trim();});
+    var title = '';
+    var body = [];
+    for (var i=0;i<lines.length;i++) {
+        var line = lines[i].trim();
+        if (line.indexOf('#') === 0) { title = line.replace(/^#+/,'').trim(); }
+        else if (line) { body.push(line); }
+    }
+    return {title:title, body:body};
+}
+function renderBook() {
+    var parsed = parseStory(fullStory);
+    document.getElementById('story-title').innerHTML = parsed.title || 'A Quantum Adventure';
+    var mid = Math.ceil(parsed.body.length / 2);
+    var leftLines = parsed.body.slice(0, mid);
+    var rightLines = parsed.body.slice(mid);
+    var leftHTML = '';
+    leftLines.forEach(function(line, i) {
+        if (i===0 && line.length>0) {
+            leftHTML += '<span class="drop-cap">'+line.charAt(0)+'</span>'+line.slice(1)+'<br><br>';
+        } else { leftHTML += line+'<br><br>'; }
+    });
+    document.getElementById('story-left').innerHTML = leftHTML;
+    var rightHTML = '';
+    rightLines.forEach(function(line){rightHTML += line+'<br><br>';});
+    document.getElementById('story-right').innerHTML = rightHTML;
+    document.getElementById('end-div').style.display='block';
+}
+renderBook();
+</script>
+</body>
+</html>
+""", height=460, scrolling=True)
+
+
 def render_story_adventure():
     """AI-powered interactive storybook for K-6 students."""
 
@@ -267,12 +362,10 @@ def render_story_adventure():
     # Display story
     if st.session_state.current_story:
         st.markdown("---")
-        st.markdown(
-            "<div style='background:#071520;border:2px solid #1d4ed8;"
-            "border-radius:14px;padding:20px 24px;font-size:15px;line-height:1.9;'>"
-            + st.session_state.current_story.replace("\n", "<br>") +
-            "</div>",
-            unsafe_allow_html=True
+        render_storybook(
+            st.session_state.current_story,
+            hero["emoji"],
+            monster["emoji"]
         )
 
         st.markdown("")
