@@ -633,6 +633,8 @@ def main():
         render_network_defender()
     elif "Secret Message" in level:
         render_secret_message()
+    elif "Quantum Sandbox" in level:
+        render_quantum_sandbox()
     elif "Falling Blocks" in level:
         render_falling_blocks()
     elif "CTF Challenge" in level:
