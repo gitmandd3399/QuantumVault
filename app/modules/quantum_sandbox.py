@@ -265,7 +265,31 @@ function updateMob(mob, groundY) {
     mob.y = mob.points.body.y;
 }
 
+function maybeDetachLimb(mob, force) {
+    // What this does: if hit hard enough, permanently remove ONE outer-limb
+    // stick constraint so that hand/foot floats free as debris with sparks.
+    // Kid-friendly version of Melon's dismemberment - no gore, just sparks!
+    if (force < 9 || mob.sticks.length <= 7) return; // keep core skeleton intact
+    const detachable = ['lhand','rhand','lfoot','rfoot'];
+    const stillAttached = mob.sticks.filter(s => detachable.includes(s.a) || detachable.includes(s.b));
+    if (!stillAttached.length) return;
+    if (Math.random() > 0.15) return; // don't detach every single hit
+    const victim = stillAttached[Math.floor(Math.random()*stillAttached.length)];
+    mob.sticks = mob.sticks.filter(s => s !== victim);
+    const limbKey = detachable.includes(victim.a) ? victim.a : victim.b;
+    const pt = mob.points[limbKey];
+    if (pt) {
+        for (let i=0;i<10;i++){
+            const a=Math.random()*Math.PI*2, sp=2+Math.random()*4;
+            particles.push({x:pt.x,y:pt.y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp-2,
+                r:2+Math.random()*2,alpha:1,color:'#fbbf24'});
+        }
+        showToast('⚡ Limb detached! Quantum Bot still functional.');
+    }
+}
+
 function applyImpulseToMob(mob, srcX, srcY, force) {
+    maybeDetachLimb(mob, force);
     Object.values(mob.points).forEach(p => {
         const dx = p.x - srcX, dy = p.y - srcY;
         const d = Math.sqrt(dx*dx+dy*dy) || 1;
@@ -318,7 +342,8 @@ buildPanel();
 
 function spawnAt(x,y,item){
     if (item.type==='mob'){
-        mobs.push(createMob(x,y,item));
+        const varied = Object.assign({}, item, {scale:(item.scale||1)*(0.85+Math.random()*0.3)});
+        mobs.push(createMob(x,y,varied));
         showFactRandom();
     } else {
         const obj={
@@ -502,14 +527,27 @@ function draw(){
         const p=mob.points;
         cx.save();
 
-        cx.strokeStyle=mob.color+'95';
-        cx.lineWidth=5*mob.scale;
-        cx.lineCap='round';
-
         const limbs=[['neck','lhand'],['neck','rhand'],['hip','lfoot'],['hip','rfoot'],
                      ['head','neck'],['neck','body'],['body','hip']];
         limbs.forEach(([a,b])=>{
-            cx.beginPath();cx.moveTo(p[a].x,p[a].y);cx.lineTo(p[b].x,p[b].y);cx.stroke();
+            if(!p[a]||!p[b]) return;
+            const x1=p[a].x,y1=p[a].y,x2=p[b].x,y2=p[b].y;
+            const ang=Math.atan2(y2-y1,x2-x1);
+            const w=4.5*mob.scale; // capsule half-width
+            cx.save();
+            cx.beginPath();
+            cx.moveTo(x1+Math.cos(ang+Math.PI/2)*w, y1+Math.sin(ang+Math.PI/2)*w);
+            cx.lineTo(x2+Math.cos(ang+Math.PI/2)*w, y2+Math.sin(ang+Math.PI/2)*w);
+            cx.arc(x2,y2,w,ang+Math.PI/2,ang-Math.PI/2);
+            cx.lineTo(x1+Math.cos(ang-Math.PI/2)*w, y1+Math.sin(ang-Math.PI/2)*w);
+            cx.arc(x1,y1,w,ang-Math.PI/2,ang+Math.PI/2);
+            cx.closePath();
+            cx.fillStyle=mob.color+'55';
+            cx.fill();
+            cx.strokeStyle=mob.color+'aa';
+            cx.lineWidth=1;
+            cx.stroke();
+            cx.restore();
         });
 
         // Hands/feet
