@@ -162,143 +162,55 @@ const FACTS = [
     '🛡️ NIST mandated migration to PQC by 2035 — NSM-10 executive order!',
 ];
 
-// ══════════════════════════════════════════════════════════════════════════════
-// VERLET PHYSICS — points track current pos AND old pos (no explicit velocity)
-// Velocity is implied: vel = pos - oldPos. This is naturally stable —
-// energy can only be removed (via friction), never accidentally added.
-// ══════════════════════════════════════════════════════════════════════════════
-const GRAVITY = 0.5;
-const AIR_FRICTION = 0.992;   // multiply implied velocity each frame (energy loss)
-const GROUND_FRICTION = 0.85; // extra friction when touching ground
-const GROUND_BOUNCE = 0.35;   // how much vertical velocity survives a bounce
-const WALL_BOUNCE = 0.4;
-const CONSTRAINT_ITERATIONS = 4; // more iterations = stiffer, more stable joints
-
-function makePoint(x, y, r) {
-    return { x, y, oldX:x, oldY:y, r, pinned:false };
-}
-
-function verletUpdate(p) {
-    if (p.pinned) return;
-    const vx = (p.x - p.oldX) * AIR_FRICTION;
-    const vy = (p.y - p.oldY) * AIR_FRICTION;
-    p.oldX = p.x; p.oldY = p.y;
-    p.x += vx;
-    p.y += vy + GRAVITY * (gravityOn ? 1 : 0);
-}
-
-function verletConstrainGround(p, groundY) {
-    if (p.y + p.r > groundY) {
-        const vx = (p.x - p.oldX);
-        p.y = groundY - p.r;
-        // Kill vertical velocity, dampen horizontal (friction)
-        p.oldY = p.y + (p.y - p.oldY) * GROUND_BOUNCE * -1;
-        p.oldX = p.x - vx * GROUND_FRICTION;
-    }
-    if (p.x - p.r < 0) { p.x = p.r; p.oldX = p.x + (p.x-p.oldX)*WALL_BOUNCE; }
-    if (p.x + p.r > W) { p.x = W-p.r; p.oldX = p.x + (p.x-p.oldX)*WALL_BOUNCE; }
-    if (p.y - p.r < 0) { p.y = p.r; p.oldY = p.y + (p.y-p.oldY)*WALL_BOUNCE; }
-}
-
-// Distance constraint — keeps two points a fixed distance apart (a "stick")
-function satisfyStick(a, b, restLen, stiffness) {
-    const dx = b.x - a.x, dy = b.y - a.y;
-    const dist = Math.sqrt(dx*dx + dy*dy) || 0.0001;
-    const diff = (dist - restLen) / dist;
-    const offX = dx * 0.5 * diff * stiffness;
-    const offY = dy * 0.5 * diff * stiffness;
-    if (!a.pinned) { a.x += offX; a.y += offY; }
-    if (!b.pinned) { b.x -= offX; b.y -= offY; }
-}
-
-// ── MOB STRUCTURE — stick figure with points + sticks ───────────────────────
+// ── SIMPLE MOB PHYSICS — one solid body, cosmetic limbs (always stable) ────────
+// A mob is ONE circle physics body just like a prop. Limbs are drawn
+// procedurally based on velocity and a walk-cycle timer - they are pure
+// visuals, never separately simulated, so the mob can never "explode"
+// or fly apart no matter how hard it's hit.
 function createMob(x, y, template) {
     const s = template.scale || 1;
-    const mob = {
-        type:'mob', face:template.face, color:template.color, hp:template.hp,
-        maxHp:template.hp, frozen:false, shielded:false, id:Math.random(),
-        scale:s,
-        points: {
-            head: makePoint(x, y-32*s, 11*s),
-            neck: makePoint(x, y-18*s, 4*s),
-            body: makePoint(x, y, 13*s),
-            hip:  makePoint(x, y+16*s, 6*s),
-            lhand:makePoint(x-24*s, y-6*s, 5*s),
-            rhand:makePoint(x+24*s, y-6*s, 5*s),
-            lfoot:makePoint(x-12*s, y+34*s, 6*s),
-            rfoot:makePoint(x+12*s, y+34*s, 6*s),
-        },
-        sticks: [
-            {a:'head',b:'neck', len:14*s},
-            {a:'neck',b:'body', len:18*s},
-            {a:'body',b:'hip',  len:16*s},
-            {a:'neck',b:'lhand',len:26*s},
-            {a:'neck',b:'rhand',len:26*s},
-            {a:'hip', b:'lfoot',len:34*s},
-            {a:'hip', b:'rfoot',len:34*s},
-            // Extra stabilizing sticks so it doesn't fold weirdly
-            {a:'head',b:'body', len:30*s},
-            {a:'body',b:'lfoot',len:46*s},
-            {a:'body',b:'rfoot',len:46*s},
-        ],
+    return {
+        type:'mob', x, y, vx:0, vy:0, r:16*s, scale:s,
+        face:template.face, color:template.color,
+        hp:template.hp, maxHp:template.hp,
+        frozen:false, shielded:false, id:Math.random(),
+        rotation:0, walkPhase:Math.random()*10, knockTimer:0,
     };
-    return mob;
 }
 
-function updateMob(mob, groundY) {
-    const pts = Object.values(mob.points);
+function updateMobSimple(mob){
     if (mob.frozen) return;
-
-    // Step 1: integrate each point (gravity + inertia)
-    pts.forEach(p => verletUpdate(p));
-
-    // Step 2: satisfy stick constraints (several passes for stability)
-    for (let iter = 0; iter < CONSTRAINT_ITERATIONS; iter++) {
-        mob.sticks.forEach(s => {
-            satisfyStick(mob.points[s.a], mob.points[s.b], s.len, 0.9);
-        });
-        // Step 3: ground/wall collision after each constraint pass
-        pts.forEach(p => verletConstrainGround(p, groundY));
+    const GRAV=0.45, FRICTION=0.86, MAXV=14;
+    if (gravityOn) mob.vy += GRAV;
+    mob.x += mob.vx; mob.y += mob.vy;
+    mob.vx *= 0.99; mob.vy *= 0.99; // light air drag
+    const gy = GROUND_Y() - mob.r;
+    let onGround = false;
+    if (mob.y > gy) {
+        mob.y = gy; mob.vy *= -0.3; mob.vx *= FRICTION;
+        if (Math.abs(mob.vy) < 0.4) mob.vy = 0;
+        onGround = true;
     }
-
-    mob.x = mob.points.body.x;
-    mob.y = mob.points.body.y;
+    if (mob.x < mob.r) { mob.x = mob.r; mob.vx *= -0.5; }
+    if (mob.x > W-mob.r) { mob.x = W-mob.r; mob.vx *= -0.5; }
+    if (mob.y < mob.r) { mob.y = mob.r; mob.vy *= -0.4; }
+    // Hard velocity cap - guarantees it can NEVER fly off screen
+    if (Math.abs(mob.vx) > MAXV) mob.vx = Math.sign(mob.vx)*MAXV;
+    if (Math.abs(mob.vy) > MAXV) mob.vy = Math.sign(mob.vy)*MAXV;
+    // Walk cycle for limb animation only while grounded and moving
+    if (onGround && Math.abs(mob.vx) > 0.3) mob.walkPhase += 0.25;
+    if (mob.knockTimer > 0) mob.knockTimer--;
+    // Lean slightly in the direction of motion (cosmetic only)
+    mob.rotation = Math.max(-0.4, Math.min(0.4, mob.vx*0.04));
 }
 
-function maybeDetachLimb(mob, force) {
-    // What this does: if hit hard enough, permanently remove ONE outer-limb
-    // stick constraint so that hand/foot floats free as debris with sparks.
-    // Kid-friendly version of Melon's dismemberment - no gore, just sparks!
-    if (force < 9 || mob.sticks.length <= 7) return; // keep core skeleton intact
-    const detachable = ['lhand','rhand','lfoot','rfoot'];
-    const stillAttached = mob.sticks.filter(s => detachable.includes(s.a) || detachable.includes(s.b));
-    if (!stillAttached.length) return;
-    if (Math.random() > 0.15) return; // don't detach every single hit
-    const victim = stillAttached[Math.floor(Math.random()*stillAttached.length)];
-    mob.sticks = mob.sticks.filter(s => s !== victim);
-    const limbKey = detachable.includes(victim.a) ? victim.a : victim.b;
-    const pt = mob.points[limbKey];
-    if (pt) {
-        for (let i=0;i<10;i++){
-            const a=Math.random()*Math.PI*2, sp=2+Math.random()*4;
-            particles.push({x:pt.x,y:pt.y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp-2,
-                r:2+Math.random()*2,alpha:1,color:'#fbbf24'});
-        }
-        showToast('⚡ Limb detached! Quantum Bot still functional.');
-    }
-}
-
-function applyImpulseToMob(mob, srcX, srcY, force) {
-    maybeDetachLimb(mob, force);
-    Object.values(mob.points).forEach(p => {
-        const dx = p.x - srcX, dy = p.y - srcY;
-        const d = Math.sqrt(dx*dx+dy*dy) || 1;
-        const f = force * Math.max(0, 1 - d/220);
-        // To apply an impulse in Verlet, we move oldX/oldY backward
-        // (this creates implied velocity in the desired direction)
-        p.oldX -= (dx/d) * f * (0.5 + Math.random()*0.4);
-        p.oldY -= (dy/d) * f * (0.5 + Math.random()*0.4) + f*0.15;
-    });
+function knockMob(mob, srcX, srcY, force) {
+    const dx = mob.x - srcX, dy = mob.y - srcY;
+    const d = Math.sqrt(dx*dx+dy*dy) || 1;
+    const f = force * Math.max(0, 1 - d/220);
+    mob.vx += (dx/d) * f;
+    mob.vy += (dy/d) * f - f*0.3;
+    mob.knockTimer = 30;
 }
 
 // ── REGULAR OBJECTS (non-mob) — still simple velocity physics, lighter weight ─
@@ -307,7 +219,7 @@ let mobs = [];
 let particles = [], explosions = [], lightnings = [];
 let currentTool = 'place', currentCat = 'mobs';
 let selectedSpawnItem = CATEGORIES.mobs[0];
-let dragMob=null, dragPointKey=null, dragObj=null, dragOffX=0, dragOffY=0;
+let dragMob=null, dragObj=null, dragOffX=0, dragOffY=0;
 let ctxTarget=null;
 let gravityOn = true;
 let totalExplosions = 0;
@@ -376,7 +288,7 @@ function activateObject(obj){
             lightnings.push({x1:obj.x,y1:obj.y,x2:t.x,y2:t.y,alpha:1});
             if(!t.shielded){
                 if(t.hp!==undefined) t.hp-=40;
-                if(t.points) applyImpulseToMob(t,obj.x,obj.y,4);
+                if(t.face) knockMob(t,obj.x,obj.y,4);
             }
         }
         objects=objects.filter(o=>o!==obj);
@@ -386,7 +298,7 @@ function activateObject(obj){
             if(o!==obj){
                 const dx=o.x-obj.x,dy=o.y-obj.y,d=Math.sqrt(dx*dx+dy*dy)||1;
                 if(d<240){
-                    if(o.points) applyImpulseToMob(o,obj.x,obj.y,5);
+                    if(o.face) knockMob(o,obj.x,obj.y,5);
                     else { o.vx+=(dx/d)*3; o.vy-=2; }
                 }
             }
@@ -401,7 +313,7 @@ function activateObject(obj){
             if(o!==obj){
                 const dx=o.x-obj.x,dy=o.y-obj.y,d=Math.sqrt(dx*dx+dy*dy)||1;
                 if(d<160){
-                    if(o.points) applyImpulseToMob(o,obj.x,obj.y,4);
+                    if(o.face) knockMob(o,obj.x,obj.y,4);
                     else { o.vx+=dx/d*3; o.vy+=dy/d*3; }
                 }
             }
@@ -412,7 +324,7 @@ function activateObject(obj){
         [...objects,...mobs].forEach(o=>{
             if(o!==obj){
                 const dx=obj.x-o.x,dy=obj.y-o.y,d=Math.sqrt(dx*dx+dy*dy)||1;
-                if(o.points) applyImpulseToMob(o,o.x+dx/d*40,o.y+dy/d*40,3);
+                if(o.face) knockMob(o,o.x+dx/d*40,o.y+dy/d*40,3);
                 else { o.vx+=dx/d*2; o.vy+=dy/d*2; }
             }
         });
@@ -447,7 +359,7 @@ function doExplosion(x,y,radius){
         const dx=mob.x-x,dy=mob.y-y,d=Math.sqrt(dx*dx+dy*dy)||1;
         if(d<radius){
             const f=(1-d/radius)*9;
-            applyImpulseToMob(mob,x,y,f);
+            knockMob(mob,x,y,f);
             if(!mob.shielded) mob.hp-=(1-d/radius)*40;
         }
     });
@@ -522,66 +434,62 @@ function draw(){
         cx.restore();
     });
 
-    // ── MOBS — stick figure rendering ──────────────────────────────────────────
+    // ── MOBS — chunky Melon-style body with cosmetic swinging limbs ────────────
     mobs.forEach(mob=>{
-        const p=mob.points;
         cx.save();
+        cx.translate(mob.x, mob.y);
+        cx.rotate(mob.rotation);
 
-        const limbs=[['neck','lhand'],['neck','rhand'],['hip','lfoot'],['hip','rfoot'],
-                     ['head','neck'],['neck','body'],['body','hip']];
-        limbs.forEach(([a,b])=>{
-            if(!p[a]||!p[b]) return;
-            const x1=p[a].x,y1=p[a].y,x2=p[b].x,y2=p[b].y;
-            const ang=Math.atan2(y2-y1,x2-x1);
-            const w=4.5*mob.scale; // capsule half-width
-            cx.save();
-            cx.beginPath();
-            cx.moveTo(x1+Math.cos(ang+Math.PI/2)*w, y1+Math.sin(ang+Math.PI/2)*w);
-            cx.lineTo(x2+Math.cos(ang+Math.PI/2)*w, y2+Math.sin(ang+Math.PI/2)*w);
-            cx.arc(x2,y2,w,ang+Math.PI/2,ang-Math.PI/2);
-            cx.lineTo(x1+Math.cos(ang-Math.PI/2)*w, y1+Math.sin(ang-Math.PI/2)*w);
-            cx.arc(x1,y1,w,ang-Math.PI/2,ang+Math.PI/2);
-            cx.closePath();
-            cx.fillStyle=mob.color+'55';
-            cx.fill();
-            cx.strokeStyle=mob.color+'aa';
-            cx.lineWidth=1;
-            cx.stroke();
-            cx.restore();
-        });
+        const r = mob.r;
+        const knockShake = mob.knockTimer>0 ? (Math.random()-0.5)*mob.knockTimer*0.3 : 0;
+        cx.translate(knockShake, 0);
 
-        // Hands/feet
-        [p.lhand,p.rhand,p.lfoot,p.rfoot].forEach(pt=>{
-            cx.beginPath();cx.arc(pt.x,pt.y,pt.r,0,Math.PI*2);
-            cx.fillStyle=mob.color+'70';cx.fill();
-        });
+        const swing = Math.sin(mob.walkPhase) * 0.5;
 
-        // Body
-        cx.beginPath();cx.arc(p.body.x,p.body.y,p.body.r,0,Math.PI*2);
-        cx.fillStyle='#071520';cx.fill();
-        cx.strokeStyle=mob.shielded?'#10b981':mob.color;
-        cx.lineWidth=mob.shielded?3:2;cx.stroke();
+        cx.strokeStyle = mob.color+'aa';
+        cx.lineWidth = 5*mob.scale;
+        cx.lineCap = 'round';
 
-        // Head
-        cx.beginPath();cx.arc(p.head.x,p.head.y,p.head.r,0,Math.PI*2);
-        cx.fillStyle='#071520';cx.fill();
-        cx.strokeStyle=mob.color;cx.lineWidth=2;cx.stroke();
+        cx.beginPath();
+        cx.moveTo(-r*0.6, -r*0.1);
+        cx.lineTo(-r*0.6 - Math.cos(swing)*r*0.5, -r*0.1 + Math.sin(swing)*r*0.5);
+        cx.stroke();
+        cx.beginPath();
+        cx.moveTo(r*0.6, -r*0.1);
+        cx.lineTo(r*0.6 + Math.cos(swing)*r*0.5, -r*0.1 - Math.sin(swing)*r*0.5);
+        cx.stroke();
 
-        // Check if "down" — body close to ground = collapsed look
-        const isDown = p.body.y > gy - 30;
-        cx.font=(11*mob.scale)+'px serif';
-        cx.textAlign='center';cx.textBaseline='middle';
-        cx.fillText(isDown?'😵':mob.face, p.head.x, p.head.y);
+        cx.beginPath();
+        cx.moveTo(-r*0.4, r*0.7);
+        cx.lineTo(-r*0.4 + Math.sin(swing)*r*0.4, r*1.3);
+        cx.stroke();
+        cx.beginPath();
+        cx.moveTo(r*0.4, r*0.7);
+        cx.lineTo(r*0.4 - Math.sin(swing)*r*0.4, r*1.3);
+        cx.stroke();
 
-        if(mob.hp<mob.maxHp){
-            const bw=30*mob.scale;
-            cx.fillStyle='#1e293b';cx.fillRect(p.head.x-bw/2,p.head.y-p.head.r-9,bw,4);
-            cx.fillStyle=mob.hp/mob.maxHp>0.5?'#10b981':'#ef4444';
-            cx.fillRect(p.head.x-bw/2,p.head.y-p.head.r-9,bw*Math.max(0,mob.hp/mob.maxHp),4);
+        if (mob.shielded) { cx.shadowColor='#10b981'; cx.shadowBlur=14; }
+        cx.beginPath();
+        cx.arc(0, 0, r, 0, Math.PI*2);
+        cx.fillStyle = '#071520';
+        cx.fill();
+        cx.strokeStyle = mob.shielded ? '#10b981' : mob.color;
+        cx.lineWidth = mob.shielded ? 3 : 2;
+        cx.stroke();
+        cx.shadowBlur = 0;
+
+        cx.font = (16*mob.scale)+'px serif';
+        cx.textAlign = 'center'; cx.textBaseline = 'middle';
+        cx.fillText(mob.knockTimer>5 ? '😵' : mob.face, 0, 0);
+
+        if (mob.hp < mob.maxHp) {
+            const bw = r*2.2;
+            cx.fillStyle = '#1e293b'; cx.fillRect(-bw/2, -r-12, bw, 4);
+            cx.fillStyle = mob.hp/mob.maxHp>0.5 ? '#10b981' : '#ef4444';
+            cx.fillRect(-bw/2, -r-12, bw*Math.max(0,mob.hp/mob.maxHp), 4);
         }
-        if(mob.frozen){
-            cx.font='12px serif';
-            cx.fillText('❄️',p.head.x,p.head.y-p.head.r-18);
+        if (mob.frozen) {
+            cx.font='12px serif'; cx.fillText('❄️', 0, -r-18);
         }
         cx.restore();
     });
@@ -591,7 +499,6 @@ function draw(){
         cx.fillStyle=p.color+Math.floor(p.alpha*255).toString(16).padStart(2,'0');
         cx.fill();
     });
-
     if(currentTool==='place'&&mouseX>0){
         cx.globalAlpha=0.5;
         cx.font='22px serif';cx.textAlign='center';cx.textBaseline='middle';
@@ -602,8 +509,7 @@ function draw(){
 
 function update(){
     updateObjects();
-    const gy=GROUND_Y();
-    mobs.forEach(m=>updateMob(m,gy));
+    mobs.forEach(m=>updateMobSimple(m));
     particles.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=0.1;p.alpha-=0.025;p.r*=0.96;});
     particles=particles.filter(p=>p.alpha>0);
     explosions.forEach(e=>{e.r+=e.type==='wave'?5:8;e.alpha-=0.04;});
@@ -626,10 +532,7 @@ function getPos(e){
     return{x:(e.clientX-r.left)*(W/r.width),y:(e.clientY-r.top)*(H/r.height)};
 }
 function getMobAt(x,y){
-    return mobs.find(m=>Object.values(m.points).some(p=>Math.hypot(p.x-x,p.y-y)<p.r+8));
-}
-function getMobPointKeyAt(mob,x,y){
-    return Object.entries(mob.points).find(([k,p])=>Math.hypot(p.x-x,p.y-y)<p.r+8)?.[0];
+    return mobs.find(m=>Math.hypot(m.x-x,m.y-y)<m.r+8);
 }
 function getObjAt(x,y){
     return [...objects].reverse().find(o=>Math.abs(o.x-x)<o.w/2+5&&Math.abs(o.y-y)<o.h/2+5);
@@ -637,10 +540,9 @@ function getObjAt(x,y){
 
 world.addEventListener('mousemove',e=>{
     const p=getPos(e); mouseX=p.x; mouseY=p.y;
-    if(dragMob&&dragPointKey&&currentTool==='grab'){
-        const pt=dragMob.points[dragPointKey];
-        pt.x=p.x-dragOffX; pt.y=p.y-dragOffY;
-        // oldX/oldY stay behind so releasing creates a throw motion
+    if(dragMob&&currentTool==='grab'){
+        dragMob.x=p.x-dragOffX; dragMob.y=p.y-dragOffY;
+        dragMob.vx=0; dragMob.vy=0;
     } else if(dragObj&&currentTool==='grab'){
         dragObj.x=p.x-dragOffX; dragObj.y=p.y-dragOffY;
         dragObj.vx=0; dragObj.vy=0;
@@ -656,10 +558,8 @@ world.addEventListener('mousedown',e=>{
     } else if(currentTool==='grab'){
         const mob=getMobAt(p.x,p.y);
         if(mob){
-            dragMob=mob;
-            dragPointKey=getMobPointKeyAt(mob,p.x,p.y)||'body';
-            const pt=mob.points[dragPointKey];
-            dragOffX=p.x-pt.x; dragOffY=p.y-pt.y;
+            dragMob=mob; mob.frozen=true;
+            dragOffX=p.x-mob.x; dragOffY=p.y-mob.y;
         } else {
             const obj=getObjAt(p.x,p.y);
             if(obj){dragObj=obj;dragOffX=p.x-obj.x;dragOffY=p.y-obj.y;dragObj.frozen=true;}
@@ -673,15 +573,13 @@ world.addEventListener('mousedown',e=>{
 });
 
 world.addEventListener('mouseup',e=>{
-    if(dragMob && dragPointKey){
-        // Throw: give the point a velocity boost based on recent mouse movement
-        const pt=dragMob.points[dragPointKey];
+    if(dragMob){
+        dragMob.frozen=false;
         const p=getPos(e);
-        const dx=p.x-mouseX, dy=p.y-mouseY;
-        pt.oldX = pt.x - (p.x - pt.oldX)*0.6;
-        pt.oldY = pt.y - (p.y - pt.oldY)*0.6;
+        dragMob.vx=(p.x-mouseX)*0.8;
+        dragMob.vy=(p.y-mouseY)*0.8-2;
     }
-    dragMob=null; dragPointKey=null;
+    dragMob=null;
     if(dragObj){ dragObj.frozen=false; dragObj.vy-=2; dragObj=null; }
 });
 
@@ -715,8 +613,8 @@ function ctxAction(action){
     } else if(action==='shield'){
         ctxTarget.shielded=true; ctxTarget.color='#10b981';
     } else if(action==='fling'){
-        if(ctxTarget.points){
-            applyImpulseToMob(ctxTarget, ctxTarget.x, ctxTarget.y+200, 14);
+        if(ctxTarget.face){
+            knockMob(ctxTarget, ctxTarget.x, ctxTarget.y+200, 14);
         } else { ctxTarget.vy=-10; }
     }
     closeCtx();
