@@ -688,7 +688,7 @@ function preprocessText(text){
         .replace(/(and then|but then|suddenly|meanwhile|finally|however|therefore)/gi,
             function(m){return m+', ';})
         // Make ellipsis into a real pause
-        .replace(/\.\.\./g,'. ')
+        .replace(/\\.\\.\\./g,'. ')
         // Clean up double spaces
         .replace(/\\s+/g,' ')
         .trim();
