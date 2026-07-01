@@ -434,63 +434,137 @@ function draw(){
         cx.restore();
     });
 
-    // ── MOBS — chunky Melon-style body with cosmetic swinging limbs ────────────
+    // ── MOBS — People Playground pixel humanoid style ───────────────────────────
     mobs.forEach(mob=>{
         cx.save();
-        cx.translate(mob.x, mob.y);
-        cx.rotate(mob.rotation);
+        const s = mob.scale;
+        // Knock shake
+        const shake = mob.knockTimer>0 ? (Math.random()-0.5)*mob.knockTimer*0.25 : 0;
+        cx.translate(mob.x + shake, mob.y);
 
-        const r = mob.r;
-        const knockShake = mob.knockTimer>0 ? (Math.random()-0.5)*mob.knockTimer*0.3 : 0;
-        cx.translate(knockShake, 0);
+        // Walk cycle — legs swing, arms counter-swing
+        const swing = Math.sin(mob.walkPhase) * 0.4;
+        const isKnocked = mob.knockTimer > 5;
 
-        const swing = Math.sin(mob.walkPhase) * 0.5;
+        // Shield glow
+        if (mob.shielded) { cx.shadowColor='#10b981'; cx.shadowBlur=12; }
 
-        cx.strokeStyle = mob.color+'aa';
-        cx.lineWidth = 5*mob.scale;
-        cx.lineCap = 'round';
+        // ── DIMENSIONS (all relative to scale) ──────────────────────────────
+        const hw = 7*s;   // head half-width
+        const hh = 7*s;   // head half-height
+        const tw = 5*s;   // torso half-width
+        const th = 12*s;  // torso half-height
+        const lw = 3*s;   // leg width
+        const ll = 14*s;  // leg length
+        const aw = 8*s;   // arm width
+        const ah = 3*s;   // arm height
+        const headY = -th - hh - 2*s; // head top relative to center
 
+        // ── LEGS (swing in opposite directions) ──────────────────────────────
+        // Left leg
+        cx.save();
+        cx.translate(-lw - s, th);
+        cx.rotate(swing);
+        cx.fillStyle = mob.color+'cc';
+        cx.fillRect(-lw/2, 0, lw, ll);
+        // Foot
+        cx.fillStyle = mob.color;
+        cx.fillRect(-lw, ll-2*s, lw*2, 3*s);
+        cx.restore();
+
+        // Right leg
+        cx.save();
+        cx.translate(lw + s, th);
+        cx.rotate(-swing);
+        cx.fillStyle = mob.color+'cc';
+        cx.fillRect(-lw/2, 0, lw, ll);
+        // Foot
+        cx.fillStyle = mob.color;
+        cx.fillRect(-lw, ll-2*s, lw*2, 3*s);
+        cx.restore();
+
+        // ── TORSO ────────────────────────────────────────────────────────────
+        cx.fillStyle = mob.color+'dd';
         cx.beginPath();
-        cx.moveTo(-r*0.6, -r*0.1);
-        cx.lineTo(-r*0.6 - Math.cos(swing)*r*0.5, -r*0.1 + Math.sin(swing)*r*0.5);
-        cx.stroke();
-        cx.beginPath();
-        cx.moveTo(r*0.6, -r*0.1);
-        cx.lineTo(r*0.6 + Math.cos(swing)*r*0.5, -r*0.1 - Math.sin(swing)*r*0.5);
-        cx.stroke();
-
-        cx.beginPath();
-        cx.moveTo(-r*0.4, r*0.7);
-        cx.lineTo(-r*0.4 + Math.sin(swing)*r*0.4, r*1.3);
-        cx.stroke();
-        cx.beginPath();
-        cx.moveTo(r*0.4, r*0.7);
-        cx.lineTo(r*0.4 - Math.sin(swing)*r*0.4, r*1.3);
-        cx.stroke();
-
-        if (mob.shielded) { cx.shadowColor='#10b981'; cx.shadowBlur=14; }
-        cx.beginPath();
-        cx.arc(0, 0, r, 0, Math.PI*2);
-        cx.fillStyle = '#071520';
+        cx.roundRect(-tw, -th, tw*2, th*2, 2*s);
         cx.fill();
-        cx.strokeStyle = mob.shielded ? '#10b981' : mob.color;
-        cx.lineWidth = mob.shielded ? 3 : 2;
+        // Torso outline
+        cx.strokeStyle = mob.color;
+        cx.lineWidth = 1*s;
+        cx.stroke();
+
+        // ── ARMS (counter-swing to legs) ─────────────────────────────────────
+        // Left arm
+        cx.save();
+        cx.translate(-tw, -th*0.3);
+        cx.rotate(-swing*0.6);
+        cx.fillStyle = mob.color+'cc';
+        cx.fillRect(-aw, -ah/2, aw, ah);
+        // Hand dot
+        cx.beginPath();
+        cx.arc(-aw, 0, ah*0.8, 0, Math.PI*2);
+        cx.fillStyle = mob.color;
+        cx.fill();
+        cx.restore();
+
+        // Right arm
+        cx.save();
+        cx.translate(tw, -th*0.3);
+        cx.rotate(swing*0.6);
+        cx.fillStyle = mob.color+'cc';
+        cx.fillRect(0, -ah/2, aw, ah);
+        // Hand dot
+        cx.beginPath();
+        cx.arc(aw, 0, ah*0.8, 0, Math.PI*2);
+        cx.fillStyle = mob.color;
+        cx.fill();
+        cx.restore();
+
+        // ── HEAD ─────────────────────────────────────────────────────────────
+        // Neck
+        cx.fillStyle = mob.color+'99';
+        cx.fillRect(-2*s, -th-3*s, 4*s, 4*s);
+
+        // Head square
+        cx.fillStyle = mob.color;
+        cx.beginPath();
+        cx.roundRect(-hw, headY, hw*2, hh*2, 3*s);
+        cx.fill();
+        cx.strokeStyle = mob.color+'ff';
+        cx.lineWidth = 1*s;
         cx.stroke();
         cx.shadowBlur = 0;
 
-        cx.font = (16*mob.scale)+'px serif';
-        cx.textAlign = 'center'; cx.textBaseline = 'middle';
-        cx.fillText(mob.knockTimer>5 ? '😵' : mob.face, 0, 0);
+        // Face — pixel eyes or knocked face
+        if (isKnocked) {
+            // X eyes
+            cx.strokeStyle = '#1e293b'; cx.lineWidth = 1.5*s;
+            cx.beginPath();cx.moveTo(-hw*0.5,headY+hh*0.5);cx.lineTo(-hw*0.1,headY+hh*0.9);cx.stroke();
+            cx.beginPath();cx.moveTo(-hw*0.1,headY+hh*0.5);cx.lineTo(-hw*0.5,headY+hh*0.9);cx.stroke();
+            cx.beginPath();cx.moveTo(hw*0.1,headY+hh*0.5);cx.lineTo(hw*0.5,headY+hh*0.9);cx.stroke();
+            cx.beginPath();cx.moveTo(hw*0.5,headY+hh*0.5);cx.lineTo(hw*0.1,headY+hh*0.9);cx.stroke();
+        } else {
+            // Pixel dot eyes
+            cx.fillStyle = '#1e293b';
+            cx.fillRect(-hw*0.5, headY+hh*0.4, 2.5*s, 2.5*s);
+            cx.fillRect(hw*0.15, headY+hh*0.4, 2.5*s, 2.5*s);
+            // Simple pixel mouth
+            cx.fillRect(-hw*0.3, headY+hh*1.1, hw*0.6, 1.5*s);
+        }
 
+        // HP bar
         if (mob.hp < mob.maxHp) {
-            const bw = r*2.2;
-            cx.fillStyle = '#1e293b'; cx.fillRect(-bw/2, -r-12, bw, 4);
-            cx.fillStyle = mob.hp/mob.maxHp>0.5 ? '#10b981' : '#ef4444';
-            cx.fillRect(-bw/2, -r-12, bw*Math.max(0,mob.hp/mob.maxHp), 4);
+            const bw = hw*2.4;
+            cx.fillStyle = '#1e293b'; cx.fillRect(-bw/2, headY-8*s, bw, 4*s);
+            cx.fillStyle = mob.hp/mob.maxHp>0.5?'#10b981':'#ef4444';
+            cx.fillRect(-bw/2, headY-8*s, bw*Math.max(0,mob.hp/mob.maxHp), 4*s);
         }
         if (mob.frozen) {
-            cx.font='12px serif'; cx.fillText('❄️', 0, -r-18);
+            cx.font=(12*s)+'px serif';
+            cx.textAlign='center'; cx.textBaseline='middle';
+            cx.fillText('❄️', 0, headY-14*s);
         }
+
         cx.restore();
     });
 
