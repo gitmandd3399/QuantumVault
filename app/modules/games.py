@@ -11,433 +11,381 @@ from utils.security import sanitize_input
 
 
 def render_falling_blocks():
-    """K-5: Enhanced Falling Blocks with better graphics, power-ups, boss waves, PQC education."""
-    st.subheader("🧱 Quantum Lock Drop — Enhanced!")
+    """K-5: Quantum Lock Drop — UPGRADED 2026 — Fortnite-style catch game with combos and boss waves."""
+    import streamlit as st
+    import streamlit.components.v1 as components
+    st.subheader("🧱 Quantum Lock Drop!")
     st.markdown(
         "Catch **quantum-safe locks** and avoid **broken crypto**! "
-        "Collect power-ups for special abilities. Boss waves every 5 levels!"
+        "Build combos, grab power-ups, survive boss waves!"
     )
-
-    with st.expander("📚 What to catch vs avoid!", expanded=False):
-        col1, col2 = st.columns(2)
-        with col1:
-            st.success("✅ **CATCH THESE — Quantum Safe!**")
-            st.info("🔐 Kyber — ML-KEM FIPS 203\n✍️ Dilithium — ML-DSA FIPS 204\n🌲 SPHINCS+ — SLH-DSA FIPS 205\n🦅 Falcon — FN-DSA FIPS 206\n🏗️ Lattice — Foundation of PQC")
-        with col2:
-            st.error("❌ **AVOID THESE — Quantum Vulnerable!**")
-            st.info("💀 RSA — Broken by Shor Algorithm\n☠️ ECC — Also broken by Shor\n⚠️ DES — Classically broken 1999\n💥 MD5 — Collision attacks\n🔓 RC4 — Stream cipher broken")
-        st.warning("⚡ **POWER-UPS** — Catch these for special abilities!\n🛡️ Shield — Protect from one bad block\n⏰ Slow — Slow down all falling blocks\n💎 Double — Double points for 10 seconds")
-
-    import streamlit.components.v1 as components_fb
-    components_fb.html("""
+    components.html(r"""
 <!DOCTYPE html>
 <html>
 <head>
+<meta charset="UTF-8">
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
-body{background:#0f172a;font-family:sans-serif;color:white;}
-#fb-wrap{display:flex;flex-direction:column;align-items:center;padding:10px;}
-.fb-hud{display:flex;justify-content:space-between;width:420px;margin-bottom:8px;gap:5px;}
-.hud-box{background:#1e293b;border:1px solid #334155;border-radius:8px;
-padding:5px 8px;font-size:11px;font-weight:bold;color:#a5b4fc;flex:1;text-align:center;}
-#fbCanvas{border:2px solid #4f46e5;border-radius:12px;display:block;}
-.fb-btns{display:flex;gap:6px;margin:8px 0;justify-content:center;}
-.fb-btn{padding:8px 18px;border-radius:8px;border:none;cursor:pointer;
-font-size:13px;font-weight:bold;color:white;}
-.fb-btn:active{opacity:0.8;}
-#fb-msg{font-size:12px;color:#34d399;min-height:18px;margin:4px;text-align:center;}
-#fb-fact{background:rgba(79,70,229,0.15);border:1px solid rgba(79,70,229,0.4);
-border-radius:8px;padding:6px 12px;margin:4px;font-size:11px;color:#a5b4fc;
-max-width:420px;display:none;text-align:center;}
-.power-bar{display:flex;gap:6px;justify-content:center;margin:4px;}
-.power-slot{width:36px;height:36px;background:#1e293b;border:1px solid #334155;
-border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:18px;}
-.power-slot.active{border-color:#f59e0b;background:rgba(245,158,11,0.2);}
+body{background:#020d14;font-family:'Segoe UI',sans-serif;color:white;overflow:hidden;}
+#wrap{max-width:420px;margin:0 auto;padding:8px;}
+.hud{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-bottom:6px;}
+.hb{background:#071520;border:1px solid #1a3a5a;border-radius:8px;padding:5px 3px;
+    text-align:center;font-size:9px;color:#60a5fa;}
+.hb b{display:block;font-size:14px;color:white;}
+#cv{border:2px solid #1d4ed8;border-radius:10px;display:block;
+    box-shadow:0 0 20px rgba(29,78,216,0.2);}
+#msg{background:#071520;border:1px solid #1a3a5a;border-radius:8px;
+    padding:4px 10px;margin-top:5px;font-size:10px;color:#60a5fa;
+    text-align:center;min-height:20px;}
+.btns{display:flex;gap:4px;margin-top:5px;}
+.btn{flex:1;padding:7px;border-radius:8px;border:none;cursor:pointer;
+    font-size:11px;font-weight:bold;color:white;}
+.btn-start{background:linear-gradient(135deg,#059669,#10b981);}
+.btn-reset{background:#334155;}
+.cp{position:fixed;pointer-events:none;z-index:999;width:8px;height:8px;
+    border-radius:2px;animation:cf linear forwards;}
+@keyframes cf{0%{transform:translateY(-20px) rotate(0deg);opacity:1;}
+    100%{transform:translateY(500px) rotate(720deg);opacity:0;}}
 </style>
 </head>
 <body>
-<div id="fb-wrap">
-    <div class="fb-hud">
-        <div class="hud-box">⭐ Score<br><span id="score">0</span></div>
-        <div class="hud-box">❤️ Lives<br><span id="lives">3</span></div>
-        <div class="hud-box">📊 Level<br><span id="level">1</span></div>
-        <div class="hud-box">🎯 Caught<br><span id="caught">0</span></div>
-        <div class="hud-box">🌊 Wave<br><span id="wave">Normal</span></div>
-    </div>
-    <canvas id="fbCanvas" width="420" height="480"></canvas>
-    <div id="fb-msg">Press Start to play!</div>
-    <div id="fb-fact"></div>
-    <div class="power-bar">
-        <div class="power-slot" id="pw-shield" title="Shield">🛡️</div>
-        <div class="power-slot" id="pw-slow" title="Slow">⏰</div>
-        <div class="power-slot" id="pw-double" title="Double Points">💎</div>
-    </div>
-    <div class="fb-btns">
-        <button class="fb-btn" style="background:#4f46e5" onclick="moveLeft()">◀</button>
-        <button class="fb-btn" style="background:#10b981" onclick="startGame()">▶ Start</button>
-        <button class="fb-btn" style="background:#4f46e5" onclick="moveRight()">▶</button>
-    </div>
+<div id="wrap">
+<div class="hud">
+    <div class="hb">⭐ Score<br><b id="h-score">0</b></div>
+    <div class="hb">🔥 Combo<br><b id="h-combo">x1</b></div>
+    <div class="hb">❤️ Lives<br><b id="h-lives">3</b></div>
+    <div class="hb">🌊 Level<br><b id="h-level">1</b></div>
+</div>
+<canvas id="cv" width="400" height="420"></canvas>
+<div id="msg">Press START to catch quantum-safe locks!</div>
+<div class="btns">
+    <button class="btn btn-start" onclick="startGame()">▶ Start</button>
+    <button class="btn btn-reset" onclick="resetGame()">🔄 Reset</button>
+</div>
 </div>
 <script>
-const canvas = document.getElementById("fbCanvas");
-const ctx = canvas.getContext("2d");
-const W=420, H=480;
+var cv=document.getElementById('cv'),cx=cv.getContext('2d');
+var W=400,H=420;
 
-const SAFE_BLOCKS = [
-    {label:"Kyber 🔐",   color:"#10b981", safe:true,  pts:15, fact:"ML-KEM FIPS 203 — NIST standard key encapsulation!"},
-    {label:"Dilithium ✍️",color:"#3b82f6", safe:true,  pts:20, fact:"ML-DSA FIPS 204 — Quantum-safe digital signatures!"},
-    {label:"SPHINCS+ 🌲", color:"#8b5cf6", safe:true,  pts:25, fact:"SLH-DSA FIPS 205 — Hash-based backup signature!"},
-    {label:"Falcon 🦅",   color:"#f59e0b", safe:true,  pts:30, fact:"FN-DSA FIPS 206 — Smallest quantum-safe signature!"},
-    {label:"Lattice 🏗️",  color:"#06b6d4", safe:true,  pts:20, fact:"Lattice math stumps quantum computers!"},
+// Good items (catch these!)
+var GOOD=[
+    {emoji:'🔐',name:'ML-KEM',  color:'#10b981',pts:15,fips:'FIPS 203'},
+    {emoji:'✍️', name:'ML-DSA',  color:'#3b82f6',pts:20,fips:'FIPS 204'},
+    {emoji:'🌲',name:'SPHINCS+',color:'#8b5cf6',pts:25,fips:'FIPS 205'},
+    {emoji:'🦅',name:'Falcon',  color:'#f59e0b',pts:30,fips:'FIPS 206'},
+    {emoji:'🏗️',name:'Lattice', color:'#06b6d4',pts:10,fips:'Math Core'},
+];
+// Bad items (avoid these!)
+var BAD=[
+    {emoji:'💀',name:'RSA',    color:'#ef4444',dmg:1},
+    {emoji:'☠️', name:'ECC',    color:'#f97316',dmg:1},
+    {emoji:'⚠️', name:'DES',    color:'#dc2626',dmg:1},
+    {emoji:'💥',name:'MD5',    color:'#b91c1c',dmg:1},
+];
+// Power-ups
+var POWERUPS=[
+    {emoji:'🛡️',name:'Shield',  color:'#10b981',effect:'shield'},
+    {emoji:'⏰',name:'Slow',    color:'#60a5fa',effect:'slow'},
+    {emoji:'⭐',name:'Double',  color:'#fbbf24',effect:'double'},
+    {emoji:'⚡',name:'Zapper',  color:'#a78bfa',effect:'zap'},
+];
+var FACTS=[
+    'ML-KEM (Kyber FIPS 203) uses lattice math — quantum computers cannot crack it!',
+    'ML-DSA (Dilithium FIPS 204) creates unforgeable digital signatures!',
+    'SPHINCS+ (FIPS 205) uses SHA-3 hash trees — the backup if lattice math breaks!',
+    'Falcon (FIPS 206) makes the smallest quantum-safe signatures for IoT!',
+    'RSA is broken by Shor Algorithm — quantum computers crack it in seconds!',
+    'NIST finalized all 4 PQC standards in August 2024 (FIPS 203-206)!',
 ];
 
-const UNSAFE_BLOCKS = [
-    {label:"RSA 💀",  color:"#ef4444", safe:false, pts:-1, fact:"RSA broken by Shor Algorithm on quantum computers!"},
-    {label:"ECC ☠️",  color:"#f97316", safe:false, pts:-1, fact:"ECC also broken by Shor Algorithm!"},
-    {label:"DES ⚠️",  color:"#eab308", safe:false, pts:-1, fact:"DES was classically broken back in 1999!"},
-    {label:"MD5 💥",  color:"#ec4899", safe:false, pts:-1, fact:"MD5 has dangerous collision attacks!"},
-    {label:"RC4 🔓",  color:"#a855f7", safe:false, pts:-1, fact:"RC4 stream cipher is completely broken!"},
-];
-
-const POWERUPS = [
-    {label:"SHIELD 🛡️", color:"#fbbf24", type:"shield", fact:"Shield protects you from one bad block!"},
-    {label:"SLOW ⏰",    color:"#60a5fa", type:"slow",   fact:"Slow motion — more time to react!"},
-    {label:"2x 💎",     color:"#34d399", type:"double", fact:"Double points — catch quantum-safe blocks fast!"},
-];
-
-const BOSS_BLOCKS = [
-    {label:"QUANTUM 💻", color:"#dc2626", safe:false, pts:-1, boss:true, fact:"Full quantum computer — the ultimate threat to RSA!"},
-];
-
-let basket = {x:W/2-50, y:H-40, w:100, h:22, speed:30};
-let blocks=[], particles=[], stars=[];
-let score=0, lives=3, level=1, caught=0, running=false;
-let frameCount=0, dropRate=80;
-let shield=false, slowActive=false, doubleActive=false;
-let shieldTimer=0, slowTimer=0, doubleTimer=0;
-let bossWave=false;
-
-const LEVEL_CONFIG = [
-    {level:1,  name:"Recruit",        dropRate:55, speed:3.5, bossEvery:0, lives:5, desc:"Learn the basics!"},
-    {level:2,  name:"Cadet",          dropRate:50, speed:3.8, bossEvery:0, lives:5, desc:"Getting faster!"},
-    {level:3,  name:"Agent",          dropRate:45, speed:4.1, bossEvery:3, lives:4, desc:"First boss wave!"},
-    {level:4,  name:"Specialist",     dropRate:42, speed:4.4, bossEvery:3, lives:4, desc:"More unsafe blocks!"},
-    {level:5,  name:"Cipher Corps",   dropRate:38, speed:4.7, bossEvery:3, lives:4, desc:"Power-ups appear!"},
-    {level:6,  name:"Crypto Guard",   dropRate:34, speed:5.0, bossEvery:2, lives:3, desc:"Boss every 2 levels!"},
-    {level:7,  name:"Lattice Knight", dropRate:30, speed:5.3, bossEvery:2, lives:3, desc:"Super fast!"},
-    {level:8,  name:"Key Master",     dropRate:26, speed:5.6, bossEvery:2, lives:3, desc:"Almost expert!"},
-    {level:9,  name:"Quantum Sage",   dropRate:22, speed:5.9, bossEvery:2, lives:3, desc:"Expert territory!"},
-    {level:10, name:"NIST Scholar",   dropRate:18, speed:6.2, bossEvery:1, lives:2, desc:"Boss every level!"},
-    {level:11, name:"PQC Champion",   dropRate:14, speed:6.6, bossEvery:1, lives:2, desc:"Near impossible!"},
-    {level:12, name:"Quantum Guardian",dropRate:10,speed:7.0, bossEvery:1, lives:2, desc:"Master level!"},
-];
-
-function getLevelConfig() {
-    return LEVEL_CONFIG[Math.min(level-1, LEVEL_CONFIG.length-1)];
-}
-
-// Generate stars
-for(let i=0;i<50;i++) stars.push({x:Math.random()*W,y:Math.random()*H,r:Math.random()*1.5+0.3,twinkle:Math.random()*Math.PI*2});
-
-function showFact(fact){
-    const f=document.getElementById("fb-fact");
-    f.textContent="📚 "+fact;f.style.display="block";
-    clearTimeout(window._ft);
-    window._ft=setTimeout(()=>{f.style.display="none";},3500);
-}
-
-function showMsg(msg){document.getElementById("fb-msg").textContent=msg;}
-
-function updateHUD(){
-    document.getElementById("score").textContent=score;
-    document.getElementById("lives").textContent="❤️".repeat(Math.max(0,lives));
-    document.getElementById("level").textContent=level+"/12";
-    document.getElementById("caught").textContent=caught;
-    document.getElementById("wave").textContent=bossWave?"👾 BOSS!":"Normal";
-
-    // Power-up indicators
-    document.getElementById("pw-shield").className="power-slot"+(shield?" active":"");
-    document.getElementById("pw-slow").className="power-slot"+(slowActive?" active":"");
-    document.getElementById("pw-double").className="power-slot"+(doubleActive?" active":"");
-}
+// State
+var items=[],particles=[],floats=[];
+var paddle={x:W/2,w:70,y:H-30,h:14};
+var score=0,combo=1,comboTimer=0,lives=3,level=1;
+var gameActive=false,shielded=false,slowActive=false,doubleActive=false;
+var shieldTimer=0,slowTimer=0,doubleTimer=0;
+var spawnTimer=0,spawnRate=60,fallSpeed=2;
+var boss=null,bossHP=0,bossDir=1;
+var bgStars=[];
+for(var i=0;i<40;i++) bgStars.push({x:Math.random()*W,y:Math.random()*H*0.7,r:Math.random()*1.2,a:Math.random()*0.6+0.2});
 
 function startGame(){
-    blocks=[];particles=[];
-    score=0;lives=LEVEL_CONFIG[0].lives;level=1;caught=0;running=true;
-    frameCount=0;dropRate=LEVEL_CONFIG[0].dropRate;bossWave=false;
-    shield=false;slowActive=false;doubleActive=false;
-    basket.x=W/2-basket.w/2;
+    items=[];particles=[];floats=[];
+    score=0;combo=1;comboTimer=0;lives=3;level=1;
+    gameActive=true;shielded=false;slowActive=false;doubleActive=false;
+    spawnTimer=0;spawnRate=60;fallSpeed=2;boss=null;
+    paddle.x=W/2;
     updateHUD();
-    showMsg("Catch quantum-safe blocks! Avoid broken crypto!");
-    cancelAnimationFrame(window._fbFrame);
-    gameLoop();
+    setMsg('Catch the quantum-safe locks! Avoid broken crypto!');
+    loop();
 }
 
-function moveLeft(){basket.x=Math.max(0,basket.x-basket.speed);}
-function moveRight(){basket.x=Math.min(W-basket.w,basket.x+basket.speed);}
+function resetGame(){gameActive=false;items=[];particles=[];floats=[];boss=null;updateHUD();}
 
-document.addEventListener("keydown",e=>{
-    if(e.key==="ArrowLeft")moveLeft();
-    if(e.key==="ArrowRight")moveRight();
+// Mouse / touch paddle control
+cv.addEventListener('mousemove',function(e){
+    var r=cv.getBoundingClientRect();
+    paddle.x=(e.clientX-r.left)*(W/r.width);
 });
+cv.addEventListener('touchmove',function(e){
+    e.preventDefault();
+    var r=cv.getBoundingClientRect();
+    paddle.x=(e.touches[0].clientX-r.left)*(W/r.width);
+},{passive:false});
 
-function spawnBlock(){
-    const isBoss = bossWave;
-    let blockType;
-    const r=Math.random();
-    if(isBoss){
-        blockType={...BOSS_BLOCKS[0]};
-    } else if(r<0.08){
-        blockType={...POWERUPS[Math.floor(Math.random()*POWERUPS.length)],isPowerup:true};
-    } else if(r<0.55){
-        blockType={...SAFE_BLOCKS[Math.floor(Math.random()*SAFE_BLOCKS.length)]};
+function spawnItem(){
+    var roll=Math.random();
+    var item;
+    if(roll<0.08){
+        var pu=POWERUPS[Math.floor(Math.random()*POWERUPS.length)];
+        item={x:20+Math.random()*(W-40),y:-20,vy:fallSpeed*0.7,
+              emoji:pu.emoji,name:pu.name,color:pu.color,type:'power',effect:pu.effect,r:18};
+    } else if(roll<0.35){
+        var b=BAD[Math.floor(Math.random()*BAD.length)];
+        item={x:20+Math.random()*(W-40),y:-20,vy:fallSpeed*(0.9+Math.random()*0.4),
+              emoji:b.emoji,name:b.name,color:b.color,type:'bad',dmg:b.dmg,r:16};
     } else {
-        blockType={...UNSAFE_BLOCKS[Math.floor(Math.random()*UNSAFE_BLOCKS.length)]};
+        var g=GOOD[Math.floor(Math.random()*GOOD.length)];
+        item={x:20+Math.random()*(W-40),y:-20,vy:fallSpeed*(0.8+Math.random()*0.5),
+              emoji:g.emoji,name:g.name,color:g.color,type:'good',pts:g.pts,fips:g.fips,r:16};
     }
-
-    blocks.push({
-        x:Math.floor(Math.random()*(W-80))+10,
-        y:-40, w:80, h:34,
-        speed:getLevelConfig().speed*(slowActive?0.4:1)*(isBoss?1.5:1),
-        ...blockType
-    });
+    items.push(item);
 }
 
-function gameLoop(){
-    window._fbFrame=requestAnimationFrame(gameLoop);
-    if(!running)return;
+function spawnBoss(){
+    boss={x:W/2,y:60,w:60,h:40,hp:5+level,maxHP:5+level,
+          emoji:'🤖',color:'#ef4444',dir:1,speed:2+level*0.3,
+          shootTimer:0,shootRate:80};
+    setMsg('💀 BOSS: Quantum Shor Machine! Dodge its attacks!');
+}
 
-    // Power-up timers
-    if(shield&&shieldTimer-->0===false){shield=false;}
-    if(slowActive&&--slowTimer<=0){slowActive=false;}
-    if(doubleActive&&--doubleTimer<=0){doubleActive=false;}
+function update(){
+    if(!gameActive) return;
+    // Timers
+    if(comboTimer>0){comboTimer--;if(comboTimer===0)combo=1;}
+    if(shieldTimer>0){shieldTimer--;if(shieldTimer===0){shielded=false;setMsg('Shield expired!');}}
+    if(slowTimer>0){slowTimer--;if(slowTimer===0){slowActive=false;setMsg('Slow expired!');}}
+    if(doubleTimer>0){doubleTimer--;if(doubleTimer===0){doubleActive=false;setMsg('Double expired!');}}
 
-    frameCount++;
-    const effectiveRate=Math.max(25,dropRate-(level-1)*5);
-    if(frameCount%effectiveRate===0) spawnBlock();
-
-    // Boss wave check using level config
-    const cfg = getLevelConfig();
-    const bossEvery = cfg.bossEvery;
-    if(bossEvery>0 && level%bossEvery===0&&!bossWave){
-        bossWave=true;
-        showMsg("👾 BOSS WAVE " + cfg.name + "! Quantum computers attacking!");
-        document.getElementById("wave").textContent="👾 BOSS!";
-    } else if(!(bossEvery>0&&level%bossEvery===0)&&bossWave){
-        bossWave=false;
+    // Spawn
+    spawnTimer++;
+    if(spawnTimer>=spawnRate){
+        spawnTimer=0;
+        spawnItem();
+        // Boss every 5 levels
+        if(score>0&&score%500===0&&!boss) spawnBoss();
     }
 
-    // Update blocks
-    blocks=blocks.filter(b=>{
-        b.y+=b.speed*(slowActive?0.4:1);
+    // Level up
+    var newLevel=Math.floor(score/200)+1;
+    if(newLevel>level){
+        level=newLevel;
+        fallSpeed=2+level*0.3;
+        spawnRate=Math.max(25,60-level*4);
+        setMsg('LEVEL '+level+'! Faster drops incoming!');
+        confetti();
+    }
 
-        // Collision with basket
-        if(b.y+b.h>=basket.y&&b.y<=basket.y+basket.h&&
-           b.x+b.w>=basket.x&&b.x<=basket.x+basket.w){
+    // Move items
+    var speed=slowActive?0.4:1;
+    items.forEach(function(it){it.y+=it.vy*speed;});
 
-            if(b.isPowerup){
-                // Collect power-up
-                if(b.type==="shield"){shield=true;shieldTimer=300;}
-                if(b.type==="slow"){slowActive=true;slowTimer=300;}
-                if(b.type==="double"){doubleActive=true;doubleTimer=300;}
-                showMsg("⚡ Power-up: "+b.label+"!");
-                showFact(b.fact);
-                // Sparkle
-                for(let i=0;i<12;i++) particles.push({
-                    x:b.x+b.w/2,y:b.y,
-                    vx:(Math.random()-0.5)*6,vy:-Math.random()*5,
-                    color:b.color,alpha:1,r:4
-                });
-                return false;
-            }
-
-            if(b.safe){
-                const pts=(b.pts||15)*(doubleActive?2:1)*Math.ceil(level/2);
-                score+=pts;caught++;
-                showMsg("✅ Caught "+b.label+"! +"+pts+(doubleActive?" (2x!)":""));
-                showFact(b.fact);
-                // Level up every 8 catches
-                if(caught%8===0 && level<12){
-                    level++;
-                    const newCfg = getLevelConfig();
-                    dropRate = newCfg.dropRate;
-                    showMsg("🎉 Level "+level+": "+newCfg.name+"! "+newCfg.desc);
-                } else if(level>=12 && caught%8===0){
-                    showMsg("🏆 MAX LEVEL! Quantum Guardian achieved! Score: "+score);
-                }
-                // Green sparkle
-                for(let i=0;i<8;i++) particles.push({
-                    x:b.x+b.w/2,y:b.y,
-                    vx:(Math.random()-0.5)*5,vy:-Math.random()*4,
-                    color:"#10b981",alpha:1,r:3
-                });
-            } else {
-                if(shield){
-                    shield=false;
-                    showMsg("🛡️ Shield blocked "+b.label+"!");
-                    showFact(b.fact);
-                } else {
-                    lives--;
-                    showMsg("💀 "+b.label+" hit! "+b.fact);
-                    showFact(b.fact);
-                    // Red flash particles
-                    for(let i=0;i<10;i++) particles.push({
-                        x:b.x+b.w/2,y:b.y,
-                        vx:(Math.random()-0.5)*6,vy:-Math.random()*4,
-                        color:"#ef4444",alpha:1,r:4
-                    });
-                    if(lives<=0){
-                        running=false;
-                        showMsg("☠️ Game Over! Score: "+score+" | Level: "+level);
-                    }
-                }
-            }
-            updateHUD();
-            return false;
+    // Boss logic
+    if(boss){
+        boss.x+=boss.dir*boss.speed;
+        if(boss.x<40||boss.x>W-40) boss.dir*=-1;
+        boss.shootTimer++;
+        if(boss.shootTimer>=boss.shootRate){
+            boss.shootTimer=0;
+            items.push({x:boss.x,y:boss.y+20,vy:3,emoji:'💥',name:'Boss Shot',
+                        color:'#ef4444',type:'bad',dmg:1,r:12});
         }
+    }
 
-        // Missed safe block
-        if(b.y>H){
-            if(b.safe&&!b.isPowerup){
-                lives--;
-                showMsg("⚠️ Missed "+b.label+"! It was quantum-safe!");
-                updateHUD();
-                if(lives<=0){running=false;showMsg("☠️ Game Over! Score: "+score);}
-            }
+    // Catch check
+    items=items.filter(function(it){
+        if(it.y>H+20) return false;
+        // Check catch
+        if(it.y+it.r>paddle.y&&it.y-it.r<paddle.y+paddle.h&&
+           it.x>paddle.x-paddle.w/2-10&&it.x<paddle.x+paddle.w/2+10){
+            catch_item(it);
             return false;
         }
         return true;
     });
 
-    // Update particles
-    particles=particles.filter(p=>{
-        p.x+=p.vx;p.y+=p.vy;p.vy+=0.2;p.alpha-=0.04;
-        return p.alpha>0;
-    });
-
-    updateHUD();
-    render();
+    // Particles
+    particles.forEach(function(p){p.x+=p.vx;p.y+=p.vy;p.vy+=0.08;p.alpha-=0.03;p.r*=0.95;});
+    particles=particles.filter(function(p){return p.alpha>0;});
+    floats.forEach(function(f){f.y-=0.8;f.alpha-=0.02;});
+    floats=floats.filter(function(f){return f.alpha>0;});
 }
 
-function render(){
-    ctx.clearRect(0,0,W,H);
+function catch_item(it){
+    if(it.type==='good'){
+        combo++;comboTimer=90;
+        var pts=it.pts*(doubleActive?2:1)*combo;
+        score+=pts;
+        addFloat(it.x,paddle.y,'+'+pts+(combo>1?' x'+combo:''),it.color);
+        spawnParticles(it.x,paddle.y,it.color,8);
+        if(combo>=5) confetti();
+        if(it.fips) setMsg(it.emoji+' '+it.name+' ('+it.fips+') caught! +'+pts+' pts!');
+    } else if(it.type==='bad'){
+        if(shielded){
+            addFloat(it.x,paddle.y,'BLOCKED!','#10b981');
+            spawnParticles(it.x,paddle.y,'#10b981',6);
+        } else {
+            lives--;combo=1;
+            addFloat(it.x,paddle.y,'OUCH!','#ef4444');
+            spawnParticles(it.x,paddle.y,'#ef4444',10);
+            setMsg('💀 '+it.name+' is quantum-vulnerable! Avoid it!');
+            if(lives<=0) gameOver();
+        }
+    } else if(it.type==='power'){
+        spawnParticles(it.x,paddle.y,it.color,10);
+        addFloat(it.x,paddle.y,it.name+'!',it.color);
+        if(it.effect==='shield'){shielded=true;shieldTimer=300;setMsg('🛡️ Shield active for 5 seconds!');}
+        else if(it.effect==='slow'){slowActive=true;slowTimer=300;setMsg('⏰ Slow motion for 5 seconds!');}
+        else if(it.effect==='double'){doubleActive=true;doubleTimer=300;setMsg('⭐ Double points for 5 seconds!');}
+        else if(it.effect==='zap'){
+            items=items.filter(function(i){return i.type!=='bad';});
+            setMsg('⚡ Quantum Zapper! All bad crypto destroyed!');
+            spawnParticles(W/2,H/2,'#a78bfa',20);
+        }
+    }
+    // Boss hit
+    if(it===boss) return;
+    updateHUD();
+}
 
-    // Starfield background
-    const bg=ctx.createLinearGradient(0,0,0,H);
-    bg.addColorStop(0,"#0f0c29");
-    bg.addColorStop(1,"#1e1b4b");
-    ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
+function gameOver(){
+    gameActive=false;
+    setMsg('💀 GAME OVER! Score: '+score+' | Level: '+level+' — Press Start to try again!');
+}
 
-    // Twinkling stars
-    stars.forEach(s=>{
-        s.twinkle+=0.02;
-        const alpha=0.3+Math.sin(s.twinkle)*0.3;
-        ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
-        ctx.fillStyle="rgba(255,255,255,"+alpha+")";ctx.fill();
+function draw(){
+    cx.clearRect(0,0,W,H);
+    // Background
+    cx.fillStyle='#020d14';cx.fillRect(0,0,W,H);
+    // Stars
+    bgStars.forEach(function(s){
+        cx.beginPath();cx.arc(s.x,s.y,s.r,0,6.28);
+        cx.fillStyle='rgba(255,255,255,'+s.a+')';cx.fill();
     });
+    // Grid
+    cx.strokeStyle='#0a1f2e';cx.lineWidth=0.4;
+    for(var gx=0;gx<W;gx+=50){cx.beginPath();cx.moveTo(gx,0);cx.lineTo(gx,H);cx.stroke();}
+    for(var gy=0;gy<H;gy+=50){cx.beginPath();cx.moveTo(0,gy);cx.lineTo(W,gy);cx.stroke();}
 
-    // Grid lines
-    ctx.strokeStyle="rgba(79,70,229,0.06)";
-    for(let i=0;i<W;i+=42){ctx.beginPath();ctx.moveTo(i,0);ctx.lineTo(i,H);ctx.stroke();}
-    for(let i=0;i<H;i+=42){ctx.beginPath();ctx.moveTo(0,i);ctx.lineTo(W,i);ctx.stroke();}
+    // Boss
+    if(boss){
+        cx.shadowColor=boss.color;cx.shadowBlur=15;
+        cx.font='36px serif';cx.textAlign='center';cx.textBaseline='middle';
+        cx.fillText(boss.emoji,boss.x,boss.y);cx.shadowBlur=0;
+        // HP bar
+        cx.fillStyle='#1e293b';cx.fillRect(boss.x-30,boss.y-28,60,8);
+        cx.fillStyle='#ef4444';cx.fillRect(boss.x-30,boss.y-28,60*(boss.hp/boss.maxHP),8);
+        cx.font='8px sans-serif';cx.fillStyle='#ef4444';
+        cx.fillText('BOSS HP',boss.x,boss.y-32);
+    }
+
+    // Items
+    items.forEach(function(it){
+        cx.shadowColor=it.color;cx.shadowBlur=8;
+        cx.font='22px serif';cx.textAlign='center';cx.textBaseline='middle';
+        cx.fillText(it.emoji,it.x,it.y);cx.shadowBlur=0;
+        // Small label
+        cx.font='8px sans-serif';cx.fillStyle=it.color;
+        cx.fillText(it.name,it.x,it.y+16);
+    });
 
     // Particles
-    particles.forEach(p=>{
-        ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
-        ctx.fillStyle=p.color+Math.floor(p.alpha*255).toString(16).padStart(2,"0");
-        ctx.fill();
+    particles.forEach(function(p){
+        cx.beginPath();cx.arc(p.x,p.y,p.r,0,6.28);
+        cx.fillStyle=p.color+Math.floor(p.alpha*255).toString(16).padStart(2,'0');cx.fill();
     });
 
-    // Blocks
-    blocks.forEach(b=>{
-        // Shadow
-        ctx.fillStyle="rgba(0,0,0,0.3)";
-        ctx.beginPath();ctx.roundRect(b.x+4,b.y+4,b.w,b.h,8);ctx.fill();
-
-        // Block body
-        const grad=ctx.createLinearGradient(b.x,b.y,b.x,b.y+b.h);
-        grad.addColorStop(0,b.color+"ee");
-        grad.addColorStop(1,b.color+"88");
-        ctx.fillStyle=grad;
-        ctx.beginPath();ctx.roundRect(b.x,b.y,b.w,b.h,8);ctx.fill();
-
-        // Border
-        ctx.strokeStyle=b.safe||b.isPowerup?"rgba(255,255,255,0.4)":"rgba(255,0,0,0.4)";
-        ctx.lineWidth=b.boss?3:1.5;
-        ctx.beginPath();ctx.roundRect(b.x,b.y,b.w,b.h,8);ctx.stroke();
-
-        // Boss pulse
-        if(b.boss){
-            ctx.beginPath();ctx.roundRect(b.x-3,b.y-3,b.w+6,b.h+6,10);
-            ctx.strokeStyle="rgba(220,38,38,"+(0.3+Math.sin(Date.now()*0.01)*0.3)+")";
-            ctx.lineWidth=2;ctx.stroke();
-        }
-
-        // Label
-        ctx.fillStyle="white";
-        ctx.font="bold 11px sans-serif";
-        ctx.textAlign="center";
-        ctx.fillText(b.label,b.x+b.w/2,b.y+b.h/2+4);
+    // Float texts
+    floats.forEach(function(f){
+        cx.font='bold 13px sans-serif';cx.textAlign='center';
+        cx.fillStyle=f.color+Math.floor(f.alpha*255).toString(16).padStart(2,'0');
+        cx.fillText(f.text,f.x,f.y);
     });
 
-    // Basket
-    const bgrad=ctx.createLinearGradient(basket.x,basket.y,basket.x,basket.y+basket.h);
-    bgrad.addColorStop(0,shield?"#fbbf24":"#4f46e5");
-    bgrad.addColorStop(1,shield?"#d97706":"#3730a3");
-    ctx.fillStyle=bgrad;
-    ctx.beginPath();ctx.roundRect(basket.x,basket.y,basket.w,basket.h,8);ctx.fill();
+    // Paddle
+    var pw=paddle.w+(shielded?10:0);
+    var pg=cx.createLinearGradient(paddle.x-pw/2,0,paddle.x+pw/2,0);
+    pg.addColorStop(0,shielded?'#10b981':'#1d4ed8');
+    pg.addColorStop(0.5,shielded?'#34d399':'#60a5fa');
+    pg.addColorStop(1,shielded?'#10b981':'#1d4ed8');
+    cx.fillStyle=pg;
+    if(cx.roundRect)cx.roundRect(paddle.x-pw/2,paddle.y,pw,paddle.h,paddle.h/2);
+    else cx.rect(paddle.x-pw/2,paddle.y,pw,paddle.h);
+    cx.fill();
+    if(shielded){cx.shadowColor='#10b981';cx.shadowBlur=20;cx.fill();cx.shadowBlur=0;}
 
-    // Shield glow
-    if(shield){
-        ctx.beginPath();ctx.roundRect(basket.x-4,basket.y-4,basket.w+8,basket.h+8,10);
-        ctx.strokeStyle="rgba(251,191,36,0.5)";ctx.lineWidth=3;ctx.stroke();
+    // Power-up indicators
+    var indicators=[];
+    if(shielded) indicators.push({emoji:'🛡️',color:'#10b981',t:shieldTimer});
+    if(slowActive) indicators.push({emoji:'⏰',color:'#60a5fa',t:slowTimer});
+    if(doubleActive) indicators.push({emoji:'⭐',color:'#fbbf24',t:doubleTimer});
+    indicators.forEach(function(ind,i){
+        cx.font='14px serif';cx.textAlign='left';
+        cx.fillText(ind.emoji,W-22,15+i*18);
+        cx.fillStyle='#1e293b';cx.fillRect(W-44,10+i*18,18,4);
+        cx.fillStyle=ind.color;cx.fillRect(W-44,10+i*18,18*(ind.t/300),4);
+    });
+
+    // Combo indicator
+    if(combo>1){
+        cx.font='bold '+(12+combo)+'px sans-serif';cx.textAlign='left';
+        cx.fillStyle='#fbbf24';
+        cx.fillText('x'+combo+' COMBO!',5,18);
     }
 
-    // Basket label
-    ctx.fillStyle="white";ctx.font="bold 11px sans-serif";ctx.textAlign="center";
-    ctx.fillText(shield?"🛡️ AGENT":"🧺 AGENT",basket.x+basket.w/2,basket.y+15);
-
-    // Power-up timers overlay
-    if(slowActive){
-        ctx.fillStyle="rgba(96,165,250,0.08)";ctx.fillRect(0,0,W,H);
-        ctx.fillStyle="rgba(96,165,250,0.6)";ctx.font="bold 12px sans-serif";
-        ctx.textAlign="center";ctx.fillText("⏰ SLOW MOTION",W/2,20);
-    }
-    if(doubleActive){
-        ctx.fillStyle="rgba(52,211,153,0.5)";ctx.font="bold 12px sans-serif";
-        ctx.textAlign="center";ctx.fillText("💎 2x POINTS",W/2,doubleActive&&slowActive?36:20);
-    }
-
-    // Game over
-    if(!running&&lives<=0){
-        ctx.fillStyle="rgba(0,0,0,0.8)";ctx.fillRect(0,0,W,H);
-        ctx.fillStyle="#ef4444";ctx.font="bold 30px sans-serif";ctx.textAlign="center";
-        ctx.fillText("💀 GAME OVER",W/2,H/2-50);
-        ctx.fillStyle="white";ctx.font="18px sans-serif";
-        ctx.fillText("Score: "+score,W/2,H/2-10);
-        ctx.fillText("Level: "+level+" | Caught: "+caught,W/2,H/2+25);
-        ctx.fillStyle="#a5b4fc";ctx.font="13px sans-serif";
-        ctx.fillText("Kyber & Dilithium = Quantum Safe!",W/2,H/2+60);
-    }
+    // Level progress bar
+    var lpct=(score%200)/200;
+    cx.fillStyle='#1e293b';cx.fillRect(0,H-3,W,3);
+    cx.fillStyle='#3b82f6';cx.fillRect(0,H-3,W*lpct,3);
 }
 
-// Idle screen
-const ibg=ctx.createLinearGradient(0,0,0,H);
-ibg.addColorStop(0,"#0f0c29");ibg.addColorStop(1,"#1e1b4b");
-ctx.fillStyle=ibg;ctx.fillRect(0,0,W,H);
-stars.forEach(s=>{ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fillStyle="rgba(255,255,255,0.4)";ctx.fill();});
-ctx.fillStyle="#a5b4fc";ctx.font="bold 22px sans-serif";ctx.textAlign="center";
-ctx.fillText("🧱 Quantum Lock Drop",W/2,H/2-70);
-ctx.fillStyle="#6b7280";ctx.font="13px sans-serif";
-ctx.fillText("Catch quantum-safe blocks!",W/2,H/2-35);
-ctx.fillText("Avoid broken crypto!",W/2,H/2-10);
-ctx.fillText("Grab power-ups for shields and slow motion!",W/2,H/2+20);
-ctx.fillStyle="#4f46e5";ctx.font="bold 15px sans-serif";
-ctx.fillText("Press ▶ Start to play!",W/2,H/2+60);
+function loop(){if(!gameActive)return;requestAnimationFrame(loop);update();draw();}
+
+function spawnParticles(x,y,color,n){
+    for(var i=0;i<n;i++){
+        var a=Math.random()*6.28,s=1+Math.random()*4;
+        particles.push({x:x,y:y,vx:Math.cos(a)*s,vy:Math.sin(a)*s-1,r:2+Math.random()*3,alpha:1,color:color});
+    }
+}
+function addFloat(x,y,text,color){floats.push({x:x,y:y,text:text,color:color,alpha:1});}
+function updateHUD(){
+    document.getElementById('h-score').textContent=score;
+    document.getElementById('h-combo').textContent='x'+combo;
+    document.getElementById('h-lives').textContent='❤️'.repeat(Math.max(0,lives));
+    document.getElementById('h-level').textContent=level;
+}
+function setMsg(m){document.getElementById('msg').textContent=m;}
+function confetti(){
+    var cols=['#fbbf24','#10b981','#3b82f6','#8b5cf6','#ef4444'];
+    for(var i=0;i<20;i++){setTimeout(function(){
+        var el=document.createElement('div');el.className='cp';
+        el.style.left=Math.random()*100+'vw';
+        el.style.background=cols[Math.floor(Math.random()*cols.length)];
+        el.style.animationDuration=(1+Math.random()*2)+'s';
+        document.body.appendChild(el);setTimeout(function(){el.remove();},3000);
+    },i*40);}
+}
+
+// Init canvas
+cx.fillStyle='#020d14';cx.fillRect(0,0,W,H);
+cx.font='bold 16px sans-serif';cx.fillStyle='#60a5fa';cx.textAlign='center';
+cx.fillText('🧱 Quantum Lock Drop',W/2,H/2-10);
+cx.font='11px sans-serif';cx.fillStyle='#94a3b8';
+cx.fillText('Press START to play!',W/2,H/2+15);
 </script>
 </body>
 </html>
-""", height=700)
+""", height=580)
 
 def render_lattice_maze():
     """6-8: Lattice Maze — UPGRADED 2026 — Pac-Man style with enemies, power-ups, boss waves."""
@@ -2312,614 +2260,739 @@ def render_quantumcraft_elementary():
 
 
 def render_quantumcraft_middle():
-    """6-8: Enhanced QuantumCraft Lattice Mines with better graphics, enemies, boss levels."""
-    st.subheader("⛏️ QuantumCraft — Lattice Mines Enhanced!")
+    """6-8: QuantumCraft Lattice Mines — UPGRADED 2026 — deeper caves, PQC boss, glow crystals."""
+    import streamlit as st
+    import streamlit.components.v1 as components
+    st.subheader("⛏️ QuantumCraft — Lattice Mines!")
     st.markdown(
         "Dig deep into the **quantum lattice mines**! "
-        "Mine rare PQC algorithms, avoid quantum creepers, find the ladder to go deeper. "
-        "Boss enemies appear at depth 3+! WASD to move, E to mine, F to place walls."
+        "Mine PQC crystals, avoid Shor Bots, and find the portal to go deeper. "
+        "**WASD** to move, **E** to mine, **F** to place walls."
     )
-
-    with st.expander("📚 Mining Guide — PQC Algorithms by Depth", expanded=False):
-        cols = st.columns(3)
-        with cols[0]:
-            st.success("**Surface (Depth 1-2)**")
-            st.info("🔐 Kyber — ML-KEM FIPS 203\n✍️ Dilithium — ML-DSA FIPS 204")
-        with cols[1]:
-            st.warning("**Deep (Depth 3-4)**")
-            st.info("🌲 SPHINCS+ — SLH-DSA FIPS 205\n🦅 Falcon — FN-DSA FIPS 206")
-        with cols[2]:
-            st.error("**Ultra Deep (Depth 5+)**")
-            st.info("🧮 LWE Crystal — Hardest PQC math!\n💎 Quantum Core — Ultimate find!")
-
-    import streamlit.components.v1 as components_qcm
-    components_qcm.html("""
+    components.html(r"""
 <!DOCTYPE html>
 <html>
 <head>
+<meta charset="UTF-8">
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
-body{background:#0f172a;font-family:sans-serif;color:white;}
-#qm-wrap{display:flex;flex-direction:column;align-items:center;padding:10px;}
-.qm-hud{display:flex;justify-content:space-between;width:540px;margin-bottom:8px;gap:5px;}
-.hud-box{background:#1e293b;border:1px solid #334155;border-radius:8px;
-padding:5px 8px;font-size:11px;font-weight:bold;color:#a5b4fc;flex:1;text-align:center;}
-#qmCanvas{border:2px solid #3b82f6;border-radius:12px;display:block;}
-.qm-inv{display:flex;gap:5px;margin:6px 0;flex-wrap:wrap;justify-content:center;}
-.inv-slot{background:#1e293b;border:1px solid #334155;border-radius:6px;
-padding:3px 8px;font-size:11px;color:#a5b4fc;}
-.qm-btns{display:flex;gap:5px;margin:4px 0;flex-wrap:wrap;justify-content:center;}
-.qm-btn{padding:7px 12px;border-radius:8px;border:none;cursor:pointer;
-font-size:12px;font-weight:bold;color:white;}
-.qm-btn:active{opacity:0.8;}
-#qm-msg{font-size:12px;color:#60a5fa;min-height:18px;margin:4px;text-align:center;}
-#qm-fact{background:rgba(59,130,246,0.15);border:1px solid rgba(59,130,246,0.4);
-border-radius:8px;padding:6px 12px;margin:4px;font-size:11px;color:#a5b4fc;
-max-width:540px;display:none;text-align:center;}
+body{background:#020d14;font-family:'Segoe UI',sans-serif;color:white;overflow:hidden;}
+#wrap{max-width:560px;margin:0 auto;padding:8px;}
+.hud{display:grid;grid-template-columns:repeat(5,1fr);gap:3px;margin-bottom:6px;}
+.hb{background:#071520;border:1px solid #1a3a5a;border-radius:6px;padding:4px 2px;
+    text-align:center;font-size:8px;color:#60a5fa;}
+.hb b{display:block;font-size:13px;color:white;}
+#cv{border:2px solid #8b5cf6;border-radius:10px;display:block;}
+#inv-bar{display:flex;gap:4px;justify-content:center;margin-top:5px;flex-wrap:wrap;}
+.inv-slot{padding:3px 8px;border-radius:6px;border:1px solid #1a3a5a;background:#071520;
+    font-size:10px;color:#94a3b8;min-width:70px;text-align:center;}
+#msg{background:#071520;border:1px solid #1a3a5a;border-radius:8px;
+    padding:4px 10px;margin-top:5px;font-size:10px;color:#60a5fa;text-align:center;}
+.btns{display:flex;gap:4px;margin-top:5px;}
+.btn{flex:1;padding:7px;border-radius:8px;border:none;cursor:pointer;
+    font-size:11px;font-weight:bold;color:white;}
+.btn-start{background:linear-gradient(135deg,#7c3aed,#8b5cf6);}
+.btn-reset{background:#334155;}
+.cp{position:fixed;pointer-events:none;z-index:999;width:8px;height:8px;
+    border-radius:2px;animation:cf linear forwards;}
+@keyframes cf{0%{transform:translateY(-20px) rotate(0deg);opacity:1;}
+    100%{transform:translateY(500px) rotate(720deg);opacity:0;}}
 </style>
 </head>
 <body>
-<div id="qm-wrap">
-    <div class="qm-hud">
-        <div class="hud-box">❤️ HP<br><span id="mhp">120</span></div>
-        <div class="hud-box">⭐ Score<br><span id="mscore">0</span></div>
-        <div class="hud-box">⬇️ Depth<br><span id="mdepth">1</span></div>
-        <div class="hud-box">💎 Rare<br><span id="mrare">0</span></div>
-        <div class="hud-box">⛏️ Mined<br><span id="mmined">0</span></div>
-    </div>
-    <canvas id="qmCanvas" width="540" height="420"></canvas>
-    <div id="qm-msg">Press Start to begin mining!</div>
-    <div id="qm-fact"></div>
-    <div class="qm-inv">
-        <div class="inv-slot" id="m-kyber">🔐 Kyber: 0</div>
-        <div class="inv-slot" id="m-dilithium">✍️ Dilithium: 0</div>
-        <div class="inv-slot" id="m-sphincs">🌲 SPHINCS: 0</div>
-        <div class="inv-slot" id="m-falcon">🦅 Falcon: 0</div>
-        <div class="inv-slot" id="m-lwe">🧮 LWE: 0</div>
-        <div class="inv-slot" id="m-qcore">💎 QCore: 0</div>
-    </div>
-    <div class="qm-btns">
-        <button class="qm-btn" style="background:#10b981" onclick="startMines()">▶ Start</button>
-        <button class="qm-btn" style="background:#3b82f6" onclick="mineMid()">⛏️ Mine (E)</button>
-        <button class="qm-btn" style="background:#4f46e5" onclick="placeMid()">🧱 Place (F)</button>
-        <button class="qm-btn" style="background:#f59e0b" onclick="goDeeper()">⬇️ Deeper</button>
-        <button class="qm-btn" style="background:#374151" onclick="startMines()">🔄 Reset</button>
-    </div>
+<div id="wrap">
+<div class="hud">
+    <div class="hb">❤️ HP<br><b id="h-hp">100</b></div>
+    <div class="hb">⭐ Score<br><b id="h-score">0</b></div>
+    <div class="hb">⛏️ Mined<br><b id="h-mined">0</b></div>
+    <div class="hb">🌊 Depth<br><b id="h-depth">1</b></div>
+    <div class="hb">🔐 PQC<br><b id="h-pqc">0</b></div>
+</div>
+<canvas id="cv" width="560" height="360"></canvas>
+<div id="inv-bar">
+    <div class="inv-slot" id="sl-kyber">🔐 Kyber:0</div>
+    <div class="inv-slot" id="sl-dil">✍️ ML-DSA:0</div>
+    <div class="inv-slot" id="sl-sph">🌲 SPHINCS:0</div>
+    <div class="inv-slot" id="sl-fal">🦅 Falcon:0</div>
+</div>
+<div id="msg">WASD to move, E to mine, F to place wall. Find the portal to go deeper!</div>
+<div class="btns">
+    <button class="btn btn-start" onclick="startGame()">⛏️ Start Mining!</button>
+    <button class="btn btn-reset" onclick="resetGame()">🔄 Reset</button>
+</div>
 </div>
 <script>
-const mc = document.getElementById("qmCanvas");
-const mx = mc.getContext("2d");
-const CELL=40, COLS=13, ROWS=10;
+var cv=document.getElementById('cv'),cx=cv.getContext('2d');
+var W=560,H=360,TS=28,COLS=20,ROWS=13;
 
-const BLOCKS = {
-    empty:     {color:"#0f172a",    label:"",  solid:false, mineable:false},
-    stone:     {color:"#374151",    label:"🪨", solid:true,  mineable:true,  item:null,       pts:2,  rare:false},
-    kyber:     {color:"#10b981",    label:"K",  solid:true,  mineable:true,  item:"kyber",    pts:20, rare:false,
-                fact:"ML-KEM FIPS 203 — NIST standard key encapsulation!"},
-    dilithium: {color:"#3b82f6",    label:"D",  solid:true,  mineable:true,  item:"dilithium",pts:30, rare:false,
-                fact:"ML-DSA FIPS 204 — Quantum-safe digital signatures!"},
-    sphincs:   {color:"#8b5cf6",    label:"S",  solid:true,  mineable:true,  item:"sphincs",  pts:40, rare:true,
-                fact:"SLH-DSA FIPS 205 — Hash-based backup signature standard!"},
-    falcon:    {color:"#f59e0b",    label:"F",  solid:true,  mineable:true,  item:"falcon",   pts:55, rare:true,
-                fact:"FN-DSA FIPS 206 — Smallest quantum-safe signature ever!"},
-    lwe:       {color:"#ec4899",    label:"L",  solid:true,  mineable:true,  item:"lwe",      pts:70, rare:true,
-                fact:"Learning With Errors — The hardest PQC math problem!"},
-    qcore:     {color:"#fbbf24",    label:"Q",  solid:true,  mineable:true,  item:"qcore",    pts:150,rare:true,
-                fact:"Quantum Core — Master all NIST PQC standards to protect the world!"},
-    wall:      {color:"#111827",    label:"",   solid:true,  mineable:false},
-    ladder:    {color:"#78350f",    label:"▼",  solid:false, mineable:false, special:"deeper"},
-    placed:    {color:"#1d4ed8",    label:"■",  solid:true,  mineable:false},
-    boss_wall: {color:"#7f1d1d",    label:"☠",  solid:true,  mineable:false},
+var BLOCKS={
+    air:   {color:'',        solid:false,mine:false},
+    stone: {color:'#374151', solid:true, mine:true,  drop:'stone',   pts:2,  hard:3, emoji:''},
+    dirt:  {color:'#7c4f2a', solid:true, mine:true,  drop:'dirt',    pts:1,  hard:1, emoji:''},
+    kyber: {color:'#10b981', solid:true, mine:true,  drop:'kyber',   pts:20, hard:2, emoji:'🔐', glow:'#10b981'},
+    dil:   {color:'#3b82f6', solid:true, mine:true,  drop:'dil',     pts:25, hard:3, emoji:'✍️',  glow:'#3b82f6'},
+    sph:   {color:'#8b5cf6', solid:true, mine:true,  drop:'sph',     pts:30, hard:4, emoji:'🌲', glow:'#8b5cf6'},
+    fal:   {color:'#f59e0b', solid:true, mine:true,  drop:'fal',     pts:35, hard:5, emoji:'🦅', glow:'#f59e0b'},
+    wall:  {color:'#1e293b', solid:true, mine:true,  drop:null,      pts:0,  hard:1, emoji:''},
+    bedrock:{color:'#0f172a',solid:true, mine:false, drop:null,      pts:0,  hard:99,emoji:''},
+    portal:{color:'#a78bfa', solid:false,mine:false, drop:null,      pts:0,  hard:0, emoji:'🌀', glow:'#a78bfa'},
+    loot:  {color:'#fbbf24', solid:false,mine:true,  drop:'loot',    pts:50, hard:1, emoji:'📦'},
+    enemy_egg:{color:'#ef4444',solid:true,mine:true, drop:null,      pts:10, hard:1, emoji:'🥚'},
 };
-
-const ENEMIES = [
-    {emoji:"☠️", name:"Shor",    color:"#ef4444", fact:"Shor breaks RSA and ECC!",           boss:false, dmg:15},
-    {emoji:"🌀", name:"Grover",  color:"#f97316", fact:"Grover speeds up brute force attacks!",boss:false, dmg:10},
-    {emoji:"👾", name:"HHL",     color:"#a855f7", fact:"HHL attacks linear algebra problems!", boss:false, dmg:12},
-    {emoji:"💀", name:"Q-BOSS",  color:"#dc2626", fact:"Full quantum computer — ultimate threat!",boss:true, dmg:30},
+var FACTS=[
+    'You mined Kyber! ML-KEM FIPS 203 uses Module-LWE lattice math to protect key exchange!',
+    'Dilithium mined! ML-DSA FIPS 204 signs every message — quantum computers cannot forge it!',
+    'SPHINCS+ found! SLH-DSA FIPS 205 uses SHA-3 hash trees — safe even if lattice math breaks!',
+    'Falcon collected! FN-DSA FIPS 206 makes the smallest quantum-safe signatures for IoT!',
+    'These crystals represent the 4 NIST PQC standards finalized in August 2024!',
 ];
 
-let mw=[], mp, me=[], minv, mscore=0, mhp=120, mdepth=1, mrare=0, mmined=0;
-let mrun=false, mk={}, mmt=0, particles=[];
+// State
+var world=[],player={},enemies=[],particles=[],mineProgress=null;
+var inventory={kyber:0,dil:0,sph:0,fal:0,stone:0,dirt:0};
+var score=0,hp=100,depth=1,mined=0,pqcTotal=0;
+var keys={},gameActive=false,camera={x:0,y:0};
+var frameId=null;
+var PQCCOUNT=0;
 
-// 12 depth level configs
-const DEPTH_CONFIG = [
-    {depth:1,  name:"Surface",        rareChance:0.04, enemyCount:1, hasBoss:false, desc:"Safe to mine!"},
-    {depth:2,  name:"Shallow",        rareChance:0.07, enemyCount:1, hasBoss:false, desc:"Some rare ore!"},
-    {depth:3,  name:"Stone Layer",    rareChance:0.10, enemyCount:2, hasBoss:true,  desc:"First boss!"},
-    {depth:4,  name:"Iron Vein",      rareChance:0.13, enemyCount:2, hasBoss:false, desc:"More enemies!"},
-    {depth:5,  name:"Crystal Cave",   rareChance:0.16, enemyCount:3, hasBoss:false, desc:"LWE crystals!"},
-    {depth:6,  name:"Deep Rock",      rareChance:0.19, enemyCount:3, hasBoss:true,  desc:"Boss guardian!"},
-    {depth:7,  name:"Quantum Seam",   rareChance:0.22, enemyCount:3, hasBoss:false, desc:"Rare quantum ore!"},
-    {depth:8,  name:"Lattice Core",   rareChance:0.25, enemyCount:4, hasBoss:false, desc:"Dense lattice!"},
-    {depth:9,  name:"Kyber Vault",    rareChance:0.27, enemyCount:4, hasBoss:true,  desc:"Vault boss!"},
-    {depth:10, name:"Cipher Depths",  rareChance:0.29, enemyCount:5, hasBoss:false, desc:"Expert mining!"},
-    {depth:11, name:"Quantum Abyss",  rareChance:0.30, enemyCount:5, hasBoss:true,  desc:"Final guardian!"},
-    {depth:12, name:"Quantum Core",   rareChance:0.35, enemyCount:6, hasBoss:true,  desc:"Ultimate depth!"},
-];
-
-function genMines(depth) {
-    mw=[];
-    const dcfg = DEPTH_CONFIG[Math.min(depth-1, DEPTH_CONFIG.length-1)];
-    const rareChance = dcfg.rareChance;
-    const hasBoss = dcfg.hasBoss;
-
-    for(let r=0;r<ROWS;r++){
-        mw[r]=[];
-        for(let c=0;c<COLS;c++){
-            if(r===0||r===ROWS-1||c===0||c===COLS-1){mw[r][c]="wall";continue;}
-            const rn=Math.random();
-            if(depth>=5&&rn<0.02)      mw[r][c]="qcore";
-            else if(rn<rareChance*0.25) mw[r][c]="lwe";
-            else if(rn<rareChance*0.5)  mw[r][c]="falcon";
-            else if(rn<rareChance*0.75) mw[r][c]="sphincs";
-            else if(rn<rareChance*1.2)  mw[r][c]="dilithium";
-            else if(rn<rareChance*2.0)  mw[r][c]="kyber";
-            else if(rn<0.45)            mw[r][c]="stone";
-            else                        mw[r][c]="empty";
-        }
-    }
-    // Clear spawn area
-    mw[1][1]="empty";mw[1][2]="empty";mw[2][1]="empty";mw[2][2]="empty";
-    // Add ladder
-    mw[ROWS-2][COLS-2]="ladder";
-    // Boss area at depth 3+
-    if(hasBoss){
-        mw[ROWS-2][COLS-4]="boss_wall";
-        mw[ROWS-3][COLS-4]="boss_wall";
-    }
-}
-
-function startMines(){
-    mdepth=1;mscore=0;mhp=120;mrare=0;mmined=0;
-    minv={kyber:0,dilithium:0,sphincs:0,falcon:0,lwe:0,qcore:0};
-    genMines(1);mp={x:1,y:1};me=[];particles=[];
-    for(let i=0;i<2;i++)spawnEnemy();
-    mrun=true;updateUI();
-    cancelAnimationFrame(window._mF);mLoop();
-}
-
-function spawnEnemy(){
-    const x=Math.floor(Math.random()*(COLS-5))+COLS-6;
-    const y=Math.floor(Math.random()*(ROWS-4))+2;
-    if(mw[y]&&mw[y][x]==="empty"){
-        const isBoss = mdepth>=3&&Math.random()<0.3;
-        const eType = isBoss ? ENEMIES[3] : ENEMIES[Math.floor(Math.random()*3)];
-        me.push({x,y,timer:0,rate:isBoss?80:25+Math.floor(Math.random()*35),...eType});
-    }
-}
-
-function mCanWalk(x,y){
-    if(x<0||y<0||x>=COLS||y>=ROWS)return false;
-    const b=BLOCKS[mw[y][x]];
-    return b&&!b.solid;
-}
-
-function showFact(fact){
-    const f=document.getElementById("qm-fact");
-    f.textContent="📚 "+fact;f.style.display="block";
-    clearTimeout(window._ft);
-    window._ft=setTimeout(()=>{f.style.display="none";},4000);
-}
-
-function mineMid(){
-    if(!mrun)return;
-    const dirs=[{dx:0,dy:-1},{dx:0,dy:1},{dx:-1,dy:0},{dx:1,dy:0}];
-    for(const d of dirs){
-        const nx=mp.x+d.dx,ny=mp.y+d.dy;
-        if(nx>=0&&ny>=0&&nx<COLS&&ny<ROWS){
-            const bt=mw[ny][nx],b=BLOCKS[bt];
-            if(b&&b.mineable){
-                if(b.item){
-                    minv[b.item]=(minv[b.item]||0)+1;
-                    if(b.rare)mrare++;
-                    showFact(b.fact);
-                    // Sparkle
-                    for(let i=0;i<8;i++) particles.push({
-                        x:nx*CELL+CELL/2,y:ny*CELL+CELL/2,
-                        vx:(Math.random()-0.5)*5,vy:(Math.random()-0.5)*5,
-                        color:BLOCKS[bt].color,alpha:1,r:3
-                    });
-                }
-                mscore+=b.pts;mmined++;mw[ny][nx]="empty";
-                document.getElementById("qm-msg").textContent="Mined "+bt+"! +"+b.pts+" pts";
-                updateUI();return;
+function genWorld(d){
+    world=[];
+    for(var r=0;r<ROWS;r++){
+        world[r]=[];
+        for(var c=0;c<COLS;c++){
+            if(r===0||r===ROWS-1||c===0||c===COLS-1){world[r][c]='bedrock';continue;}
+            var rng=Math.random();
+            var pqcChance=0.02+d*0.01;
+            if(r===ROWS-2&&c===Math.floor(COLS/2)){world[r][c]='portal';continue;}
+            if(r<3){world[r][c]=rng<0.3?'stone':rng<0.5?'dirt':'air';}
+            else if(r<6){
+                if(rng<pqcChance) world[r][c]='kyber';
+                else if(rng<0.35) world[r][c]='stone';
+                else if(rng<0.5) world[r][c]='dirt';
+                else world[r][c]='air';
+            } else {
+                if(rng<pqcChance*0.5) world[r][c]='fal';
+                else if(rng<pqcChance) world[r][c]='sph';
+                else if(rng<pqcChance*2) world[r][c]='dil';
+                else if(rng<pqcChance*3) world[r][c]='kyber';
+                else if(rng<0.45) world[r][c]='stone';
+                else if(rng<0.55) world[r][c]='dirt';
+                else if(rng<0.58) world[r][c]='loot';
+                else world[r][c]='air';
             }
         }
     }
-    document.getElementById("qm-msg").textContent="Nothing to mine here — move next to a glowing block!";
-}
-
-function placeMid(){
-    if(!mrun||minv.kyber<=0){
-        document.getElementById("qm-msg").textContent="Need Kyber blocks to build walls!";return;
-    }
-    const dirs=[{dx:0,dy:-1},{dx:1,dy:0},{dx:-1,dy:0},{dx:0,dy:1}];
-    for(const d of dirs){
-        const nx=mp.x+d.dx,ny=mp.y+d.dy;
-        if(nx>=0&&ny>=0&&nx<COLS&&ny<ROWS&&mw[ny][nx]==="empty"){
-            minv.kyber--;mw[ny][nx]="placed";
-            document.getElementById("qm-msg").textContent="Kyber wall placed! Blocks quantum creepers!";
-            updateUI();return;
-        }
+    // Clear player spawn
+    for(var dr=-1;dr<=1;dr++) for(var dc=-1;dc<=1;dc++) if(world[2+dr]&&world[2+dr][2+dc]) world[2+dr][2+dc]='air';
+    // Spawn enemies
+    enemies=[];
+    for(var i=0;i<2+d;i++){
+        var er=3+Math.floor(Math.random()*(ROWS-5));
+        var ec=5+Math.floor(Math.random()*(COLS-8));
+        if(world[er][ec]==='air') enemies.push({r:ec*TS+TS/2,y:er*TS+TS/2,vx:0,vy:0,speed:0.7+d*0.15,hp:3,face:'👾',onGround:false});
     }
 }
 
-function goDeeper(){
-    if(!mrun)return;
-    if(mp.x>=COLS-3&&mp.y>=ROWS-3){
-        if(mdepth>=12){
-            document.getElementById("qm-msg").textContent="🏆 MAX DEPTH REACHED! Quantum Core Miner! Score:"+mscore+" Rare:"+mrare;
-            mrun=false;
+function startGame(){
+    depth=1;score=0;hp=100;mined=0;pqcTotal=0;PQCCOUNT=0;
+    inventory={kyber:0,dil:0,sph:0,fal:0,stone:0,dirt:0};
+    genWorld(depth);
+    player={x:2*TS+TS/2,y:2*TS,vx:0,vy:0,onGround:false,mineTimer:0,mineTarget:null,facing:1};
+    camera={x:0,y:0};mineProgress=null;
+    gameActive=true;particles=[];
+    updateHUD();updateInv();
+    if(frameId) cancelAnimationFrame(frameId);
+    loop();
+    setMsg('Mine PQC crystals! Find the 🌀 portal to go deeper!');
+}
+
+function resetGame(){gameActive=false;if(frameId)cancelAnimationFrame(frameId);}
+
+// Tile helpers
+function getTile(c,r){if(c<0||r<0||c>=COLS||r>=ROWS)return 'bedrock';return world[r][c]||'air';}
+function setTile(c,r,t){if(c>=0&&r>=0&&c<COLS&&r<ROWS)world[r][c]=t;}
+function isSolid(c,r){return BLOCKS[getTile(c,r)].solid;}
+
+// Player physics
+var G=0.4,MAXFALL=10,SPEED=2.5,JUMP=-8;
+function updatePlayer(){
+    if(!gameActive)return;
+    // Input
+    var dx=0;
+    if(keys['a']||keys['ArrowLeft'])dx=-SPEED;
+    if(keys['d']||keys['ArrowRight'])dx=SPEED;
+    if(dx!==0)player.facing=dx>0?1:-1;
+    player.vx=dx;
+    if((keys['w']||keys['ArrowUp']||keys[' '])&&player.onGround){player.vy=JUMP;player.onGround=false;}
+    player.vy=Math.min(player.vy+G,MAXFALL);
+    // X move
+    player.x+=player.vx;
+    var tx1=Math.floor((player.x-8)/TS),tx2=Math.floor((player.x+8)/TS);
+    var ty1=Math.floor(player.y/TS),ty2=Math.floor((player.y+26)/TS);
+    if(player.vx>0){if(isSolid(tx2,ty1)||isSolid(tx2,ty2)){player.x=tx2*TS-8;player.vx=0;}}
+    else if(player.vx<0){if(isSolid(tx1,ty1)||isSolid(tx1,ty2)){player.x=(tx1+1)*TS+8;player.vx=0;}}
+    // Y move
+    player.y+=player.vy;player.onGround=false;
+    tx1=Math.floor((player.x-7)/TS);tx2=Math.floor((player.x+7)/TS);
+    ty1=Math.floor(player.y/TS);ty2=Math.floor((player.y+26)/TS);
+    if(player.vy>0){if(isSolid(tx1,ty2)||isSolid(tx2,ty2)){player.y=ty2*TS-26;player.vy=0;player.onGround=true;}}
+    else if(player.vy<0){if(isSolid(tx1,ty1)||isSolid(tx2,ty1)){player.y=(ty1+1)*TS;player.vy=0;}}
+    // Bounds
+    player.x=Math.max(TS,Math.min(COLS*TS-TS,player.x));
+    player.y=Math.max(0,Math.min(ROWS*TS-TS,player.y));
+    // Camera
+    camera.x=Math.max(0,Math.min(COLS*TS-W,player.x-W/2));
+    camera.y=Math.max(0,Math.min(ROWS*TS-H,player.y-H/2));
+    // Portal check
+    var ptc=Math.floor(player.x/TS),ptr=Math.floor((player.y+13)/TS);
+    if(getTile(ptc,ptr)==='portal'){nextDepth();}
+}
+
+function doMine(){
+    var dirs=[{dc:0,dr:-1},{dc:0,dr:1},{dc:-1,dr:0},{dc:1,dr:0}];
+    for(var i=0;i<dirs.length;i++){
+        var nc=Math.floor(player.x/TS)+dirs[i].dc;
+        var nr=Math.floor((player.y+13)/TS)+dirs[i].dr;
+        var bt=getTile(nc,nr);
+        var bd=BLOCKS[bt];
+        if(bd&&bd.mine){
+            if(!mineProgress||mineProgress.c!==nc||mineProgress.r!==nr){
+                mineProgress={c:nc,r:nr,prog:0,max:bd.hard*6};
+            }
+            mineProgress.prog++;
+            spawnParticles(nc*TS+TS/2-camera.x,nr*TS+TS/2-camera.y,bd.color||'#888',2);
+            if(mineProgress.prog>=mineProgress.max){
+                setTile(nc,nr,'air');
+                if(bd.drop){
+                    inventory[bd.drop]=(inventory[bd.drop]||0)+1;
+                    score+=bd.pts;mined++;
+                    if(['kyber','dil','sph','fal'].includes(bd.drop)){
+                        pqcTotal++;PQCCOUNT++;
+                        setMsg(bd.emoji+' '+bd.drop.toUpperCase()+' mined! +'+bd.pts+' pts! '+FACTS[Math.floor(Math.random()*FACTS.length)].substring(0,60)+'...');
+                        confetti();
+                    }
+                    if(bd.drop==='loot'){score+=50;setMsg('📦 Loot chest! +50 pts!');}
+                }
+                mineProgress=null;
+                updateHUD();updateInv();
+            }
             return;
         }
-        mdepth++;
-        genMines(mdepth);mp={x:1,y:1};me=[];particles=[];
-        const dcfg3 = DEPTH_CONFIG[Math.min(mdepth-1, DEPTH_CONFIG.length-1)];
-        for(let i=0;i<dcfg3.enemyCount;i++)spawnEnemy();
-        document.getElementById("mdepth").textContent=mdepth+"/12";
-        document.getElementById("qm-msg").textContent="Depth "+mdepth+"/12: "+dcfg3.name+"! "+dcfg3.desc;
-        updateUI();
-    } else {
-        document.getElementById("qm-msg").textContent="Find the ▼ ladder in the bottom-right corner!";
+    }
+    mineProgress=null;
+}
+
+function doPlace(){
+    if((inventory.stone||0)<=0)return;
+    var dirs=[{dc:0,dr:-1},{dc:1,dr:0},{dc:-1,dr:0},{dc:0,dr:1}];
+    for(var i=0;i<dirs.length;i++){
+        var nc=Math.floor(player.x/TS)+dirs[i].dc;
+        var nr=Math.floor((player.y+13)/TS)+dirs[i].dr;
+        if(getTile(nc,nr)==='air'){
+            setTile(nc,nr,'wall');
+            inventory.stone--;
+            updateInv();return;
+        }
     }
 }
 
-function updateUI(){
-    document.getElementById("mscore").textContent=mscore;
-    document.getElementById("mhp").textContent=Math.max(0,mhp);
-    document.getElementById("mdepth").textContent=mdepth;
-    document.getElementById("mrare").textContent=mrare;
-    document.getElementById("mmined").textContent=mmined;
-    document.getElementById("m-kyber").textContent="🔐 Kyber:"+minv.kyber;
-    document.getElementById("m-dilithium").textContent="✍️ Dilithium:"+minv.dilithium;
-    document.getElementById("m-sphincs").textContent="🌲 SPHINCS:"+minv.sphincs;
-    document.getElementById("m-falcon").textContent="🦅 Falcon:"+minv.falcon;
-    document.getElementById("m-lwe").textContent="🧮 LWE:"+minv.lwe;
-    document.getElementById("m-qcore").textContent="💎 QCore:"+minv.qcore;
+function updateEnemies(){
+    enemies.forEach(function(e,i){
+        e.vy=(e.vy||0)+G;e.vy=Math.min(e.vy,MAXFALL);
+        var dx=player.x-e.r,dy=player.y-e.y;
+        e.vx=dx>0?e.speed:-e.speed;
+        e.r+=e.vx;e.y+=e.vy;e.onGround=false;
+        var ec=Math.floor(e.r/TS),er2=Math.floor((e.y+12)/TS);
+        if(isSolid(ec,er2)){e.y=er2*TS-12;e.vy=0;e.onGround=true;}
+        if(isSolid(ec,Math.floor(e.y/TS))){e.y=(Math.floor(e.y/TS)+1)*TS;e.vy=0;}
+        var dist=Math.hypot(e.r-player.x,e.y-player.y);
+        if(dist<20){hp=Math.max(0,hp-0.5);updateHUD();if(hp<=0)gameOver();}
+    });
 }
 
-document.addEventListener("keydown",e=>{
-    mk[e.key]=true;
-    if(e.key==="e"||e.key==="E")mineMid();
-    if(e.key==="f"||e.key==="F")placeMid();
-});
-document.addEventListener("keyup",e=>{mk[e.key]=false;});
+function nextDepth(){
+    depth++;
+    score+=depth*100;
+    setMsg('🌀 Deeper! Depth '+depth+' — More PQC crystals, faster enemies!');
+    genWorld(depth);
+    player.x=2*TS+TS/2;player.y=2*TS;player.vy=0;
+    mineProgress=null;
+    updateHUD();confetti();
+}
 
-function mLoop(){
-    window._mF=requestAnimationFrame(mLoop);
-    mmt++;
-    if(mmt>=8){
-        mmt=0;if(!mrun)return;
-        let nx=mp.x,ny=mp.y;
-        if(mk["ArrowUp"]||mk["w"])ny--;
-        if(mk["ArrowDown"]||mk["s"])ny++;
-        if(mk["ArrowLeft"]||mk["a"])nx--;
-        if(mk["ArrowRight"]||mk["d"])nx++;
-        if(mCanWalk(nx,ny)||(mw[ny]&&mw[ny][nx]==="ladder")){mp.x=nx;mp.y=ny;}
+function gameOver(){
+    gameActive=false;
+    setMsg('💀 GAME OVER! Score:'+score+' | Depth:'+depth+' | PQC:'+pqcTotal+' — Press Start to try again!');
+}
 
-        // Move enemies
-        me.forEach((e,i)=>{
-            e.timer++;if(e.timer<e.rate)return;e.timer=0;
-            const dx=mp.x-e.x,dy=mp.y-e.y;const moves=[];
-            if(dx>0&&mCanWalk(e.x+1,e.y))moves.push({x:e.x+1,y:e.y});
-            if(dx<0&&mCanWalk(e.x-1,e.y))moves.push({x:e.x-1,y:e.y});
-            if(dy>0&&mCanWalk(e.x,e.y+1))moves.push({x:e.x,y:e.y+1});
-            if(dy<0&&mCanWalk(e.x,e.y-1))moves.push({x:e.x,y:e.y-1});
-            if(moves.length>0){
-                moves.sort((a,b)=>
-                    Math.hypot(a.x-mp.x,a.y-mp.y)-Math.hypot(b.x-mp.x,b.y-mp.y)
-                );
-                const mv=e.boss||Math.random()<0.7?moves[0]:moves[Math.floor(Math.random()*moves.length)];
-                e.x=mv.x;e.y=mv.y;
+function draw(){
+    cx.clearRect(0,0,W,H);
+    // Sky/cave background
+    var bgG=cx.createLinearGradient(0,0,0,H);
+    bgG.addColorStop(0,'#0a0a1a');bgG.addColorStop(1,'#050510');
+    cx.fillStyle=bgG;cx.fillRect(0,0,W,H);
+
+    var startC=Math.floor(camera.x/TS),startR=Math.floor(camera.y/TS);
+    var endC=Math.min(COLS,startC+Math.ceil(W/TS)+2);
+    var endR=Math.min(ROWS,startR+Math.ceil(H/TS)+2);
+
+    for(var r=Math.max(0,startR);r<endR;r++){
+        for(var c=Math.max(0,startC);c<endC;c++){
+            var bt=world[r][c];if(!bt||bt==='air')continue;
+            var bd=BLOCKS[bt];if(!bd)continue;
+            var sx=c*TS-camera.x,sy=r*TS-camera.y;
+            if(bd.color){
+                if(bd.glow){cx.shadowColor=bd.glow;cx.shadowBlur=8;}
+                cx.fillStyle=bd.color;cx.fillRect(sx,sy,TS,TS);
+                cx.shadowBlur=0;
+                // Stone texture
+                if(bt==='stone'){cx.strokeStyle='#2d3748';cx.lineWidth=0.5;cx.strokeRect(sx,sy,TS,TS);}
             }
-            if(e.x===mp.x&&e.y===mp.y){
-                mhp-=e.dmg;updateUI();me.splice(i,1);
-                showFact(e.fact);
-                document.getElementById("qm-msg").textContent=
-                    (e.boss?"💀 BOSS hit!":"☠️ "+e.name+" hit!")+" -"+e.dmg+" HP! "+e.fact;
-                if(mhp<=0){
-                    mrun=false;
-                    document.getElementById("qm-msg").textContent="Mine collapsed! Score:"+mscore+" Rare:"+mrare;
+            if(bd.emoji){
+                cx.font='14px serif';cx.textAlign='center';cx.textBaseline='middle';
+                cx.fillText(bd.emoji,sx+TS/2,sy+TS/2);
+            }
+            // Mine progress overlay
+            if(mineProgress&&mineProgress.c===c&&mineProgress.r===r){
+                var pct=mineProgress.prog/mineProgress.max;
+                cx.fillStyle='rgba(0,0,0,'+(pct*0.7)+')';cx.fillRect(sx,sy,TS,TS);
+                cx.strokeStyle='rgba(255,255,255,0.5)';cx.lineWidth=1;
+                for(var ci=0;ci<Math.floor(pct*4);ci++){
+                    cx.beginPath();cx.moveTo(sx+4+ci*6,sy+4);cx.lineTo(sx+7+ci*6,sy+TS-4);cx.stroke();
                 }
             }
-        });
-    }
-
-    // Update particles
-    particles=particles.filter(p=>{
-        p.x+=p.vx;p.y+=p.vy;p.alpha-=0.05;
-        p.vx*=0.9;p.vy*=0.9;
-        return p.alpha>0;
-    });
-
-    mDraw();
-}
-
-function mDraw(){
-    mx.clearRect(0,0,mc.width,mc.height);
-
-    // Background gradient
-    const bg=mx.createLinearGradient(0,0,0,mc.height);
-    bg.addColorStop(0,"#0f172a");
-    bg.addColorStop(1,"#1a0a2e");
-    mx.fillStyle=bg;mx.fillRect(0,0,mc.width,mc.height);
-
-    // Draw blocks
-    for(let r=0;r<ROWS;r++){
-        for(let c=0;c<COLS;c++){
-            const bt=mw[r][c],b=BLOCKS[bt];if(!b)continue;
-            mx.fillStyle=b.color;mx.fillRect(c*CELL,r*CELL,CELL,CELL);
-            mx.strokeStyle="rgba(255,255,255,0.04)";
-            mx.lineWidth=0.5;
-            mx.strokeRect(c*CELL,r*CELL,CELL,CELL);
-
-            // Block label
-            if(b.label){
-                mx.font=b.label.length>1?"18px sans-serif":"bold 14px sans-serif";
-                mx.fillStyle="rgba(255,255,255,0.9)";
-                mx.textAlign="center";
-                mx.fillText(b.label,c*CELL+CELL/2,r*CELL+CELL/1.5);
-            }
-
-            // Glow for rare blocks
-            if(b.mineable&&b.rare){
-                mx.strokeStyle=b.color+"88";
-                mx.lineWidth=2;
-                mx.strokeRect(c*CELL+1,r*CELL+1,CELL-2,CELL-2);
-            } else if(b.mineable&&b.item){
-                mx.strokeStyle="rgba(255,255,255,0.2)";
-                mx.lineWidth=1;
-                mx.strokeRect(c*CELL+2,r*CELL+2,CELL-4,CELL-4);
-            }
-
-            // Depth indicator for ladder
-            if(bt==="ladder"){
-                mx.fillStyle="#f59e0b";
-                mx.font="10px sans-serif";
-                mx.textAlign="center";
-                mx.fillText("DEEPER",c*CELL+CELL/2,r*CELL+CELL-4);
-            }
         }
     }
 
-    // Draw particles
-    particles.forEach(p=>{
-        mx.beginPath();
-        mx.arc(p.x,p.y,p.r,0,Math.PI*2);
-        mx.fillStyle=p.color+Math.floor(p.alpha*255).toString(16).padStart(2,"0");
-        mx.fill();
+    // Enemies
+    enemies.forEach(function(e){
+        var sx=e.r-camera.x,sy=e.y-camera.y;
+        cx.font='18px serif';cx.textAlign='center';cx.textBaseline='middle';
+        cx.fillText(e.face,sx,sy);
+        cx.fillStyle='#1e293b';cx.fillRect(sx-12,sy-18,24,4);
+        cx.fillStyle='#ef4444';cx.fillRect(sx-12,sy-18,24*(e.hp/3),4);
     });
 
-    // Draw enemies
-    me.forEach(e=>{
-        const size=e.boss?28:22;
-        if(e.boss){
-            mx.beginPath();
-            mx.arc(e.x*CELL+CELL/2,e.y*CELL+CELL/2,20+Math.sin(Date.now()*0.005)*3,0,Math.PI*2);
-            mx.fillStyle="rgba(220,38,38,0.25)";
-            mx.fill();
-        }
-        mx.font=size+"px sans-serif";
-        mx.textAlign="center";
-        mx.fillText(e.emoji,e.x*CELL+CELL/2,e.y*CELL+CELL/1.35);
-        if(e.boss){
-            mx.fillStyle="#dc2626";
-            mx.font="bold 8px sans-serif";
-            mx.fillText("BOSS",e.x*CELL+CELL/2,e.y*CELL+4);
-        }
+    // Particles
+    particles.forEach(function(p){
+        cx.beginPath();cx.arc(p.x,p.y,p.r,0,6.28);
+        cx.fillStyle=p.color+Math.floor(p.alpha*255).toString(16).padStart(2,'0');cx.fill();
     });
 
-    // Draw player with glow
-    mx.beginPath();
-    mx.arc(mp.x*CELL+CELL/2,mp.y*CELL+CELL/2,16,0,Math.PI*2);
-    mx.fillStyle="rgba(59,130,246,0.2)";
-    mx.fill();
-    mx.font="24px sans-serif";
-    mx.textAlign="center";
-    mx.fillText("⛏️",mp.x*CELL+CELL/2,mp.y*CELL+CELL/1.35);
-    mx.strokeStyle="#3b82f6";
-    mx.lineWidth=2;
-    mx.strokeRect(mp.x*CELL+2,mp.y*CELL+2,CELL-4,CELL-4);
-
-    // Depth HUD corner
-    mx.fillStyle="rgba(15,23,42,0.8)";
-    mx.beginPath();
-    mx.roundRect(8,mc.height-30,160,22,4);
-    mx.fill();
-    mx.fillStyle="#3b82f6";
-    mx.font="bold 11px sans-serif";
-    mx.textAlign="left";
-    mx.fillText("⬇️ Depth "+mdepth+" — "+
-        (mdepth<3?"Surface":"mdepth"<5?"Deep Zone":"Ultra Deep!"),12,mc.height-15);
+    // Player
+    var px=player.x-camera.x,py=player.y-camera.y;
+    cx.save();if(player.facing<0){cx.scale(-1,1);px=-px;}
+    cx.font='20px serif';cx.textAlign='center';cx.textBaseline='bottom';
+    cx.fillText('🧑‍💻',px,py+26);cx.restore();
 
     // HP bar
-    const hw=100;
-    mx.fillStyle="rgba(15,23,42,0.8)";
-    mx.beginPath();mx.roundRect(mc.width-hw-12,mc.height-30,hw+4,22,4);mx.fill();
-    mx.fillStyle="#374151";
-    mx.fillRect(mc.width-hw-8,mc.height-24,hw,10);
-    const hpPct=Math.max(0,mhp/120);
-    mx.fillStyle=hpPct>0.5?"#10b981":hpPct>0.25?"#f59e0b":"#ef4444";
-    mx.fillRect(mc.width-hw-8,mc.height-24,hw*hpPct,10);
+    cx.fillStyle='rgba(7,21,32,0.8)';cx.fillRect(5,5,104,14);
+    cx.fillStyle='#1e293b';cx.fillRect(5,5,104,14);
+    cx.fillStyle=hp>50?'#10b981':hp>25?'#fbbf24':'#ef4444';
+    cx.fillRect(5,5,hp*1.04,14);
+    cx.font='9px sans-serif';cx.fillStyle='white';cx.textAlign='left';
+    cx.fillText('HP: '+Math.round(hp),8,16);
 
-    // Game over overlay
-    if(!mrun){
-        mx.fillStyle="rgba(0,0,0,0.85)";
-        mx.fillRect(0,0,mc.width,mc.height);
-        mx.fillStyle=mhp<=0?"#ef4444":"#10b981";
-        mx.font="bold 26px sans-serif";
-        mx.textAlign="center";
-        mx.fillText(mhp<=0?"💥 Mine Collapsed!":"⛏️ Keep Mining!",mc.width/2,mc.height/2-30);
-        mx.fillStyle="white";
-        mx.font="15px sans-serif";
-        mx.fillText("Score: "+mscore+" | Rare: "+mrare+" | Depth: "+mdepth,mc.width/2,mc.height/2+10);
-        mx.fillStyle="#a5b4fc";
-        mx.font="12px sans-serif";
-        mx.fillText("Kyber, Dilithium, SPHINCS+, Falcon — all NIST approved!",mc.width/2,mc.height/2+40);
-    }
+    // Depth indicator
+    cx.font='9px sans-serif';cx.fillStyle='#8b5cf6';cx.textAlign='right';
+    cx.fillText('Depth '+depth+' | PQC: '+pqcTotal,W-5,15);
 }
 
-// Idle screen
-mx.fillStyle="#0f172a";mx.fillRect(0,0,mc.width,mc.height);
-const idBg=mx.createLinearGradient(0,0,0,mc.height);
-idBg.addColorStop(0,"#0f172a");idBg.addColorStop(1,"#1a0a2e");
-mx.fillStyle=idBg;mx.fillRect(0,0,mc.width,mc.height);
-mx.fillStyle="#3b82f6";mx.font="bold 20px sans-serif";mx.textAlign="center";
-mx.fillText("⛏️ QuantumCraft — Lattice Mines",mc.width/2,mc.height/2-55);
-mx.fillStyle="#a5b4fc";mx.font="13px sans-serif";
-mx.fillText("Mine 🔐 Kyber  ✍️ Dilithium  🌲 SPHINCS+  🦅 Falcon  🧮 LWE  💎 QCore",mc.width/2,mc.height/2-20);
-mx.fillText("Go deeper for rarer algorithms!  Boss enemies at depth 3+!",mc.width/2,mc.height/2+10);
-mx.fillStyle="white";mx.font="bold 14px sans-serif";
-mx.fillText("Press ▶ Start to mine!",mc.width/2,mc.height/2+50);
+function loop(){frameId=requestAnimationFrame(loop);
+    if(gameActive){
+        if(keys['e']||keys['E'])doMine();else mineProgress=null;
+        if(keys['f']||keys['F'])doPlace();
+        updatePlayer();updateEnemies();
+        particles.forEach(function(p){p.x+=p.vx;p.y+=p.vy;p.vy+=0.1;p.alpha-=0.03;p.r*=0.96;});
+        particles=particles.filter(function(p){return p.alpha>0;});
+    }
+    draw();
+}
+
+function spawnParticles(x,y,color,n){
+    for(var i=0;i<n;i++){
+        var a=Math.random()*6.28,s=1+Math.random()*3;
+        particles.push({x:x,y:y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,r:2+Math.random()*2,alpha:1,color:color||'#888'});
+    }
+}
+function updateHUD(){
+    document.getElementById('h-hp').textContent=Math.round(hp);
+    document.getElementById('h-hp').style.color=hp>50?'#10b981':hp>25?'#fbbf24':'#ef4444';
+    document.getElementById('h-score').textContent=score;
+    document.getElementById('h-mined').textContent=mined;
+    document.getElementById('h-depth').textContent=depth;
+    document.getElementById('h-pqc').textContent=pqcTotal;
+}
+function updateInv(){
+    document.getElementById('sl-kyber').textContent='🔐 ML-KEM:'+(inventory.kyber||0);
+    document.getElementById('sl-dil').textContent='✍️ ML-DSA:'+(inventory.dil||0);
+    document.getElementById('sl-sph').textContent='🌲 SPHINCS:'+(inventory.sph||0);
+    document.getElementById('sl-fal').textContent='🦅 Falcon:'+(inventory.fal||0);
+}
+function setMsg(m){document.getElementById('msg').textContent=m;}
+function confetti(){var c=['#fbbf24','#10b981','#3b82f6','#8b5cf6','#ef4444'];for(var i=0;i<15;i++){setTimeout(function(){var el=document.createElement('div');el.className='cp';el.style.left=Math.random()*100+'vw';el.style.background=c[Math.floor(Math.random()*c.length)];el.style.animationDuration=(1+Math.random()*2)+'s';document.body.appendChild(el);setTimeout(function(){el.remove();},3000);},i*40);}}
+
+document.addEventListener('keydown',function(e){keys[e.key]=true;e.preventDefault();});
+document.addEventListener('keyup',function(e){keys[e.key]=false;});
+
+cx.fillStyle='#020d14';cx.fillRect(0,0,W,H);
+cx.font='bold 16px sans-serif';cx.fillStyle='#8b5cf6';cx.textAlign='center';
+cx.fillText('⛏️ QuantumCraft — Lattice Mines',W/2,H/2-10);
+cx.font='11px sans-serif';cx.fillStyle='#94a3b8';cx.fillText('Press Start Mining to begin!',W/2,H/2+15);
 </script>
 </body>
 </html>
-""", height=680)
+""", height=560)
 
 def render_quantumcraft_highschool():
-    """9-12: QuantumCraft — Cipher Ruins side-scrolling platformer."""
+    """9-12: QuantumCraft Cipher Ruins — UPGRADED 2026 — platformer with PQC bosses and lore."""
+    import streamlit as st
+    import streamlit.components.v1 as components
     st.subheader("🏃 QuantumCraft — Cipher Ruins!")
     st.markdown(
-        "Run through the **quantum-corrupted ruins**! "
-        "Arrow keys to run, SPACE to jump. Collect PQC power-ups, avoid broken crypto!"
+        "Run through **quantum-corrupted ruins**! "
+        "Arrow keys/WASD to run and jump. Collect PQC power-ups, defeat cipher bosses! "
+        "Each boss teaches a real PQC concept."
     )
-    components.html("""
-    <style>
-        #crCanvas{border:2px solid #8b5cf6;border-radius:12px;display:block;margin:0 auto;}
-        .cr-wrap{text-align:center;font-family:sans-serif;}
-        .cr-bar{display:flex;justify-content:space-between;max-width:520px;margin:6px auto;color:#a5b4fc;font-size:12px;font-weight:bold;}
-        #cr-msg{font-size:12px;color:#a78bfa;min-height:18px;margin:3px;}
-        .cr-btn{padding:7px 16px;border-radius:8px;border:none;cursor:pointer;font-size:13px;font-weight:bold;background:#8b5cf6;color:white;margin:3px;}
-    </style>
-    <div class="cr-wrap">
-        <div class="cr-bar">
-            <span>HP:<span id="crhp">100</span></span>
-            <span>Score:<span id="crscore">0</span></span>
-            <span>PQC:<span id="crpqc">0</span></span>
-            <span>Zone:<span id="crzone">1</span></span>
-        </div>
-        <canvas id="crCanvas" width="520" height="380"></canvas>
-        <div id="cr-msg">Arrow keys to run, SPACE to jump!</div>
-        <button class="cr-btn" onclick="startRunner()">Start</button>
-        <button class="cr-btn" onclick="jumpPlayer()">Jump</button>
-        <button class="cr-btn" onclick="if(crrunning&&player)player.vx=-4">Left</button>
-        <button class="cr-btn" onclick="if(crrunning&&player)player.vx=4">Right</button>
-    </div>
-    <script>
-    const cr=document.getElementById('crCanvas');
-    const cx2=cr.getContext('2d');
-    const CW=520,CH=380,GROUND=CH-60,GRAV=0.5,JUMP=-12;
-    const PU=[
-        {emoji:'K',name:'Kyber',color:'#10b981',pts:30,fact:'ML-KEM!'},
-        {emoji:'D',name:'Dilithium',color:'#3b82f6',pts:40,fact:'ML-DSA!'},
-        {emoji:'S',name:'SPHINCS',color:'#8b5cf6',pts:50,fact:'Hash-based!'},
-        {emoji:'F',name:'Falcon',color:'#f59e0b',pts:60,fact:'Compact Lattice!'},
-        {emoji:'L',name:'LWE',color:'#ec4899',pts:70,fact:'Learning With Errors!'},
-    ];
-    const OB=[
-        {emoji:'R',name:'RSA',color:'#ef4444',dmg:20},
-        {emoji:'E',name:'ECC',color:'#f97316',dmg:15},
-        {emoji:'D2',name:'DES',color:'#eab308',dmg:10},
-    ];
-    let player,items,particles,crscore=0,crhp=100,crpqc=0,crzone=1;
-    let crrunning=false,crkeys={},scrollX=0,spawnT=0,frameId2;
-    function startRunner(){
-        player={x:80,y:GROUND-40,w:36,h:36,vx:0,vy:0,onGround:false};
-        items=[];particles=[];crscore=0;crhp=100;crpqc=0;crzone=1;scrollX=0;spawnT=0;
-        crrunning=true;
-        document.getElementById('crscore').textContent=0;
-        document.getElementById('crhp').textContent=100;
-        document.getElementById('crpqc').textContent=0;
-        document.getElementById('crzone').textContent=1;
-        document.getElementById('cr-msg').textContent='Run through the Cipher Ruins!';
-        cancelAnimationFrame(frameId2);rLoop();
-    }
-    function jumpPlayer(){if(player&&player.onGround&&crrunning){player.vy=JUMP;player.onGround=false;}}
-    document.addEventListener('keydown',e=>{
-        crkeys[e.key]=true;
-        if((e.key===' '||e.key==='ArrowUp')&&player&&player.onGround&&crrunning){e.preventDefault();jumpPlayer();}
-    });
-    document.addEventListener('keyup',e=>{crkeys[e.key]=false;});
-    function rLoop(){
-        frameId2=requestAnimationFrame(rLoop);if(!crrunning)return;
-        if(crkeys['ArrowLeft']||crkeys['a'])player.vx=-4;
-        else if(crkeys['ArrowRight']||crkeys['d'])player.vx=4;
-        scrollX+=2+crzone*0.3;
-        player.x+=player.vx;player.vy+=GRAV;player.y+=player.vy;
-        if(player.y>=GROUND-player.h){player.y=GROUND-player.h;player.vy=0;player.onGround=true;}
-        else player.onGround=false;
-        player.x=Math.max(20,Math.min(CW-60,player.x));
-        spawnT++;
-        const rate=Math.max(60,120-crzone*10);
-        if(spawnT%rate===0){
-            const x=CW+scrollX+Math.random()*200+100;
-            if(Math.random()<0.55){
-                const p=PU[Math.floor(Math.random()*PU.length)];
-                items.push({x,y:GROUND-50-Math.random()*80,w:28,h:28,...p,type:'powerup'});
-            } else {
-                const o=OB[Math.floor(Math.random()*OB.length)];
-                const h=30+Math.random()*40;
-                items.push({x,y:GROUND-h,w:32,h,...o,type:'obstacle'});
-            }
+    components.html(r"""
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:#020d14;font-family:'Segoe UI',sans-serif;color:white;overflow:hidden;}
+#wrap{max-width:560px;margin:0 auto;padding:8px;}
+.hud{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-bottom:6px;}
+.hb{background:#071520;border:1px solid #1a3a5a;border-radius:8px;padding:5px 3px;
+    text-align:center;font-size:9px;color:#60a5fa;}
+.hb b{display:block;font-size:14px;color:white;}
+#cv{border:2px solid #7c3aed;border-radius:10px;display:block;}
+#msg{background:#071520;border:1px solid #1a3a5a;border-radius:8px;
+    padding:4px 10px;margin-top:5px;font-size:10px;color:#a78bfa;text-align:center;}
+.btns{display:flex;gap:4px;margin-top:5px;}
+.btn{flex:1;padding:7px;border-radius:8px;border:none;cursor:pointer;font-size:11px;font-weight:bold;color:white;}
+.btn-start{background:linear-gradient(135deg,#7c3aed,#a78bfa);}
+.btn-reset{background:#334155;}
+.cp{position:fixed;pointer-events:none;z-index:999;width:8px;height:8px;border-radius:2px;animation:cf linear forwards;}
+@keyframes cf{0%{transform:translateY(-20px) rotate(0deg);opacity:1;}100%{transform:translateY(500px) rotate(720deg);opacity:0;}}
+</style>
+</head>
+<body>
+<div id="wrap">
+<div class="hud">
+    <div class="hb">❤️ HP<br><b id="h-hp">5</b></div>
+    <div class="hb">⭐ Score<br><b id="h-score">0</b></div>
+    <div class="hb">🌊 Level<br><b id="h-level">1</b>/4</div>
+    <div class="hb">🏆 Boss<br><b id="h-boss">—</b></div>
+</div>
+<canvas id="cv" width="560" height="360"></canvas>
+<div id="msg">Arrow keys / WASD to move, Space/Up to jump. Collect PQC power-ups!</div>
+<div class="btns">
+    <button class="btn btn-start" onclick="startGame()">▶ Start!</button>
+    <button class="btn btn-reset" onclick="resetGame()">🔄 Reset</button>
+</div>
+</div>
+<script>
+var cv=document.getElementById('cv'),cx=cv.getContext('2d');
+var W=560,H=360;
+
+// Level configs with boss info
+var LEVELS=[
+    {name:'RSA Ruins',     bgColor:'#0a0a1a', groundColor:'#1a0a2e', bossName:'RSA Guardian',
+     bossEmoji:'💀',bossColor:'#ef4444',
+     bossHP:8, bossSpeed:1.2,
+     fact:'RSA is broken by Shor Algorithm — quantum computers factor its primes in seconds!',
+     platforms:[{x:0,y:320,w:560,h:40},{x:100,y:250,w:100,h:15},{x:300,y:200,w:100,h:15},{x:450,y:260,w:80,h:15}],
+     pickups:[{x:150,y:230,type:'kyber'},{x:350,y:180,type:'kyber'},{x:480,y:240,type:'kyber'}]},
+    {name:'Lattice Caverns',bgColor:'#071520',groundColor:'#1a2a0a', bossName:'Lattice Wraith',
+     bossEmoji:'🌀',bossColor:'#8b5cf6',
+     bossHP:10,bossSpeed:1.4,
+     fact:'Lattice math (LWE) is the foundation of ML-KEM and ML-DSA — impossible for quantum to solve!',
+     platforms:[{x:0,y:320,w:560,h:40},{x:80,y:260,w:80,h:15},{x:220,y:210,w:100,h:15},{x:380,y:250,w:120,h:15}],
+     pickups:[{x:120,y:240,type:'dil'},{x:270,y:190,type:'dil'},{x:430,y:230,type:'dil'}]},
+    {name:'Hash Fortress',  bgColor:'#0a1520',groundColor:'#1a1a2e', bossName:'Hash Phantom',
+     bossEmoji:'#️⃣',bossColor:'#06b6d4',
+     bossHP:12,bossSpeed:1.6,
+     fact:'SPHINCS+ chains thousands of SHA-3 hashes — Grover Algorithm only gives quadratic speedup!',
+     platforms:[{x:0,y:320,w:560,h:40},{x:60,y:270,w:60,h:15},{x:200,y:220,w:80,h:15},{x:380,y:200,w:80,h:15},{x:480,y:260,w:60,h:15}],
+     pickups:[{x:100,y:250,type:'sph'},{x:240,y:200,type:'sph'},{x:420,y:180,type:'sph'}]},
+    {name:'Falcon Tower',   bgColor:'#1a0a0a',groundColor:'#2a1a0a', bossName:'FINAL: Quantum BOSS',
+     bossEmoji:'👑',bossColor:'#fbbf24',
+     bossHP:20,bossSpeed:2.0,
+     fact:'FN-DSA Falcon uses NTRU lattices — the most compact quantum-safe signature scheme!',
+     platforms:[{x:0,y:320,w:560,h:40},{x:80,y:260,w:70,h:15},{x:220,y:200,w:80,h:15},{x:360,y:240,w:70,h:15},{x:460,y:180,w:80,h:15}],
+     pickups:[{x:120,y:240,type:'fal'},{x:260,y:180,type:'fal'},{x:490,y:160,type:'fal'}]},
+];
+var PICKUP_INFO={
+    kyber:{emoji:'🔐',color:'#10b981',name:'ML-KEM',pts:30},
+    dil:  {emoji:'✍️', color:'#3b82f6',name:'ML-DSA',pts:35},
+    sph:  {emoji:'🌲',color:'#8b5cf6',name:'SPHINCS+',pts:40},
+    fal:  {emoji:'🦅',color:'#f59e0b',name:'Falcon',pts:50},
+};
+
+// State
+var player={x:60,y:280,vx:0,vy:0,w:20,h:28,onGround:false,hp:5,maxHp:5,invincible:0,facing:1};
+var boss=null,bossActive=false,bossBullets=[];
+var pickups=[],particles=[],floats=[];
+var score=0,level=0,gameActive=false,keys={};
+var bgStars=[];
+for(var i=0;i<50;i++) bgStars.push({x:Math.random()*W,y:Math.random()*H*0.7,r:Math.random()*1.5,a:Math.random()*0.5+0.2});
+var camera={x:0};
+var frameId=null;
+var WIN_X=500;
+
+function startGame(){
+    level=0;score=0;
+    player={x:60,y:280,vx:0,vy:0,w:20,h:28,onGround:false,hp:5,maxHp:5,invincible:0,facing:1};
+    loadLevel();
+    gameActive=true;
+    if(frameId)cancelAnimationFrame(frameId);
+    loop();
+}
+
+function resetGame(){gameActive=false;if(frameId)cancelAnimationFrame(frameId);}
+
+function loadLevel(){
+    var lv=LEVELS[level];
+    boss={x:W-80,y:lv.platforms[0].y-50,vx:-lv.bossSpeed,vy:0,
+          w:36,h:40,hp:lv.bossHP,maxHp:lv.bossHP,
+          emoji:lv.bossEmoji,color:lv.bossColor,
+          shootTimer:0,shootRate:90,onGround:false,active:false};
+    bossActive=false;bossBullets=[];particles=[];floats=[];
+    pickups=lv.pickups.map(function(p){return Object.assign({},p,{alive:true});});
+    document.getElementById('h-level').textContent=(level+1)+'/4';
+    document.getElementById('h-boss').textContent=lv.bossName;
+    setMsg('Level '+(level+1)+': '+lv.name+' — reach the boss!');
+    updateHUD();
+}
+
+var GRAV=0.45,MAXFALL=12,SPDHZ=3,JUMP=-9;
+function updatePlayer(){
+    if(player.invincible>0) player.invincible--;
+    var dx=0;
+    if(keys['ArrowLeft']||keys['a'])dx=-SPDHZ;
+    if(keys['ArrowRight']||keys['d'])dx=SPDHZ;
+    if(dx!==0)player.facing=dx>0?1:-1;
+    player.vx=dx;
+    if((keys['ArrowUp']||keys['w']||keys[' '])&&player.onGround){player.vy=JUMP;player.onGround=false;}
+    player.vy=Math.min(player.vy+GRAV,MAXFALL);
+    player.x+=player.vx;player.y+=player.vy;player.onGround=false;
+    // Platform collision
+    LEVELS[level].platforms.forEach(function(p){
+        if(player.x+player.w>p.x&&player.x<p.x+p.w&&
+           player.y+player.h>p.y&&player.y+player.h<p.y+p.h+player.vy+1&&
+           player.vy>0){
+            player.y=p.y-player.h;player.vy=0;player.onGround=true;
         }
-        items=items.filter(item=>{
-            const ix=item.x-scrollX;if(ix<-60)return false;
-            const hit=player.x<ix+item.w&&player.x+player.w>ix&&player.y<item.y+item.h&&player.y+player.h>item.y;
-            if(hit){
-                if(item.type==='powerup'){
-                    crscore+=item.pts;crpqc++;
-                    document.getElementById('crscore').textContent=crscore;
-                    document.getElementById('crpqc').textContent=crpqc;
-                    document.getElementById('cr-msg').textContent=item.name+' collected! '+item.fact;
-                    if(crpqc>=crzone*5){crzone++;document.getElementById('crzone').textContent=crzone;}
-                } else {
-                    crhp-=item.dmg;document.getElementById('crhp').textContent=Math.max(0,crhp);
-                    document.getElementById('cr-msg').textContent=item.name+' hit! NOT quantum safe!';
-                    if(crhp<=0){crrunning=false;cx2.fillStyle='rgba(0,0,0,0.85)';cx2.fillRect(0,0,CW,CH);cx2.fillStyle='#8b5cf6';cx2.font='bold 24px sans-serif';cx2.textAlign='center';cx2.fillText('Ruins Collapsed! Score:'+crscore,CW/2,CH/2);}
-                }
-                return false;
+        if(player.x+player.w>p.x&&player.x<p.x+p.w&&
+           player.y>p.y&&player.y<p.y+p.h&&player.vy<0){
+            player.y=p.y+p.h;player.vy=0;
+        }
+    });
+    player.x=Math.max(0,Math.min(W-player.w,player.x));
+    if(player.y>H){player.hp--;player.y=50;player.vy=0;updateHUD();if(player.hp<=0)gameOver();}
+    // Pickup
+    pickups.forEach(function(pu){
+        if(!pu.alive)return;
+        if(Math.abs(player.x+10-pu.x)<20&&Math.abs(player.y+14-pu.y)<20){
+            pu.alive=false;
+            var info=PICKUP_INFO[pu.type];
+            score+=info.pts;
+            addFloat(pu.x,pu.y,'+'+info.pts+' '+info.name,info.color);
+            spawnParts(pu.x,pu.y,info.color,10);
+            setMsg(info.emoji+' '+info.name+' collected! '+info.pts+' pts!');
+            // Activate boss when all pickups collected
+            if(pickups.every(function(p){return !p.alive;})&&!bossActive){
+                bossActive=true;
+                setMsg('💀 BOSS ACTIVATED: '+LEVELS[level].bossName+'! Defeat it!');
             }
-            return true;
-        });
-        particles=particles.filter(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=0.2;p.alpha-=0.05;return p.alpha>0;});
-        rDraw();
+            updateHUD();
+        }
+    });
+    // Boss collision
+    if(bossActive&&boss&&player.invincible===0){
+        if(Math.abs(player.x+10-boss.x-18)<30&&Math.abs(player.y+14-boss.y-20)<30){
+            player.hp--;player.invincible=90;player.vy=-5;
+            spawnParts(player.x+10,player.y+14,'#ef4444',8);
+            updateHUD();if(player.hp<=0)gameOver();
+        }
     }
-    function rDraw(){
-        cx2.clearRect(0,0,CW,CH);
-        const g=cx2.createLinearGradient(0,0,0,CH);g.addColorStop(0,'#0f0c29');g.addColorStop(1,'#302b63');
-        cx2.fillStyle=g;cx2.fillRect(0,0,CW,CH);
-        cx2.fillStyle='#1e1b4b';cx2.fillRect(0,GROUND,CW,CH-GROUND);
-        cx2.fillStyle='#4f46e5';cx2.fillRect(0,GROUND,CW,3);
-        items.forEach(item=>{
-            const ix=item.x-scrollX;
-            if(item.type==='obstacle'){
-                cx2.fillStyle=item.color+'55';cx2.fillRect(ix,item.y,item.w,item.h);
-                cx2.strokeStyle=item.color;cx2.lineWidth=2;cx2.strokeRect(ix,item.y,item.w,item.h);
-                cx2.fillStyle=item.color;cx2.font='bold 11px sans-serif';cx2.textAlign='center';
-                cx2.fillText(item.emoji,ix+item.w/2,item.y+item.h/2+4);
-            } else {
-                cx2.font='20px sans-serif';cx2.textAlign='center';
-                cx2.fillText(item.emoji,ix+item.w/2,item.y+item.h/1.3);
-                cx2.beginPath();cx2.arc(ix+item.w/2,item.y+item.h/2,16,0,Math.PI*2);
-                cx2.fillStyle=item.color+'22';cx2.fill();
-            }
-        });
-        cx2.font='26px sans-serif';cx2.textAlign='center';cx2.fillText('P',player.x+player.w/2,player.y+player.h);
-        const pw=50;cx2.fillStyle='#374151';cx2.fillRect(player.x,player.y-10,pw,5);
-        cx2.fillStyle=crhp>60?'#10b981':crhp>30?'#f59e0b':'#ef4444';
-        cx2.fillRect(player.x,player.y-10,pw*(crhp/100),5);
+    // Boss bullets
+    bossBullets.forEach(function(b,i){
+        b.x+=b.vx;b.y+=b.vy;
+        if(Math.abs(player.x+10-b.x)<15&&Math.abs(player.y+14-b.y)<15&&player.invincible===0){
+            player.hp--;player.invincible=90;
+            bossBullets.splice(i,1);spawnParts(b.x,b.y,'#ef4444',6);
+            updateHUD();if(player.hp<=0)gameOver();
+        }
+        if(b.x<0||b.x>W||b.y>H) bossBullets.splice(i,1);
+    });
+    // Win check
+    if(player.x>WIN_X&&bossActive&&boss.hp<=0) nextLevel();
+}
+
+function updateBoss(){
+    if(!bossActive||!boss) return;
+    boss.vy=Math.min(boss.vy+GRAV,MAXFALL);
+    boss.x+=boss.vx;boss.y+=boss.vy;boss.onGround=false;
+    LEVELS[level].platforms.forEach(function(p){
+        if(boss.x+boss.w>p.x&&boss.x<p.x+p.w&&boss.y+boss.h>p.y&&boss.y+boss.h<p.y+p.h+2&&boss.vy>0){
+            boss.y=p.y-boss.h;boss.vy=0;boss.onGround=true;
+        }
+    });
+    if(boss.x<20||boss.x>W-boss.w-20) boss.vx*=-1;
+    // Jump occasionally
+    if(boss.onGround&&Math.random()<0.015) boss.vy=JUMP*0.7;
+    // Shoot
+    boss.shootTimer++;
+    if(boss.shootTimer>=boss.shootRate){
+        boss.shootTimer=0;
+        var dx=player.x-boss.x,dy=player.y-boss.y;
+        var d=Math.sqrt(dx*dx+dy*dy)||1;
+        bossBullets.push({x:boss.x+18,y:boss.y+20,vx:dx/d*4,vy:dy/d*4,color:boss.color});
     }
-    cx2.fillStyle='#0f0c29';cx2.fillRect(0,0,CW,CH);
-    cx2.fillStyle='#8b5cf6';cx2.font='bold 18px sans-serif';cx2.textAlign='center';
-    cx2.fillText('QuantumCraft - Cipher Ruins',CW/2,CH/2-40);
-    cx2.fillStyle='white';cx2.font='13px sans-serif';
-    cx2.fillText('Collect PQC, avoid RSA/ECC/DES',CW/2,CH/2);
-    cx2.fillText('Press Start to play!',CW/2,CH/2+35);
-    </script>
-    """, height=580)
+}
 
+function nextLevel(){
+    if(level>=LEVELS.length-1){victory();return;}
+    level++;confetti();
+    player.x=60;player.y=280;player.vy=0;player.hp=Math.min(player.hp+2,player.maxHp);
+    setMsg('✅ Level '+(level)+' cleared! '+LEVELS[level-1].fact);
+    showFact(LEVELS[level-1].fact);
+    setTimeout(function(){loadLevel();},2000);
+    updateHUD();
+}
 
+function victory(){
+    gameActive=false;
+    setMsg('👑 ALL BOSSES DEFEATED! You mastered all 4 NIST PQC standards! Score: '+score);
+    confetti();
+}
+function gameOver(){
+    gameActive=false;
+    setMsg('💀 Game Over! Score:'+score+' | Level:'+(level+1)+' — Press Start to try again!');
+}
+
+function draw(){
+    var lv=LEVELS[level];
+    cx.clearRect(0,0,W,H);
+    cx.fillStyle=lv.bgColor;cx.fillRect(0,0,W,H);
+    // Stars
+    bgStars.forEach(function(s){
+        cx.beginPath();cx.arc(s.x,s.y,s.r,0,6.28);
+        cx.fillStyle='rgba(255,255,255,'+s.a+')';cx.fill();
+    });
+    // Platforms
+    lv.platforms.forEach(function(p){
+        var g=cx.createLinearGradient(0,p.y,0,p.y+p.h);
+        g.addColorStop(0,lv.groundColor);g.addColorStop(1,'#0a0a14');
+        cx.fillStyle=g;cx.fillRect(p.x,p.y,p.w,p.h);
+        // Edge glow
+        cx.strokeStyle='#7c3aed30';cx.lineWidth=1;
+        cx.beginPath();cx.moveTo(p.x,p.y);cx.lineTo(p.x+p.w,p.y);cx.stroke();
+    });
+    // Pickups
+    pickups.forEach(function(pu){
+        if(!pu.alive)return;
+        var info=PICKUP_INFO[pu.type];
+        cx.shadowColor=info.color;cx.shadowBlur=12;
+        cx.font='18px serif';cx.textAlign='center';cx.textBaseline='middle';
+        cx.fillText(info.emoji,pu.x,pu.y+Math.sin(Date.now()*0.003+pu.x)*4);
+        cx.shadowBlur=0;
+    });
+    // Boss
+    if(bossActive&&boss){
+        cx.shadowColor=boss.color;cx.shadowBlur=20;
+        cx.font='32px serif';cx.textAlign='center';cx.textBaseline='middle';
+        cx.fillText(boss.emoji,boss.x+18,boss.y+20);cx.shadowBlur=0;
+        // HP bar
+        cx.fillStyle='#1e293b';cx.fillRect(boss.x,boss.y-14,boss.w,8);
+        cx.fillStyle=boss.color;cx.fillRect(boss.x,boss.y-14,boss.w*(boss.hp/boss.maxHp),8);
+        document.getElementById('h-boss').textContent=boss.hp+'HP';
+    }
+    // Boss bullets
+    bossBullets.forEach(function(b){
+        cx.beginPath();cx.arc(b.x,b.y,5,0,6.28);
+        cx.fillStyle=b.color;cx.shadowColor=b.color;cx.shadowBlur=8;cx.fill();cx.shadowBlur=0;
+    });
+    // Particles
+    particles.forEach(function(p){
+        cx.beginPath();cx.arc(p.x,p.y,p.r,0,6.28);
+        cx.fillStyle=p.color+Math.floor(p.alpha*255).toString(16).padStart(2,'0');cx.fill();
+    });
+    // Float texts
+    floats.forEach(function(f){
+        cx.font='bold 12px sans-serif';cx.textAlign='center';
+        cx.fillStyle=f.color+Math.floor(f.alpha*255).toString(16).padStart(2,'0');
+        cx.fillText(f.text,f.x,f.y);
+    });
+    // Player
+    cx.save();
+    if(player.facing<0){cx.scale(-1,1);}
+    var px=player.facing>0?player.x+10:-(player.x+10);
+    if(player.invincible>0&&Math.floor(Date.now()/100)%2===0)cx.globalAlpha=0.3;
+    cx.font='22px serif';cx.textAlign='center';cx.textBaseline='bottom';
+    cx.fillText('🏃',px,player.y+player.h);cx.globalAlpha=1;
+    cx.restore();
+    // HP bar
+    cx.fillStyle='#1e293b';cx.fillRect(5,5,100,10);
+    cx.fillStyle=player.hp>3?'#10b981':player.hp>1?'#fbbf24':'#ef4444';
+    cx.fillRect(5,5,100*(player.hp/player.maxHp),10);
+    // Win arrow
+    if(bossActive&&boss&&boss.hp<=0){
+        cx.font='bold 12px sans-serif';cx.fillStyle='#fbbf24';cx.textAlign='center';
+        cx.fillText('→ Reach the exit! →',W-100,H/2);
+    }
+}
+
+function loop(){
+    frameId=requestAnimationFrame(loop);
+    if(gameActive){
+        updatePlayer();updateBoss();
+        particles.forEach(function(p){p.x+=p.vx;p.y+=p.vy;p.vy+=0.1;p.alpha-=0.025;p.r*=0.96;});
+        particles=particles.filter(function(p){return p.alpha>0;});
+        floats.forEach(function(f){f.y-=0.8;f.alpha-=0.02;});
+        floats=floats.filter(function(f){return f.alpha>0;});
+    }
+    draw();
+}
+
+// Boss hit detection (jump on boss head)
+function checkBossJump(){
+    if(!bossActive||!boss||boss.hp<=0) return;
+    if(player.vy>0&&player.y+player.h>boss.y&&player.y<boss.y+10&&
+       player.x+player.w>boss.x&&player.x<boss.x+boss.w){
+        boss.hp--;player.vy=JUMP*0.7;
+        spawnParts(boss.x+18,boss.y,'#fbbf24',12);
+        score+=20;updateHUD();
+        setMsg('⚡ Boss hit! HP: '+boss.hp+'/'+boss.maxHp);
+        if(boss.hp<=0){
+            bossActive=false;
+            setMsg('🏆 '+LEVELS[level].bossName+' DEFEATED! '+LEVELS[level].fact);
+            confetti();score+=200;updateHUD();
+        }
+    }
+}
+
+function spawnParts(x,y,col,n){for(var i=0;i<n;i++){var a=Math.random()*6.28,s=1+Math.random()*4;particles.push({x:x,y:y,vx:Math.cos(a)*s,vy:Math.sin(a)*s-1,r:2+Math.random()*3,alpha:1,color:col});}}
+function addFloat(x,y,t,c){floats.push({x:x,y:y,text:t,color:c,alpha:1});}
+function updateHUD(){document.getElementById('h-hp').textContent='❤️'.repeat(player.hp);document.getElementById('h-score').textContent=score;}
+function setMsg(m){document.getElementById('msg').textContent=m;}
+function showFact(t){setMsg('💡 '+t.substring(0,120)+'...');}
+function confetti(){var c=['#fbbf24','#10b981','#3b82f6','#8b5cf6','#ef4444'];for(var i=0;i<15;i++){setTimeout(function(){var el=document.createElement('div');el.className='cp';el.style.left=Math.random()*100+'vw';el.style.background=c[Math.floor(Math.random()*c.length)];el.style.animationDuration=(1+Math.random()*2)+'s';document.body.appendChild(el);setTimeout(function(){el.remove();},3000);},i*40);}}
+
+document.addEventListener('keydown',function(e){keys[e.key]=true;checkBossJump();if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(e.key))e.preventDefault();});
+document.addEventListener('keyup',function(e){keys[e.key]=false;});
+
+cx.fillStyle='#020d14';cx.fillRect(0,0,W,H);
+cx.font='bold 16px sans-serif';cx.fillStyle='#a78bfa';cx.textAlign='center';
+cx.fillText('🏃 QuantumCraft — Cipher Ruins',W/2,H/2-10);
+cx.font='11px sans-serif';cx.fillStyle='#94a3b8';cx.fillText('Press Start to run!',W/2,H/2+15);
+</script>
+</body>
+</html>
+""", height=560)
 
 def render_prime_factor_game():
     """Free game: Prime Factor Cracker — UPGRADED 2026 with Shor Bot battle!"""
