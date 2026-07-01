@@ -1665,7 +1665,7 @@ function startGame(){
 
 function startWave(){
     const waveIdx=Math.min(wave-1,9);
-    spawnTotal=5+wave*2;
+    spawnTotal=8+wave*3;
     spawnCount=0; spawnTimer=0; waveClearing=false;
     const zombieType=ZOMBIE_TYPES[Math.min(Math.floor(wave/2),ZOMBIE_TYPES.length-1)];
     setMsg('🌊 Wave '+wave+': '+spawnTotal+'x '+zombieType.name+' incoming!');
@@ -1827,7 +1827,7 @@ function update(){
     // Spawn zombies
     if(spawnCount<spawnTotal){
         spawnTimer++;
-        if(spawnTimer>=35){ spawnTimer=0; spawnCount++; spawnZombie(); }
+        if(spawnTimer>=15){ spawnTimer=0; spawnCount++; spawnZombie(); }
     }
 
     // Move zombies toward server (center bottom)
