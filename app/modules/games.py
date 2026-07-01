@@ -1617,11 +1617,11 @@ const WEAPONS = {
 
 // ── ZOMBIE TYPES ──────────────────────────────────────────────────────────────
 const ZOMBIE_TYPES=[
-    {emoji:'🧟',hp:2, speed:0.5, pts:10, color:'#10b981', name:'Baby Shor'},
-    {emoji:'👾',hp:3, speed:0.7, pts:15, color:'#3b82f6', name:'Shor Bot'},
-    {emoji:'🤖',hp:5, speed:0.6, pts:25, color:'#ef4444', name:'RSA Zombie'},
-    {emoji:'💀',hp:8, speed:0.8, pts:40, color:'#8b5cf6', name:'Grover Ghost'},
-    {emoji:'👑',hp:20,speed:0.4, pts:100,color:'#fbbf24', name:'Quantum Boss'},
+    {emoji:'🧟',hp:4, speed:1.2, pts:10, color:'#10b981', name:'Baby Shor'},
+    {emoji:'👾',hp:6, speed:1.5, pts:15, color:'#3b82f6', name:'Shor Bot'},
+    {emoji:'🤖',hp:10, speed:1.3, pts:25, color:'#ef4444', name:'RSA Zombie'},
+    {emoji:'💀',hp:16, speed:1.8, pts:40, color:'#8b5cf6', name:'Grover Ghost'},
+    {emoji:'👑',hp:40,speed:0.9, pts:100,color:'#fbbf24', name:'Quantum Boss'},
 ];
 
 // ── PQC FACTS (shown on crystal collect) ────────────────────────────────────
@@ -1680,7 +1680,7 @@ function spawnZombie(){
         x:fromLeft?-30:W+30,y:80+Math.random()*(H-160),
         vx:fromLeft?type.speed:-type.speed,
         vy:(Math.random()-0.5)*0.3,
-        hp:type.hp*(1+wave*0.1), maxHp:type.hp*(1+wave*0.1),
+        hp:type.hp*(1+wave*0.2), maxHp:type.hp*(1+wave*0.2),
         emoji:type.emoji, color:type.color,
         pts:type.pts, r:18,
         wobble:Math.random()*Math.PI*2,
