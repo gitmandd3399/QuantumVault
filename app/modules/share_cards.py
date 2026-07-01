@@ -12,7 +12,7 @@ from utils.security import get_level
 
 def render_share_card(badge: str, xp: int, level: str, streak: int):
     """Render a single shareable achievement card."""
-    components.html(f"""
+    st.iframe(f"""
 <!DOCTYPE html>
 <html>
 <head>

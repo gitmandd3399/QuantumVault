@@ -841,7 +841,7 @@ body{{margin:0;background:#0f172a;font-family:sans-serif;}}
         facts_entries = ", ".join([f'"{w}": "{WORD_FACTS.get(w, w)}"' for w in lvl["words"]])
 
         import streamlit.components.v1 as components
-        components.html(f"""
+        st.iframe(f"""
 <style>
 .ws-wrap{{text-align:center;font-family:sans-serif;padding:10px;}}
 .ws-grid{{display:inline-grid;grid-template-columns:repeat({lvl["cols"]},28px);gap:2px;margin:8px auto;}}
@@ -995,7 +995,7 @@ resetWS();
         level = st.session_state.cw_level
 
         import streamlit.components.v1 as components
-        components.html(f"""
+        st.iframe(f"""
 <!DOCTYPE html>
 <html>
 <head>

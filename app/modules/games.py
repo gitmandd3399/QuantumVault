@@ -448,7 +448,7 @@ def render_lattice_maze():
         "🚨 **Collect all 4 NIST crystals** before Shor Bots catch you! "
         "Arrow keys to move. Grab power-ups to fight back!"
     )
-    components.html(r"""
+    st.iframe(r"""
 <!DOCTYPE html>
 <html>
 <head>
@@ -997,7 +997,7 @@ def render_tower_defense():
         "**Place PQC towers** to stop Shor Bots from reaching your server! "
         "Each tower uses a real NIST PQC algorithm. Click the grid to place towers!"
     )
-    components.html(r"""
+    st.iframe(r"""
 <!DOCTYPE html>
 <html>
 <head>
@@ -1489,7 +1489,7 @@ def render_zombie_blast(difficulty: str = "easy"):
         "Click/tap zombies to blast them with quantum shields! "
         "Collect power crystals to unlock special weapons!"
     )
-    components.html(r"""
+    st.iframe(r"""
 <!DOCTYPE html>
 <html>
 <head>
@@ -2107,7 +2107,7 @@ def render_quantumcraft_elementary():
         "WASD or arrow keys to move. Press **E** to mine, **F** to place blocks. "
         "Avoid the 💀 quantum creepers!"
     )
-    components.html("""
+    st.iframe("""
     <style>
         #qcCanvas{border:2px solid #10b981;border-radius:12px;display:block;margin:0 auto;}
         .qc-wrap{text-align:center;font-family:sans-serif;}
@@ -2784,7 +2784,7 @@ def render_quantumcraft_highschool():
         "Run through the **quantum-corrupted ruins**! "
         "Arrow keys to run, SPACE to jump. Collect PQC power-ups, avoid broken crypto!"
     )
-    components.html("""
+    st.iframe("""
     <style>
         #crCanvas{border:2px solid #8b5cf6;border-radius:12px;display:block;margin:0 auto;}
         .cr-wrap{text-align:center;font-family:sans-serif;}
@@ -2931,7 +2931,7 @@ def render_prime_factor_game():
         "Race the **Shor Bot** quantum computer to find the prime factors first! "
         "Learn why RSA is doomed — and what KYBER does instead!"
     )
-    components.html(r"""
+    st.iframe(r"""
 <!DOCTYPE html>
 <html>
 <head>
@@ -3589,7 +3589,7 @@ def render_network_defender():
         "Click nodes to deploy quantum shields. "
         "Don't let the attackers reach the HUB!"
     )
-    components.html(r"""
+    st.iframe(r"""
 <!DOCTYPE html>
 <html>
 <head>
@@ -4287,7 +4287,7 @@ def render_secret_message():
         "**Encrypt messages, decode challenges, and become a Cipher Agent!** "
         "Learn why simple ciphers are NOT quantum-safe — and what IS!"
     )
-    components.html(r"""
+    st.iframe(r"""
 <!DOCTYPE html>
 <html>
 <head>
@@ -5038,7 +5038,7 @@ def render_ctf_game():
         "Complete 12 hacking missions using real post-quantum cryptography knowledge. "
         "Each mission unlocks the next. Faster = more points."
     )
-    components.html(r"""
+    st.iframe(r"""
 <!DOCTYPE html>
 <html>
 <head>
@@ -5759,7 +5759,7 @@ def render_code_shield():
         "**Shor Bots are attacking!** Click the right blocks to build your "
         "quantum shield before they break through! No typing — just click!"
     )
-    components.html(r"""
+    st.iframe(r"""
 <!DOCTYPE html>
 <html>
 <head>
@@ -6489,7 +6489,7 @@ def render_cipher_quest():
         "**You are a Quantum Spy!** Complete cipher missions to earn coins, "
         "unlock power-ups, and defeat the Shor Boss! Fill in ONE blank per challenge."
     )
-    components.html(r"""
+    st.iframe(r"""
 <!DOCTYPE html>
 <html>
 <head>

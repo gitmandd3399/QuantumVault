@@ -18,7 +18,7 @@ def render_world_map():
 
     xp = st.session_state.get("xp", 0)
 
-    components.html(f"""
+    st.iframe(f"""
 <!DOCTYPE html>
 <html>
 <head>

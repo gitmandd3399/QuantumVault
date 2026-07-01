@@ -53,7 +53,7 @@ def render_tls_simulator():
     step = min(st.session_state.tls_step, len(steps) - 1)
     current = steps[step]
 
-    components.html(f"""
+    st.iframe(f"""
 <style>
 body{{margin:0;background:#0f172a;font-family:sans-serif;padding:8px;}}
 .conn{{display:flex;align-items:center;justify-content:center;gap:8px;}}

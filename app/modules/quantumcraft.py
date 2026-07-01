@@ -10,7 +10,7 @@ def render_quantumcraft_elementary():
         "**1-9** to select hotbar. **Right-click** to place blocks."
     )
 
-    components.html(r"""
+    st.iframe(r"""
 <!DOCTYPE html>
 <html>
 <head>

@@ -84,7 +84,7 @@ def render_character_page():
         st.markdown("### 👤 Your Character")
 
         # Character display card
-        components.html(f"""
+        st.iframe(f"""
 <style>
 body{{margin:0;background:#0f172a;font-family:sans-serif;}}
 .char-card{{
