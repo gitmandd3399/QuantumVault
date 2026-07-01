@@ -295,8 +295,8 @@ function createMob(cx_spawn, cy_spawn, template) {
         id: Math.random(),
         collapsed: false,
         // convenience centre for HUD / collision queries
-        get x() { return (this.pts.neck.x + this.pts.hip.x) * 0.5; },
-        get y() { return (this.pts.neck.y + this.pts.hip.y) * 0.5; },
+        x: cx_spawn,
+        y: cy_spawn,
     };
 }
 
@@ -317,6 +317,9 @@ function updateMobNew(mob, groundY) {
         });
         ptArr.forEach(p => collidePt(p, 3, groundY));
     }
+    // Keep convenience centre in sync (used for collision queries)
+    mob.x = (mob.pts.neck.x + mob.pts.hip.x) * 0.5;
+    mob.y = (mob.pts.neck.y + mob.pts.hip.y) * 0.5;
 }
 
 // ── Apply impulse (knockback) ─────────────────────────────────────────────────
