@@ -6967,316 +6967,367 @@ setMsg('🗺️ Pick a quest from the map to start your mission!','#60a5fa');
 """, height=720)
 
 def render_pqc_python_lab():
-    """High School 9-12: PQC Python Lab — guided real Python with step-by-step comments."""
+    """High School 9-12: PQC Python Lab — UPGRADED 2026 — AI reviewer, speed bonus, certificates."""
     import streamlit as st
+    import streamlit.components.v1 as components
     from modules.trial import trial_gate
     if not trial_gate("pqc_python_lab", "PQC Python Lab"):
         return
     st.subheader("🐍 PQC Python Lab")
     st.markdown(
-        "**Write real Python code** to learn post-quantum cryptography! "
-        "Every challenge has step-by-step comments guiding you through the code. "
-        "Run your code and see the real output!"
+        "**Write real Python code** to master post-quantum cryptography! "
+        "Earn XP, unlock challenges, and get an AI code review on completion!"
     )
 
     challenges = [
         {
             "id": 1, "title": "Caesar Cipher Decoder", "difficulty": "🟢 Beginner",
             "concept": "Why simple ciphers fail",
-            "desc": "Decode a Caesar cipher by trying all 25 shifts. This shows why old ciphers are weak — then we'll learn what makes Kyber strong.",
-            "starter": """# CHALLENGE 1: Decode a Caesar Cipher
-# A Caesar cipher shifts each letter by a fixed amount
-# Caesar only has 25 possible shifts — easy to crack!
+            "xp": 50, "coins": 30,
+            "desc": "Decode a Caesar cipher by brute force. This shows why old ciphers are weak — then we'll see what makes Kyber unbreakable.",
+            "starter": """# CHALLENGE 1: Crack a Caesar Cipher
+# Caesar only has 25 possible keys — easy to brute force!
+ciphertext = 'Khoor Zruog'
 
-ciphertext = 'Khoor Zruog'  # This is a hidden message!
-
-# Step 1: Loop through all possible shifts (1 to 25)
+# Loop through all 25 possible shifts
 for shift in range(1, 26):
     decoded = ''
-    
-    # Step 2: Decode each character
     for c in ciphertext:
         if c.isalpha():
-            # Step 3: Shift the letter back
             base = 65 if c.isupper() else 97
             decoded += chr((ord(c) - base - shift) % 26 + base)
         else:
-            decoded += c  # Keep spaces and punctuation
-    
-    # Step 4: Print each attempt
+            decoded += c
     print(f'Shift {shift:2d}: {decoded}')
 
-print('\\nOnly one of these makes sense — that is the answer!')
-print('Kyber has 2^256 keys, not just 25 — impossible to brute force!')""",
-            "hint": "Just run the code as-is! All the logic is already there. Look for the shift that produces a real English phrase.",
-            "expected_output": "Hello World",
-            "fact": "Caesar cipher: 25 keys, cracked in milliseconds. Kyber: 2^256 keys, quantum computers still cannot crack it. That's a difference of about 10^77 times harder!",
+print('\\nKyber has 2^256 keys — NOT 25!')
+print('Even quantum computers cannot brute force Kyber!')""",
+            "hint": "Run it as-is! Look for the shift that produces a real English phrase.",
+            "check_word": "Hello World",
+            "fact": "Caesar: 25 keys, cracked in milliseconds. Kyber: 2^256 keys — a number larger than atoms in the observable universe!",
         },
         {
             "id": 2, "title": "LWE Math Core", "difficulty": "🟢 Beginner",
             "concept": "The math inside Kyber",
-            "desc": "Implement Learning With Errors (LWE) — the mathematical foundation of Kyber. This is the actual math that makes Kyber quantum-safe!",
+            "xp": 75, "coins": 50,
+            "desc": "Implement Learning With Errors (LWE) — the actual mathematical foundation of Kyber! This is what makes it quantum-safe.",
             "starter": """# CHALLENGE 2: Learning With Errors (LWE)
 # This is the REAL math inside Kyber (ML-KEM FIPS 203)!
-# LWE: given A and b, find s — even quantum computers can't do it!
 
 import random
 
-# === SETUP ===
-q = 11          # Modulus (Kyber uses q = 3329)
-s = 3           # SECRET — this is what we're protecting
-A = [7, 5, 2]   # Public matrix (random numbers)
-e = [1, 0, 1]   # Small noise/error (makes it hard to solve)
+# Parameters (tiny version for learning)
+q = 17      # modulus (real Kyber uses q=3329)
+n = 4       # dimension (real Kyber uses n=256)
 
-# === COMPUTE PUBLIC KEY ===
-# b[i] = (A[i] * s + e[i]) mod q
-# This hides s inside the math!
+# Secret key (what we want to hide)
+secret = [3, 1, 4, 1]  # short secret vector
+
+# Public matrix A (known to everyone)
+A = [[2,3,1,4],[1,2,3,1],[4,1,2,3],[3,4,1,2]]
+
+# Add noise (this is what makes LWE hard to reverse!)
+noise = [random.randint(0,2) for _ in range(n)]
+
+# Compute b = A*s + e (mod q)
 b = []
-for i in range(len(A)):
-    value = (A[i] * s + e[i]) % q
-    b.append(value)
-    print(f'b[{i}] = ({A[i]} × {s} + {e[i]}) mod {q} = {A[i]*s+e[i]} mod {q} = {value}')
+for row in A:
+    val = sum(row[i]*secret[i] for i in range(n))
+    val = (val + noise[b.__len__()]) % q
+    b.append(val)
 
-print(f'\\nPublic key b = {b}')
-print(f'Anyone can see A = {A} and b = {b}')
-print(f'But s = {s} is HIDDEN — try to find it just from A and b!')
-print('\\nThis is why Kyber is quantum-safe: LWE is mathematically proven hard!')""",
-            "hint": "Just run this code — everything is already written! Observe how b hides the secret s.",
-            "expected_output": "Public key b",
-            "fact": "Real Kyber uses 256-dimensional polynomial rings instead of simple lists, making it exponentially harder. NIST proved in 2024 that M-LWE cannot be solved even by quantum computers!",
+print(f'Secret s = {secret}')
+print(f'Public b = {b}')
+print(f'Noise e  = {noise}')
+print('\\nEven knowing A and b, finding s requires')
+print('solving billions of equations — impossible for quantum computers!')""",
+            "hint": "The noise variable is auto-generated. Just run the code and observe how b looks random even though s is simple.",
+            "check_word": "impossible for quantum",
+            "fact": "Real Kyber uses 256-dimensional vectors with modulus q=3329. The noise makes it computationally infeasible to recover the secret — even with Shor's Algorithm!",
         },
         {
-            "id": 3, "title": "SHA-3 Avalanche Effect", "difficulty": "🟡 Intermediate",
-            "concept": "How SPHINCS+ stays quantum-safe",
-            "desc": "Demonstrate the SHA-3 avalanche effect. Change ONE character in a message and watch the entire hash change completely. This is why SPHINCS+ is quantum-safe!",
+            "id": 3, "title": "Hash Avalanche Effect", "difficulty": "🟡 Intermediate",
+            "concept": "SHA-3 inside SPHINCS+",
+            "xp": 100, "coins": 70,
+            "desc": "Demonstrate SHA-3's avalanche effect — the core of SPHINCS+ (FIPS 205). Change ONE character and see how 50% of the hash changes!",
             "starter": """# CHALLENGE 3: SHA-3 Avalanche Effect
-# SHA-3 is the hash function inside SPHINCS+ (SLH-DSA FIPS 205)
-# Avalanche effect: change 1 bit → ~50% of output changes!
+# SHA-3 is used inside SPHINCS+ (SLH-DSA FIPS 205)
 
 import hashlib
 
-def sha3_hash(text):
-    # Hash any text with SHA-3 (256-bit output)
-    return hashlib.sha3_256(text.encode()).hexdigest()
+msg1 = "QuantumVault Academy"
+msg2 = "QuantumVault academy"  # Only 'A' changed to 'a'!
 
-# === TEST THE AVALANCHE EFFECT ===
-message1 = 'hello quantum world'   # Original message
-message2 = 'Hello quantum world'   # Changed ONE letter (capital H)!
+# Hash both messages with SHA-3
+h1 = hashlib.sha3_256(msg1.encode()).hexdigest()
+h2 = hashlib.sha3_256(msg2.encode()).hexdigest()
 
-hash1 = sha3_hash(message1)
-hash2 = sha3_hash(message2)
-
-print('Original message :', message1)
-print('Modified message :', message2)
-print('(Only the H changed!)')
+print(f'Message 1: {msg1}')
+print(f'Hash 1:    {h1}')
 print()
-print('Hash 1:', hash1)
-print('Hash 2:', hash2)
-print()
+print(f'Message 2: {msg2}')
+print(f'Hash 2:    {h2}')
 
-# Count how many characters are different
-different = sum(1 for a, b in zip(hash1, hash2) if a != b)
-percentage = round(different / len(hash1) * 100)
-
-print(f'Different characters: {different} out of {len(hash1)}')
-print(f'Avalanche effect: {percentage}% of hash changed!')
-print()
-print('SPHINCS+ chains thousands of these hashes together.')
-print('Even quantum computers cannot fake or reverse SHA-3!')""",
-            "hint": "Run this code as-is! The avalanche effect will show you that changing 1 character changes roughly 50% of the hash output.",
-            "expected_output": "Avalanche effect",
-            "fact": "SHA-3 uses a sponge construction (Keccak) that's completely different from SHA-2. Grover's Algorithm gives quantum a 2x speedup, but SHA3-256 still has 128-bit quantum security — enough for FIPS 205!",
+# Count different characters
+diff = sum(1 for a, b in zip(h1, h2) if a != b)
+pct = round(diff / len(h1) * 100)
+print(f'\\nDifferent: {diff}/64 characters ({pct}% changed!)')
+print('ONE letter change = HALF the hash changed!')
+print('This is the AVALANCHE EFFECT — SHA-3 is quantum-resistant!')""",
+            "hint": "Run it as-is! The avalanche effect is built into SHA-3. Observe how much of the hash changes.",
+            "check_word": "AVALANCHE EFFECT",
+            "fact": "SHA-3's avalanche effect means every output bit depends on every input bit. Grover's Algorithm halves SHA-3's security — but SHA3-256 with 128-bit quantum security is still unbreakable!",
         },
         {
-            "id": 4, "title": "RSA vs Kyber Key Sizes", "difficulty": "🟡 Intermediate",
-            "concept": "Why key sizes matter",
-            "desc": "Compare RSA and Kyber key sizes and security levels. Understand why we need to migrate before quantum computers arrive.",
-            "starter": """# CHALLENGE 4: RSA vs Kyber Security Comparison
-# Understanding why we NEED to migrate to post-quantum crypto
-
-# === KEY SIZE DATA ===
-algorithms = [
-    # (Name, Key Size bytes, Classical Security bits, Quantum Security bits)
-    ('RSA-2048',    256,  112, 0),    # 0 quantum bits = broken by Shor!
-    ('RSA-4096',    512,  140, 0),    # Still 0 quantum security!
-    ('ECDSA-256',    32,  128, 0),    # Elliptic curve also broken!
-    ('Kyber-512',   800,  128, 128),  # FIPS 203 Level 1
-    ('Kyber-768',  1184,  192, 128),  # FIPS 203 Level 3 (recommended)
-    ('Kyber-1024', 1568,  256, 256),  # FIPS 203 Level 5 (top security)
-]
-
-print('=' * 65)
-print(f'{"Algorithm":<14} {"Key(bytes)":>10} {"Classical":>10} {"Quantum":>10}')
-print('=' * 65)
-
-for name, key_size, classical_bits, quantum_bits in algorithms:
-    status = '✅ SAFE' if quantum_bits > 0 else '❌ BROKEN'
-    print(f'{name:<14} {key_size:>10} {classical_bits:>9}b {quantum_bits:>9}b  {status}')
-
-print('=' * 65)
-print()
-print('RSA quantum security = 0 because Shor\\'s Algorithm solves it!')
-print('Kyber quantum security = 128+ bits because M-LWE is quantum-hard!')
-print()
-print('US agencies must migrate to Kyber by 2035 (NSM-10 mandate).')
-print('The clock is ticking — migrate NOW before quantum computers arrive!')""",
-            "hint": "Run this code as-is! Study the table carefully — notice how all RSA/ECDSA algorithms have 0 quantum security bits.",
-            "expected_output": "quantum-hard",
-            "fact": "NSM-10 (National Security Memorandum 10) requires ALL US federal agencies to migrate from RSA to Kyber and other NIST PQC standards by 2035. The professionals doing this migration are in classrooms today!",
-        },
-        {
-            "id": 5, "title": "Build a Mini Key Exchange", "difficulty": "🔴 Advanced",
-            "concept": "How Kyber protects the internet",
-            "desc": "Simulate how Kyber key exchange works. Alice and Bob agree on a shared secret without ever sending it — even if someone intercepts every message, they cannot find the secret!",
-            "starter": """# CHALLENGE 5: Mini Kyber Key Exchange Simulation
-# This shows HOW Kyber protects HTTPS, VPNs, and encrypted messaging
+            "id": 4, "title": "Kyber Key Exchange Simulation", "difficulty": "🟡 Intermediate",
+            "concept": "How ML-KEM works",
+            "xp": 150, "coins": 100,
+            "desc": "Simulate a simplified Kyber key exchange between Alice and Bob! See how they create a shared secret without ever sending it.",
+            "starter": """# CHALLENGE 4: Kyber Key Exchange (Simplified)
+# This simulates ML-KEM (FIPS 203) key encapsulation
 
 import random
 
-# === SETUP: Public parameters (everyone knows these) ===
-q = 97        # Modulus
-n = 4         # Dimensions (real Kyber uses n=256)
-random.seed(42)
+q = 17  # modulus
 
-def dot_product_mod(v1, v2, q):
-    '''Compute dot product of two vectors mod q'''
-    return sum(v1[i] * v2[i] for i in range(len(v1))) % q
+def keygen():
+    '''Alice generates her key pair'''
+    secret = [random.randint(0,3) for _ in range(4)]
+    public = [(3*s + random.randint(0,1)) % q for s in secret]
+    return secret, public
 
-# === ALICE generates her key pair ===
-print('=== ALICE (SERVER) ===')
-# Alice's secret key (never shared!)
-alice_secret = [random.randint(0, 2) for _ in range(n)]
-# Public matrix A (everyone sees this)
-A = [[random.randint(0, q-1) for _ in range(n)] for _ in range(n)]
-# Alice's public key: b = A*s + small_error (mod q)
-alice_error = [random.randint(0, 1) for _ in range(n)]
-alice_public = [(dot_product_mod(A[i], alice_secret, q) + alice_error[i]) % q for i in range(n)]
-print(f'Alice secret key: {alice_secret} (NEVER SHARED)')
-print(f'Alice public key: {alice_public} (broadcast to world)')
+def encapsulate(public_key):
+    '''Bob creates ciphertext and shared secret'''
+    r = [random.randint(0,3) for _ in range(4)]
+    ciphertext = [(pk + ri) % q for pk, ri in zip(public_key, r)]
+    shared_secret = sum(r) % q
+    return ciphertext, shared_secret
 
-# === BOB sends an encrypted message ===
+def decapsulate(secret_key, ciphertext):
+    '''Alice recovers shared secret'''
+    recovered = sum((ct - 3*sk) % q for ct, sk in zip(ciphertext, secret_key)) % q
+    return recovered
+
+# Run the key exchange!
+alice_secret, alice_public = keygen()
+ciphertext, bob_secret = encapsulate(alice_public)
+alice_recovered = decapsulate(alice_secret, ciphertext)
+
+print(f'Alice public key: {alice_public}')
+print(f'Bob ciphertext:   {ciphertext}')
+print(f'Bob shared secret:   {bob_secret}')
+print(f'Alice recovered:     {alice_recovered}')
 print()
-print('=== BOB (CLIENT) ===')
-bob_secret = [random.randint(0, 2) for _ in range(n)]
-bob_error = [random.randint(0, 1) for _ in range(n)]
-# Bob computes a shared value using Alice's public key
-shared_approx = (dot_product_mod(alice_public, bob_secret, q) + bob_error[0]) % q
-print(f'Bob computes shared value: {shared_approx}')
+print('Real Kyber uses 768-dimensional vectors')
+print('and modulus q=3329 for 128-bit quantum security!')""",
+            "hint": "Run as-is to see the key exchange! Notice Bob and Alice never directly share the secret.",
+            "check_word": "128-bit quantum security",
+            "fact": "Real ML-KEM-768 uses 768-dimensional vectors. The public key is 1184 bytes, ciphertext 1088 bytes. Even with a quantum computer running Grover's Algorithm, it would take longer than the age of the universe to crack!",
+        },
+        {
+            "id": 5, "title": "Digital Signature Verify", "difficulty": "🔴 Advanced",
+            "concept": "ML-DSA (Dilithium) signatures",
+            "xp": 200, "coins": 150,
+            "desc": "Implement a simplified Dilithium-style signature scheme! Sign a message and verify it — then try to forge a signature and see why it fails.",
+            "starter": """# CHALLENGE 5: Dilithium-Style Digital Signatures
+# Simulating ML-DSA (FIPS 204) signature scheme
 
-# === ALICE recovers the shared secret ===
-print()
-print('=== KEY AGREEMENT ===')
-alice_recover = dot_product_mod(alice_secret, bob_secret, q)
-print(f'Alice recovers: {alice_recover}')
-print(f'Values close: {abs(shared_approx - alice_recover) < 5}')
-print()
-print('KEY EXCHANGE COMPLETE!')
-print('Alice and Bob now share a secret nobody else knows.')
-print('Even if an attacker saw everything, they cannot compute the secret!')
-print('This is how Kyber protects HTTPS connections in your browser!')""",
-            "hint": "Run this code! The output shows Alice and Bob establishing a shared secret. The key insight: an eavesdropper sees alice_public and bob messages, but cannot compute the shared secret without alice_secret.",
-            "expected_output": "KEY EXCHANGE COMPLETE",
-            "fact": "Google Chrome and Cloudflare already use X25519+Kyber hybrid key exchange in TLS 1.3, protecting ~20% of all internet traffic! This code simulates the exact concept, just simplified for learning.",
+import hashlib, random
+
+q = 257  # prime modulus
+
+def keygen():
+    '''Generate signing/verification key pair'''
+    private_key = [random.randint(1, q-1) for _ in range(4)]
+    public_key = [(3*pk) % q for pk in private_key]
+    return private_key, public_key
+
+def sign(message, private_key):
+    '''Sign a message with private key'''
+    msg_hash = int(hashlib.sha3_256(message.encode()).hexdigest()[:8], 16)
+    signature = [(pk * msg_hash) % q for pk in private_key]
+    return signature
+
+def verify(message, signature, public_key):
+    '''Verify signature with public key'''
+    msg_hash = int(hashlib.sha3_256(message.encode()).hexdigest()[:8], 16)
+    expected = [(pub * msg_hash) % q for pub in public_key]
+    check = [(sig * 3) % q for sig in signature]
+    return check == expected
+
+# Test the signature
+private_key, public_key = keygen()
+message = "QuantumVault Academy - Quantum Safe!"
+signature = sign(message, private_key)
+valid = verify(message, signature, public_key)
+
+print(f'Message:   {message}')
+print(f'Signature: {signature[:2]}... (truncated)')
+print(f'Valid:     {valid}')
+
+# Try to forge a signature
+fake_sig = [random.randint(0, q-1) for _ in range(4)]
+forged = verify(message, fake_sig, public_key)
+print(f'\\nForged signature valid: {forged}')
+print('Impossible to forge without the private key!')
+print('Real ML-DSA uses Module-LWE + SIS — quantum computers cannot crack it!')""",
+            "hint": "Run as-is! The key insight is that fake_sig will ALWAYS fail verification — that's what makes digital signatures secure.",
+            "check_word": "Impossible to forge",
+            "fact": "Real ML-DSA (Dilithium FIPS 204) has a 3293-byte signature and 1952-byte public key. Forging it requires solving Module-SIS — a hard lattice problem that quantum computers cannot solve!",
         },
     ]
 
-    if "lab_level" not in st.session_state:
-        st.session_state.lab_level = 0
-    if "lab_score" not in st.session_state:
-        st.session_state.lab_score = 0
+    # Session state
+    if "pqc_lab_idx" not in st.session_state:
+        st.session_state.pqc_lab_idx = 0
+    if "pqc_lab_xp" not in st.session_state:
+        st.session_state.pqc_lab_xp = 0
+    if "pqc_lab_coins" not in st.session_state:
+        st.session_state.pqc_lab_coins = 0
+    if "pqc_lab_done" not in st.session_state:
+        st.session_state.pqc_lab_done = []
 
-    idx = min(st.session_state.lab_level, len(challenges)-1)
-    ch = challenges[idx]
+    idx = st.session_state.pqc_lab_idx
+    total_xp = st.session_state.pqc_lab_xp
+    coins = st.session_state.pqc_lab_coins
+    done_list = st.session_state.pqc_lab_done
+
+    # HUD
+    col1, col2, col3, col4 = st.columns(4)
+    col1.metric("⭐ XP", total_xp)
+    col2.metric("🪙 Coins", coins)
+    col3.metric("✅ Done", f"{len(done_list)}/{len(challenges)}")
+    col4.metric("🏆 Challenge", f"{idx+1}/{len(challenges)}")
 
     # Progress bar
-    progress = (idx) / len(challenges)
-    st.progress(progress)
-
-    col1, col2, col3 = st.columns(3)
-    col1.metric("⭐ Score", st.session_state.lab_score)
-    col2.metric("🏆 Challenge", str(idx+1) + "/" + str(len(challenges)))
-    col3.metric("📊 Level", ch["difficulty"])
-
-    st.markdown(f"### {ch['id']}. {ch['title']}")
-    st.markdown(f"**Concept:** {ch['concept']}")
-    st.info(ch["desc"])
-
-    # Show all challenge navigation
-    cols = st.columns(len(challenges))
-    for i, c in enumerate(challenges):
-        status = "✅" if i < idx else ("🔵" if i == idx else "⬜")
-        cols[i].markdown(f"<div style='text-align:center;font-size:10px;color:#475569'>{status}<br>Ch.{i+1}</div>", unsafe_allow_html=True)
+    prog_cols = st.columns(len(challenges))
+    for i, ch in enumerate(challenges):
+        with prog_cols[i]:
+            if i in done_list:
+                st.success(f"✅ {i+1}")
+            elif i == idx:
+                st.info(f"▶ {i+1}")
+            else:
+                st.markdown(f"<div style='text-align:center;color:#334155;padding:4px'>🔒 {i+1}</div>", unsafe_allow_html=True)
 
     st.markdown("---")
-    st.markdown("#### ✏️ Your Code:")
-    st.markdown("<div style='font-size:11px;color:#475569;margin-bottom:4px'>📌 Read the comments — they guide you step by step!</div>", unsafe_allow_html=True)
 
+    # Current challenge
+    if idx >= len(challenges):
+        st.balloons()
+        st.success("🏆 **ALL 5 CHALLENGES COMPLETE!** You are a PQC Python expert!")
+        st.markdown(f"""
+<div style='background:linear-gradient(135deg,#071520,#0a1f35);border:3px solid #fbbf24;
+border-radius:16px;padding:24px;text-align:center;'>
+<div style='font-size:3rem'>🏆</div>
+<h2 style='color:#fbbf24'>PQC Python Lab Certificate</h2>
+<p style='color:#94a3b8'>This certifies mastery of</p>
+<h3 style='color:#60a5fa'>Post-Quantum Cryptography Programming</h3>
+<p style='color:#94a3b8'>Caesar Cipher · LWE Math · SHA-3 · Kyber KEM · Dilithium Signatures</p>
+<p style='color:#10b981;font-size:14px'>Total XP: {total_xp} | Coins: {coins}</p>
+<p style='color:#fbbf24;font-size:11px'>QuantumVault Academy · FIPS 203/204/205/206</p>
+</div>
+""", unsafe_allow_html=True)
+        if st.button("🔄 Restart Lab"):
+            st.session_state.pqc_lab_idx = 0
+            st.session_state.pqc_lab_xp = 0
+            st.session_state.pqc_lab_coins = 0
+            st.session_state.pqc_lab_done = []
+            st.rerun()
+        return
+
+    ch = challenges[idx]
+
+    # Challenge header
+    st.markdown(f"### {ch['difficulty']} — {ch['title']}")
+    st.markdown(f"**Concept:** {ch['concept']} | 🪙 {ch['coins']} coins | ⭐ {ch['xp']} XP")
+    st.info(ch["desc"])
+
+    # Code editor
     code = st.text_area(
-        "Python code:",
+        "✏️ Your Python code:",
         value=ch["starter"],
-        height=320,
-        key="lab_code_" + str(idx),
-        label_visibility="collapsed"
+        height=280,
+        key=f"code_{idx}"
     )
 
-    col_a, col_b, col_c = st.columns([2,1,1])
-    with col_a:
-        run = st.button("▶ Run Code", type="primary", use_container_width=True, key="run_"+str(idx))
-    with col_b:
-        hint_btn = st.button("💡 Hint", use_container_width=True, key="hint_"+str(idx))
-    with col_c:
-        if idx < len(challenges)-1:
-            nxt = st.button("Next →", use_container_width=True, key="next_"+str(idx))
-        else:
-            nxt = False
+    col1, col2 = st.columns([2, 1])
+    with col1:
+        run = st.button("▶️ Run Code", type="primary", use_container_width=True, key=f"run_{idx}")
+    with col2:
+        hint = st.button("💡 Hint", use_container_width=True, key=f"hint_{idx}")
 
-    if hint_btn:
-        st.info("💡 " + ch["hint"])
+    if hint:
+        st.warning(f"💡 **Hint:** {ch['hint']}")
 
     if run:
-        import io, contextlib
+        import io, sys, traceback, time
+        old_stdout = sys.stdout
+        sys.stdout = io.StringIO()
+        start_time = time.time()
+        error = None
         try:
-            output_buf = io.StringIO()
-            safe_globals = {
-                "__builtins__": {
-                    "print": lambda *a,**k: print(*a,**k, file=output_buf),
-                    "range": range, "len": len, "sum": sum, "zip": zip,
-                    "round": round, "chr": chr, "ord": ord, "str": str,
-                    "int": int, "float": float, "list": list, "dict": dict,
-                    "enumerate": enumerate, "abs": abs, "min": min, "max": max,
-                    "True": True, "False": False, "None": None,
-                    "f": None,
-                },
-                "hashlib": __import__("hashlib"),
-                "random": __import__("random"),
-            }
-            exec(code, safe_globals)
-            result = output_buf.getvalue()
-            if result:
-                st.code(result, language="text")
-                if ch["expected_output"].lower() in result.lower() or len(result) > 30:
-                    pts = 200 * (idx + 1)
-                    st.session_state.lab_score += pts
-                    st.success("🎉 Excellent work! +" + str(pts) + " pts!")
-                    st.info("🔐 " + ch["fact"])
-                    if idx < len(challenges) - 1:
-                        if st.button("🚀 Continue to Challenge " + str(idx+2), type="primary", key="auto_next_"+str(idx)):
-                            st.session_state.lab_level = idx + 1
-                            st.rerun()
+            exec(compile(code, "<lab>", "exec"), {})
+        except Exception:
+            error = traceback.format_exc()
+        elapsed = time.time() - start_time
+        output = sys.stdout.getvalue()
+        sys.stdout = old_stdout
+
+        if error:
+            st.error(f"❌ Python Error:\n```\n{error}\n```")
+            st.markdown("🔧 Check your syntax and try again!")
+        else:
+            st.code(output, language="text")
+
+            # Check for key output
+            if ch["check_word"].lower() in output.lower():
+                if idx not in done_list:
+                    done_list.append(idx)
+                    st.session_state.pqc_lab_done = done_list
+
+                    # Speed bonus
+                    speed_bonus = 20 if elapsed < 5 else 0
+                    earned_xp = ch["xp"] + speed_bonus
+                    earned_coins = ch["coins"]
+                    st.session_state.pqc_lab_xp = total_xp + earned_xp
+                    st.session_state.pqc_lab_coins = coins + earned_coins
+
+                    st.success(f"🎉 **Challenge Complete!** +{earned_xp} XP +{earned_coins} coins!" +
+                               (f" ⚡ Speed bonus +{speed_bonus} XP!" if speed_bonus else ""))
+                    st.balloons()
                 else:
-                    st.warning("Code ran! Check the output matches what's expected.")
+                    st.success("✅ Challenge already completed! Experimenting — great habit!")
+
+                st.info(f"💡 **PQC Fact:** {ch['fact']}")
+
+                # AI Review button
+                if st.button("🤖 Get AI Code Review", key=f"ai_{idx}"):
+                    try:
+                        import anthropic
+                        client = anthropic.Anthropic(api_key=st.secrets.get("ANTHROPIC_API_KEY",""))
+                        with st.spinner("🤖 AI reviewing your code..."):
+                            response = client.messages.create(
+                                model="claude-sonnet-4-6",
+                                max_tokens=400,
+                                messages=[{"role":"user","content":
+                                    f"Review this Python code from a high school student learning PQC cryptography. "
+                                    f"Be encouraging, specific, and educational. Max 150 words. "
+                                    f"Code:\n{code}\n\nOutput:\n{output}"}]
+                            )
+                        st.success("🤖 **AI Code Review:**\n\n" + response.content[0].text)
+                    except Exception:
+                        st.info("🤖 AI review unavailable — your code is great!")
+
+                if idx + 1 < len(challenges):
+                    if st.button("➡️ Next Challenge!", type="primary", key=f"next_{idx}"):
+                        st.session_state.pqc_lab_idx = idx + 1
+                        st.rerun()
+                else:
+                    if st.button("🏆 Complete the Lab!", type="primary", key=f"complete_{idx}"):
+                        st.session_state.pqc_lab_idx = len(challenges)
+                        st.rerun()
             else:
-                st.warning("Code ran but produced no output. Make sure you have print() statements!")
-        except Exception as ex:
-            st.error("❌ Error: " + str(ex))
-            st.info("💡 " + ch["hint"])
-
-    if nxt:
-        st.session_state.lab_level = min(idx + 1, len(challenges)-1)
-        st.rerun()
-
-    if idx == len(challenges) - 1 and st.session_state.lab_score > 0:
-        st.balloons()
-        st.success("🏆 You completed the PQC Python Lab! Score: " + str(st.session_state.lab_score))
-
+                st.warning("⚠️ Code ran but the output doesn't match. Check your logic and try again!")
+                st.info(f"💡 Look for: *{ch['check_word']}* in your output")
 
