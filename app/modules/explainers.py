@@ -46,7 +46,7 @@ EXPLAINERS = [
 
 
 def render_quantum_threat():
-    st.iframe("""
+    components.html("""
 <!DOCTYPE html>
 <html>
 <head>
@@ -179,7 +179,7 @@ setInterval(() => {
 
 
 def render_kyber_explained():
-    st.iframe("""
+    components.html("""
 <!DOCTYPE html>
 <html>
 <head>
@@ -292,7 +292,7 @@ setInterval(()=>{if(current<total)nextScene();},5000);
 
 
 def render_lattice_math():
-    st.iframe("""
+    components.html("""
 <!DOCTYPE html>
 <html>
 <head>
@@ -417,7 +417,7 @@ setInterval(()=>{if(current<total)nextScene();},5000);
 
 
 def render_hash_functions():
-    st.iframe("""
+    components.html("""
 <!DOCTYPE html>
 <html>
 <head>

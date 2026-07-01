@@ -263,7 +263,7 @@ def render_trading_cards():
         rarity_color = card["rarity_color"] if unlocked_card else "#6b7280"
         opacity = "1" if unlocked_card else "0.4"
 
-        st.iframe(f"""
+        components.html(f"""
 <style>
 .card {{
     background: linear-gradient(135deg, {color}22, {color}08);

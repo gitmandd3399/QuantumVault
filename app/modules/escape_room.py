@@ -87,7 +87,7 @@ def render_escape_room():
 
     if not st.session_state.escape_started:
         # Pre-game screen
-        st.iframe("""
+        components.html("""
 <style>
 body{margin:0;background:#0f172a;font-family:sans-serif;color:white;padding:16px;}
 .intro{max-width:500px;margin:0 auto;text-align:center;}
@@ -132,7 +132,7 @@ Solve 5 cryptography puzzles to unlock each door</div>
         bonus_xp = max(0, 100 - elapsed // 3)
         total_xp = sum(p["xp"] for p in PUZZLES if p["id"] in st.session_state.escape_solved) + bonus_xp
 
-        st.iframe(f"""
+        components.html(f"""
 <style>
 body{{margin:0;background:#0f172a;font-family:sans-serif;color:white;padding:16px;text-align:center;}}
 .trophy{{font-size:5rem;animation:bounce 0.5s infinite;}}

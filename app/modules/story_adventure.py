@@ -868,7 +868,7 @@ renderSpread();
 </body>
 </html>
 """
-    st.iframe(html_code, height=560, scrolling=False)
+    components.html(html_code, height=560, scrolling=False)
 
 
 
