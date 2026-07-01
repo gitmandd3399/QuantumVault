@@ -162,56 +162,187 @@ const FACTS = [
     '🛡️ NIST mandated migration to PQC by 2035 — NSM-10 executive order!',
 ];
 
-// ── SIMPLE MOB PHYSICS — one solid body, cosmetic limbs (always stable) ────────
-// A mob is ONE circle physics body just like a prop. Limbs are drawn
-// procedurally based on velocity and a walk-cycle timer - they are pure
-// visuals, never separately simulated, so the mob can never "explode"
-// or fly apart no matter how hard it's hit.
-function createMob(x, y, template) {
-    const s = template.scale || 1;
+// ══════════════════════════════════════════════════════════════════════════════
+// PEOPLE PLAYGROUND STYLE MOB SYSTEM
+// Each mob is a skeleton of Verlet points connected by distance constraints.
+// Two-segment limbs: upper arm + forearm, thigh + shin.
+// Joints are visible circles. Grab any point and drag — body follows.
+// Knockback sets all joint velocities. Collapse flag loosens all constraints.
+// ══════════════════════════════════════════════════════════════════════════════
+
+const GRAVITY_MOB = 0.45;
+const AIR_DAMP = 0.993;     // very light air resistance
+const GND_BOUNCE = 0.28;
+const GND_FRIC   = 0.82;
+const WALL_BOUNCE = 0.35;
+const CONSTRAINT_ITERS = 6; // iterations per frame (higher = stiffer joints)
+
+// ── Verlet point ──────────────────────────────────────────────────────────────
+function mkPt(x, y) {
+    return { x, y, ox: x, oy: y, pinned: false };
+}
+
+// ── Integrate one point ───────────────────────────────────────────────────────
+function integratePt(p, grav) {
+    if (p.pinned) return;
+    const vx = (p.x - p.ox) * AIR_DAMP;
+    const vy = (p.y - p.oy) * AIR_DAMP;
+    p.ox = p.x; p.oy = p.y;
+    p.x += vx;
+    p.y += vy + grav;
+}
+
+// ── Collide one point with world ──────────────────────────────────────────────
+function collidePt(p, r, groundY) {
+    if (p.y + r > groundY) {
+        const vx = p.x - p.ox;
+        p.y = groundY - r;
+        p.oy = p.y + (p.y - p.oy) * GND_BOUNCE * -1;
+        p.ox = p.x - vx * GND_FRIC;
+    }
+    if (p.x - r < 0)  { p.x = r;   p.ox = p.x + (p.x - p.ox) * WALL_BOUNCE; }
+    if (p.x + r > W)  { p.x = W-r; p.ox = p.x + (p.x - p.ox) * WALL_BOUNCE; }
+    if (p.y - r < 0)  { p.y = r;   p.oy = p.y + (p.y - p.oy) * WALL_BOUNCE; }
+}
+
+// ── Distance constraint (keep two points a fixed length apart) ────────────────
+function constrain(a, b, len, stiff) {
+    const dx = b.x - a.x, dy = b.y - a.y;
+    const d = Math.sqrt(dx*dx + dy*dy) || 0.0001;
+    const diff = (d - len) / d * 0.5 * stiff;
+    const offX = dx * diff, offY = dy * diff;
+    if (!a.pinned) { a.x += offX; a.y += offY; }
+    if (!b.pinned) { b.x -= offX; b.y -= offY; }
+}
+
+// ── Build a mob skeleton ──────────────────────────────────────────────────────
+// Skeleton layout (all offsets from spawn centre):
+//
+//          [HEAD]
+//            |
+//          [NECK]
+//         /      \
+//     [LSHO]    [RSHO]   <- shoulders
+//       |            |
+//     [LELB]    [RELB]   <- elbows
+//       |            |
+//     [LHAN]    [RHAN]   <- hands
+//
+//          [HIP]
+//         /      \
+//     [LKNE]    [RKNE]   <- knees
+//       |            |
+//     [LFOT]    [RFOT]   <- feet
+//
+// Extra "cheat" sticks keep head above hips so standing is stable:
+// NECK<->HIP   LSHO<->RSHO (shoulder brace)   LKNE<->RKNE (hip brace)
+
+function createMob(cx_spawn, cy_spawn, template) {
+    const s = (template.scale || 1) * (0.9 + Math.random() * 0.2); // slight height variance
+    const c = template.color;
+
+    // Joint positions (y increases downward)
+    const head  = mkPt(cx_spawn,        cy_spawn - 36*s);
+    const neck  = mkPt(cx_spawn,        cy_spawn - 24*s);
+    const lsho  = mkPt(cx_spawn - 10*s, cy_spawn - 20*s);
+    const rsho  = mkPt(cx_spawn + 10*s, cy_spawn - 20*s);
+    const lelb  = mkPt(cx_spawn - 18*s, cy_spawn - 8*s);
+    const relb  = mkPt(cx_spawn + 18*s, cy_spawn - 8*s);
+    const lhan  = mkPt(cx_spawn - 18*s, cy_spawn + 4*s);
+    const rhan  = mkPt(cx_spawn + 18*s, cy_spawn + 4*s);
+    const hip   = mkPt(cx_spawn,        cy_spawn);
+    const lkne  = mkPt(cx_spawn - 6*s,  cy_spawn + 14*s);
+    const rkne  = mkPt(cx_spawn + 6*s,  cy_spawn + 14*s);
+    const lfot  = mkPt(cx_spawn - 6*s,  cy_spawn + 28*s);
+    const rfot  = mkPt(cx_spawn + 6*s,  cy_spawn + 28*s);
+
+    const pts = { head, neck, lsho, rsho, lelb, relb, lhan, rhan,
+                  hip, lkne, rkne, lfot, rfot };
+
+    // Sticks: {a, b, len, stiff}
+    const dist = (a,b) => Math.hypot(a.x-b.x, a.y-b.y);
+    const sticks = [
+        // Spine
+        {a:'head', b:'neck', len:dist(head,neck), stiff:0.9},
+        {a:'neck', b:'hip',  len:dist(neck,hip),  stiff:0.85},
+        // Shoulders
+        {a:'neck', b:'lsho', len:dist(neck,lsho), stiff:0.85},
+        {a:'neck', b:'rsho', len:dist(neck,rsho), stiff:0.85},
+        {a:'lsho', b:'rsho', len:dist(lsho,rsho), stiff:0.7},  // shoulder brace
+        // Arms
+        {a:'lsho', b:'lelb', len:dist(lsho,lelb), stiff:0.88},
+        {a:'rsho', b:'relb', len:dist(rsho,relb), stiff:0.88},
+        {a:'lelb', b:'lhan', len:dist(lelb,lhan), stiff:0.88},
+        {a:'relb', b:'rhan', len:dist(relb,rhan), stiff:0.88},
+        // Hips and legs
+        {a:'hip',  b:'lkne', len:dist(hip, lkne), stiff:0.88},
+        {a:'hip',  b:'rkne', len:dist(hip, rkne), stiff:0.88},
+        {a:'lkne', b:'rkne', len:dist(lkne,rkne), stiff:0.6},  // hip brace
+        {a:'lkne', b:'lfot', len:dist(lkne,lfot), stiff:0.88},
+        {a:'rkne', b:'rfot', len:dist(rkne,rfot), stiff:0.88},
+        // Cross braces to stop full collapse
+        {a:'neck', b:'lkne', len:dist(neck,lkne), stiff:0.3},
+        {a:'neck', b:'rkne', len:dist(neck,rkne), stiff:0.3},
+    ];
+
     return {
-        type:'mob', x, y, vx:0, vy:0, r:16*s, scale:s,
-        face:template.face, color:template.color,
-        hp:template.hp, maxHp:template.hp,
-        frozen:false, shielded:false, id:Math.random(),
-        rotation:0, walkPhase:Math.random()*10, knockTimer:0,
+        type: 'mob',
+        pts, sticks, s, c,
+        face: template.face,
+        color: template.color,
+        hp: template.hp, maxHp: template.hp,
+        frozen: false, shielded: false,
+        id: Math.random(),
+        collapsed: false,
+        // convenience centre for HUD / collision queries
+        get x() { return (this.pts.neck.x + this.pts.hip.x) * 0.5; },
+        get y() { return (this.pts.neck.y + this.pts.hip.y) * 0.5; },
     };
 }
 
-function updateMobSimple(mob){
+// ── Update one mob ────────────────────────────────────────────────────────────
+function updateMobNew(mob, groundY) {
     if (mob.frozen) return;
-    const GRAV=0.45, FRICTION=0.86, MAXV=14;
-    if (gravityOn) mob.vy += GRAV;
-    mob.x += mob.vx; mob.y += mob.vy;
-    mob.vx *= 0.99; mob.vy *= 0.99; // light air drag
-    const gy = GROUND_Y() - mob.r;
-    let onGround = false;
-    if (mob.y > gy) {
-        mob.y = gy; mob.vy *= -0.3; mob.vx *= FRICTION;
-        if (Math.abs(mob.vy) < 0.4) mob.vy = 0;
-        onGround = true;
+    const grav = gravityOn ? GRAVITY_MOB : 0;
+    const ptArr = Object.values(mob.pts);
+
+    // 1. Integrate (apply gravity + inertia to every point)
+    ptArr.forEach(p => integratePt(p, grav));
+
+    // 2. Satisfy constraints + collide (several passes)
+    const stiffScale = mob.collapsed ? 0.15 : 1.0;
+    for (let iter = 0; iter < CONSTRAINT_ITERS; iter++) {
+        mob.sticks.forEach(s => {
+            constrain(mob.pts[s.a], mob.pts[s.b], s.len, s.stiff * stiffScale);
+        });
+        ptArr.forEach(p => collidePt(p, 3, groundY));
     }
-    if (mob.x < mob.r) { mob.x = mob.r; mob.vx *= -0.5; }
-    if (mob.x > W-mob.r) { mob.x = W-mob.r; mob.vx *= -0.5; }
-    if (mob.y < mob.r) { mob.y = mob.r; mob.vy *= -0.4; }
-    // Hard velocity cap - guarantees it can NEVER fly off screen
-    if (Math.abs(mob.vx) > MAXV) mob.vx = Math.sign(mob.vx)*MAXV;
-    if (Math.abs(mob.vy) > MAXV) mob.vy = Math.sign(mob.vy)*MAXV;
-    // Walk cycle for limb animation only while grounded and moving
-    if (onGround && Math.abs(mob.vx) > 0.3) mob.walkPhase += 0.25;
-    if (mob.knockTimer > 0) mob.knockTimer--;
-    // Lean slightly in the direction of motion (cosmetic only)
-    mob.rotation = Math.max(-0.4, Math.min(0.4, mob.vx*0.04));
 }
 
+// ── Apply impulse (knockback) ─────────────────────────────────────────────────
 function knockMob(mob, srcX, srcY, force) {
-    const dx = mob.x - srcX, dy = mob.y - srcY;
-    const d = Math.sqrt(dx*dx+dy*dy) || 1;
-    const f = force * Math.max(0, 1 - d/220);
-    mob.vx += (dx/d) * f;
-    mob.vy += (dy/d) * f - f*0.3;
-    mob.knockTimer = 30;
+    Object.values(mob.pts).forEach(p => {
+        const dx = p.x - srcX, dy = p.y - srcY;
+        const d = Math.sqrt(dx*dx + dy*dy) || 1;
+        const f = force * Math.max(0, 1 - d / 240);
+        // Move oldX/oldY backward to create Verlet velocity impulse
+        p.ox -= (dx/d) * f * (0.4 + Math.random()*0.35);
+        p.oy -= (dy/d) * f * (0.4 + Math.random()*0.35) + f * 0.12;
+    });
+    if (force > 7) { mob.collapsed = true; setTimeout(() => mob.collapsed = false, 1200); }
 }
+
+// ── Find mob/point at screen position ────────────────────────────────────────
+function getMobAt(x, y) {
+    return mobs.find(m => {
+        return Object.values(m.pts).some(p => Math.hypot(p.x-x, p.y-y) < 10);
+    });
+}
+function getMobPtKeyAt(mob, x, y) {
+    return Object.entries(mob.pts)
+        .find(([k,p]) => Math.hypot(p.x-x, p.y-y) < 14)?.[0] || null;
+}
+
 
 // ── REGULAR OBJECTS (non-mob) — still simple velocity physics, lighter weight ─
 let objects = [];
@@ -434,138 +565,113 @@ function draw(){
         cx.restore();
     });
 
-    // ── MOBS — People Playground pixel humanoid style ───────────────────────────
+    // ── MOBS — People Playground skeleton draw ──────────────────────────────────
     mobs.forEach(mob=>{
-        cx.save();
-        const s = mob.scale;
-        // Knock shake
-        const shake = mob.knockTimer>0 ? (Math.random()-0.5)*mob.knockTimer*0.25 : 0;
-        cx.translate(mob.x + shake, mob.y);
+        const p = mob.pts;
+        const s = mob.s;
+        const isKnocked = mob.collapsed;
 
-        // Walk cycle — legs swing, arms counter-swing
-        const swing = Math.sin(mob.walkPhase) * 0.4;
-        const isKnocked = mob.knockTimer > 5;
+        // Shield glow on torso
+        if (mob.shielded) { cx.shadowColor='#10b981'; cx.shadowBlur=10; }
 
-        // Shield glow
-        if (mob.shielded) { cx.shadowColor='#10b981'; cx.shadowBlur=12; }
+        // ── LIMB SEGMENTS (drawn back to front) ──────────────────────────────
+        // Helper: draw a thick rounded line between two points
+        function seg(a, b, w, color) {
+            const ax=p[a].x, ay=p[a].y, bx=p[b].x, by=p[b].y;
+            const ang = Math.atan2(by-ay, bx-ax);
+            cx.save();
+            cx.strokeStyle = color;
+            cx.lineWidth = w;
+            cx.lineCap = 'round';
+            cx.beginPath(); cx.moveTo(ax,ay); cx.lineTo(bx,by); cx.stroke();
+            cx.restore();
+        }
 
-        // ── DIMENSIONS (all relative to scale) ──────────────────────────────
-        const hw = 7*s;   // head half-width
-        const hh = 7*s;   // head half-height
-        const tw = 5*s;   // torso half-width
-        const th = 12*s;  // torso half-height
-        const lw = 3*s;   // leg width
-        const ll = 14*s;  // leg length
-        const aw = 8*s;   // arm width
-        const ah = 3*s;   // arm height
-        const headY = -th - hh - 2*s; // head top relative to center
+        // Joint dot helper
+        function joint(key, r, color) {
+            cx.beginPath(); cx.arc(p[key].x, p[key].y, r, 0, Math.PI*2);
+            cx.fillStyle = color; cx.fill();
+        }
 
-        // ── LEGS (swing in opposite directions) ──────────────────────────────
-        // Left leg
-        cx.save();
-        cx.translate(-lw - s, th);
-        cx.rotate(swing);
-        cx.fillStyle = mob.color+'cc';
-        cx.fillRect(-lw/2, 0, lw, ll);
-        // Foot
-        cx.fillStyle = mob.color;
-        cx.fillRect(-lw, ll-2*s, lw*2, 3*s);
-        cx.restore();
+        const lw  = 5*s;   // limb segment width
+        const jw  = 3.5*s; // joint radius
+        const col = mob.color;
+        const dark = col+'99';
 
-        // Right leg
-        cx.save();
-        cx.translate(lw + s, th);
-        cx.rotate(-swing);
-        cx.fillStyle = mob.color+'cc';
-        cx.fillRect(-lw/2, 0, lw, ll);
-        // Foot
-        cx.fillStyle = mob.color;
-        cx.fillRect(-lw, ll-2*s, lw*2, 3*s);
-        cx.restore();
+        // Legs (back layer)
+        seg('hip',  'lkne', lw*1.1, dark);
+        seg('hip',  'rkne', lw*1.1, dark);
+        seg('lkne', 'lfot', lw,     dark);
+        seg('rkne', 'rfot', lw,     dark);
 
-        // ── TORSO ────────────────────────────────────────────────────────────
-        cx.fillStyle = mob.color+'dd';
-        cx.beginPath();
-        cx.roundRect(-tw, -th, tw*2, th*2, 2*s);
-        cx.fill();
-        // Torso outline
-        cx.strokeStyle = mob.color;
-        cx.lineWidth = 1*s;
-        cx.stroke();
+        // Arms (back layer)
+        seg('lsho', 'lelb', lw*0.9, dark);
+        seg('rsho', 'relb', lw*0.9, dark);
+        seg('lelb', 'lhan', lw*0.8, dark);
+        seg('relb', 'rhan', lw*0.8, dark);
 
-        // ── ARMS (counter-swing to legs) ─────────────────────────────────────
-        // Left arm
-        cx.save();
-        cx.translate(-tw, -th*0.3);
-        cx.rotate(-swing*0.6);
-        cx.fillStyle = mob.color+'cc';
-        cx.fillRect(-aw, -ah/2, aw, ah);
-        // Hand dot
-        cx.beginPath();
-        cx.arc(-aw, 0, ah*0.8, 0, Math.PI*2);
-        cx.fillStyle = mob.color;
-        cx.fill();
-        cx.restore();
+        // Torso spine
+        seg('neck', 'hip',  lw*1.3, col+'cc');
 
-        // Right arm
-        cx.save();
-        cx.translate(tw, -th*0.3);
-        cx.rotate(swing*0.6);
-        cx.fillStyle = mob.color+'cc';
-        cx.fillRect(0, -ah/2, aw, ah);
-        // Hand dot
-        cx.beginPath();
-        cx.arc(aw, 0, ah*0.8, 0, Math.PI*2);
-        cx.fillStyle = mob.color;
-        cx.fill();
-        cx.restore();
+        // Shoulder bar
+        seg('lsho', 'rsho', lw*0.9, col+'bb');
 
-        // ── HEAD ─────────────────────────────────────────────────────────────
         // Neck
-        cx.fillStyle = mob.color+'99';
-        cx.fillRect(-2*s, -th-3*s, 4*s, 4*s);
+        seg('head', 'neck', lw*0.9, col+'bb');
 
-        // Head square
-        cx.fillStyle = mob.color;
+        // ── JOINTS (elbow, knee, shoulder circles) ────────────────────────────
+        cx.shadowBlur = 0;
+        [['lelb',jw],['relb',jw],['lkne',jw],['rkne',jw],
+         ['lsho',jw*1.1],['rsho',jw*1.1],['hip',jw*1.3],
+         ['neck',jw*1.1]].forEach(([k,r])=>joint(k,r,col));
+
+        // Hands and feet as slightly larger circles
+        [['lhan',jw*1.2],['rhan',jw*1.2],
+         ['lfot',jw*1.3],['rfot',jw*1.3]].forEach(([k,r])=>joint(k,r,col));
+
+        // ── HEAD (square pixel style) ─────────────────────────────────────────
+        const hx = p.head.x, hy = p.head.y;
+        const hw = 8*s, hh = 8*s;
+        if (mob.shielded) { cx.shadowColor='#10b981'; cx.shadowBlur=12; }
+        cx.fillStyle = col;
         cx.beginPath();
-        cx.roundRect(-hw, headY, hw*2, hh*2, 3*s);
+        cx.roundRect(hx-hw, hy-hh, hw*2, hh*2, 3*s);
         cx.fill();
-        cx.strokeStyle = mob.color+'ff';
-        cx.lineWidth = 1*s;
-        cx.stroke();
+        cx.strokeStyle = col+'ff'; cx.lineWidth=1*s; cx.stroke();
         cx.shadowBlur = 0;
 
-        // Face — pixel eyes or knocked face
+        // Face
         if (isKnocked) {
-            // X eyes
-            cx.strokeStyle = '#1e293b'; cx.lineWidth = 1.5*s;
-            cx.beginPath();cx.moveTo(-hw*0.5,headY+hh*0.5);cx.lineTo(-hw*0.1,headY+hh*0.9);cx.stroke();
-            cx.beginPath();cx.moveTo(-hw*0.1,headY+hh*0.5);cx.lineTo(-hw*0.5,headY+hh*0.9);cx.stroke();
-            cx.beginPath();cx.moveTo(hw*0.1,headY+hh*0.5);cx.lineTo(hw*0.5,headY+hh*0.9);cx.stroke();
-            cx.beginPath();cx.moveTo(hw*0.5,headY+hh*0.5);cx.lineTo(hw*0.1,headY+hh*0.9);cx.stroke();
+            // X eyes when collapsed/knocked
+            cx.strokeStyle='#1e293b'; cx.lineWidth=1.5*s;
+            [[-0.5,-0.1],[-0.1,-0.5]].forEach(([dx1,dx2])=>{
+                cx.beginPath();
+                cx.moveTo(hx+hw*dx1, hy-hh*0.1);
+                cx.lineTo(hx+hw*dx2, hy+hh*0.5);
+                cx.stroke();
+            });
+            cx.beginPath();cx.moveTo(hx+hw*0.1,hy-hh*0.1);cx.lineTo(hx+hw*0.5,hy+hh*0.5);cx.stroke();
+            cx.beginPath();cx.moveTo(hx+hw*0.5,hy-hh*0.1);cx.lineTo(hx+hw*0.1,hy+hh*0.5);cx.stroke();
         } else {
-            // Pixel dot eyes
-            cx.fillStyle = '#1e293b';
-            cx.fillRect(-hw*0.5, headY+hh*0.4, 2.5*s, 2.5*s);
-            cx.fillRect(hw*0.15, headY+hh*0.4, 2.5*s, 2.5*s);
-            // Simple pixel mouth
-            cx.fillRect(-hw*0.3, headY+hh*1.1, hw*0.6, 1.5*s);
+            // Dot eyes + pixel mouth
+            cx.fillStyle='#1e293b';
+            cx.fillRect(hx-hw*0.45, hy-hh*0.1, 2.5*s, 2.5*s);
+            cx.fillRect(hx+hw*0.1,  hy-hh*0.1, 2.5*s, 2.5*s);
+            cx.fillRect(hx-hw*0.25, hy+hh*0.5, hw*0.5, 1.5*s);
         }
 
-        // HP bar
+        // HP bar above head
         if (mob.hp < mob.maxHp) {
-            const bw = hw*2.4;
-            cx.fillStyle = '#1e293b'; cx.fillRect(-bw/2, headY-8*s, bw, 4*s);
-            cx.fillStyle = mob.hp/mob.maxHp>0.5?'#10b981':'#ef4444';
-            cx.fillRect(-bw/2, headY-8*s, bw*Math.max(0,mob.hp/mob.maxHp), 4*s);
+            const bw=hw*2.5;
+            cx.fillStyle='#1e293b'; cx.fillRect(hx-bw/2, hy-hh-9*s, bw, 4*s);
+            cx.fillStyle=mob.hp/mob.maxHp>0.5?'#10b981':'#ef4444';
+            cx.fillRect(hx-bw/2, hy-hh-9*s, bw*Math.max(0,mob.hp/mob.maxHp), 4*s);
         }
         if (mob.frozen) {
-            cx.font=(12*s)+'px serif';
-            cx.textAlign='center'; cx.textBaseline='middle';
-            cx.fillText('❄️', 0, headY-14*s);
+            cx.font='12px serif'; cx.textAlign='center'; cx.textBaseline='middle';
+            cx.fillText('❄️', hx, hy-hh-18*s);
         }
-
-        cx.restore();
+    });
     });
 
     particles.forEach(p=>{
@@ -583,7 +689,7 @@ function draw(){
 
 function update(){
     updateObjects();
-    mobs.forEach(m=>updateMobSimple(m));
+    const gY=GROUND_Y(); mobs.forEach(m=>updateMobNew(m,gY));
     particles.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=0.1;p.alpha-=0.025;p.r*=0.96;});
     particles=particles.filter(p=>p.alpha>0);
     explosions.forEach(e=>{e.r+=e.type==='wave'?5:8;e.alpha-=0.04;});
@@ -605,19 +711,20 @@ function getPos(e){
     const r=cv.getBoundingClientRect();
     return{x:(e.clientX-r.left)*(W/r.width),y:(e.clientY-r.top)*(H/r.height)};
 }
-function getMobAt(x,y){
-    return mobs.find(m=>Math.hypot(m.x-x,m.y-y)<m.r+8);
-}
 function getObjAt(x,y){
     return [...objects].reverse().find(o=>Math.abs(o.x-x)<o.w/2+5&&Math.abs(o.y-y)<o.h/2+5);
 }
 
+// dragPtKey tracks WHICH skeleton point we grabbed
+let dragPtKey = null;
+
 world.addEventListener('mousemove',e=>{
     const p=getPos(e); mouseX=p.x; mouseY=p.y;
-    if(dragMob&&currentTool==='grab'){
-        dragMob.x=p.x-dragOffX; dragMob.y=p.y-dragOffY;
-        dragMob.vx=0; dragMob.vy=0;
-    } else if(dragObj&&currentTool==='grab'){
+    if(dragMob && dragPtKey && currentTool==='grab'){
+        // Move the grabbed point — leave ox/oy behind to create throw velocity
+        const pt = dragMob.pts[dragPtKey];
+        if(pt){ pt.x = p.x - dragOffX; pt.y = p.y - dragOffY; }
+    } else if(dragObj && currentTool==='grab'){
         dragObj.x=p.x-dragOffX; dragObj.y=p.y-dragOffY;
         dragObj.vx=0; dragObj.vy=0;
     }
@@ -632,8 +739,10 @@ world.addEventListener('mousedown',e=>{
     } else if(currentTool==='grab'){
         const mob=getMobAt(p.x,p.y);
         if(mob){
-            dragMob=mob; mob.frozen=true;
-            dragOffX=p.x-mob.x; dragOffY=p.y-mob.y;
+            dragMob=mob;
+            dragPtKey=getMobPtKeyAt(mob,p.x,p.y) || 'neck';
+            const pt=mob.pts[dragPtKey];
+            dragOffX=p.x-pt.x; dragOffY=p.y-pt.y;
         } else {
             const obj=getObjAt(p.x,p.y);
             if(obj){dragObj=obj;dragOffX=p.x-obj.x;dragOffY=p.y-obj.y;dragObj.frozen=true;}
@@ -647,13 +756,20 @@ world.addEventListener('mousedown',e=>{
 });
 
 world.addEventListener('mouseup',e=>{
-    if(dragMob){
-        dragMob.frozen=false;
-        const p=getPos(e);
-        dragMob.vx=(p.x-mouseX)*0.8;
-        dragMob.vy=(p.y-mouseY)*0.8-2;
+    if(dragMob && dragPtKey){
+        // Throw: the velocity is already encoded in pt.x - pt.ox
+        // Boost it slightly for satisfying throw feel
+        const pt = dragMob.pts[dragPtKey];
+        if(pt){
+            const throwVx = (pt.x - pt.ox) * 1.5;
+            const throwVy = (pt.y - pt.oy) * 1.5;
+            pt.ox = pt.x - throwVx;
+            pt.oy = pt.y - throwVy;
+        }
+        dragMob=null; dragPtKey=null;
     }
-    dragMob=null;
+    if(dragObj){ dragObj.frozen=false; dragObj.vy-=2; dragObj=null; }
+});
     if(dragObj){ dragObj.frozen=false; dragObj.vy-=2; dragObj=null; }
 });
 
