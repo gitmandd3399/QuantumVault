@@ -149,6 +149,7 @@ def sidebar():
             ("🔤", "Secret Message",    "🔤 Secret Message Maker"),
             ("🔢", "Prime Factor",      "🔢 Prime Factor Cracker"),
             ("🌐", "Network Defender",  "🌐 Network Defender"),
+            ("🚀", "Quantum Orbital", "🚀 Quantum Orbital"),
             ("🧱", "Falling Blocks",    "🧱 Falling Blocks"),
             ("🧪", "Quantum Sandbox",   "🧪 Quantum Sandbox"),
             ("🚩", "CTF Challenge",    "🚩 CTF Challenge"),
@@ -633,6 +634,8 @@ def main():
         render_prime_factor_game()
     elif "Network Defender" in level:
         render_network_defender()
+    elif "Quantum Orbital" in level:
+        render_quantum_orbital()
     elif "Secret Message" in level:
         render_secret_message()
     elif "Quantum Sandbox" in level:
