@@ -156,18 +156,6 @@ body{background:#020d14;font-family:'Segoe UI',sans-serif;color:white;overflow:h
 <!-- LAUNCH BUTTON -->
 <button id="launch-btn" onclick="startLaunch()">🚀 LAUNCH ROCKET!</button>
 
-<!-- PLAY AGAIN BUTTON -->
-<button id="play-again-btn" onclick="resetGame()"
-    style="display:none;width:100%;padding:12px;margin-top:5px;
-    background:linear-gradient(135deg,#059669,#10b981);border:none;
-    border-radius:10px;color:white;font-size:15px;font-weight:bold;
-    cursor:pointer;animation:pulse 1s infinite;">
-    🔄 Play Again — Launch Another Satellite!
-</button>
-<style>
-@keyframes pulse{0%,100%{transform:scale(1);}50%{transform:scale(1.02);}}
-</style>
-
 <!-- ORBITAL SHIELD PANEL -->
 <div id="shield-panel">
     <div class="shield-btn" onclick="deployShield('kyber')" id="sb-kyber">🔐 ML-KEM</div>
@@ -691,16 +679,6 @@ function endGame() {
         '💀 Satellite lost! Score: '+score+' | PQC shields: '+pqcCount+'/4');
     showFact('☠️ This is exactly what CNSA 2.0 prevents — quantum-safe encryption must be on every satellite by 2027!');
     if(endGameState.won) confetti();
-    // Show HTML play again button
-    document.getElementById('play-again-btn').style.display='block';
-    document.getElementById('play-again-btn').textContent =
-        endGameState.won ?
-        '🔄 Play Again — Launch Another Satellite!' :
-        '🔄 Try Again — Add More PQC Shields!';
-    document.getElementById('play-again-btn').style.background =
-        endGameState.won ?
-        'linear-gradient(135deg,#059669,#10b981)' :
-        'linear-gradient(135deg,#1d4ed8,#3b82f6)';
 }
 
 function drawEndGame() {
@@ -833,7 +811,6 @@ function resetGame() {
     document.getElementById('parts-panel').style.display='flex';
     document.getElementById('launch-btn').style.display='none';
     document.getElementById('shield-panel').style.display='none';
-    document.getElementById('play-again-btn').style.display='none';
     // Re-enable all shield buttons
     ['kyber','dilithium','sphincs','falcon'].forEach(function(k){
         var btn=document.getElementById('sb-'+k);
@@ -1013,124 +990,151 @@ function drawBuild() {
 }
 
 function drawLaunch() {
-    // Sky gradient based on altitude
-    var skyAlpha = Math.min(1,launchAlt/100);
+    var prog=Math.min(1,launchAlt/100);
+    // Sky gradient — blue to black as we ascend
+    var r1=Math.round(2+(1-prog)*80),g1=Math.round(13+(1-prog)*100),b1=Math.round(20+(1-prog)*200);
     var sky=cx.createLinearGradient(0,0,0,H);
-    sky.addColorStop(0,'rgb('+Math.round(2+skyAlpha*0)+','+Math.round(13+skyAlpha*0)+','+Math.round(20+skyAlpha*0)+')');
-    sky.addColorStop(1,'rgb('+Math.round(2+(1-skyAlpha)*100)+','+Math.round(13+(1-skyAlpha)*100)+','+Math.round(20+(1-skyAlpha)*150)+')');
+    sky.addColorStop(0,'rgb('+Math.round(r1*0.3)+','+Math.round(g1*0.3)+','+Math.round(b1*0.3)+')');
+    sky.addColorStop(1,'rgb('+r1+','+g1+','+b1+')');
     cx.fillStyle=sky;cx.fillRect(0,0,W,H);
-
-    // Stars appear as we go higher
-    if(launchAlt>30) { cx.globalAlpha=(launchAlt-30)/70; drawStars(); cx.globalAlpha=1; }
-
-    // Earth curve at bottom
-    if(launchAlt<80){
-        cx.fillStyle='rgb('+Math.round(10+(1-launchAlt/100)*20)+','+Math.round(31+(1-launchAlt/100)*60)+','+Math.round(53)+')';;
-        cx.fillRect(0,H-50*(1-launchAlt/100),W,50);
-        cx.fillStyle='#166534';
-        cx.fillRect(0,H-30*(1-launchAlt/100),W,15);
-    }
-
+    // Stars fade in
+    if(prog>0.2){cx.globalAlpha=Math.min(1,(prog-0.2)/0.4);drawStars();cx.globalAlpha=1;}
+    // Earth curve
+    var earthGrad=cx.createLinearGradient(0,H-(1-prog)*180,0,H);
+    earthGrad.addColorStop(0,'#1d4ed8');earthGrad.addColorStop(0.4,'#166534');earthGrad.addColorStop(1,'#0f172a');
+    cx.fillStyle=earthGrad;
+    cx.beginPath();cx.ellipse(W/2,H+300*(1-prog),W*1.5,200+300*(1-prog),0,Math.PI,0,true);
+    cx.lineTo(W,H);cx.lineTo(0,H);cx.closePath();cx.fill();
+    // Atmosphere glow
+    var atm=cx.createLinearGradient(0,H-(1-prog)*180-30,0,H-(1-prog)*180+10);
+    atm.addColorStop(0,'transparent');atm.addColorStop(0.5,'rgba(59,130,246,0.2)');atm.addColorStop(1,'transparent');
+    cx.fillStyle=atm;cx.fillRect(0,H-(1-prog)*180-30,W,40);
     // Clouds
-    if(launchAlt<30){
-        cx.fillStyle='rgba(255,255,255,'+(0.3*(1-launchAlt/30))+')';
-        [80,200,350,480].forEach(function(cx2){
-            cx.beginPath();cx.ellipse(cx2,cloudY+launchAlt*2,40,15,0,0,Math.PI*2);cx.fill();
-        });
+    if(launchAlt<25){
+        cx.globalAlpha=(1-launchAlt/25)*0.5;cx.fillStyle='white';
+        [[80,H*0.55],[220,H*0.6],[360,H*0.52],[470,H*0.58]].forEach(function(p2){
+            cx.beginPath();cx.ellipse(p2[0]+launchAlt*3,p2[1],35,13,0,0,6.28);cx.fill();
+            cx.beginPath();cx.ellipse(p2[0]+launchAlt*3+20,p2[1]-8,22,9,0,0,6.28);cx.fill();
+        });cx.globalAlpha=1;
     }
-
-    // Max-Q warning zone
+    // Max-Q warning
     if(maxQ){
-        cx.fillStyle='rgba(239,68,68,0.05)';cx.fillRect(0,0,W,H);
-        cx.font='bold 12px sans-serif';cx.fillStyle='#ef4444';cx.textAlign='center';
-        cx.fillText('⚠️ MAX-Q — MAXIMUM AERODYNAMIC STRESS!',W/2,30);
+        cx.fillStyle='rgba(239,68,68,0.06)';cx.fillRect(0,0,W,H);
+        cx.font='bold 13px sans-serif';cx.fillStyle='#ef4444';cx.textAlign='center';
+        cx.fillText('WARNING: MAX-Q — MAXIMUM AERODYNAMIC STRESS',W/2,25);
+        cx.font='10px sans-serif';cx.fillStyle='#fca5a5';
+        cx.fillText('Real rockets throttle down here to reduce stress on the vehicle',W/2,42);
     }
-
-    // Space debris
-    debris.forEach(function(d){
-        cx.fillStyle=d.color;
-        cx.beginPath();cx.arc(d.x,d.y,d.r,0,6.28);cx.fill();
+    // Milestone bands
+    [{alt:10,label:'10km Gravity Turn',col:'#60a5fa'},{alt:20,label:'20km MAX-Q',col:'#f97316'},
+     {alt:40,label:'40km MAX-Q Clear',col:'#10b981'},{alt:60,label:'60km Stage Sep!',col:'#fbbf24'},
+     {alt:100,label:'100km ORBIT',col:'#a78bfa'}].forEach(function(b){
+        var sy=H-60-(b.alt/100)*(H-100);
+        if(sy>5&&sy<H-5){
+            cx.strokeStyle=b.col+(launchAlt>b.alt?'cc':'25');cx.lineWidth=launchAlt>b.alt?1.5:0.7;
+            cx.setLineDash([6,4]);cx.beginPath();cx.moveTo(30,sy);cx.lineTo(W-28,sy);cx.stroke();cx.setLineDash([]);
+            cx.font='9px sans-serif';cx.fillStyle=b.col+(launchAlt>b.alt?'':'50');cx.textAlign='left';
+            cx.fillText((launchAlt>b.alt?'v ':'>  ')+b.label,34,sy-3);
+        }
     });
-
+    // Debris
+    debris.forEach(function(d){
+        cx.save();cx.translate(d.x,d.y);cx.rotate(d.x*0.05);
+        cx.fillStyle='#64748b';cx.fillRect(-d.r,-d.r*0.4,d.r*2,d.r*0.8);cx.restore();
+    });
     // Exhaust
     exhaust.forEach(function(p){
         cx.beginPath();cx.arc(p.x,p.y,p.r,0,6.28);
-        cx.fillStyle=p.color+Math.floor(p.alpha*255).toString(16).padStart(2,'0');
-        cx.fill();
+        cx.fillStyle=p.color+Math.floor(p.alpha*255).toString(16).padStart(2,'0');cx.fill();
     });
-
-    // Altitude marker
-    var altMarkers=[10,20,40,60,100];
-    altMarkers.forEach(function(alt){
-        var screenY=H-80-(alt/100)*(H-100);
-        if(screenY>0&&screenY<H){
-            cx.strokeStyle='#1a3a5a30';cx.lineWidth=1;cx.setLineDash([4,4]);
-            cx.beginPath();cx.moveTo(0,screenY);cx.lineTo(W,screenY);cx.stroke();
-            cx.setLineDash([]);
-            cx.font='9px sans-serif';cx.fillStyle='#475569';cx.textAlign='left';
-            cx.fillText(alt+'km'+(alt===40?' ← MAX-Q':alt===60?' ← STAGING':alt===100?' ← ORBIT':''),4,screenY-2);
-        }
-    });
-
     // Rocket
-    cx.save();
-    cx.translate(rocketX,rocketY);
-    cx.rotate(rocketTilt);
-    // Flame
+    cx.save();cx.translate(rocketX,rocketY);cx.rotate(rocketTilt);
     if(throttle&&launchFuel>0){
-        cx.beginPath();
-        cx.moveTo(-8,30);cx.lineTo(8,30);cx.lineTo(0,55+Math.random()*15);
-        cx.fillStyle='#f97316';cx.fill();
-        cx.beginPath();
-        cx.moveTo(-4,30);cx.lineTo(4,30);cx.lineTo(0,45+Math.random()*10);
-        cx.fillStyle='#fbbf24';cx.fill();
+        // Engine glow
+        var gg=cx.createRadialGradient(0,35,0,0,38,34+Math.random()*12);
+        gg.addColorStop(0,'rgba(255,255,200,0.9)');gg.addColorStop(0.3,'rgba(251,191,36,0.5)');gg.addColorStop(1,'transparent');
+        cx.fillStyle=gg;cx.beginPath();cx.arc(0,38,36,0,6.28);cx.fill();
+        // Flame
+        cx.beginPath();cx.moveTo(-10,28);cx.lineTo(10,28);
+        cx.lineTo(5+Math.random()*4,58+Math.random()*16);cx.lineTo(0,68+Math.random()*16);
+        cx.lineTo(-5-Math.random()*4,58+Math.random()*16);cx.closePath();
+        var fg=cx.createLinearGradient(0,28,0,80);
+        fg.addColorStop(0,'#ffffff');fg.addColorStop(0.15,'#fbbf24');fg.addColorStop(0.5,'#f97316');fg.addColorStop(1,'transparent');
+        cx.fillStyle=fg;cx.fill();
+        // Inner core
+        cx.beginPath();cx.moveTo(-4,28);cx.lineTo(4,28);cx.lineTo(0,46+Math.random()*6);cx.closePath();
+        cx.fillStyle='rgba(255,255,255,0.95)';cx.fill();
     }
-    // Body
-    cx.fillStyle='#e2e8f0';cx.fillRect(-10,-30,20,60);
-    cx.fillStyle='#94a3b8';cx.fillRect(-10,-30,20,60);
+    // Engine bell
+    cx.beginPath();cx.moveTo(-10,20);cx.lineTo(10,20);cx.lineTo(13,30);cx.lineTo(-13,30);cx.closePath();
+    cx.fillStyle='#94a3b8';cx.fill();cx.strokeStyle='#64748b';cx.lineWidth=1;cx.stroke();
+    // Tank
+    var tg=cx.createLinearGradient(-12,0,12,0);
+    tg.addColorStop(0,'#cbd5e1');tg.addColorStop(0.3,'#f1f5f9');tg.addColorStop(0.7,'#e2e8f0');tg.addColorStop(1,'#94a3b8');
+    cx.fillStyle=tg;
+    if(cx.roundRect)cx.roundRect(-11,stageDropped?2:-28,22,stageDropped?18:48,4);
+    else cx.rect(-11,stageDropped?2:-28,22,stageDropped?18:48);
+    cx.fill();cx.strokeStyle='#94a3b8';cx.lineWidth=1;cx.stroke();
+    // Upper stage
+    if(!stageDropped){
+        cx.fillStyle='#dbeafe';if(cx.roundRect)cx.roundRect(-9,-52,18,24,3);else cx.rect(-9,-52,18,24);cx.fill();
+        cx.strokeStyle='#60a5fa';cx.stroke();
+        cx.strokeStyle='#fbbf2480';cx.lineWidth=1.5;cx.setLineDash([3,2]);
+        cx.beginPath();cx.moveTo(-13,-28);cx.lineTo(13,-28);cx.stroke();cx.setLineDash([]);
+    }
     // Nose cone
-    cx.beginPath();cx.moveTo(-10,-30);cx.lineTo(10,-30);cx.lineTo(0,-50);cx.closePath();
-    cx.fillStyle='#f1f5f9';cx.fill();
-    // Stage line
-    if(stageDropped){cx.strokeStyle='#ef4444';cx.lineWidth=1;cx.setLineDash([2,2]);
-        cx.beginPath();cx.moveTo(-11,0);cx.lineTo(11,0);cx.stroke();cx.setLineDash([]);}
+    cx.beginPath();cx.moveTo(-9,stageDropped?0:-52);cx.lineTo(9,stageDropped?0:-52);
+    cx.lineTo(0,stageDropped?-20:-72);cx.closePath();
+    cx.fillStyle='#e0f2fe';cx.fill();cx.strokeStyle='#bae6fd';cx.lineWidth=1;cx.stroke();
+    // PQC indicators
+    var pqcC={'kyber':'#10b981','dilithium':'#3b82f6','sphincs':'#8b5cf6','falcon':'#f59e0b'};
+    Object.keys(getPQCModules()).forEach(function(k,i){
+        cx.shadowColor=pqcC[k];cx.shadowBlur=5;cx.fillStyle=pqcC[k];cx.fillRect(-8,-8+i*8,5,5);cx.shadowBlur=0;
+    });
     // Fins
-    cx.fillStyle='#64748b';
-    cx.beginPath();cx.moveTo(-10,20);cx.lineTo(-20,35);cx.lineTo(-10,30);cx.closePath();cx.fill();
-    cx.beginPath();cx.moveTo(10,20);cx.lineTo(20,35);cx.lineTo(10,30);cx.closePath();cx.fill();
-    // Altitude progress
-    var progH=H*0.8;
-    cx.fillStyle='#1e293b';cx.fillRect(W/2-60+12,-H/2+20,8,progH);
-    cx.fillStyle='#10b981';cx.fillRect(W/2-60+12,-H/2+20+(1-launchAlt/100)*progH,8,launchAlt/100*progH);
+    cx.fillStyle='#475569';
+    cx.beginPath();cx.moveTo(-11,14);cx.lineTo(-25,27);cx.lineTo(-11,24);cx.closePath();cx.fill();
+    cx.beginPath();cx.moveTo(11,14);cx.lineTo(25,27);cx.lineTo(11,24);cx.closePath();cx.fill();
     cx.restore();
-
-    // Altitude progress bar (right side)
-    var barX=W-18, barH=H*0.65, barY=(H-barH)/2;
-    cx.fillStyle='#1e293b';cx.fillRect(barX,barY,10,barH);
-    var fillH = (launchAlt/100)*barH;
-    var barGrad=cx.createLinearGradient(0,barY+barH,0,barY);
-    barGrad.addColorStop(0,'#3b82f6');barGrad.addColorStop(0.6,'#10b981');barGrad.addColorStop(1,'#fbbf24');
-    cx.fillStyle=barGrad;cx.fillRect(barX,barY+barH-fillH,10,fillH);
-    cx.strokeStyle='#334155';cx.lineWidth=1;cx.strokeRect(barX,barY,10,barH);
-    // Target marker
-    cx.fillStyle='#fbbf24';cx.fillRect(barX-4,barY,18,2);
-    cx.font='8px sans-serif';cx.fillStyle='#fbbf24';cx.textAlign='right';
-    cx.fillText('ORBIT',barX-2,barY+8);
-    cx.font='9px sans-serif';cx.fillStyle='#10b981';cx.textAlign='right';
-    cx.fillText(launchAlt.toFixed(0)+'km',barX-2,barY+barH-fillH+14);
-
+    // Altitude bar
+    var bX=W-18,bH2=H*0.7,bY2=(H-bH2)/2,fH=(launchAlt/100)*bH2;
+    cx.fillStyle='#0a1f35';cx.fillRect(bX-1,bY2-1,12,bH2+2);
+    var bg=cx.createLinearGradient(0,bY2+bH2,0,bY2);
+    bg.addColorStop(0,'#1d4ed8');bg.addColorStop(0.5,'#10b981');bg.addColorStop(1,'#a78bfa');
+    cx.fillStyle=bg;cx.fillRect(bX,bY2+bH2-fH,10,fH);
+    cx.strokeStyle='#1a3a5a';cx.lineWidth=1;cx.strokeRect(bX,bY2,10,bH2);
+    cx.fillStyle='#a78bfa';cx.fillRect(bX-3,bY2,16,2);
+    var mY2=bY2+bH2-fH;
+    cx.fillStyle='white';cx.beginPath();cx.moveTo(bX-4,mY2);cx.lineTo(bX,mY2-4);cx.lineTo(bX+10,mY2-4);cx.lineTo(bX+14,mY2);cx.lineTo(bX+10,mY2+4);cx.lineTo(bX,mY2+4);cx.closePath();cx.fill();
+    cx.font='8px sans-serif';cx.fillStyle='#a78bfa';cx.textAlign='right';cx.fillText('ORBIT',bX-2,bY2+8);
+    cx.fillStyle='#10b981';cx.fillText(launchAlt.toFixed(0)+'km',bX-2,mY2+4);
+    // Gauges
+    cx.fillStyle='rgba(7,21,32,0.82)';
+    if(cx.roundRect)cx.roundRect(5,H-44,130,38,6);else cx.rect(5,H-44,130,38);cx.fill();
+    cx.strokeStyle='#1a3a5a';cx.lineWidth=1;cx.stroke();
+    cx.font='8px sans-serif';cx.fillStyle='#94a3b8';cx.textAlign='left';cx.fillText('FUEL',8,H-30);
+    cx.fillStyle='#1e293b';cx.fillRect(8,H-25,120,8);
+    cx.fillStyle=launchFuel>30?'#10b981':'#ef4444';cx.fillRect(8,H-25,launchFuel*1.2,8);
+    cx.fillStyle='white';cx.fillText(launchFuel.toFixed(0)+'%',8,H-11);
+    cx.fillStyle='rgba(7,21,32,0.82)';
+    if(cx.roundRect)cx.roundRect(145,H-44,130,38,6);else cx.rect(145,H-44,130,38);cx.fill();
+    cx.stroke();
+    cx.fillStyle='#94a3b8';cx.fillText('VELOCITY',148,H-30);
+    cx.fillStyle='#1e293b';cx.fillRect(148,H-25,120,8);
+    cx.fillStyle='#3b82f6';cx.fillRect(148,H-25,Math.min(120,launchVel*24),8);
+    cx.fillStyle='white';cx.fillText(launchVel.toFixed(2)+' km/s',148,H-11);
     // Throttle hint
-    if(!throttle){
-        cx.font='12px sans-serif';cx.fillStyle='#fbbf24';cx.textAlign='center';
-        cx.fillText('Click/Hold to THROTTLE! →',W/2,H-15);
+    if(!throttle&&!launchDone){
+        var ha='rgba(251,191,36,'+(0.5+0.5*Math.sin(Date.now()*0.004))+')';
+        cx.font='bold 13px sans-serif';cx.fillStyle=ha;cx.textAlign='center';
+        cx.fillText('Click & Hold to THROTTLE!',W/2,H-52);
     }
-
-    // Fuel gauge
-    cx.fillStyle='#1e293b';cx.fillRect(10,H-25,120,10);
-    cx.fillStyle=launchFuel>30?'#10b981':'#ef4444';
-    cx.fillRect(10,H-25,launchFuel*1.2,10);
-    cx.font='9px sans-serif';cx.fillStyle='white';cx.textAlign='left';
-    cx.fillText('FUEL: '+launchFuel.toFixed(0)+'%',12,H-28);
+    if(launchDone){
+        cx.fillStyle='rgba(167,139,250,0.15)';cx.fillRect(0,0,W,H);
+        cx.font='bold 18px sans-serif';cx.fillStyle='#a78bfa';cx.textAlign='center';
+        cx.fillText('ORBIT ACHIEVED!',W/2,H/2-10);
+        cx.font='11px sans-serif';cx.fillStyle='#c4b5fd';cx.fillText('Deploying satellite...',W/2,H/2+14);
+    }
 }
 
 function drawOrbit() {
