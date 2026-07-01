@@ -156,6 +156,18 @@ body{background:#020d14;font-family:'Segoe UI',sans-serif;color:white;overflow:h
 <!-- LAUNCH BUTTON -->
 <button id="launch-btn" onclick="startLaunch()">🚀 LAUNCH ROCKET!</button>
 
+<!-- PLAY AGAIN BUTTON -->
+<button id="play-again-btn" onclick="resetGame()"
+    style="display:none;width:100%;padding:12px;margin-top:5px;
+    background:linear-gradient(135deg,#059669,#10b981);border:none;
+    border-radius:10px;color:white;font-size:15px;font-weight:bold;
+    cursor:pointer;animation:pulse 1s infinite;">
+    🔄 Play Again — Launch Another Satellite!
+</button>
+<style>
+@keyframes pulse{0%,100%{transform:scale(1);}50%{transform:scale(1.02);}}
+</style>
+
 <!-- ORBITAL SHIELD PANEL -->
 <div id="shield-panel">
     <div class="shield-btn" onclick="deployShield('kyber')" id="sb-kyber">🔐 ML-KEM</div>
@@ -679,6 +691,16 @@ function endGame() {
         '💀 Satellite lost! Score: '+score+' | PQC shields: '+pqcCount+'/4');
     showFact('☠️ This is exactly what CNSA 2.0 prevents — quantum-safe encryption must be on every satellite by 2027!');
     if(endGameState.won) confetti();
+    // Show HTML play again button
+    document.getElementById('play-again-btn').style.display='block';
+    document.getElementById('play-again-btn').textContent =
+        endGameState.won ?
+        '🔄 Play Again — Launch Another Satellite!' :
+        '🔄 Try Again — Add More PQC Shields!';
+    document.getElementById('play-again-btn').style.background =
+        endGameState.won ?
+        'linear-gradient(135deg,#059669,#10b981)' :
+        'linear-gradient(135deg,#1d4ed8,#3b82f6)';
 }
 
 function drawEndGame() {
@@ -811,6 +833,7 @@ function resetGame() {
     document.getElementById('parts-panel').style.display='flex';
     document.getElementById('launch-btn').style.display='none';
     document.getElementById('shield-panel').style.display='none';
+    document.getElementById('play-again-btn').style.display='none';
     // Re-enable all shield buttons
     ['kyber','dilithium','sphincs','falcon'].forEach(function(k){
         var btn=document.getElementById('sb-'+k);
