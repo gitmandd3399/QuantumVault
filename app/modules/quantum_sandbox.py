@@ -10,7 +10,7 @@ def render_quantum_sandbox():
         "Drag objects to throw them!"
     )
 
-    st.iframe(r"""
+    components.html(r"""
 <!DOCTYPE html>
 <html>
 <head>
