@@ -989,451 +989,495 @@ cx.fillText('Press START to rescue the NIST crystals!',W/2,H/2+10);
 """, height=560)
 
 def render_tower_defense():
-    """9-12: Improved PQC Tower Defense with more towers, enemies, bosses and education."""
-    st.subheader("🛡️ PQC Tower Defense — Advanced!")
+    """All grades: Tower Defense — UPGRADED 2026 — place PQC towers, survive 10 waves."""
+    import streamlit as st
+    import streamlit.components.v1 as components
+    st.subheader("🏰 Quantum Tower Defense!")
     st.markdown(
-        "Deploy **post-quantum algorithms** to stop quantum attack waves! "
-        "Place towers on the grid, then hit **Start Wave**. "
-        "Earn bits by defeating enemies to buy more towers. **Boss enemies appear every 3 waves!**"
+        "**Place PQC towers** to stop Shor Bots from reaching your server! "
+        "Each tower uses a real NIST PQC algorithm. Click the grid to place towers!"
     )
-
-    with st.expander("📚 Tower Guide — PQC Algorithms", expanded=False):
-        cols = st.columns(3)
-        with cols[0]:
-            st.success("🔐 **Kyber (ML-KEM)** — Fast, cheap, good range. FIPS 203 key encapsulation.")
-            st.success("✍️ **Dilithium (ML-DSA)** — Heavy damage, medium range. FIPS 204 signatures.")
-        with cols[1]:
-            st.success("🌲 **SPHINCS+ (SLH-DSA)** — Slow but massive damage. FIPS 205 hash-based.")
-            st.success("🦅 **Falcon (FN-DSA)** — Fast rate, small range. FIPS 206 compact signature.")
-        with cols[2]:
-            st.success("⚡ **LWE Cannon** — Area damage, hits all enemies nearby. Ultimate weapon!")
-            st.info("🌊 **Enemy Types:** Shor attacks key exchange. Grover attacks hashes. Boss = full quantum computer!")
-
-    import streamlit.components.v1 as components_td
-    components_td.html("""
+    components.html(r"""
 <!DOCTYPE html>
 <html>
 <head>
+<meta charset="UTF-8">
 <style>
-body{margin:0;background:#0f172a;font-family:sans-serif;color:white;}
-#gameArea{display:flex;flex-direction:column;align-items:center;padding:8px;}
-.topbar{display:flex;justify-content:space-between;width:520px;margin-bottom:6px;
-font-size:12px;font-weight:bold;color:#a5b4fc;}
-.stat{background:#1e293b;padding:4px 10px;border-radius:6px;border:1px solid #334155;}
-#tdCanvas{border:2px solid #4f46e5;border-radius:10px;cursor:pointer;}
-.tower-panel{display:flex;gap:6px;margin:6px 0;flex-wrap:wrap;justify-content:center;}
-.tbtn{padding:6px 10px;border-radius:8px;border:2px solid transparent;
-cursor:pointer;font-size:11px;font-weight:bold;color:white;transition:all 0.15s;}
-.tbtn.sel{border-color:white;transform:scale(1.05);}
-.msg-box{font-size:12px;color:#34d399;min-height:18px;margin:4px;text-align:center;}
-.wave-btn{padding:8px 24px;border-radius:8px;border:none;cursor:pointer;
-background:#4f46e5;color:white;font-size:13px;font-weight:bold;margin:4px;}
-.wave-btn:hover{background:#6d60ff;}
-#fact-box{background:rgba(79,70,229,0.15);border:1px solid rgba(79,70,229,0.4);
-border-radius:8px;padding:8px 12px;margin:4px;font-size:11px;color:#a5b4fc;
-max-width:520px;display:none;text-align:center;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:#020d14;font-family:'Segoe UI',sans-serif;color:white;overflow:hidden;}
+#wrap{display:flex;flex-direction:column;align-items:center;padding:8px;max-width:580px;margin:0 auto;}
+.hud{display:grid;grid-template-columns:repeat(5,1fr);gap:3px;width:100%;margin-bottom:6px;}
+.hb{background:#071520;border:1px solid #1a3a5a;border-radius:6px;padding:4px 2px;
+    text-align:center;font-size:8px;color:#60a5fa;}
+.hb b{display:block;font-size:13px;color:white;}
+#cv{border:2px solid #1d4ed8;border-radius:8px;display:block;cursor:pointer;
+    box-shadow:0 0 20px rgba(29,78,216,0.15);}
+#tower-bar{display:flex;gap:4px;justify-content:center;margin-top:5px;flex-wrap:wrap;}
+.tower-btn{padding:5px 8px;border-radius:8px;border:2px solid #1a3a5a;
+    background:#071520;color:#94a3b8;font-size:10px;cursor:pointer;
+    transition:all 0.15s;text-align:center;min-width:70px;}
+.tower-btn:hover{border-color:#3b82f6;color:white;}
+.tower-btn.active{border-color:#fbbf24;background:#1a1500;color:#fbbf24;}
+.tower-btn .tb-emoji{font-size:16px;display:block;margin-bottom:1px;}
+.tower-btn .tb-cost{font-size:8px;color:#fbbf24;}
+.btns{display:flex;gap:4px;margin-top:5px;width:100%;}
+.btn{flex:1;padding:7px;border-radius:8px;border:none;cursor:pointer;
+    font-size:11px;font-weight:bold;color:white;transition:all 0.15s;}
+.btn:hover{filter:brightness(1.2);}
+.btn-start{background:linear-gradient(135deg,#059669,#10b981);}
+.btn-reset{background:#334155;}
+.btn-speed{background:#1d4ed8;}
+#msg-bar{background:#071520;border:1px solid #1a3a5a;border-radius:8px;
+    padding:5px 12px;width:100%;margin-top:5px;font-size:10px;
+    color:#60a5fa;text-align:center;min-height:22px;}
+#fact-box{background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.3);
+    border-radius:8px;padding:6px 10px;margin-top:4px;font-size:10px;
+    color:#93c5fd;display:none;line-height:1.5;width:100%;text-align:center;}
+.cp{position:fixed;pointer-events:none;z-index:999;width:8px;height:8px;
+    border-radius:2px;animation:cf linear forwards;}
+@keyframes cf{0%{transform:translateY(-20px) rotate(0deg);opacity:1;}
+    100%{transform:translateY(600px) rotate(720deg);opacity:0;}}
 </style>
 </head>
 <body>
-<div id="gameArea">
-<div class="topbar">
-    <div class="stat">💾 HP: <span id="hp">100</span></div>
-    <div class="stat">⭐ Score: <span id="tdscore">0</span></div>
-    <div class="stat">💎 Bits: <span id="bits">200</span></div>
-    <div class="stat">🌊 Wave: <span id="wave">0</span></div>
-    <div class="stat">👾 Left: <span id="eleft">0</span></div>
+<div id="wrap">
+<div class="hud">
+    <div class="hb">💰 Gold<br><b id="h-gold">150</b></div>
+    <div class="hb">❤️ Lives<br><b id="h-lives">20</b></div>
+    <div class="hb">🌊 Wave<br><b id="h-wave">0</b>/10</div>
+    <div class="hb">💀 Kills<br><b id="h-kills">0</b></div>
+    <div class="hb">⭐ Score<br><b id="h-score">0</b></div>
 </div>
-<canvas id="tdCanvas" width="520" height="400"></canvas>
-<div class="msg-box" id="td-msg">Select a tower and click the grid to place it!</div>
-<div id="fact-box"></div>
-<div class="tower-panel">
-    <button class="tbtn sel" id="btn-kyber" style="background:#10b981"
-        onclick="selT('kyber')">🔐 Kyber 40💎</button>
-    <button class="tbtn" id="btn-dilithium" style="background:#3b82f6"
-        onclick="selT('dilithium')">✍️ Dilithium 70💎</button>
-    <button class="tbtn" id="btn-sphincs" style="background:#8b5cf6"
-        onclick="selT('sphincs')">🌲 SPHINCS 100💎</button>
-    <button class="tbtn" id="btn-falcon" style="background:#f59e0b"
-        onclick="selT('falcon')">🦅 Falcon 60💎</button>
-    <button class="tbtn" id="btn-lwe" style="background:#ec4899"
-        onclick="selT('lwe')">⚡ LWE 150💎</button>
-    <button class="wave-btn" onclick="startWave()">▶ Start Wave</button>
-    <button class="wave-btn" style="background:#374151" onclick="resetGame()">🔄 Reset</button>
-</div>
-</div>
-<script>
-const tc = document.getElementById("tdCanvas");
-const tx = tc.getContext("2d");
-const CELL=40, COLS=13, ROWS=10;
 
-const TOWERS = {
-    kyber:     {cost:40,  color:"#10b981", dmg:20,  range:80,  rate:30,  emoji:"🔐", name:"Kyber",     area:false, fact:"ML-KEM FIPS 203 — Lattice key encapsulation! Quantum safe!"},
-    dilithium: {cost:70,  color:"#3b82f6", dmg:45,  range:100, rate:50,  emoji:"✍️", name:"Dilithium",  area:false, fact:"ML-DSA FIPS 204 — Lattice digital signature! Cannot be forged!"},
-    sphincs:   {cost:100, color:"#8b5cf6", dmg:80,  range:120, rate:90,  emoji:"🌲", name:"SPHINCS+",   area:false, fact:"SLH-DSA FIPS 205 — Hash-based! Works even if lattices break!"},
-    falcon:    {cost:60,  color:"#f59e0b", dmg:25,  range:70,  rate:20,  emoji:"🦅", name:"Falcon",     area:false, fact:"FN-DSA FIPS 206 — Smallest quantum-safe signature ever!"},
-    lwe:       {cost:150, color:"#ec4899", dmg:120, range:110, rate:80,  emoji:"⚡", name:"LWE Cannon", area:true,  fact:"Learning With Errors — The hardest quantum math problem exists!"},
+<div style="position:relative;width:560px;">
+    <canvas id="cv" width="560" height="360"></canvas>
+</div>
+
+<div id="tower-bar">
+    <div class="tower-btn active" onclick="selectTower('kyber')" id="tb-kyber">
+        <span class="tb-emoji">🔐</span>ML-KEM
+        <div class="tb-cost">💰50 | DMG:2 | RNG:80</div>
+    </div>
+    <div class="tower-btn" onclick="selectTower('dilithium')" id="tb-dilithium">
+        <span class="tb-emoji">✍️</span>ML-DSA
+        <div class="tb-cost">💰75 | DMG:4 | RNG:65</div>
+    </div>
+    <div class="tower-btn" onclick="selectTower('sphincs')" id="tb-sphincs">
+        <span class="tb-emoji">🌲</span>SPHINCS+
+        <div class="tb-cost">💰100 | DMG:1 | RNG:120</div>
+    </div>
+    <div class="tower-btn" onclick="selectTower('falcon')" id="tb-falcon">
+        <span class="tb-emoji">🦅</span>Falcon
+        <div class="tb-cost">💰120 | DMG:8 | RNG:55</div>
+    </div>
+</div>
+
+<div class="btns">
+    <button class="btn btn-start" id="start-btn" onclick="startWave()">▶ Start Wave</button>
+    <button class="btn btn-speed" onclick="toggleSpeed()" id="speed-btn">⚡ 1x Speed</button>
+    <button class="btn btn-reset" onclick="resetGame()">🔄 Reset</button>
+</div>
+
+<div id="msg-bar">Click the grid to place towers, then press Start Wave!</div>
+<div id="fact-box"></div>
+</div>
+
+<script>
+const cv = document.getElementById('cv');
+const cx = cv.getContext('2d');
+const W=560, H=360;
+const TS=40; // tile size
+const COLS=14, ROWS=9;
+
+// ── PATH ─────────────────────────────────────────────────────────────────────
+// Pre-defined enemy path through the grid (column, row pairs)
+const PATH=[
+    [0,4],[1,4],[2,4],[2,2],[3,2],[4,2],[4,4],[5,4],[6,4],[6,6],
+    [7,6],[8,6],[8,4],[9,4],[10,4],[10,2],[11,2],[12,2],[12,6],[13,6],
+    [13,4],[13,3],[13,2],[13,1],[13,0]
+];
+// Convert to pixel coords (center of tiles)
+const PATH_PX=PATH.map(([c,r])=>({x:c*TS+TS/2,y:r*TS+TS/2}));
+// Set of path tiles (for placement blocking)
+const PATH_SET=new Set(PATH.map(([c,r])=>r+','+c));
+
+// ── TOWER TYPES ───────────────────────────────────────────────────────────────
+const TOWERS={
+    kyber:    {name:'ML-KEM',  emoji:'🔐',color:'#10b981',cost:50, dmg:2, range:80, rate:30, fips:'FIPS 203',
+               fact:'ML-KEM (Kyber FIPS 203) fires key encapsulation packets — scrambles enemy crypto instantly!'},
+    dilithium:{name:'ML-DSA',  emoji:'✍️', color:'#3b82f6',cost:75, dmg:4, range:65, rate:45, fips:'FIPS 204',
+               fact:'ML-DSA (Dilithium FIPS 204) fires signature bursts — enemies cannot forge authentication!'},
+    sphincs:  {name:'SPHINCS+',emoji:'🌲',color:'#8b5cf6',cost:100,dmg:1, range:120,rate:20, fips:'FIPS 205',
+               fact:'SLH-DSA (SPHINCS+ FIPS 205) fires hash storms — wide range, rapid fire, quantum-proof!'},
+    falcon:   {name:'Falcon',  emoji:'🦅',color:'#f59e0b',cost:120,dmg:8, range:55, rate:60, fips:'FIPS 206',
+               fact:'FN-DSA (Falcon FIPS 206) fires compact NTRU spikes — high damage, precise strikes!'},
 };
 
-const ENEMY_TYPES = [
-    {name:"Shor",    emoji:"⚛️",  hp:60,   spd:1.2, pts:15, color:"#ef4444", fact:"Shor Algorithm breaks RSA and ECC!", boss:false},
-    {name:"Grover",  emoji:"🌀",  hp:40,   spd:1.8, pts:12, color:"#f97316", fact:"Grover Algorithm speeds up brute force!", boss:false},
-    {name:"Harrow",  emoji:"👾",  hp:100,  spd:0.9, pts:20, color:"#eab308", fact:"HHL Algorithm attacks linear systems!", boss:false},
-    {name:"QAOA",    emoji:"🔮",  hp:80,   spd:1.5, pts:18, color:"#a855f7", fact:"QAOA finds optimal solutions faster!", boss:false},
-    {name:"Q-BOSS",  emoji:"💀",  hp:800,  spd:0.7, pts:100,color:"#dc2626", fact:"Full quantum computer — the ultimate threat!", boss:true},
+// ── WAVE CONFIGS ──────────────────────────────────────────────────────────────
+const WAVES=[
+    {count:5,  hp:3,  speed:0.8, emoji:'👾', reward:30,  name:'Shor Scout'},
+    {count:8,  hp:4,  speed:0.9, emoji:'🤖', reward:35,  name:'RSA Bot'},
+    {count:10, hp:5,  speed:1.0, emoji:'💀', reward:40,  name:'Grover Ghost'},
+    {count:8,  hp:8,  speed:0.8, emoji:'☠️', reward:50,  name:'Quantum Creeper'},
+    {count:12, hp:6,  speed:1.2, emoji:'🌀', reward:55,  name:'Vortex Drone'},
+    {count:10, hp:12, speed:0.9, emoji:'👾', reward:65,  name:'Hardened Shor Bot'},
+    {count:15, hp:8,  speed:1.1, emoji:'🤖', reward:70,  name:'Shor Swarm'},
+    {count:8,  hp:20, speed:0.8, emoji:'💀', reward:80,  name:'Tank Bot'},
+    {count:20, hp:10, speed:1.3, emoji:'🌀', reward:90,  name:'Speed Surge'},
+    {count:5,  hp:50, speed:0.7, emoji:'👑', reward:200, name:'QUANTUM BOSS'},
 ];
 
-const PATH = [
-    {x:0,y:2},{x:1,y:2},{x:2,y:2},{x:3,y:2},{x:3,y:5},
-    {x:4,y:5},{x:5,y:5},{x:6,y:5},{x:6,y:1},{x:7,y:1},
-    {x:8,y:1},{x:9,y:1},{x:9,y:7},{x:10,y:7},{x:11,y:7},{x:12,y:7}
-];
-const PATH_SET = new Set(PATH.map(p=>p.x+","+p.y));
-
+// ── GAME STATE ────────────────────────────────────────────────────────────────
 let towers=[], enemies=[], bullets=[], particles=[];
-let selTower="kyber", hp=100, score=0, bits=200, wave=0;
-let waveRunning=false, frameId, spawnQ=[], spawnTimer=0;
+let gold=150, lives=20, wave=0, kills=0, score=0;
+let waveActive=false, selectedType='kyber', speedMult=1;
+let frameId=null, spawnTimer=0, spawnCount=0, spawnTotal=0;
+let hoverTile=null;
 
-// 12 defined wave configurations
-const WAVE_DEFS = [
-    {wave:1,  name:"First Contact",     enemies:[0,0,0,1],        count:4,  boss:false, bonusBits:60,  desc:"Easy intro wave!"},
-    {wave:2,  name:"Quantum Scouts",    enemies:[0,0,1,1,2],      count:5,  boss:false, bonusBits:70,  desc:"More enemies!"},
-    {wave:3,  name:"BOSS Wave 1",       enemies:[0,1,2,3],        count:5,  boss:true,  bonusBits:100, desc:"First boss!"},
-    {wave:4,  name:"Shor Surge",        enemies:[0,0,0,1,1,2],    count:6,  boss:false, bonusBits:80,  desc:"Faster Shor attacks!"},
-    {wave:5,  name:"Grover Storm",      enemies:[1,1,1,2,3],      count:7,  boss:false, bonusBits:90,  desc:"Grover speeders!"},
-    {wave:6,  name:"BOSS Wave 2",       enemies:[0,1,2,3,0],      count:7,  boss:true,  bonusBits:120, desc:"Stronger boss!"},
-    {wave:7,  name:"Quantum Flood",     enemies:[0,1,2,3,0,1],    count:8,  boss:false, bonusBits:100, desc:"Mixed attack!"},
-    {wave:8,  name:"QAOA Assault",      enemies:[3,3,3,0,1,2,3],  count:9,  boss:false, bonusBits:110, desc:"QAOA everywhere!"},
-    {wave:9,  name:"BOSS Wave 3",       enemies:[0,1,2,3,0,1],    count:9,  boss:true,  bonusBits:150, desc:"Mega boss!"},
-    {wave:10, name:"Full Quantum Army", enemies:[0,1,2,3,0,1,2,3],count:10, boss:false, bonusBits:120, desc:"All enemy types!"},
-    {wave:11, name:"Quantum Apocalypse",enemies:[0,1,2,3,3,0,1,2],count:12, boss:true,  bonusBits:180, desc:"Almost impossible!"},
-    {wave:12, name:"FINAL BOSS",        enemies:[0,1,2,3,0,1,2,3],count:14, boss:true,  bonusBits:300, desc:"The quantum computer!"},
-];
-
-function selT(t) {
-    selTower=t;
-    document.querySelectorAll(".tbtn").forEach(b=>b.classList.remove("sel"));
-    document.getElementById("btn-"+t).classList.add("sel");
-    const td = TOWERS[t];
-    showMsg(td.emoji+" "+td.name+" selected — "+td.fact);
-}
-
-function showMsg(msg) {
-    document.getElementById("td-msg").textContent=msg;
-}
-
-function showFact(fact) {
-    const fb = document.getElementById("fact-box");
-    fb.textContent = "📚 " + fact;
-    fb.style.display = "block";
-    clearTimeout(window._factTimer);
-    window._factTimer = setTimeout(()=>{fb.style.display="none";}, 4000);
-}
-
-tc.addEventListener("click", e=>{
-    const rect = tc.getBoundingClientRect();
-    const cx = Math.floor((e.clientX-rect.left)/CELL);
-    const cy = Math.floor((e.clientY-rect.top)/CELL);
-    const key = cx+","+cy;
-    const td = TOWERS[selTower];
-    if (!PATH_SET.has(key) && !towers.find(t=>t.x===cx&&t.y===cy) && bits>=td.cost) {
-        towers.push({x:cx,y:cy,type:selTower,timer:0,...td});
-        bits-=td.cost;
-        updateUI();
-        showMsg(td.emoji+" "+td.name+" placed! "+td.fact);
-        draw();
-    } else if (bits<td.cost) {
-        showMsg("💎 Need "+td.cost+" bits! Defeat more enemies to earn bits.");
-    }
+// ── TOWER PLACEMENT ───────────────────────────────────────────────────────────
+cv.addEventListener('click',e=>{
+    const r=cv.getBoundingClientRect();
+    const mx=(e.clientX-r.left)*(W/r.width);
+    const my=(e.clientY-r.top)*(H/r.height);
+    const tc=Math.floor(mx/TS), tr=Math.floor(my/TS);
+    if(tc>=COLS||tr>=ROWS) return;
+    if(PATH_SET.has(tr+','+tc)){ setMsg('❌ Cannot place on the path!'); return; }
+    if(towers.find(t=>t.tc===tc&&t.tr===tr)){ setMsg('❌ Tower already here!'); return; }
+    const type=TOWERS[selectedType];
+    if(gold<type.cost){ setMsg('❌ Not enough gold! Need '+type.cost+' 💰'); return; }
+    gold-=type.cost;
+    towers.push({
+        tc,tr,x:tc*TS+TS/2,y:tr*TS+TS/2,
+        type:selectedType,...type,
+        fireTimer:0,level:1,kills:0,
+    });
+    showFact(type.fact);
+    setMsg('🔐 '+type.name+' tower placed! ('+type.fips+')');
+    updateHUD();
 });
 
-function startWave() {
-    if (waveRunning) return;
-    if (wave >= 12) { showMsg("🏆 All 12 waves complete! You are a Quantum Guardian!"); return; }
+cv.addEventListener('mousemove',e=>{
+    const r=cv.getBoundingClientRect();
+    const mx=(e.clientX-r.left)*(W/r.width);
+    const my=(e.clientY-r.top)*(H/r.height);
+    hoverTile={c:Math.floor(mx/TS),r:Math.floor(my/TS)};
+});
+cv.addEventListener('mouseleave',()=>hoverTile=null);
+
+// ── WAVE MANAGEMENT ───────────────────────────────────────────────────────────
+function startWave(){
+    if(waveActive){ setMsg('⚠️ Wave already in progress!'); return; }
+    if(wave>=WAVES.length){ setMsg('🏆 All waves defeated! You won!'); return; }
+    const cfg=WAVES[wave];
+    waveActive=true; spawnTimer=0; spawnCount=0; spawnTotal=cfg.count;
+    document.getElementById('start-btn').disabled=true;
+    setMsg('🌊 Wave '+(wave+1)+': '+cfg.count+'x '+cfg.name+' incoming!');
     wave++;
-    waveRunning=true;
-    spawnQ=[];
+    updateHUD();
+}
 
-    const wdef = WAVE_DEFS[Math.min(wave-1, WAVE_DEFS.length-1)];
-    const hpBoost = 1+(wave-1)*0.2;
+function spawnEnemy(){
+    const cfg=WAVES[wave-1];
+    const maxHp=cfg.hp*(1+wave*0.1);
+    enemies.push({
+        pathIdx:0,
+        x:PATH_PX[0].x, y:PATH_PX[0].y,
+        hp:maxHp, maxHp, speed:cfg.speed,
+        emoji:cfg.emoji, progress:0,
+        id:Math.random(),
+    });
+}
 
-    showMsg("🌊 Wave "+wave+"/12: "+wdef.name+" — "+wdef.desc);
+// ── UPDATE ────────────────────────────────────────────────────────────────────
+function update(){
+    const steps=speedMult;
+    for(let s=0;s<steps;s++) _update();
+}
 
-    if (wdef.boss) {
-        // Add boss at start
-        const boss = {...ENEMY_TYPES[4]};
-        boss.hp = Math.floor(boss.hp * hpBoost);
-        boss.maxHp = boss.hp;
-        spawnQ.push({...boss, delay:0});
+function _update(){
+    // Spawn
+    if(waveActive&&spawnCount<spawnTotal){
+        spawnTimer++;
+        if(spawnTimer>=40){
+            spawnTimer=0; spawnCount++;
+            spawnEnemy();
+        }
     }
 
-    // Add regular enemies
-    for(let i=0;i<wdef.count;i++){
-        const eIdx = wdef.enemies[i % wdef.enemies.length];
-        const eType = ENEMY_TYPES[Math.min(eIdx, ENEMY_TYPES.length-2)];
-        const boosted = {...eType,
-            hp:Math.floor(eType.hp*hpBoost),
-            maxHp:Math.floor(eType.hp*hpBoost),
-            delay:(i+1)*45
-        };
-        spawnQ.push(boosted);
-    }
-
-    document.getElementById("wave").textContent=wave+"/12";
-    updateUI();
-    if (!frameId) gameLoop();
-}
-
-function resetGame() {
-    towers=[]; enemies=[]; bullets=[]; particles=[];
-    hp=100; score=0; bits=200; wave=0; waveRunning=false;
-    spawnQ=[]; spawnTimer=0;
-    cancelAnimationFrame(frameId); frameId=null;
-    updateUI();
-    showMsg("Game reset! Select towers and start a new wave.");
-    draw();
-}
-
-function updateUI() {
-    document.getElementById("hp").textContent=Math.max(0,hp);
-    document.getElementById("tdscore").textContent=score;
-    document.getElementById("bits").textContent=bits;
-    document.getElementById("eleft").textContent=enemies.length+spawnQ.length;
-}
-
-function gameLoop() {
-    frameId=requestAnimationFrame(gameLoop);
-    update();
-    draw();
-}
-
-function update() {
-    // Spawn enemies from queue
-    spawnTimer++;
-    if (spawnQ.length>0 && spawnQ[0].delay<=spawnTimer) {
-        const e = spawnQ.shift();
-        const hpVal = e.hp || e.maxHp || 60;
-        enemies.push({
-            pathIdx:0,
-            x:PATH[0].x*CELL+CELL/2,
-            y:PATH[0].y*CELL+CELL/2,
-            hp:hpVal, maxHp:hpVal,
-            speed:e.spd||1.2,
-            name:e.name, emoji:e.emoji,
-            color:e.color, pts:e.pts,
-            fact:e.fact, boss:e.boss||false,
-        });
-    }
-
-    // Move enemies
+    // Move enemies along path
     enemies.forEach(e=>{
-        if(e.pathIdx>=PATH.length-1){
-            hp-= e.boss?30:10;
-            document.getElementById("hp").textContent=Math.max(0,hp);
-            showMsg("💥 "+e.name+" breached! "+(e.boss?"-30":"-10")+" HP");
-            e.pathIdx=-1;
-            if(hp<=0){
-                cancelAnimationFrame(frameId); frameId=null;
-                waveRunning=false;
-                showMsg("☠️ Data corrupted! Quantum won. Score: "+score);
-            }
+        if(e.pathIdx>=PATH_PX.length-1){
+            // Reached end — lose a life
+            lives--; updateHUD();
+            spawnParticles(e.x,e.y,'#ef4444',8);
+            e.dead=true;
+            setMsg('💀 Shor Bot reached your server! Lives: '+lives);
+            if(lives<=0) gameOver();
             return;
         }
-        const tgt=PATH[e.pathIdx+1];
-        const tx2=tgt.x*CELL+CELL/2, ty2=tgt.y*CELL+CELL/2;
-        const dx=tx2-e.x, dy=ty2-e.y;
-        const dist=Math.sqrt(dx*dx+dy*dy);
-        if(dist<e.speed+1){e.pathIdx++;}
-        else{e.x+=dx/dist*e.speed; e.y+=dy/dist*e.speed;}
+        const target=PATH_PX[e.pathIdx+1];
+        const dx=target.x-e.x, dy=target.y-e.y;
+        const d=Math.sqrt(dx*dx+dy*dy)||1;
+        e.x+=dx/d*e.speed; e.y+=dy/d*e.speed;
+        if(d<e.speed+1) e.pathIdx++;
     });
+    enemies=enemies.filter(e=>!e.dead);
 
-    // Tower shooting
-    towers.forEach(tower=>{
-        tower.timer++;
-        if(tower.timer<tower.rate) return;
-        tower.timer=0;
-        const cx=tower.x*CELL+CELL/2, cy=tower.y*CELL+CELL/2;
-        if(tower.area){
-            // LWE area damage
-            const hit=enemies.filter(e=>e.pathIdx>=0&&Math.hypot(e.x-cx,e.y-cy)<=tower.range);
-            if(hit.length>0){
-                hit.forEach(e=>{e.hp-=tower.dmg;});
-                particles.push({x:cx,y:cy,r:5,maxR:tower.range,alpha:0.8,color:tower.color});
-                showFact(tower.fact);
-            }
-        } else {
-            const inR=enemies.filter(e=>e.pathIdx>=0&&Math.hypot(e.x-cx,e.y-cy)<=tower.range);
-            if(inR.length>0){
-                bullets.push({x:cx,y:cy,tx:inR[0].x,ty:inR[0].y,
-                    target:inR[0],dmg:tower.dmg,color:tower.color,
-                    emoji:tower.emoji,speed:6,fact:tower.fact});
-            }
-        }
+    // Towers fire
+    towers.forEach(t=>{
+        t.fireTimer++;
+        if(t.fireTimer<t.rate) return;
+        // Find closest enemy in range
+        const target=enemies.filter(e=>{
+            const d=Math.hypot(e.x-t.x,e.y-t.y);
+            return d<=t.range;
+        }).sort((a,b)=>b.pathIdx-a.pathIdx)[0];
+        if(!target) return;
+        t.fireTimer=0;
+        bullets.push({
+            x:t.x,y:t.y,tx:target.x,ty:target.y,
+            targetId:target.id,speed:6,
+            dmg:t.dmg,color:t.color,r:4,
+            towerType:t.type,
+        });
     });
 
     // Move bullets
-    bullets=bullets.filter(b=>{
-        const dx=b.tx-b.x, dy=b.ty-b.y;
-        const dist=Math.sqrt(dx*dx+dy*dy);
-        if(dist<b.speed+2){
-            b.target.hp-=b.dmg;
-            showFact(b.fact);
-            return false;
-        }
-        b.x+=dx/dist*b.speed; b.y+=dy/dist*b.speed;
-        b.tx=b.target.x; b.ty=b.target.y;
-        return true;
-    });
-
-    // Remove dead enemies
-    enemies=enemies.filter(e=>{
-        if(e.pathIdx<0) return false;
-        if(e.hp<=0){
-            score+=e.pts*(e.boss?5:1);
-            bits+=e.boss?80:20;
-            // Death particles
-            for(let i=0;i<6;i++){
-                particles.push({
-                    x:e.x, y:e.y,
-                    vx:(Math.random()-0.5)*4,
-                    vy:(Math.random()-0.5)*4,
-                    r:4, alpha:1, color:e.color, type:"spark"
-                });
+    bullets.forEach(b=>{
+        const target=enemies.find(e=>e.id===b.targetId);
+        if(target){
+            const dx=target.x-b.x,dy=target.y-b.y;
+            const d=Math.sqrt(dx*dx+dy*dy)||1;
+            b.x+=dx/d*b.speed; b.y+=dy/d*b.speed;
+            if(d<b.speed+2){
+                target.hp-=b.dmg;
+                spawnParticles(target.x,target.y,b.color,4);
+                b.dead=true;
+                if(target.hp<=0){
+                    target.dead=true;
+                    kills++; score+=10;
+                    const cfg=WAVES[wave-1];
+                    gold+=cfg?Math.floor(cfg.reward/cfg.count):5;
+                    const t=towers.find(t=>t.type===b.towerType);
+                    if(t) t.kills++;
+                    updateHUD();
+                }
             }
-            showMsg("💥 "+e.name+" destroyed! +"+(e.pts*(e.boss?5:1))+" score +"+(e.boss?80:20)+" bits");
-            updateUI();
-            return false;
-        }
-        return true;
-    });
-
-    // Update particles
-    particles=particles.filter(p=>{
-        p.alpha-=p.type==="spark"?0.06:0.04;
-        if(p.type==="spark"){p.x+=p.vx;p.y+=p.vy;}
-        else{p.r+=3;}
-        return p.alpha>0;
-    });
-
-    // Check wave complete
-    if(waveRunning && enemies.length===0 && spawnQ.length===0){
-        waveRunning=false;
-        const wdef = WAVE_DEFS[Math.min(wave-1, WAVE_DEFS.length-1)];
-        const bonus = wdef.bonusBits;
-        bits+=bonus;
-        updateUI();
-        if(wave>=12){
-            showMsg("🏆 ALL 12 WAVES CLEARED! Quantum Guardian! Score: "+score);
         } else {
-            showMsg("✅ Wave "+wave+"/12 cleared! +"+bonus+" bits. Next: "+WAVE_DEFS[wave].name);
+            b.dead=true;
         }
-        cancelAnimationFrame(frameId); frameId=null;
+    });
+    bullets=bullets.filter(b=>!b.dead);
+    enemies=enemies.filter(e=>!e.dead);
+
+    // Check wave clear
+    if(waveActive&&spawnCount>=spawnTotal&&enemies.length===0){
+        waveComplete();
+    }
+
+    // Particles
+    particles.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.alpha-=0.04;p.r*=0.94;});
+    particles=particles.filter(p=>p.alpha>0);
+}
+
+function waveComplete(){
+    waveActive=false;
+    const bonus=wave*50;
+    gold+=bonus; score+=bonus;
+    updateHUD();
+    document.getElementById('start-btn').disabled=false;
+    setMsg('✅ Wave '+wave+' cleared! +'+bonus+' gold bonus! Place more towers!');
+    showFact(['🔐 ML-KEM protects key exchange!','✍️ ML-DSA signs every packet!',
+              '🌲 SPHINCS+ uses SHA-3 hash trees!','🦅 Falcon makes tiny signatures!'][wave%4]);
+    if(wave>=WAVES.length){
+        setMsg('👑 ALL 10 WAVES DEFEATED! You are a Quantum Defense Master!');
+        confetti();
     }
 }
 
-function draw() {
-    tx.clearRect(0,0,tc.width,tc.height);
+function gameOver(){
+    waveActive=false;
+    if(frameId) cancelAnimationFrame(frameId);
+    setMsg('💀 GAME OVER! Wave: '+wave+' | Score: '+score+' | Kills: '+kills);
+}
 
-    // Background
-    tx.fillStyle="#0f172a";
-    tx.fillRect(0,0,tc.width,tc.height);
+function resetGame(){
+    if(frameId) cancelAnimationFrame(frameId);
+    towers=[]; enemies=[]; bullets=[]; particles=[];
+    gold=150; lives=20; wave=0; kills=0; score=0;
+    waveActive=false; spawnTimer=0; spawnCount=0;
+    document.getElementById('start-btn').disabled=false;
+    updateHUD();
+    setMsg('Click the grid to place towers, then press Start Wave!');
+    document.getElementById('fact-box').style.display='none';
+    loop();
+}
 
-    // Grid
+function toggleSpeed(){
+    speedMult=speedMult===1?2:1;
+    document.getElementById('speed-btn').textContent=speedMult===1?'⚡ 1x Speed':'⚡ 2x Speed';
+}
+
+// ── DRAW ──────────────────────────────────────────────────────────────────────
+function draw(){
+    cx.clearRect(0,0,W,H);
+    cx.fillStyle='#020d14'; cx.fillRect(0,0,W,H);
+
+    // Grid tiles
     for(let r=0;r<ROWS;r++){
         for(let c=0;c<COLS;c++){
-            const key=c+","+r;
-            tx.fillStyle=PATH_SET.has(key)?"#1e293b":"#0f172a";
-            tx.fillRect(c*CELL,r*CELL,CELL,CELL);
-            tx.strokeStyle="rgba(79,70,229,0.15)";
-            tx.strokeRect(c*CELL,r*CELL,CELL,CELL);
+            const x=c*TS,y=r*TS;
+            const isPath=PATH_SET.has(r+','+c);
+            cx.fillStyle=isPath?'#0a1f35':'#050e1a';
+            cx.fillRect(x,y,TS,TS);
+            cx.strokeStyle='#1a3a5a20';
+            cx.lineWidth=0.5;
+            cx.strokeRect(x,y,TS,TS);
         }
     }
 
-    // Path arrows
-    for(let i=0;i<PATH.length-1;i++){
-        const p=PATH[i], n=PATH[i+1];
-        tx.fillStyle="rgba(165,180,252,0.3)";
-        tx.font="14px sans-serif";
-        tx.textAlign="center";
-        const arrow = n.x>p.x?"→":n.x<p.x?"←":n.y>p.y?"↓":"↑";
-        tx.fillText(arrow,p.x*CELL+CELL/2,p.y*CELL+CELL/1.5);
-    }
-
-    // Goal
-    tx.font="22px sans-serif";
-    tx.textAlign="center";
-    tx.fillText("💾",PATH[PATH.length-1].x*CELL+CELL/2,PATH[PATH.length-1].y*CELL+CELL/1.4);
-
-    // Particles
-    particles.forEach(p=>{
-        tx.beginPath();
-        if(p.type==="spark"){
-            tx.arc(p.x,p.y,p.r,0,Math.PI*2);
-            tx.fillStyle=p.color+Math.floor(p.alpha*255).toString(16).padStart(2,"0");
-            tx.fill();
-        } else {
-            tx.arc(p.x,p.y,p.r,0,Math.PI*2);
-            tx.strokeStyle=p.color+Math.floor(p.alpha*255).toString(16).padStart(2,"0");
-            tx.lineWidth=2;
-            tx.stroke();
-        }
+    // Path highlight
+    PATH.forEach(([c,r],i)=>{
+        if(i===0||i===PATH.length-1) return;
+        cx.fillStyle='#1d4ed815';
+        cx.fillRect(c*TS,r*TS,TS,TS);
     });
 
-    // Tower ranges (on hover - always show for selected)
+    // Start/end markers
+    cx.font='16px serif';cx.textAlign='center';cx.textBaseline='middle';
+    cx.fillText('👾',PATH_PX[0].x,PATH_PX[0].y);
+    cx.font='10px sans-serif';cx.fillStyle='#ef4444';
+    cx.fillText('SPAWN',PATH_PX[0].x,PATH_PX[0].y+20);
+    cx.font='16px serif';
+    cx.fillText('🖥️',W-TS/2,TS/2);
+    cx.font='10px sans-serif';cx.fillStyle='#10b981';
+    cx.fillText('SERVER',W-TS/2,TS*1.5);
+
+    // Hover preview
+    if(hoverTile&&hoverTile.c<COLS&&hoverTile.r<ROWS){
+        const isPath=PATH_SET.has(hoverTile.r+','+hoverTile.c);
+        const hasTower=towers.find(t=>t.tc===hoverTile.c&&t.tr===hoverTile.r);
+        if(!isPath&&!hasTower){
+            cx.fillStyle='#fbbf2420';
+            cx.fillRect(hoverTile.c*TS,hoverTile.r*TS,TS,TS);
+            // Show range preview
+            const type=TOWERS[selectedType];
+            cx.beginPath();
+            cx.arc(hoverTile.c*TS+TS/2,hoverTile.r*TS+TS/2,type.range,0,Math.PI*2);
+            cx.strokeStyle=type.color+'30';cx.lineWidth=1;cx.stroke();
+        }
+    }
+
+    // Towers
     towers.forEach(t=>{
-        tx.beginPath();
-        tx.arc(t.x*CELL+CELL/2,t.y*CELL+CELL/2,t.range,0,Math.PI*2);
-        tx.fillStyle=t.color+"15";
-        tx.fill();
-        tx.font="22px sans-serif";
-        tx.textAlign="center";
-        tx.fillText(t.emoji,t.x*CELL+CELL/2,t.y*CELL+CELL/1.4);
-    });
-
-    // Bullets
-    bullets.forEach(b=>{
-        tx.font="14px sans-serif";
-        tx.textAlign="center";
-        tx.fillText(b.emoji,b.x,b.y+5);
+        // Range ring on hover
+        if(hoverTile&&t.tc===hoverTile.c&&t.tr===hoverTile.r){
+            cx.beginPath();
+            cx.arc(t.x,t.y,t.range,0,Math.PI*2);
+            cx.strokeStyle=t.color+'60';cx.lineWidth=1.5;cx.stroke();
+        }
+        // Tower body
+        cx.fillStyle='#071520';
+        cx.fillRect(t.x-12,t.y-12,24,24);
+        cx.strokeStyle=t.color;cx.lineWidth=2;
+        cx.strokeRect(t.x-12,t.y-12,24,24);
+        // Tower emoji
+        cx.font='16px serif';cx.textAlign='center';cx.textBaseline='middle';
+        cx.fillText(t.emoji,t.x,t.y);
+        // Kill count
+        if(t.kills>0){
+            cx.font='8px sans-serif';cx.fillStyle=t.color;
+            cx.fillText(t.kills+'💀',t.x,t.y+16);
+        }
     });
 
     // Enemies
     enemies.forEach(e=>{
-        if(e.pathIdx<0) return;
-        const size = e.boss?32:22;
-        tx.font=size+"px sans-serif";
-        tx.textAlign="center";
-        tx.fillText(e.emoji,e.x,e.y+size/2);
-
         // HP bar
-        const bw=e.boss?50:36, bh=e.boss?7:4;
-        tx.fillStyle="#374151";
-        tx.fillRect(e.x-bw/2,e.y-size/2-10,bw,bh);
-        const pct=Math.max(0,e.hp/e.maxHp);
-        tx.fillStyle=pct>0.6?"#10b981":pct>0.3?"#f59e0b":"#ef4444";
-        tx.fillRect(e.x-bw/2,e.y-size/2-10,bw*pct,bh);
-
-        // Boss label
-        if(e.boss){
-            tx.fillStyle="#dc2626";
-            tx.font="bold 9px sans-serif";
-            tx.textAlign="center";
-            tx.fillText("BOSS: "+e.hp+"/"+e.maxHp,e.x,e.y-size/2-14);
-        }
+        const bw=24;
+        cx.fillStyle='#1e293b'; cx.fillRect(e.x-bw/2,e.y-18,bw,4);
+        cx.fillStyle=e.hp/e.maxHp>0.5?'#10b981':'#ef4444';
+        cx.fillRect(e.x-bw/2,e.y-18,bw*Math.max(0,e.hp/e.maxHp),4);
+        // Emoji
+        cx.font='18px serif';cx.textAlign='center';cx.textBaseline='middle';
+        cx.fillText(e.emoji,e.x,e.y);
     });
 
-    // HP warning overlay
-    if(hp<=30){
-        tx.fillStyle="rgba(239,68,68,0.08)";
-        tx.fillRect(0,0,tc.width,tc.height);
+    // Bullets
+    bullets.forEach(b=>{
+        cx.beginPath();cx.arc(b.x,b.y,b.r,0,Math.PI*2);
+        cx.fillStyle=b.color;cx.fill();
+        cx.shadowColor=b.color;cx.shadowBlur=6;cx.fill();
+        cx.shadowBlur=0;
+    });
+
+    // Particles
+    particles.forEach(p=>{
+        cx.beginPath();cx.arc(p.x,p.y,p.r,0,Math.PI*2);
+        cx.fillStyle=p.color+Math.floor(p.alpha*255).toString(16).padStart(2,'0');
+        cx.fill();
+    });
+
+    // Wave progress bar
+    if(waveActive){
+        const pct=spawnCount/spawnTotal;
+        cx.fillStyle='#1e293b';cx.fillRect(0,H-4,W,4);
+        cx.fillStyle='#10b981';cx.fillRect(0,H-4,W*pct,4);
     }
 }
 
-draw();
-updateUI();
+function loop(){frameId=requestAnimationFrame(loop);update();draw();}
+
+// ── HELPERS ───────────────────────────────────────────────────────────────────
+function selectTower(type){
+    selectedType=type;
+    document.querySelectorAll('.tower-btn').forEach(b=>b.classList.remove('active'));
+    document.getElementById('tb-'+type).classList.add('active');
+    const t=TOWERS[type];
+    setMsg('Selected: '+t.emoji+' '+t.name+' ('+t.fips+') — Cost: '+t.cost+' 💰');
+}
+function spawnParticles(x,y,color,n){
+    for(let i=0;i<n;i++){
+        const a=Math.random()*Math.PI*2,s=1+Math.random()*3;
+        particles.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,r:2+Math.random()*2,alpha:1,color});
+    }
+}
+function updateHUD(){
+    document.getElementById('h-gold').textContent=gold;
+    document.getElementById('h-lives').textContent=lives;
+    document.getElementById('h-wave').textContent=wave;
+    document.getElementById('h-kills').textContent=kills;
+    document.getElementById('h-score').textContent=score;
+}
+function setMsg(m){document.getElementById('msg-bar').textContent=m;}
+let factTimer=null;
+function showFact(t){
+    const el=document.getElementById('fact-box');
+    el.textContent=t;el.style.display='block';
+    if(factTimer)clearTimeout(factTimer);
+    factTimer=setTimeout(()=>el.style.display='none',6000);
+}
+function confetti(){
+    const cols=['#fbbf24','#10b981','#3b82f6','#8b5cf6','#ef4444'];
+    for(let i=0;i<25;i++){
+        setTimeout(()=>{
+            const el=document.createElement('div');
+            el.className='cp';el.style.left=Math.random()*100+'vw';
+            el.style.background=cols[Math.floor(Math.random()*cols.length)];
+            el.style.animationDuration=(1+Math.random()*2)+'s';
+            document.body.appendChild(el);
+            setTimeout(()=>el.remove(),3000);
+        },i*40);
+    }
+}
+
+updateHUD();
+loop();
+setMsg('Click any grid tile to place a tower! Avoid the path tiles.');
 </script>
 </body>
 </html>
-""", height=680)
+""", height=600)
 
 def render_zombie_blast(difficulty: str = "easy"):
     """Quantum Zombie Blast — clean redesign with better UI and gameplay."""
