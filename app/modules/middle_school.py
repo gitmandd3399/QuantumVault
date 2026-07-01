@@ -1,15 +1,5 @@
 from modules.progress_tracker import mark_complete, is_complete
-"""
-modules/middle_school.py
-────────────────────────
-Grades 6–8 learning module: "Code Cadets"
 
-Concepts taught:
-  - Lattice-based hard problems (visual maze analogy)
-  - Hash functions (one-way, avalanche effect)
-  - Why quantum computers break RSA but not lattices
-  - Simplified CRYSTALS-Kyber key generation idea
-"""
 
 import hashlib
 import random
@@ -1202,7 +1192,7 @@ function showInfo(key) {
                     st.session_state.ksq_idx = 0
                     st.session_state.ksq_score = 0
                     st.rerun()
-er import mark_complete, is_complete
+from modules.progress_tracker import mark_complete, is_complete
 """
 modules/middle_school.py
 ────────────────────────
