@@ -6302,7 +6302,7 @@ initLevel();
 """, height=820)
 
 def render_cipher_quest():
-    """Middle School 6-8: Cipher Quest — fill in ONE blank per challenge, rest is provided."""
+    """Middle School 6-8: Cipher Quest — UPGRADED 2026 — RPG quest map, coins, shop, boss fights."""
     import streamlit as st
     import streamlit.components.v1 as components
     from modules.trial import trial_gate
@@ -6310,323 +6310,661 @@ def render_cipher_quest():
         return
     st.subheader("🎮 Cipher Quest!")
     st.markdown(
-        "**Fill in ONE blank per challenge** to crack the code! "
-        "Everything else is already written for you. "
-        "Learn why we need quantum-safe encryption!"
+        "**You are a Quantum Spy!** Complete cipher missions to earn coins, "
+        "unlock power-ups, and defeat the Shor Boss! Fill in ONE blank per challenge."
     )
     components.html(r"""
 <!DOCTYPE html>
 <html>
 <head>
+<meta charset="UTF-8">
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
-body{background:#020d14;font-family:'Segoe UI',sans-serif;color:white;}
-#wrap{max-width:560px;margin:0 auto;padding:12px;}
-.hud{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-bottom:8px;}
-.hb{background:#071520;border:1px solid #1a3a5a;border-radius:10px;padding:7px;text-align:center;font-size:10px;color:#60a5fa;}
-.hb b{display:block;font-size:15px;color:white;}
-.quest-card{background:#071520;border:2px solid #1d4ed8;border-radius:14px;padding:14px;margin-bottom:10px;}
+body{background:#020d14;font-family:'Segoe UI',sans-serif;color:white;overflow-x:hidden;}
+#wrap{max-width:560px;margin:0 auto;padding:10px;}
+
+/* HUD */
+.hud{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-bottom:8px;}
+.hb{background:#071520;border:1px solid #1a3a5a;border-radius:8px;
+    padding:5px 3px;text-align:center;font-size:9px;color:#60a5fa;}
+.hb b{display:block;font-size:14px;color:white;}
+
+/* RANK BAR */
+#rank-bar{background:#071520;border:1px solid #fbbf2440;border-radius:10px;
+    padding:5px 12px;margin-bottom:8px;display:flex;align-items:center;gap:8px;}
+#rank-name{font-size:11px;color:#fbbf24;font-weight:bold;white-space:nowrap;}
+#rank-xp-bar{flex:1;height:6px;background:#1e293b;border-radius:3px;}
+#rank-xp-fill{height:6px;background:linear-gradient(90deg,#fbbf24,#f97316);
+    border-radius:3px;transition:width 0.5s;width:0%;}
+#rank-next{font-size:9px;color:#475569;white-space:nowrap;}
+
+/* TABS */
+.tabs{display:flex;gap:3px;margin-bottom:8px;}
+.tab{flex:1;padding:7px 4px;border-radius:8px;border:1px solid #1a3a5a;
+    background:#071520;color:#60a5fa;font-size:11px;font-weight:bold;
+    cursor:pointer;text-align:center;transition:all 0.15s;}
+.tab.active{background:#1d4ed8;border-color:#3b82f6;color:white;}
+
+/* QUEST MAP */
+#quest-map{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px;}
+.quest-node{background:#071520;border:2px solid #1a3a5a;border-radius:12px;
+    padding:10px;cursor:pointer;transition:all 0.15s;text-align:center;
+    position:relative;}
+.quest-node:hover:not(.locked){border-color:#3b82f6;background:#0a1f35;}
+.quest-node.active{border-color:#fbbf24;background:#1a1500;}
+.quest-node.done{border-color:#10b981;background:#051a0f;}
+.quest-node.locked{opacity:0.35;cursor:not-allowed;}
+.quest-node.boss{border-color:#ef4444;background:#1a0505;}
+.quest-node .qn-emoji{font-size:1.8rem;display:block;margin-bottom:3px;}
+.quest-node .qn-title{font-size:10px;font-weight:bold;color:#60a5fa;}
+.quest-node .qn-coins{font-size:9px;color:#fbbf24;margin-top:2px;}
+.quest-node .qn-badge{position:absolute;top:4px;right:4px;font-size:9px;
+    padding:1px 5px;border-radius:6px;font-weight:bold;}
+.badge-easy{background:#059669;color:white;}
+.badge-med{background:#d97706;color:white;}
+.badge-hard{background:#dc2626;color:white;}
+.badge-boss{background:linear-gradient(135deg,#dc2626,#7c3aed);color:white;}
+.badge-done{background:#10b981;color:white;}
+
+/* QUEST CARD */
+.quest-card{background:#071520;border:2px solid #1d4ed8;border-radius:14px;
+    padding:12px;margin-bottom:8px;}
 .quest-header{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
-.quest-emoji{font-size:2rem;}
-.quest-title{font-size:14px;font-weight:bold;color:#60a5fa;}
-.diff{display:inline-block;border-radius:4px;padding:2px 8px;font-size:9px;font-weight:bold;margin-top:2px;}
-.easy{background:#059669;}.medium{background:#d97706;}.hard{background:#dc2626;}
-.quest-desc{font-size:11px;color:#94a3b8;line-height:1.7;margin-bottom:10px;
-    background:#050e1a;border-radius:8px;padding:10px;}
+.quest-emoji-big{font-size:2rem;}
+.quest-title-wrap{flex:1;}
+.quest-title-text{font-size:13px;font-weight:bold;color:#60a5fa;}
+.quest-subtitle{font-size:9px;color:#475569;margin-top:2px;}
+.quest-desc{font-size:11px;color:#94a3b8;line-height:1.6;margin-bottom:8px;
+    background:#050e1a;border-radius:8px;padding:8px;}
+
+/* CODE BLOCK */
 .code-block{background:#020d14;border:1px solid #1a3a5a;border-radius:8px;
     padding:10px;font-family:'Fira Code',monospace;font-size:11px;
-    color:#60a5fa;line-height:2;margin-bottom:8px;}
+    line-height:2.2;margin-bottom:8px;}
 .code-line{display:block;color:#60a5fa;}
-.code-comment{display:block;color:#475569;}
-.blank-wrap{display:inline-flex;align-items:center;gap:4px;}
+.code-comment{display:block;color:#475569;font-style:italic;}
+.code-keyword{color:#a78bfa;}
 .blank{background:#0a1f35;border:2px solid #3b82f6;border-radius:6px;
     color:#10b981;font-family:'Fira Code',monospace;font-size:12px;
-    padding:4px 8px;width:120px;outline:none;text-align:center;}
+    padding:3px 8px;width:130px;outline:none;text-align:center;
+    transition:border-color 0.2s;}
 .blank:focus{border-color:#60a5fa;box-shadow:0 0 8px rgba(59,130,246,0.3);}
-.run-btn{width:100%;padding:12px;background:linear-gradient(135deg,#1d4ed8,#06b6d4);
+.blank.correct{border-color:#10b981;background:#051a0f;}
+.blank.wrong{border-color:#ef4444;animation:shake 0.4s ease;}
+@keyframes shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-5px);}75%{transform:translateX(5px);}}
+
+/* BUTTONS */
+.btn-row{display:flex;gap:5px;margin-bottom:6px;}
+.btn{flex:1;padding:10px;border:none;border-radius:8px;color:white;
+    font-size:12px;font-weight:bold;cursor:pointer;transition:all 0.15s;}
+.btn:hover{filter:brightness(1.15);transform:translateY(-1px);}
+.btn-run{background:linear-gradient(135deg,#1d4ed8,#06b6d4);}
+.btn-hint{background:#7c3aed;}
+.btn-next{width:100%;padding:12px;background:linear-gradient(135deg,#059669,#10b981);
     border:none;border-radius:10px;color:white;font-size:14px;font-weight:bold;
-    cursor:pointer;margin-bottom:6px;transition:all 0.2s;}
-.run-btn:hover{filter:brightness(1.15);}
-.hint-btn{width:100%;padding:8px;background:#7c3aed;border:none;border-radius:8px;
-    color:white;font-size:12px;cursor:pointer;margin-bottom:6px;}
-.next-btn{width:100%;padding:12px;background:linear-gradient(135deg,#059669,#10b981);
-    border:none;border-radius:10px;color:white;font-size:14px;font-weight:bold;
-    cursor:pointer;margin-bottom:8px;display:none;}
+    cursor:pointer;display:none;animation:pulse 1s infinite;}
+@keyframes pulse{0%,100%{transform:scale(1);}50%{transform:scale(1.02);}}
+
+/* OUTPUT */
 .output{background:#020d14;border:2px solid #00ff4130;border-radius:8px;
     padding:10px;font-family:'Fira Code',monospace;font-size:11px;
-    color:#00ff41;min-height:50px;margin-bottom:8px;line-height:1.7;}
-#msg{font-size:12px;min-height:18px;margin:4px 0;text-align:center;font-weight:bold;padding:6px;}
+    color:#00ff41;min-height:44px;margin-bottom:6px;line-height:1.8;}
+
+/* SHOP */
+#shop-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px;}
+.shop-item{background:#071520;border:1px solid #1a3a5a;border-radius:10px;
+    padding:10px;text-align:center;cursor:pointer;transition:all 0.15s;}
+.shop-item:hover{border-color:#fbbf24;background:#1a1500;}
+.shop-item.owned{border-color:#10b981;background:#051a0f;}
+.shop-item .si-emoji{font-size:1.8rem;display:block;margin-bottom:4px;}
+.shop-item .si-name{font-size:11px;font-weight:bold;color:white;}
+.shop-item .si-desc{font-size:9px;color:#94a3b8;margin-top:2px;line-height:1.4;}
+.shop-item .si-cost{font-size:11px;color:#fbbf24;font-weight:bold;margin-top:4px;}
+.shop-item.owned .si-cost{color:#10b981;}
+
+/* BOSS FIGHT */
+#boss-fight{background:#1a0505;border:2px solid #ef4444;border-radius:14px;
+    padding:12px;margin-bottom:8px;display:none;}
+#boss-fight h3{color:#ef4444;font-size:13px;margin-bottom:8px;text-align:center;}
+#boss-hp-bar{height:12px;background:#1e293b;border-radius:6px;overflow:hidden;margin-bottom:8px;}
+#boss-hp-fill{height:12px;background:linear-gradient(90deg,#dc2626,#ef4444);
+    border-radius:6px;transition:width 0.5s;width:100%;}
+.boss-emoji{text-align:center;font-size:3rem;display:block;margin-bottom:6px;
+    animation:bossFloat 2s ease-in-out infinite;}
+@keyframes bossFloat{0%,100%{transform:translateY(0);}50%{transform:translateY(-8px);}}
+
+/* MSG + FACT */
+#msg{font-size:11px;min-height:16px;text-align:center;font-weight:bold;padding:4px;margin-bottom:4px;}
 #fact{background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.3);
-    border-radius:10px;padding:10px;margin:4px 0;font-size:10px;color:#93c5fd;
-    display:none;line-height:1.6;}
-.progress{display:flex;gap:5px;justify-content:center;margin:8px 0;}
-.pdot{width:13px;height:13px;border-radius:50%;background:#1e293b;border:1px solid #334155;}
-.pdot.done{background:#10b981;}.pdot.active{background:#3b82f6;}
+    border-radius:8px;padding:8px 10px;font-size:10px;color:#93c5fd;
+    display:none;line-height:1.5;margin-bottom:6px;}
+
+/* TOAST */
+#toast{position:fixed;top:14px;left:50%;transform:translateX(-50%);
+    background:#071520;border:2px solid #fbbf24;border-radius:10px;
+    padding:7px 14px;font-size:11px;color:#fbbf24;font-weight:bold;
+    z-index:100;opacity:0;transition:opacity 0.3s;pointer-events:none;text-align:center;}
+#toast.show{opacity:1;}
+
+/* CONFETTI */
+.cp{position:fixed;pointer-events:none;z-index:999;width:8px;height:8px;
+    border-radius:2px;animation:cf linear forwards;}
+@keyframes cf{0%{transform:translateY(-20px) rotate(0deg);opacity:1;}
+    100%{transform:translateY(600px) rotate(720deg);opacity:0;}}
 </style>
 </head>
 <body>
 <div id="wrap">
-<div class="hud">
-    <div class="hb">⭐ Score<br><b id="h-score">0</b></div>
-    <div class="hb">🏆 Quest<br><b id="h-level">1</b>/8</div>
-    <div class="hb">🔥 Streak<br><b id="h-streak">0</b></div>
-</div>
-<div class="progress" id="prog"></div>
 
-<div class="quest-card" id="quest-card">
-    <div class="quest-header">
-        <div class="quest-emoji" id="q-emoji">🔐</div>
-        <div>
-            <div class="quest-title" id="q-title">Quest 1</div>
-            <span class="diff easy" id="q-diff">EASY</span>
-        </div>
-    </div>
-    <div class="quest-desc" id="q-desc"></div>
-    <div class="code-block" id="code-block"></div>
-    <button class="run-btn" onclick="runQuest()">▶ Run Code!</button>
-    <button class="hint-btn" onclick="showHint()">💡 Show Hint (-25 pts)</button>
-    <button class="next-btn" id="next-btn" onclick="nextQuest()">Next Quest →</button>
-    <div class="output" id="output"># Output shows here when you run!</div>
+<!-- HUD -->
+<div class="hud">
+    <div class="hb">🪙 Coins<br><b id="h-coins">0</b></div>
+    <div class="hb">⭐ XP<br><b id="h-xp">0</b></div>
+    <div class="hb">🔥 Streak<br><b id="h-streak">0</b></div>
+    <div class="hb">✅ Done<br><b id="h-done">0</b>/8</div>
+</div>
+
+<!-- RANK BAR -->
+<div id="rank-bar">
+    <span id="rank-name">🔰 Rookie Spy</span>
+    <div id="rank-xp-bar"><div id="rank-xp-fill"></div></div>
+    <span id="rank-next">0/100 XP</span>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+    <div class="tab active" onclick="showTab('map')">🗺️ Quest Map</div>
+    <div class="tab" onclick="showTab('active')">🎯 Mission</div>
+    <div class="tab" onclick="showTab('shop')">🛒 Shop</div>
 </div>
 
 <div id="msg"></div>
-<div id="fact"></div>
+
+<!-- QUEST MAP TAB -->
+<div id="tab-map">
+    <div id="quest-map"></div>
 </div>
 
+<!-- ACTIVE QUEST TAB -->
+<div id="tab-active" style="display:none">
+    <!-- BOSS FIGHT -->
+    <div id="boss-fight">
+        <h3>💀 BOSS BATTLE — The Shor Machine!</h3>
+        <span class="boss-emoji">🤖</span>
+        <div id="boss-hp-bar"><div id="boss-hp-fill"></div></div>
+        <div style="font-size:10px;color:#ef4444;text-align:center;margin-bottom:8px"
+             id="boss-status">Shor Machine HP: 100%</div>
+    </div>
+
+    <div class="quest-card" id="quest-area">
+        <div class="quest-header">
+            <span class="quest-emoji-big" id="q-emoji">🎯</span>
+            <div class="quest-title-wrap">
+                <div class="quest-title-text" id="q-title">Select a quest!</div>
+                <div class="quest-subtitle" id="q-subtitle"></div>
+            </div>
+        </div>
+        <div class="quest-desc" id="q-desc">Click a quest on the map to begin!</div>
+        <div class="code-block" id="q-code"></div>
+        <div class="btn-row">
+            <button class="btn btn-run" onclick="runQuest()">⚡ Run Code</button>
+            <button class="btn btn-hint" onclick="useHint()">💡 Hint (-5 coins)</button>
+        </div>
+        <button class="btn-next" id="next-btn" onclick="nextQuest()">➡️ Next Quest!</button>
+        <div class="output" id="q-output">// Output will appear here...</div>
+    </div>
+
+    <div id="fact"></div>
+</div>
+
+<!-- SHOP TAB -->
+<div id="tab-shop" style="display:none">
+    <div style="text-align:center;font-size:12px;color:#94a3b8;margin-bottom:8px;">
+        Spend your coins on power-ups to help complete missions!
+    </div>
+    <div id="shop-grid"></div>
+</div>
+
+</div>
+<div id="toast"></div>
+
 <script>
-const QUESTS=[
+// ── QUESTS ───────────────────────────────────────────────────────────────────
+const QUESTS = [
     {
-        emoji:"🔤",title:"Decode ROT13",diff:"easy",
-        desc:"The enemy scrambled a message using ROT13 — each letter is shifted by 13 places. Fill in the shift number to decode it!",
-        before:"# ROT13 decoder\nmessage = 'URYYB JBEYQ'\nshift = ",
-        blank:"13",
-        after:"\nresult = ''\nfor c in message:\n    if c.isalpha():\n        result += chr((ord(c) - 65 + (26-shift)) % 26 + 65)\n    else:\n        result += c\nprint('Decoded:', result)",
-        hint:"ROT13 uses a shift of 13. The answer is just the number 13!",
-        check:"13",
-        output:"> Decoding message...\n> Applying shift of 13...\n> Decoded: HELLO WORLD\n> ✅ ROT13 cracked! (took 0.001 seconds)",
-        fact:"ROT13 has only 26 possible keys — a computer tries all of them instantly! Kyber has 2^256 possible keys — even quantum computers cannot try them all!"
+        id:0, emoji:'🔐', title:'Kyber Key Exchange',
+        subtitle:'EASY — Fill in the algorithm name',
+        desc:'ML-KEM (Kyber) is the NIST FIPS 203 standard for key exchange. It replaces RSA by using lattice math. Complete the code to set up a Kyber key exchange!',
+        diff:'easy', coins:30, xp:20, bossHit:0,
+        code:[
+            {t:'comment', text:'# Set up ML-KEM key exchange'},
+            {t:'code',    text:'algorithm = "'},
+            {t:'blank',   answer:'ML-KEM', placeholder:'algorithm name...'},
+            {t:'code',    text:'"'},
+            {t:'code',    text:'security_level = 768  # bits'},
+            {t:'code',    text:'print(f"Using {algorithm} with {security_level}-bit security")'},
+        ],
+        output:'Using ML-KEM with 768-bit security\n✅ Kyber key exchange ready! Quantum-safe!',
+        hint:'The NIST FIPS 203 standard — also known as Kyber',
+        fact:'🔐 ML-KEM (FIPS 203) replaced RSA for key exchange! It uses Module Learning With Errors — math so hard even quantum computers cannot solve it!',
     },
     {
-        emoji:"➕",title:"Modular Math",diff:"easy",
-        desc:"Modular math (mod) is the foundation of Kyber! Compute 22 mod 11. Fill in the modulus number.",
-        before:"# Modular arithmetic — the math inside Kyber!\nnumber = 22\nmodulus = ",
-        blank:"11",
-        after:"\nresult = number % modulus\nprint('22 mod', modulus, '=', result)\nprint('This is one step in Kyber key generation!')",
-        hint:"22 ÷ 11 = 2 with remainder 0. The modulus is 11!",
-        check:"11",
-        output:"> Computing 22 mod 11...\n> 22 ÷ 11 = 2 remainder 0\n> 22 mod 11 = 0\n> ✅ This is one step in Kyber key generation!",
-        fact:"Kyber uses modular math with huge numbers (q=3329) and 256-dimensional polynomials. The modular math makes it impossible to reverse-engineer the secret key!"
+        id:1, emoji:'✍️', title:'Dilithium Signature',
+        subtitle:'EASY — Fill in the FIPS number',
+        desc:'ML-DSA (Dilithium) creates digital signatures that quantum computers cannot forge. What FIPS number is Dilithium?',
+        diff:'easy', coins:35, xp:25, bossHit:0,
+        code:[
+            {t:'comment', text:'# Digital signature standard'},
+            {t:'code',    text:'standard = "ML-DSA"'},
+            {t:'code',    text:'fips_number = '},
+            {t:'blank',   answer:'204', placeholder:'FIPS number...'},
+            {t:'code',    text:'print(f"{standard} is FIPS {fips_number}")'},
+            {t:'code',    text:'print("Quantum-safe digital signatures!")'},
+        ],
+        output:'ML-DSA is FIPS 204\nQuantum-safe digital signatures!',
+        hint:'NIST published 4 standards: 203, 204, 205, 206. Dilithium is the second one.',
+        fact:'✍️ ML-DSA (FIPS 204) signs software updates, code, and certificates! No quantum computer can forge a Dilithium signature.',
     },
     {
-        emoji:"🔢",title:"Count the Keys",diff:"easy",
-        desc:"Caesar cipher has only 25 possible keys. Fill in 25 to make the loop try all of them!",
-        before:"# Brute force Caesar cipher\nciphertext = 'Khoor'\nfor shift in range(1, ",
-        blank:"26",
-        after:"):\n    decoded = ''\n    for c in ciphertext:\n        if c.isalpha():\n            base = 65 if c.isupper() else 97\n            decoded += chr((ord(c) - base - shift) % 26 + base)\n        else:\n            decoded += c\n    if shift == 3:\n        print('Shift', shift, ':', decoded, '← THE ANSWER!')\nprint('Done! Caesar has only 25 keys.')",
-        hint:"We want to try shifts 1 through 25, so range(1, 26) goes up to but not including 26!",
-        check:"26",
-        output:"> Trying all 25 Caesar shifts...\n> Shift 1 : Jgnnq\n> Shift 2 : Ifmmp\n> Shift 3 : Hello ← THE ANSWER!\n> ...\n> Done! Caesar has only 25 keys.\n> ✅ Cracked in 0.001 seconds!",
-        fact:"A computer cracks Caesar in 0.001 seconds. RSA-2048 takes millions of years classically — but Shor's Algorithm on a quantum computer cracks it in seconds! Kyber is immune to both!"
+        id:2, emoji:'🏗️', title:'LWE Math Core',
+        subtitle:'MEDIUM — Fill in the math answer',
+        desc:'Learning With Errors (LWE) is the math behind Kyber. Solve: Given secret s=5, matrix A=3, noise e=2, compute b = (A*s + e) mod 17',
+        diff:'medium', coins:50, xp:40, bossHit:15,
+        code:[
+            {t:'comment', text:'# LWE: b = (A*s + e) mod q'},
+            {t:'code',    text:'A, s, e, q = 3, 5, 2, 17'},
+            {t:'code',    text:'b = (A*s + e) % q'},
+            {t:'comment', text:'# What is b? (3*5+2) mod 17 = ?'},
+            {t:'code',    text:'b = '},
+            {t:'blank',   answer:'0', placeholder:'calculate b...'},
+            {t:'code',    text:'print(f"LWE result: b = {b}")'},
+            {t:'code',    text:'print("Even knowing A and b, finding s is HARD!")'},
+        ],
+        output:'LWE result: b = 0\nEven knowing A and b, finding s is HARD!',
+        hint:'3×5=15, 15+2=17, 17 mod 17 = 0',
+        fact:'🏗️ Real Kyber uses vectors of thousands of LWE equations! Given only A and b, finding the secret s is computationally impossible — even for quantum computers!',
     },
     {
-        emoji:"#️⃣",title:"SHA-3 Hash",diff:"medium",
-        desc:"SHA-3 is the hash function inside SPHINCS+. Hash the word 'kyber' using sha3_256. Fill in the algorithm name!",
-        before:"# SHA-3 hashing — used in SPHINCS+ (FIPS 205)\nimport hashlib\nword = 'kyber'\nhash_result = hashlib.",
-        blank:"sha3_256",
-        after:"(word.encode()).hexdigest()\nprint('Word:', word)\nprint('Hash:', hash_result[:32], '...')\nprint('Length:', len(hash_result), 'characters')",
-        hint:"The function name is sha3_256 (SHA-3 with 256 bits of output)!",
-        check:"sha3_256",
-        output:"> Hashing 'kyber' with SHA-3...\n> Word: kyber\n> Hash: 3338be694f50c5f338814986cdf06864 ...\n> Length: 64 characters\n> ✅ SHA-3 hash complete! One-way — impossible to reverse!",
-        fact:"SHA-3 is completely one-way — you cannot reverse a hash to find the original word. SPHINCS+ chains thousands of SHA-3 hashes together to create quantum-safe digital signatures!"
+        id:3, emoji:'🌲', title:'SPHINCS+ Hash Tree',
+        subtitle:'MEDIUM — Fill in the hash function',
+        desc:'SPHINCS+ (SLH-DSA FIPS 205) uses hash trees for signatures. It only needs ONE type of math — hash functions. Which hash function does FIPS 205 use?',
+        diff:'medium', coins:55, xp:45, bossHit:15,
+        code:[
+            {t:'comment', text:'# SPHINCS+ hash-based signature'},
+            {t:'code',    text:'algorithm = "SLH-DSA"'},
+            {t:'code',    text:'hash_function = "'},
+            {t:'blank',   answer:'SHA-3', placeholder:'hash function...'},
+            {t:'code',    text:'"'},
+            {t:'code',    text:'print(f"{algorithm} uses {hash_function}")'},
+            {t:'code',    text:'print("Safe even if lattice math breaks!")'},
+        ],
+        output:'SLH-DSA uses SHA-3\nSafe even if lattice math breaks!',
+        hint:'It starts with SHA — the third version of Secure Hash Algorithm',
+        fact:'🌲 SPHINCS+ chains thousands of SHA-3 hashes into a Merkle tree. Even if ALL lattice math (Kyber, Dilithium, Falcon) is broken, SPHINCS+ stays safe!',
     },
     {
-        emoji:"🧮",title:"LWE Equation",diff:"medium",
-        desc:"Learning With Errors (LWE) is the math behind Kyber! Compute b = (7 × s + e) mod q. Fill in the secret s=3!",
-        before:"# LWE — the math that makes Kyber quantum-safe!\nA = 7      # public number\ne = 1      # small noise\nq = 11     # modulus\ns = ",
-        blank:"3",
-        after:"      # SECRET — this is what we protect!\nb = (A * s + e) % q\nprint('A =', A, '(public)')\nprint('s =', s, '(SECRET — hidden!)')\nprint('e =', e, '(noise — hides the secret)')\nprint('b =', b, '(public — safe to share)')\nprint('Can you find s from just A and b? Impossible!')",
-        hint:"The secret s = 3. Just type the number 3!",
-        check:"3",
-        output:"> Computing LWE equation...\n> A = 7 (public)\n> s = 3 (SECRET — hidden!)\n> e = 1 (noise — hides the secret)\n> (7 × 3 + 1) mod 11 = 22 mod 11 = 0... wait: 22 mod 11 = 0\n> b = 0 (public — safe to share)\n> ✅ Can you find s from just A=7 and b=0? Impossible!",
-        fact:"Real Kyber uses 256 of these equations simultaneously with much bigger numbers. Finding s from A and b is called the LWE problem — it's mathematically proven to be quantum-hard!"
+        id:4, emoji:'🦅', title:'Falcon Compact Keys',
+        subtitle:'MEDIUM — Fill in the key size',
+        desc:'Falcon (FN-DSA FIPS 206) makes the smallest signatures. A Falcon-512 signature is approximately how many bytes? (vs Dilithium\'s 3293 bytes)',
+        diff:'medium', coins:60, xp:50, bossHit:20,
+        code:[
+            {t:'comment', text:'# Falcon compact signatures'},
+            {t:'code',    text:'algorithm = "FN-DSA Falcon-512"'},
+            {t:'code',    text:'sig_bytes = '},
+            {t:'blank',   answer:'666', placeholder:'size in bytes...'},
+            {t:'code',    text:'dilithium_bytes = 3293'},
+            {t:'code',    text:'print(f"Falcon: {sig_bytes} bytes")'},
+            {t:'code',    text:'print(f"Dilithium: {dilithium_bytes} bytes")'},
+            {t:'code',    text:'print(f"Falcon is {dilithium_bytes//sig_bytes}x smaller!")'},
+        ],
+        output:'Falcon: 666 bytes\nDilithium: 3293 bytes\nFalcon is 4x smaller!',
+        hint:'Falcon-512 signatures are approximately 666 bytes — about 4-5x smaller than Dilithium',
+        fact:'🦅 Falcon (FN-DSA FIPS 206) uses NTRU lattices to create the tiniest quantum-safe signatures — critical for IoT sensors, smart cards, and embedded devices!',
     },
     {
-        emoji:"🔑",title:"Key Size Check",diff:"medium",
-        desc:"Kyber-768 has a public key of 1184 bytes. Fill in the number to check if it's big enough to be quantum-safe!",
-        before:"# Key sizes matter for quantum security!\nrsa_key_bytes = 256      # RSA-2048 = 256 bytes\nkyber_key_bytes = ",
-        blank:"1184",
-        after:"  # Kyber-768 public key\nif kyber_key_bytes > rsa_key_bytes:\n    print('Kyber key is larger but QUANTUM-SAFE!')\n    print('RSA:', rsa_key_bytes, 'bytes — broken by Shor')\n    print('Kyber:', kyber_key_bytes, 'bytes — quantum immune!')\n    print('Worth the extra size for quantum safety!')",
-        hint:"Kyber-768 public key = 1184 bytes. Type 1184!",
-        check:"1184",
-        output:"> Comparing key sizes...\n> Kyber key is larger but QUANTUM-SAFE!\n> RSA: 256 bytes — broken by Shor's Algorithm\n> Kyber: 1184 bytes — quantum immune!\n> Worth the extra size for quantum safety!\n> ✅ Kyber wins!",
-        fact:"Kyber keys are 3-5x larger than RSA keys, but they're completely immune to quantum attacks. The NSM-10 law requires all US government systems to switch to Kyber by 2035!"
+        id:5, emoji:'🌐', title:'TLS Quantum Upgrade',
+        subtitle:'HARD — Fill in the hybrid protocol',
+        desc:'Google Chrome uses a HYBRID TLS that combines classical X25519 with Kyber. What is the combined protocol called? (format: X25519+ML-KEM-768)',
+        diff:'hard', coins:80, xp:70, bossHit:25,
+        code:[
+            {t:'comment', text:'# Hybrid quantum-safe TLS 1.3'},
+            {t:'code',    text:'classical = "X25519"'},
+            {t:'code',    text:'quantum_safe = "ML-KEM-768"'},
+            {t:'code',    text:'hybrid = "'},
+            {t:'blank',   answer:'X25519+ML-KEM-768', placeholder:'hybrid protocol...'},
+            {t:'code',    text:'"'},
+            {t:'code',    text:'print(f"Chrome uses: {hybrid}")'},
+            {t:'code',    text:'print("Secure against classical AND quantum!")'},
+        ],
+        output:'Chrome uses: X25519+ML-KEM-768\nSecure against classical AND quantum!',
+        hint:'Combine them with a + sign: classical_name+quantum_name',
+        fact:'🌐 Google Chrome and Cloudflare already deployed this! X25519+ML-KEM-768 protects 20% of all internet traffic from both classical AND future quantum attacks!',
     },
     {
-        emoji:"🌊",title:"Shor's Threat",diff:"hard",
-        desc:"Shor's Algorithm finds prime factors. RSA uses two primes p=53 and q=61. Their product n=3233 is the RSA key. Fill in p×q!",
-        before:"# Why RSA is vulnerable to quantum computers\n# RSA key: n = p × q (two secret primes)\np = 53    # secret prime 1\nq = 61    # secret prime 2\nn = ",
-        blank:"p * q",
-        after:"\nprint('RSA key n =', n)\nprint('Classical computer: millions of years to factor', n)\nprint('Quantum Shor Algorithm: finds p and q instantly!')\nprint('p =', p, ', q =', q)\nprint('This is why we NEED Kyber (ML-KEM FIPS 203)!')",
-        hint:"n = p times q, so write p * q in Python!",
-        check:"p * q",
-        output:"> Computing RSA key...\n> RSA key n = 3233\n> Classical computer: millions of years to factor 3233\n> Quantum Shor Algorithm: finds p and q instantly!\n> p = 53 , q = 61\n> This is why we NEED Kyber (ML-KEM FIPS 203)!\n> ✅ RSA is broken by quantum — Kyber is safe!",
-        fact:"Real RSA uses primes with 150+ digits. Classical computers need millions of years to factor them. Shor's Algorithm on a quantum computer finds the factors in seconds — that's why NIST chose Kyber!"
+        id:6, emoji:'☠️', title:'Harvest Now Decrypt Later',
+        subtitle:'HARD — Fill in the threat name',
+        desc:'Nation-states are stealing encrypted data TODAY to decrypt it when quantum computers arrive. What is this attack called? (3 words, abbreviated HNDL)',
+        diff:'hard', coins:90, xp:80, bossHit:25,
+        code:[
+            {t:'comment', text:'# The biggest PQC threat TODAY'},
+            {t:'code',    text:'attack_name = "'},
+            {t:'blank',   answer:'Harvest Now Decrypt Later', placeholder:'attack name...'},
+            {t:'code',    text:'"'},
+            {t:'code',    text:'threat_level = "CRITICAL"'},
+            {t:'code',    text:'print(f"Threat: {attack_name}")'},
+            {t:'code',    text:'print(f"Level: {threat_level} — Migrate to Kyber NOW!")'},
+        ],
+        output:'Threat: Harvest Now Decrypt Later\nLevel: CRITICAL — Migrate to Kyber NOW!',
+        hint:'The 3 words describe the two phases: collect encrypted data NOW, decrypt LATER when quantum computers exist',
+        fact:'☠️ HNDL is happening RIGHT NOW! Intelligence agencies are storing encrypted government and medical data — waiting for quantum computers. Data encrypted with RSA TODAY will be readable in 5-10 years!',
     },
     {
-        emoji:"🏆",title:"PQC Champion!",diff:"hard",
-        desc:"Name all 4 NIST post-quantum standards! Fill in the missing FIPS number for Falcon (FN-DSA)!",
-        before:"# All 4 NIST Post-Quantum Standards (2024)\nnist_standards = [\n    ('ML-KEM',  'FIPS 203', 'Kyber — key exchange'),\n    ('ML-DSA',  'FIPS 204', 'Dilithium — signatures'),\n    ('SLH-DSA', 'FIPS 205', 'SPHINCS+ — hash backup'),\n    ('FN-DSA',  'FIPS ",
-        blank:"206",
-        after:"', 'Falcon — tiny signatures'),\n]\nfor name, fips, desc in nist_standards:\n    print(fips, '-', name, ':', desc)\nprint('All 4 quantum-safe standards deployed!')\nprint('The internet is protected!')",
-        hint:"The 4 FIPS numbers are 203, 204, 205, and 206. Falcon is the last one!",
-        check:"206",
-        output:"> NIST Post-Quantum Standards 2024:\n> FIPS 203 - ML-KEM : Kyber — key exchange\n> FIPS 204 - ML-DSA : Dilithium — signatures\n> FIPS 205 - SLH-DSA : SPHINCS+ — hash backup\n> FIPS 206 - FN-DSA : Falcon — tiny signatures\n> All 4 quantum-safe standards deployed!\n> ✅ The internet is protected!",
-        fact:"You just named all 4 NIST post-quantum cryptography standards! These were finalized in August 2024 and will replace all RSA and elliptic curve encryption by 2035. You are a PQC expert!"
+        id:7, emoji:'👑', title:'BOSS: Defeat the Shor Machine!',
+        subtitle:'BOSS FIGHT — Fill in the migration deadline',
+        desc:'🚨 The Shor Machine is attacking! US agencies must migrate to PQC by what year? (NSM-10 executive order)',
+        diff:'boss', coins:150, xp:150, bossHit:100,
+        code:[
+            {t:'comment', text:'# NSM-10: US Federal PQC Migration'},
+            {t:'code',    text:'mandate = "NSM-10"'},
+            {t:'code',    text:'migration_deadline = '},
+            {t:'blank',   answer:'2035', placeholder:'deadline year...'},
+            {t:'code',    text:'print(f"All US agencies must use PQC by: {migration_deadline}")'},
+            {t:'code',    text:'print("NIST FIPS 203/204/205/206 are the standards!")'},
+            {t:'code',    text:'print("Shor Machine DEFEATED! 🏆")'},
+        ],
+        output:'All US agencies must use PQC by: 2035\nNIST FIPS 203/204/205/206 are the standards!\nShor Machine DEFEATED! 🏆',
+        hint:'NSM-10 was signed in 2022. Agencies have about 13 years to migrate. 2022 + 13 = ?',
+        fact:'🏆 NSM-10 (National Security Memorandum 10) requires ALL US federal agencies to migrate to post-quantum cryptography by 2035. The countdown has started!',
     },
 ];
 
-let level=0,score=0,streak=0,hintUsed=false,factTmo=null,results=[];
+// ── SHOP ITEMS ────────────────────────────────────────────────────────────────
+const SHOP_ITEMS = [
+    {id:'double_coins', emoji:'💰', name:'Double Coins', desc:'Earn 2x coins for 3 quests', cost:40, owned:false},
+    {id:'auto_hint',    emoji:'💡', name:'Free Hint',    desc:'One free hint (no coin cost)', cost:50, owned:false},
+    {id:'shield',       emoji:'🛡️', name:'Error Shield', desc:'One wrong answer forgiven', cost:60, owned:false},
+    {id:'xp_boost',     emoji:'⚡', name:'XP Boost',     desc:'3x XP for next quest', cost:80, owned:false},
+];
 
-function buildProgress(){
-    const d=document.getElementById("prog");
-    d.innerHTML="";
-    for(let i=0;i<QUESTS.length;i++){
-        const dot=document.createElement("div");
-        dot.className="pdot"+(results[i]==="done"?" done":i===level?" active":"");
-        d.appendChild(dot);
-    }
+// ── RANKS ─────────────────────────────────────────────────────────────────────
+const RANKS = [
+    {name:'🔰 Rookie Spy',    xp:0},
+    {name:'🕵️ Junior Agent', xp:50},
+    {name:'🔐 Cipher Expert', xp:130},
+    {name:'⚡ Code Breaker',  xp:250},
+    {name:'🌟 Crypto Master', xp:400},
+    {name:'👑 Quantum Guard', xp:600},
+];
+
+// ── STATE ─────────────────────────────────────────────────────────────────────
+let coins=0, xp=0, streak=0, done=0;
+let currentQuestId=null, hintsUsed=0, questDone=false;
+let bossHp=100;
+let powerups={double_coins:0, auto_hint:false, shield:false, xp_boost:false};
+let questStatus=QUESTS.map(()=>'locked');
+questStatus[0]='available'; questStatus[1]='available';
+
+// ── BUILD QUEST MAP ───────────────────────────────────────────────────────────
+function buildMap(){
+    const grid=document.getElementById('quest-map');
+    grid.innerHTML='';
+    QUESTS.forEach((q,i)=>{
+        const div=document.createElement('div');
+        const st=questStatus[i];
+        div.className='quest-node'+(st==='locked'?' locked':st==='done'?' done':q.diff==='boss'?' boss':st==='available'?' ':' ');
+        if(i===currentQuestId) div.classList.add('active');
+        const badgeClass=q.diff==='boss'?'badge-boss':q.diff==='easy'?'badge-easy':q.diff==='medium'?'badge-med':'badge-hard';
+        div.innerHTML=
+            '<span class="qn-emoji">'+q.emoji+'</span>'+
+            '<div class="qn-title">'+q.title+'</div>'+
+            '<div class="qn-coins">🪙 '+q.coins+' coins</div>'+
+            '<span class="qn-badge '+(st==='done'?'badge-done':badgeClass)+'">'+(st==='done'?'✅':q.diff.toUpperCase())+'</span>';
+        if(st!=='locked') div.onclick=()=>selectQuest(i);
+        grid.appendChild(div);
+    });
 }
 
-function loadQuest(){
-    const q=QUESTS[level];
-    document.getElementById("q-emoji").textContent=q.emoji;
-    document.getElementById("q-title").textContent="Quest "+(level+1)+": "+q.title;
-    document.getElementById("q-diff").textContent=q.diff.toUpperCase();
-    document.getElementById("q-diff").className="diff "+q.diff;
-    document.getElementById("q-desc").textContent=q.desc;
-    document.getElementById("h-level").textContent=(level+1);
-    hintUsed=false;
+// ── SELECT QUEST ──────────────────────────────────────────────────────────────
+function selectQuest(idx){
+    currentQuestId=idx;
+    const q=QUESTS[idx];
+    questDone=false; hintsUsed=0;
 
-    // Build code block with input
-    const cb=document.getElementById("code-block");
-    const lines=(q.before+"\u2588\u2588\u2588"+q.after).split("\n");
-    cb.innerHTML="";
+    document.getElementById('q-emoji').textContent=q.emoji;
+    document.getElementById('q-title').textContent=q.title;
+    document.getElementById('q-subtitle').textContent=q.subtitle;
+    document.getElementById('q-desc').textContent=q.desc;
+    document.getElementById('q-output').textContent='// Output will appear here...';
+    document.getElementById('next-btn').style.display='none';
+    document.getElementById('fact').style.display='none';
 
-    let inputInserted=false;
-    (q.before+"\n__BLANK__\n"+q.after).split("\n").forEach(line=>{
-        if(line==="__BLANK__"){
-            if(!inputInserted){
-                const span=document.createElement("span");
-                span.className="blank-wrap";
-                span.innerHTML='<input class="blank" id="blank-input" placeholder="???" />';
-                cb.appendChild(span);
-                cb.appendChild(document.createElement("br"));
-                inputInserted=true;
-            }
+    // Build code block
+    const codeEl=document.getElementById('q-code');
+    codeEl.innerHTML='';
+    q.code.forEach((line,li)=>{
+        if(line.t==='comment'){
+            const span=document.createElement('span');
+            span.className='code-comment'; span.textContent=line.text; codeEl.appendChild(span);
+        } else if(line.t==='blank'){
+            const input=document.createElement('input');
+            input.type='text'; input.className='blank'; input.id='blank-'+li;
+            input.placeholder=line.placeholder;
+            input.onkeydown=e=>{if(e.key==='Enter') runQuest();};
+            codeEl.appendChild(input);
         } else {
-            const span=document.createElement("span");
-            span.className=line.trim().startsWith("#")?"code-comment":"code-line";
-            span.textContent=line;
-            cb.appendChild(span);
-            cb.appendChild(document.createElement("br"));
+            const span=document.createElement('span');
+            span.className='code-line'; span.textContent=line.text; codeEl.appendChild(span);
         }
     });
 
-    // Actually rebuild cleanly
-    cb.innerHTML="";
-    const before_lines=q.before.split("\n");
-    before_lines.forEach(line=>{
-        const span=document.createElement("span");
-        span.className=line.trim().startsWith("#")?"code-comment":"code-line";
-        span.textContent=line;
-        cb.appendChild(span);
-        cb.appendChild(document.createElement("br"));
-    });
-    // Add input
-    const inputSpan=document.createElement("span");
-    inputSpan.className="blank-wrap";
-    inputSpan.innerHTML='<input class="blank" id="blank-input" placeholder="fill in!" />';
-    cb.appendChild(inputSpan);
-    // After lines
-    const after_lines=q.after.split("\n");
-    after_lines.forEach(line=>{
-        cb.appendChild(document.createElement("br"));
-        const span=document.createElement("span");
-        span.className=line.trim().startsWith("#")?"code-comment":"code-line";
-        span.textContent=line;
-        cb.appendChild(span);
-    });
-
-    document.getElementById("output").textContent="# Output shows here when you run!";
-    document.getElementById("output").style.color="#00ff41";
-    document.getElementById("next-btn").style.display="none";
-    document.getElementById("msg").textContent="";
-    document.getElementById("fact").style.display="none";
-    buildProgress();
-}
-
-function runQuest(){
-    const q=QUESTS[level];
-    const input=(document.getElementById("blank-input")||{value:""}).value.trim();
-    const output=document.getElementById("output");
-
-    if(!input){output.textContent="# Type your answer in the blank first!";return;}
-
-    if(input===q.check){
-        const hintPen=hintUsed?25:0;
-        const pts=150*(level+1)-hintPen;
-        score+=pts;streak++;
-        results[level]="done";
-        output.textContent=q.output;
-        output.style.color="#00ff41";
-        document.getElementById("h-score").textContent=score;
-        document.getElementById("h-streak").textContent=streak;
-        document.getElementById("msg").textContent="✅ Correct! +"+pts+" pts!"+(streak>1?" 🔥×"+streak:"");
-        document.getElementById("msg").style.color="#10b981";
-        document.getElementById("next-btn").style.display="block";
-        showFact(q.fact);
-        buildProgress();
+    // Boss fight UI
+    const bossDiv=document.getElementById('boss-fight');
+    if(q.diff==='boss'){
+        bossDiv.style.display='block';
+        bossHp=100;
+        updateBossHp();
     } else {
-        output.textContent="❌ Not quite! Try again.\n# Hint: "+q.hint;
-        output.style.color="#ef4444";
+        bossDiv.style.display='none';
+    }
+
+    buildMap();
+    showTab('active');
+    setMsg('💡 Fill in the blank and click Run Code!','#60a5fa');
+    // Focus the blank
+    setTimeout(()=>{
+        const b=document.querySelector('.blank');
+        if(b) b.focus();
+    },100);
+}
+
+// ── RUN QUEST ─────────────────────────────────────────────────────────────────
+function runQuest(){
+    if(!currentQuestId&&currentQuestId!==0){setMsg('Select a quest from the map first!','#fbbf24');return;}
+    if(questDone){setMsg('Quest already complete! Click Next Quest.','#10b981');return;}
+    const q=QUESTS[currentQuestId];
+
+    // Find the blank and check answer
+    let blankIdx=-1, blankEl=null, userAnswer='';
+    q.code.forEach((line,li)=>{
+        if(line.t==='blank'){
+            blankIdx=li;
+            blankEl=document.getElementById('blank-'+li);
+            userAnswer=(blankEl?blankEl.value.trim():'');
+        }
+    });
+
+    const correct=q.code.find(l=>l.t==='blank')?.answer||'';
+    const isCorrect=userAnswer.toLowerCase()===correct.toLowerCase();
+
+    if(isCorrect){
+        // Success!
+        if(blankEl){ blankEl.classList.add('correct'); blankEl.classList.remove('wrong'); }
+        questDone=true;
+        questStatus[currentQuestId]='done';
+        done++;
+        streak++;
+
+        // Calculate rewards
+        let earnedCoins=q.coins*(powerups.double_coins>0?2:1);
+        let earnedXP=q.xp*(powerups.xp_boost?3:1);
+        if(powerups.double_coins>0) powerups.double_coins--;
+        if(powerups.xp_boost) powerups.xp_boost=false;
+
+        coins+=earnedCoins; xp+=earnedXP;
+
+        // Boss fight
+        if(q.diff==='boss'){
+            bossHp=0; updateBossHp();
+            confetti();
+            showToast('👑 SHOR MACHINE DEFEATED! +'+earnedCoins+' coins!');
+        } else {
+            if(streak>=3) showToast('🔥 '+streak+' streak! +'+earnedCoins+' coins!');
+            else showToast('✅ Correct! +'+earnedCoins+' coins +'+earnedXP+' XP!');
+        }
+
+        // Unlock next quests
+        if(currentQuestId<QUESTS.length-1 && questStatus[currentQuestId+1]==='locked')
+            questStatus[currentQuestId+1]='available';
+        if(currentQuestId<QUESTS.length-2 && questStatus[currentQuestId+2]==='locked')
+            questStatus[currentQuestId+2]='available';
+
+        document.getElementById('q-output').textContent=q.output;
+        document.getElementById('next-btn').style.display='block';
+        showFact(q.fact);
+        setMsg('🎉 Correct! Quest Complete! +'+earnedCoins+' coins!','#10b981');
+        updateHUD();
+        buildMap();
+        if(streak>=3) confetti();
+
+        // Boss damage animation
+        if(q.bossHit>0 && q.diff!=='boss'){
+            bossHp=Math.max(0,bossHp-q.bossHit);
+            updateBossHp();
+        }
+    } else {
+        // Wrong answer
+        if(blankEl){ blankEl.classList.add('wrong'); blankEl.classList.remove('correct'); }
         streak=0;
-        document.getElementById("h-streak").textContent=0;
-        document.getElementById("msg").textContent="Close! Read the description again. 💪";
-        document.getElementById("msg").style.color="#f59e0b";
+
+        // Shield power-up
+        if(powerups.shield){
+            powerups.shield=false;
+            setMsg('🛡️ Shield used! Try again — this one is free!','#fbbf24');
+            setTimeout(()=>blankEl.classList.remove('wrong'),400);
+        } else {
+            setMsg('❌ Not quite! Try again or use a hint.','#ef4444');
+        }
+        updateHUD();
+        setTimeout(()=>blankEl?.classList.remove('wrong'),400);
     }
 }
 
-function showHint(){
-    const q=QUESTS[level];
-    hintUsed=true;
-    score=Math.max(0,score-25);
-    document.getElementById("output").textContent="💡 Hint: "+q.hint;
-    document.getElementById("output").style.color="#a78bfa";
-    document.getElementById("h-score").textContent=score;
-}
-
+// ── NEXT QUEST ────────────────────────────────────────────────────────────────
 function nextQuest(){
-    if(level<QUESTS.length-1){level++;loadQuest();}
-    else{
-        document.getElementById("msg").textContent="🏆 ALL 8 QUESTS COMPLETE! PQC Champion! Score: "+score;
-        document.getElementById("msg").style.color="#fbbf24";
+    const next=QUESTS.findIndex((q,i)=>questStatus[i]==='available'&&i>currentQuestId);
+    if(next!==-1) selectQuest(next);
+    else { showTab('map'); setMsg('All available quests done! More unlock as you progress.','#10b981'); }
+}
+
+// ── HINT ──────────────────────────────────────────────────────────────────────
+function useHint(){
+    if(!currentQuestId&&currentQuestId!==0) return;
+    const q=QUESTS[currentQuestId];
+    if(powerups.auto_hint){ powerups.auto_hint=false; }
+    else if(coins>=5){ coins-=5; updateHUD(); }
+    else { showToast('❌ Not enough coins for a hint!'); return; }
+    showFact('💡 Hint: '+q.hint);
+    setMsg('💡 Hint used!','#fbbf24');
+}
+
+// ── SHOP ──────────────────────────────────────────────────────────────────────
+function buildShop(){
+    const grid=document.getElementById('shop-grid');
+    grid.innerHTML='';
+    SHOP_ITEMS.forEach(item=>{
+        const div=document.createElement('div');
+        const isOwned=powerups[item.id]&&powerups[item.id]!==false&&powerups[item.id]!==0;
+        div.className='shop-item'+(isOwned?' owned':'');
+        div.innerHTML=
+            '<span class="si-emoji">'+item.emoji+'</span>'+
+            '<div class="si-name">'+item.name+'</div>'+
+            '<div class="si-desc">'+item.desc+'</div>'+
+            '<div class="si-cost">'+(isOwned?'✅ Active':'🪙 '+item.cost+' coins')+'</div>';
+        if(!isOwned) div.onclick=()=>buyItem(item);
+        grid.appendChild(div);
+    });
+}
+
+function buyItem(item){
+    if(coins<item.cost){ showToast('❌ Need '+item.cost+' coins! Complete more quests.'); return; }
+    coins-=item.cost;
+    if(item.id==='double_coins') powerups.double_coins=3;
+    else if(item.id==='auto_hint') powerups.auto_hint=true;
+    else if(item.id==='shield') powerups.shield=true;
+    else if(item.id==='xp_boost') powerups.xp_boost=true;
+    showToast('✅ '+item.name+' purchased!');
+    updateHUD();
+    buildShop();
+}
+
+// ── BOSS HP ───────────────────────────────────────────────────────────────────
+function updateBossHp(){
+    document.getElementById('boss-hp-fill').style.width=bossHp+'%';
+    document.getElementById('boss-status').textContent='Shor Machine HP: '+bossHp+'%';
+    if(bossHp<=0){
+        document.getElementById('boss-status').textContent='💀 DEFEATED! The internet is quantum-safe!';
     }
 }
 
-function showFact(text){
-    const el=document.getElementById("fact");
-    el.textContent="🔐 Did you know? "+text;
-    el.style.display="block";
-    if(factTmo)clearTimeout(factTmo);
-    factTmo=setTimeout(()=>el.style.display="none",10000);
+// ── TABS ──────────────────────────────────────────────────────────────────────
+function showTab(tab){
+    ['map','active','shop'].forEach(t=>{
+        document.getElementById('tab-'+t).style.display=t===tab?'block':'none';
+    });
+    document.querySelectorAll('.tab').forEach((el,i)=>{
+        el.classList.toggle('active',['map','active','shop'][i]===tab);
+    });
+    if(tab==='shop') buildShop();
+    if(tab==='map') buildMap();
 }
 
-loadQuest();
+// ── HUD ───────────────────────────────────────────────────────────────────────
+function updateHUD(){
+    document.getElementById('h-coins').textContent=coins;
+    document.getElementById('h-xp').textContent=xp;
+    document.getElementById('h-streak').textContent=streak;
+    document.getElementById('h-done').textContent=done;
+    const rank=RANKS.filter(r=>xp>=r.xp).pop();
+    const next=RANKS.find(r=>r.xp>xp);
+    document.getElementById('rank-name').textContent=rank.name;
+    if(next){
+        const pct=Math.min(100,((xp-rank.xp)/(next.xp-rank.xp))*100);
+        document.getElementById('rank-xp-fill').style.width=pct+'%';
+        document.getElementById('rank-next').textContent=xp+'/'+next.xp;
+    } else {
+        document.getElementById('rank-xp-fill').style.width='100%';
+        document.getElementById('rank-next').textContent='MAX!';
+    }
+}
+
+function setMsg(m,c){ const el=document.getElementById('msg'); el.textContent=m; el.style.color=c||'#60a5fa'; }
+
+let factTimer=null;
+function showFact(t){ const el=document.getElementById('fact'); el.textContent=t; el.style.display='block'; if(factTimer)clearTimeout(factTimer); factTimer=setTimeout(()=>el.style.display='none',7000); }
+
+let toastTimer=null;
+function showToast(m){ const el=document.getElementById('toast'); el.textContent=m; el.classList.add('show'); if(toastTimer)clearTimeout(toastTimer); toastTimer=setTimeout(()=>el.classList.remove('show'),2500); }
+
+function confetti(){ const cols=['#fbbf24','#10b981','#3b82f6','#8b5cf6','#ef4444']; for(let i=0;i<25;i++){ setTimeout(()=>{ const el=document.createElement('div'); el.className='cp'; el.style.left=Math.random()*100+'vw'; el.style.background=cols[Math.floor(Math.random()*cols.length)]; el.style.animationDuration=(1+Math.random()*2)+'s'; document.body.appendChild(el); setTimeout(()=>el.remove(),3000); },i*40); } }
+
+// ── INIT ─────────────────────────────────────────────────────────────────────
+buildMap();
+updateHUD();
+setMsg('🗺️ Pick a quest from the map to start your mission!','#60a5fa');
 </script>
 </body>
 </html>
-""", height=820)
-
+""", height=720)
 
 def render_pqc_python_lab():
     """High School 9-12: PQC Python Lab — guided real Python with step-by-step comments."""
