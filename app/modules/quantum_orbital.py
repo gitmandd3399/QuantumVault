@@ -238,6 +238,73 @@ var earthPulse = 0;
 var attackTimer = 0;
 var gameOver = false;
 
+// ── TUTORIAL SYSTEM ────────────────────────────────────────────────────────
+var tutorialStep = 0;
+var showTutorial = true;
+var TUTORIAL_STEPS = [
+    {
+        phase: 'build',
+        title: '⚙️ STEP 1: Build Your Rocket',
+        lines: [
+            '🔥 Start with a Raptor Engine at the bottom (gives thrust)',
+            '⛽ Add Fuel Tanks above it (more fuel = higher orbit)',
+            '🔐 Add PQC Modules to protect your satellite in orbit',
+            '📡 Put the Satellite Bus on top (required!)',
+            '📊 Watch the TWR meter — must be GREEN (>1.2) to launch!',
+        ],
+        tip: 'Click the canvas to place the selected part!',
+        color: '#3b82f6',
+    },
+    {
+        phase: 'build',
+        title: '🛡️ STEP 2: Add PQC Shields',
+        lines: [
+            '🔐 ML-KEM (FIPS 203) — Blocks Quantum Key Attacks',
+            '✍️ ML-DSA (FIPS 204) — Blocks Signature Forgery',
+            '🌲 SPHINCS+ (FIPS 205) — Blocks Firmware Hijacks',
+            '🦅 Falcon (FIPS 206) — Blocks IoT Side-Channel Attacks',
+            '☠️ NSA requires ALL satellites quantum-safe by 2027!',
+        ],
+        tip: 'More PQC modules = harder to attack in orbit!',
+        color: '#10b981',
+    },
+    {
+        phase: 'launch',
+        title: '🚀 STEP 3: Launch to Orbit',
+        lines: [
+            '🖱️ Hold/Click the canvas to THROTTLE the rocket',
+            '⚠️ MAX-Q at 20-40km: maximum aerodynamic stress!',
+            '💥 STAGE at 60km: rocket drops lower stage to go faster',
+            '🌍 Tilt east at 10km (real gravity turn maneuver!)',
+            '🛰️ Reach 100km to achieve orbit!',
+        ],
+        tip: 'Real orbit = going sideways fast enough to keep missing Earth!',
+        color: '#f59e0b',
+    },
+    {
+        phase: 'orbit',
+        title: '🛰️ STEP 4: Defend Your Satellite',
+        lines: [
+            '👾 Quantum attacks fly toward your satellite',
+            '🔐 Select the RIGHT PQC shield from the bottom panel',
+            '🖱️ Click on the attack to destroy it with your shield',
+            '❌ Wrong shield = attack gets through and damages satellite!',
+            '🏆 Survive as many waves as possible!',
+        ],
+        tip: 'Match the shield to the attack type — read the attack label!',
+        color: '#8b5cf6',
+    },
+];
+
+function nextTutorial() {
+    tutorialStep++;
+    if (tutorialStep >= TUTORIAL_STEPS.length) {
+        showTutorial = false;
+    }
+}
+function skipTutorial() { showTutorial = false; }
+
+
 // ── INIT STARS ────────────────────────────────────────────────────────────────
 for (var i=0;i<80;i++) {
     stars.push({
@@ -314,6 +381,20 @@ function updateBuildStats() {
 
 // Canvas click for build phase
 cv.addEventListener('click', function(e) {
+    // Handle tutorial clicks first
+    if (showTutorial) {
+        var r = cv.getBoundingClientRect();
+        var mx = (e.clientX-r.left)*(W/r.width);
+        var my = (e.clientY-r.top)*(H/r.height);
+        var step = TUTORIAL_STEPS[Math.min(tutorialStep, TUTORIAL_STEPS.length-1)];
+        if (!step) { showTutorial=false; return; }
+        var cw=420, ch=240, cx2=W/2-cw/2, cy2=H/2-ch/2;
+        // Next button hit test
+        if (mx>W/2+20&&mx<W/2+140&&my>cy2+ch-35&&my<cy2+ch-9) { nextTutorial(); return; }
+        // Skip button hit test
+        if (mx>W/2-140&&mx<W/2-30&&my>cy2+ch-35&&my<cy2+ch-9) { skipTutorial(); return; }
+        return;
+    }
     if (phase === 'build') {
         addPart(selectedPart);
     } else if (phase === 'launch') {
@@ -348,6 +429,7 @@ function startLaunch() {
     document.getElementById('parts-panel').style.display='none';
     document.getElementById('launch-btn').style.display='none';
     setMsg('🚀 LAUNCH! Hold/click to throttle. Tilt east at 10km. Stage at 60km!');
+    if(tutorialStep<2){tutorialStep=2;showTutorial=true;}
     showFact('🚀 Real rockets use a "gravity turn" — they tilt east as they climb to build orbital velocity. SpaceX Falcon 9 does this automatically!');
 
     // Add space debris
@@ -463,6 +545,7 @@ function startOrbit() {
 
     document.getElementById('h-phase').textContent = 'ORBIT';
     setMsg('🛰️ Satellite deployed! Click attacks to destroy them. Select the RIGHT shield!');
+    tutorialStep=3;showTutorial=true;
     showFact('🛰️ Your satellite orbits at 400km — the same altitude as the ISS! It takes 90 minutes to circle Earth once at 7.8 km/s.');
 }
 
@@ -592,6 +675,76 @@ function draw() {
     if (phase==='build') drawBuild();
     else if (phase==='launch') drawLaunch();
     else if (phase==='orbit') drawOrbit();
+
+    if (showTutorial) drawTutorial();
+}
+
+function drawTutorial() {
+    var step = TUTORIAL_STEPS[Math.min(tutorialStep, TUTORIAL_STEPS.length-1)];
+    if (!step || step.phase !== phase) return;
+
+    // Dark overlay
+    cx.fillStyle = 'rgba(0,0,0,0.75)';
+    cx.fillRect(0,0,W,H);
+
+    // Tutorial card
+    var cw=420, ch=240, cx2=W/2-cw/2, cy2=H/2-ch/2;
+    cx.fillStyle = '#071520';
+    cx.beginPath();
+    cx.roundRect(cx2,cy2,cw,ch,12);
+    cx.fill();
+    cx.strokeStyle = step.color;
+    cx.lineWidth = 2;
+    cx.stroke();
+
+    // Title
+    cx.font = 'bold 14px sans-serif';
+    cx.fillStyle = step.color;
+    cx.textAlign = 'center';
+    cx.fillText(step.title, W/2, cy2+28);
+
+    // Lines
+    cx.font = '11px sans-serif';
+    cx.textAlign = 'left';
+    step.lines.forEach(function(line, i) {
+        cx.fillStyle = '#e2e8f0';
+        cx.fillText(line, cx2+16, cy2+56+i*26);
+    });
+
+    // Tip box
+    cx.fillStyle = step.color+'20';
+    cx.fillRect(cx2+10, cy2+ch-58, cw-20, 26);
+    cx.font = '10px sans-serif';
+    cx.fillStyle = step.color;
+    cx.textAlign = 'center';
+    cx.fillText('💡 ' + step.tip, W/2, cy2+ch-40);
+
+    // Progress dots
+    TUTORIAL_STEPS.forEach(function(s,i) {
+        cx.beginPath();
+        cx.arc(W/2-(TUTORIAL_STEPS.length-1)*10+i*20, cy2+ch-16, 4, 0, 6.28);
+        cx.fillStyle = i===tutorialStep ? step.color : '#334155';
+        cx.fill();
+    });
+
+    // Buttons
+    // Next button
+    cx.fillStyle = step.color;
+    cx.beginPath();
+    cx.roundRect(W/2+20, cy2+ch-35, 120, 26, 6);
+    cx.fill();
+    cx.font = 'bold 11px sans-serif';
+    cx.fillStyle = 'white';
+    cx.textAlign = 'center';
+    cx.fillText(tutorialStep<TUTORIAL_STEPS.length-1?'Next →':'Got it! ✓', W/2+80, cy2+ch-17);
+
+    // Skip button
+    cx.fillStyle = '#334155';
+    cx.beginPath();
+    cx.roundRect(W/2-140, cy2+ch-35, 110, 26, 6);
+    cx.fill();
+    cx.fillStyle = '#94a3b8';
+    cx.fillText('Skip Tutorial', W/2-85, cy2+ch-17);
 }
 
 function drawBuild() {
@@ -652,11 +805,31 @@ function drawBuild() {
         cx.fillText((pqcOwned[k]?'✅':'⬜')+info.name,W-130,15+i*16);
     });
 
-    // Click instruction
-    if(rocketParts.length<3){
-        cx.font='11px sans-serif';cx.fillStyle='#60a5fa';cx.textAlign='center';
-        cx.fillText('← Click canvas to add selected part',W/2,H/2);
+    // Instructions overlay when empty
+    if(rocketParts.length===0){
+        cx.font='bold 13px sans-serif';cx.fillStyle='#60a5fa';cx.textAlign='center';
+        cx.fillText('👆 Click canvas to place selected part!',W/2,H/2-10);
+        cx.font='10px sans-serif';cx.fillStyle='#475569';
+        cx.fillText('Build from bottom up: Engine → Fuel → PQC Modules → Satellite',W/2,H/2+15);
     }
+
+    // Mission deadline banner
+    cx.fillStyle='rgba(220,38,38,0.12)';cx.fillRect(0,H-90,W,28);
+    cx.font='bold 10px sans-serif';cx.fillStyle='#ef4444';cx.textAlign='center';
+    cx.fillText('⚠️ NSA CNSA 2.0: ALL satellites must be quantum-safe by January 2027!',W/2,H-72);
+
+    // Selected part highlight box
+    var sp=PARTS[selectedPart];
+    cx.fillStyle='#071520';
+    cx.beginPath();if(cx.roundRect)cx.roundRect(W-130,H-95,125,60,8);else cx.rect(W-130,H-95,125,60);
+    cx.fill();
+    cx.strokeStyle=sp.pqc?'#10b981':'#3b82f6';cx.lineWidth=1.5;cx.stroke();
+    cx.font='20px serif';cx.textAlign='center';
+    cx.fillText(sp.emoji,W-67,H-72);
+    cx.font='9px sans-serif';cx.fillStyle='white';
+    cx.fillText(sp.name,W-67,H-53);
+    cx.fillStyle=sp.pqc?'#10b981':sp.thrust>0?'#ef4444':'#60a5fa';
+    cx.fillText(sp.pqc?'🔐 PQC SHIELD':sp.thrust>0?'⚡ THRUST: +'+sp.thrust:'⚖️ WEIGHT: '+sp.weight,W-67,H-42);
 }
 
 function drawLaunch() {
@@ -771,7 +944,7 @@ function drawOrbit() {
     drawStars();
 
     // Earth
-    earthPulse+=0;
+    earthPulse+=0.02;
     var earthR=80;
     var eg=cx.createRadialGradient(W/2,H/2,20,W/2,H/2,earthR);
     eg.addColorStop(0,'#1d4ed8');
