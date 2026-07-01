@@ -523,6 +523,20 @@ function GROUND_Y(){ return H-50; }
 function dist2(a,b){ return (a.x-b.x)**2+(a.y-b.y)**2; }
 
 // ── DRAW ──────────────────────────────────────────────────────────────────────
+
+// ── MOB DRAW HELPERS (must be outside forEach) ───────────────────────────────
+function drawSeg(cx, pts, a, b, w, color) {
+    const ax=pts[a].x, ay=pts[a].y, bx=pts[b].x, by=pts[b].y;
+    cx.save();
+    cx.strokeStyle=color; cx.lineWidth=w; cx.lineCap='round';
+    cx.beginPath(); cx.moveTo(ax,ay); cx.lineTo(bx,by); cx.stroke();
+    cx.restore();
+}
+function drawJoint(cx, pts, key, r, color) {
+    cx.beginPath(); cx.arc(pts[key].x,pts[key].y,r,0,Math.PI*2);
+    cx.fillStyle=color; cx.fill();
+}
+
 function draw(){
     cx.clearRect(0,0,W,H);
     cx.fillStyle='#020d14'; cx.fillRect(0,0,W,H);
@@ -575,23 +589,7 @@ function draw(){
         if (mob.shielded) { cx.shadowColor='#10b981'; cx.shadowBlur=10; }
 
         // ── LIMB SEGMENTS (drawn back to front) ──────────────────────────────
-        // Helper: draw a thick rounded line between two points
-        function seg(a, b, w, color) {
-            const ax=p[a].x, ay=p[a].y, bx=p[b].x, by=p[b].y;
-            const ang = Math.atan2(by-ay, bx-ax);
-            cx.save();
-            cx.strokeStyle = color;
-            cx.lineWidth = w;
-            cx.lineCap = 'round';
-            cx.beginPath(); cx.moveTo(ax,ay); cx.lineTo(bx,by); cx.stroke();
-            cx.restore();
-        }
-
-        // Joint dot helper
-        function joint(key, r, color) {
-            cx.beginPath(); cx.arc(p[key].x, p[key].y, r, 0, Math.PI*2);
-            cx.fillStyle = color; cx.fill();
-        }
+        // Use module-level drawSeg/drawJoint helpers
 
         const lw  = 5*s;   // limb segment width
         const jw  = 3.5*s; // joint radius
@@ -599,35 +597,35 @@ function draw(){
         const dark = col+'99';
 
         // Legs (back layer)
-        seg('hip',  'lkne', lw*1.1, dark);
-        seg('hip',  'rkne', lw*1.1, dark);
-        seg('lkne', 'lfot', lw,     dark);
-        seg('rkne', 'rfot', lw,     dark);
+        drawSeg(cx, p, 'hip',  'lkne', lw*1.1, dark);
+        drawSeg(cx, p, 'hip',  'rkne', lw*1.1, dark);
+        drawSeg(cx, p, 'lkne', 'lfot', lw,     dark);
+        drawSeg(cx, p, 'rkne', 'rfot', lw,     dark);
 
         // Arms (back layer)
-        seg('lsho', 'lelb', lw*0.9, dark);
-        seg('rsho', 'relb', lw*0.9, dark);
-        seg('lelb', 'lhan', lw*0.8, dark);
-        seg('relb', 'rhan', lw*0.8, dark);
+        drawSeg(cx, p, 'lsho', 'lelb', lw*0.9, dark);
+        drawSeg(cx, p, 'rsho', 'relb', lw*0.9, dark);
+        drawSeg(cx, p, 'lelb', 'lhan', lw*0.8, dark);
+        drawSeg(cx, p, 'relb', 'rhan', lw*0.8, dark);
 
         // Torso spine
-        seg('neck', 'hip',  lw*1.3, col+'cc');
+        drawSeg(cx, p, 'neck', 'hip',  lw*1.3, col+'cc');
 
         // Shoulder bar
-        seg('lsho', 'rsho', lw*0.9, col+'bb');
+        drawSeg(cx, p, 'lsho', 'rsho', lw*0.9, col+'bb');
 
         // Neck
-        seg('head', 'neck', lw*0.9, col+'bb');
+        drawSeg(cx, p, 'head', 'neck', lw*0.9, col+'bb');
 
         // ── JOINTS (elbow, knee, shoulder circles) ────────────────────────────
         cx.shadowBlur = 0;
-        [['lelb',jw],['relb',jw],['lkne',jw],['rkne',jw],
+                [['lelb',jw],['relb',jw],['lkne',jw],['rkne',jw],
          ['lsho',jw*1.1],['rsho',jw*1.1],['hip',jw*1.3],
-         ['neck',jw*1.1]].forEach(([k,r])=>joint(k,r,col));
+         ['neck',jw*1.1]].forEach(([k,r])=>drawJoint(cx,p,k,r,col));
 
         // Hands and feet as slightly larger circles
-        [['lhan',jw*1.2],['rhan',jw*1.2],
-         ['lfot',jw*1.3],['rfot',jw*1.3]].forEach(([k,r])=>joint(k,r,col));
+                [['lhan',jw*1.2],['rhan',jw*1.2],
+         ['lfot',jw*1.3],['rfot',jw*1.3]].forEach(([k,r])=>drawJoint(cx,p,k,r,col));
 
         // ── HEAD (square pixel style) ─────────────────────────────────────────
         const hx = p.head.x, hy = p.head.y;
