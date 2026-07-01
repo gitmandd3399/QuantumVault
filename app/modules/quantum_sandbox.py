@@ -849,8 +849,17 @@ function showToast(m){
 let factIdx=0;
 function showFactRandom(){ if(Math.random()<0.4) showToast(FACTS[factIdx++%FACTS.length]); }
 
-showToast('🤖 Select a mob and click to spawn! Use Grab/Throw to fling them around!');
-loop();
+// Global error catcher - shows JS errors visibly
+window.onerror = function(msg, src, line, col, err) {
+    document.body.innerHTML += '<div style="position:fixed;top:0;left:0;right:0;background:red;color:white;padding:10px;font-size:12px;z-index:9999">JS ERROR line '+line+': '+msg+'</div>';
+    return false;
+};
+try {
+    showToast('🤖 Select a mob and click to spawn! Use Grab/Throw to fling them around!');
+    loop();
+} catch(e) {
+    document.body.innerHTML += '<div style="position:fixed;top:0;left:0;right:0;background:red;color:white;padding:10px;font-size:12px;z-index:9999">INIT ERROR: '+e.message+'</div>';
+}
 </script>
 </body>
 </html>
