@@ -381,6 +381,17 @@ function updateBuildStats() {
 
 // Canvas click for build phase
 cv.addEventListener('click', function(e) {
+    // Handle end game restart click
+    if (endGameState) {
+        var r = cv.getBoundingClientRect();
+        var mx = (e.clientX-r.left)*(W/r.width);
+        var my = (e.clientY-r.top)*(H/r.height);
+        if (mx>playAgainBtn.x && mx<playAgainBtn.x+playAgainBtn.w &&
+            my>playAgainBtn.y && my<playAgainBtn.y+playAgainBtn.h) {
+            resetGame();
+        }
+        return;
+    }
     // Handle tutorial clicks first
     if (showTutorial) {
         var r = cv.getBoundingClientRect();
@@ -646,26 +657,171 @@ function updateOrbit() {
     updateHUD();
 }
 
-function endGame() {
-    gameOver=true;
-    var survived = orbitScore>0;
-    setMsg(survived?
-        '🏆 Satellite destroyed after '+orbitScore+' defense points! Score: '+score:
-        '💀 Satellite destroyed! No PQC shields held!');
-    showFact('☠️ This is exactly what CNSA 2.0 tries to prevent — satellite encryption must be quantum-safe before 2027!');
-    document.getElementById('h-phase').textContent = 'GAME OVER';
+// ── END GAME STATE ────────────────────────────────────────────────────────────
+var endGameState = null; // null | {won, score, wave, pqcCount, timer}
+var endGameTimer = 0;
+var restartBtnHit = false;
+var playAgainBtn = {x:W/2-70, y:0, w:140, h:34};
 
-    // Draw game over on canvas
-    setTimeout(function() {
-        cx.fillStyle='rgba(0,0,0,0.75)';cx.fillRect(0,0,W,H);
-        cx.textAlign='center';
-        cx.font='bold 24px sans-serif';cx.fillStyle='#fbbf24';
-        cx.fillText('🛰️ Mission Complete!',W/2,H/2-30);
-        cx.font='14px sans-serif';cx.fillStyle='#94a3b8';
-        cx.fillText('Score: '+score+' | Wave: '+attackWave,W/2,H/2+5);
-        cx.fillStyle='#60a5fa';
-        cx.fillText('Reload to launch another satellite!',W/2,H/2+30);
-    },500);
+function endGame() {
+    gameOver = true;
+    var pqcCount = Object.keys(shields).length;
+    endGameState = {
+        won: orbitScore > 200,
+        score: score,
+        wave: attackWave,
+        pqcCount: pqcCount,
+        timer: 0,
+    };
+    document.getElementById('h-phase').textContent = endGameState.won?'VICTORY!':'GAME OVER';
+    setMsg(endGameState.won?
+        '🏆 Mission success! Score: '+score+' | Waves survived: '+attackWave:
+        '💀 Satellite lost! Score: '+score+' | PQC shields: '+pqcCount+'/4');
+    showFact('☠️ This is exactly what CNSA 2.0 prevents — quantum-safe encryption must be on every satellite by 2027!');
+    if(endGameState.won) confetti();
+}
+
+function drawEndGame() {
+    if (!endGameState) return;
+    endGameState.timer++;
+
+    var won = endGameState.won;
+    var t = Math.min(1, endGameState.timer/30); // fade in
+
+    // Dark overlay with fade
+    cx.fillStyle = 'rgba(0,0,0,'+(0.82*t)+')';
+    cx.fillRect(0,0,W,H);
+
+    // Card
+    var cw=380, ch=260, cx2=W/2-cw/2, cy2=H/2-ch/2;
+    var cardY = cy2 + (1-t)*30; // slide in from below
+
+    // Card shadow
+    cx.fillStyle = 'rgba(0,0,0,0.5)';
+    cx.beginPath();
+    if(cx.roundRect) cx.roundRect(cx2+4,cardY+4,cw,ch,14); else cx.rect(cx2+4,cardY+4,cw,ch);
+    cx.fill();
+
+    // Card body
+    var grad = cx.createLinearGradient(cx2,cardY,cx2,cardY+ch);
+    grad.addColorStop(0, won?'#071a0e':'#1a0505');
+    grad.addColorStop(1, '#071520');
+    cx.fillStyle = grad;
+    cx.beginPath();
+    if(cx.roundRect) cx.roundRect(cx2,cardY,cw,ch,14); else cx.rect(cx2,cardY,cw,ch);
+    cx.fill();
+    cx.strokeStyle = won?'#10b981':'#ef4444';
+    cx.lineWidth = 2; cx.stroke();
+
+    // Animated border glow
+    var glow = 0.4+0.4*Math.sin(endGameState.timer*0.1);
+    cx.shadowColor = won?'#10b981':'#ef4444';
+    cx.shadowBlur = 20*glow;
+    cx.strokeStyle = won?'#10b981':'#ef4444';
+    cx.stroke();
+    cx.shadowBlur = 0;
+
+    // Big emoji
+    cx.globalAlpha = t;
+    cx.font = '40px serif';
+    cx.textAlign = 'center';
+    cx.fillText(won?'🏆':'💀', W/2, cardY+52);
+
+    // Title
+    cx.font = 'bold 18px sans-serif';
+    cx.fillStyle = won?'#10b981':'#ef4444';
+    cx.fillText(won?'SATELLITE SECURED!':'SATELLITE LOST!', W/2, cardY+82);
+
+    // Subtitle
+    cx.font = '11px sans-serif';
+    cx.fillStyle = '#94a3b8';
+    cx.fillText(won?'Your PQC shields held against quantum attacks!':'The quantum hackers broke through your defenses!', W/2, cardY+102);
+
+    // Stats row
+    var stats = [
+        {label:'Score', value:endGameState.score, color:'#fbbf24', emoji:'⭐'},
+        {label:'Waves', value:endGameState.wave,  color:'#60a5fa', emoji:'🌊'},
+        {label:'PQC',   value:endGameState.pqcCount+'/4', color:'#10b981', emoji:'🔐'},
+    ];
+    stats.forEach(function(s,i) {
+        var sx = cx2+50+i*110;
+        cx.fillStyle = '#071520';
+        cx.beginPath();
+        if(cx.roundRect) cx.roundRect(sx-30,cardY+115,90,50,8); else cx.rect(sx-30,cardY+115,90,50);
+        cx.fill();
+        cx.strokeStyle = s.color+'40'; cx.lineWidth=1; cx.stroke();
+        cx.font='18px serif'; cx.textAlign='center';
+        cx.fillText(s.emoji, sx+15, cardY+133);
+        cx.font='bold 14px sans-serif'; cx.fillStyle=s.color;
+        cx.fillText(s.value, sx+15, cardY+153);
+        cx.font='9px sans-serif'; cx.fillStyle='#475569';
+        cx.fillText(s.label, sx+15, cardY+163);
+    });
+
+    // PQC grade
+    var grade = endGameState.pqcCount===4?'A+ QUANTUM SAFE':
+                endGameState.pqcCount===3?'B  MOSTLY SAFE':
+                endGameState.pqcCount===2?'C  PARTIALLY SAFE':
+                endGameState.pqcCount===1?'D  VULNERABLE':'F  CRITICAL RISK';
+    var gradeColor = endGameState.pqcCount===4?'#10b981':
+                     endGameState.pqcCount>=2?'#fbbf24':'#ef4444';
+    cx.fillStyle = gradeColor+'20';
+    cx.beginPath();
+    if(cx.roundRect) cx.roundRect(cx2+10,cardY+175,cw-20,22,6); else cx.rect(cx2+10,cardY+175,cw-20,22);
+    cx.fill();
+    cx.font='bold 10px sans-serif'; cx.fillStyle=gradeColor; cx.textAlign='center';
+    cx.fillText('PQC SECURITY GRADE: '+grade, W/2, cardY+190);
+
+    // Play Again button
+    var btnY = cardY+ch-38;
+    playAgainBtn = {x:W/2-70, y:btnY, w:140, h:30};
+    var btnHover = false; // static for now
+    cx.fillStyle = won?'#059669':'#1d4ed8';
+    cx.beginPath();
+    if(cx.roundRect) cx.roundRect(W/2-70,btnY,140,30,8); else cx.rect(W/2-70,btnY,140,30);
+    cx.fill();
+    cx.font='bold 12px sans-serif'; cx.fillStyle='white'; cx.textAlign='center';
+    cx.fillText('🔄 Play Again!', W/2, btnY+20);
+
+    cx.globalAlpha = 1;
+}
+
+function resetGame() {
+    // Full reset
+    phase='build';
+    rocketParts=[];
+    score=0;
+    launchAlt=0;launchVel=0;launchFuel=100;
+    stageDropped=false;launchDone=false;
+    rocketX=W/2;rocketY=H-80;rocketTilt=0;
+    exhaust=[];debris=[];
+    satAngle=0;satHP=100;attackWave=0;
+    attacks=[];shields={};pulses=[];
+    orbitScore=0;gameOver=false;
+    endGameState=null;
+    tutorialStep=0;showTutorial=true;
+    throttle=false;
+    document.getElementById('h-phase').textContent='BUILD';
+    document.getElementById('h-twr').textContent='0.0';
+    document.getElementById('h-pqc').textContent='0/4';
+    document.getElementById('h-score').textContent='0';
+    document.getElementById('pt-build').className='phase-tab active';
+    document.getElementById('pt-launch').className='phase-tab';
+    document.getElementById('pt-orbit').className='phase-tab';
+    document.getElementById('parts-panel').style.display='flex';
+    document.getElementById('launch-btn').style.display='none';
+    document.getElementById('shield-panel').style.display='none';
+    // Re-enable all shield buttons
+    ['kyber','dilithium','sphincs','falcon'].forEach(function(k){
+        var btn=document.getElementById('sb-'+k);
+        btn.classList.remove('locked','active');
+    });
+    updateBuildStats();
+    setMsg('⚙️ Select parts below and click the canvas to stack them!');
+    showFact('🚀 Try to add all 4 PQC modules for maximum satellite security!');
+    selectedPart='raptor';
+    document.querySelectorAll('.part-btn').forEach(function(b){b.classList.remove('selected');});
+    document.getElementById('pb-raptor').classList.add('selected');
 }
 
 // ── DRAW ──────────────────────────────────────────────────────────────────────
@@ -677,6 +833,7 @@ function draw() {
     else if (phase==='orbit') drawOrbit();
 
     if (showTutorial) drawTutorial();
+    if (endGameState) drawEndGame();
 }
 
 function drawTutorial() {
@@ -924,6 +1081,21 @@ function drawLaunch() {
     cx.fillStyle='#10b981';cx.fillRect(W/2-60+12,-H/2+20+(1-launchAlt/100)*progH,8,launchAlt/100*progH);
     cx.restore();
 
+    // Altitude progress bar (right side)
+    var barX=W-18, barH=H*0.65, barY=(H-barH)/2;
+    cx.fillStyle='#1e293b';cx.fillRect(barX,barY,10,barH);
+    var fillH = (launchAlt/100)*barH;
+    var barGrad=cx.createLinearGradient(0,barY+barH,0,barY);
+    barGrad.addColorStop(0,'#3b82f6');barGrad.addColorStop(0.6,'#10b981');barGrad.addColorStop(1,'#fbbf24');
+    cx.fillStyle=barGrad;cx.fillRect(barX,barY+barH-fillH,10,fillH);
+    cx.strokeStyle='#334155';cx.lineWidth=1;cx.strokeRect(barX,barY,10,barH);
+    // Target marker
+    cx.fillStyle='#fbbf24';cx.fillRect(barX-4,barY,18,2);
+    cx.font='8px sans-serif';cx.fillStyle='#fbbf24';cx.textAlign='right';
+    cx.fillText('ORBIT',barX-2,barY+8);
+    cx.font='9px sans-serif';cx.fillStyle='#10b981';cx.textAlign='right';
+    cx.fillText(launchAlt.toFixed(0)+'km',barX-2,barY+barH-fillH+14);
+
     // Throttle hint
     if(!throttle){
         cx.font='12px sans-serif';cx.fillStyle='#fbbf24';cx.textAlign='center';
@@ -970,6 +1142,21 @@ function drawOrbit() {
     cx.beginPath();cx.arc(W/2,H/2,earthR+15,0,(satHP/100)*6.28);
     cx.strokeStyle=satHP>60?'#10b981':satHP>30?'#fbbf24':'#ef4444';
     cx.lineWidth=3;cx.stroke();
+
+    // Attack warning arrows at edge of screen pointing toward satellite
+    var satX2=W/2+Math.cos(satAngle)*orbitRadius;
+    var satY2=H/2+Math.sin(satAngle)*orbitRadius;
+    attacks.forEach(function(a) {
+        var dx=satX2-a.x, dy=satY2-a.y;
+        var d=Math.sqrt(dx*dx+dy*dy)||1;
+        // Draw arrow line from attack toward satellite
+        cx.beginPath();
+        cx.setLineDash([4,4]);
+        cx.moveTo(a.x,a.y);
+        cx.lineTo(a.x+dx/d*20,a.y+dy/d*20);
+        cx.strokeStyle=a.color+'40';cx.lineWidth=1;cx.stroke();
+        cx.setLineDash([]);
+    });
 
     // Attacks
     attacks.forEach(function(a){
