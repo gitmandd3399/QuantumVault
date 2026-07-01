@@ -683,14 +683,14 @@ function preprocessText(text){
     return text
         .replace(/<br>/g,' ')
         .replace(/[*_#]/g,'')
-        .replace(/\s+/g,' ')
+        .replace(/\\s+/g,' ')
         // Add breathing room after these words
         .replace(/(and then|but then|suddenly|meanwhile|finally|however|therefore)/gi,
             function(m){return m+', ';})
         // Make ellipsis into a real pause
         .replace(/\.\.\./g,'. ')
         // Clean up double spaces
-        .replace(/\s+/g,' ')
+        .replace(/\\s+/g,' ')
         .trim();
 }
 
