@@ -523,7 +523,12 @@ function objAt(x,y){return objects.slice().reverse().find(function(o){return Mat
 
 world.addEventListener('mousemove',function(e){
     var p=getP(e);mouseX=p.x;mouseY=p.y;
-    if(dragMob&&currentTool==='grab'){dragMob.x=p.x-dragOX;dragMob.y=p.y-dragOY;dragMob.vx=0;dragMob.vy=0;}
+    if(dragMob&&currentTool==='grab'){
+        dragMob.x=p.x-dragOX;dragMob.y=p.y-dragOY;
+        dragMob.vx=0;dragMob.vy=0;
+        // Tilt toward grab point for PP-style visual feel
+        dragMob.rotation = Math.max(-0.6, Math.min(0.6, dragOY*0.015));
+    }
     else if(dragObj&&currentTool==='grab'){dragObj.x=p.x-dragOX;dragObj.y=p.y-dragOY;dragObj.vx=0;dragObj.vy=0;}
 });
 world.addEventListener('mousedown',function(e){
