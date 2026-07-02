@@ -221,6 +221,7 @@ def sidebar():
             ("🤖", "AI Tutor",          "🤖 AI Tutor"),
             ("📖", "Research Journal",  "📖 Research Journal"),
             ("🗺️", "Career Explorer",   "🗺️ Career Explorer"),
+            ("☠️", "Harvest Timeline",  "☠️ Harvest Timeline"),
             ("📧", "Weekly Report",     "📧 Weekly Report"),
         ]},
         {"label": "⚙️ ACCOUNT", "color": "#6b7280", "items": [
