@@ -305,47 +305,47 @@ function drawMob(m) {
     cx.translate(m.x, m.y);
     cx.rotate(m.rotation);
     var col = m.color;
-    var bodyW=13*s, bodyH=16*s;
-    var headW=11*s, headH=11*s;
-    var uLegH=12*s, lLegH=12*s, legW=5*s;
-    var uArmH=9*s, lArmH=8*s, armW=4*s;
-    var neckH=4*s;
+    var bodyW=16*s, bodyH=18*s;
+    var headW=14*s, headH=13*s;
+    var uLegH=13*s, lLegH=13*s, legW=6*s;
+    var uArmH=11*s, lArmH=10*s, armW=5*s;
+    var neckH=3*s;
 
     // Back left arm
     cx.save(); cx.translate(-bodyW*0.6, -bodyH*0.3);
     cx.rotate(knocked ? 1.4 : -sw*0.7 - 0.2);
-    cx.fillStyle=col+'88'; cx.fillRect(-armW/2,0,armW,uArmH);
+    cx.fillStyle=col+'ee'; cx.fillRect(-armW/2,0,armW,uArmH);
     cx.save(); cx.translate(0,uArmH);
     cx.rotate(knocked ? 0.9 : Math.max(0,-sw)*0.5);
     cx.fillRect(-armW/2,0,armW,lArmH);
-    cx.beginPath();cx.arc(0,lArmH,armW*0.9,0,6.28);cx.fillStyle=col+'77';cx.fill();
+    cx.beginPath();cx.arc(0,lArmH,armW*0.9,0,6.28);cx.fillStyle=col+'dd';cx.fill();
     cx.restore();cx.restore();
 
     // Left leg
-    cx.save(); cx.translate(-legW*0.9, bodyH*0.45);
+    cx.save(); cx.translate(-legW*1.3, bodyH*0.45);
     cx.rotate(knocked ? 0.9 : sw*0.8);
-    cx.fillStyle=col+'cc'; cx.fillRect(-legW/2,0,legW,uLegH);
+    cx.fillStyle=col; cx.fillRect(-legW/2,0,legW,uLegH);
     cx.beginPath();cx.arc(0,uLegH,legW*0.9,0,6.28);cx.fillStyle=col;cx.fill();
     cx.save(); cx.translate(0,uLegH);
     cx.rotate(knocked ? 0.7 : Math.max(0,sw)*0.6);
-    cx.fillStyle=col+'bb'; cx.fillRect(-legW/2,0,legW,lLegH);
+    cx.fillStyle=col+'ee'; cx.fillRect(-legW/2,0,legW,lLegH);
     cx.fillStyle=col; cx.fillRect(-legW*1.3,lLegH-2*s,legW*3,3.5*s);
     cx.restore();cx.restore();
 
     // Right leg
-    cx.save(); cx.translate(legW*0.9, bodyH*0.45);
+    cx.save(); cx.translate(legW*1.3, bodyH*0.45);
     cx.rotate(knocked ? -0.9 : -sw*0.8);
-    cx.fillStyle=col+'cc'; cx.fillRect(-legW/2,0,legW,uLegH);
+    cx.fillStyle=col; cx.fillRect(-legW/2,0,legW,uLegH);
     cx.beginPath();cx.arc(0,uLegH,legW*0.9,0,6.28);cx.fillStyle=col;cx.fill();
     cx.save(); cx.translate(0,uLegH);
     cx.rotate(knocked ? -0.7 : Math.max(0,-sw)*0.6);
-    cx.fillStyle=col+'bb'; cx.fillRect(-legW/2,0,legW,lLegH);
+    cx.fillStyle=col+'ee'; cx.fillRect(-legW/2,0,legW,lLegH);
     cx.fillStyle=col; cx.fillRect(-legW*1.3,lLegH-2*s,legW*3,3.5*s);
     cx.restore();cx.restore();
 
     // Torso
     if(m.shielded){cx.shadowColor='#10b981';cx.shadowBlur=12;}
-    cx.fillStyle=col+'dd'; cx.fillRect(-bodyW/2,-bodyH/2,bodyW,bodyH);
+    cx.fillStyle=col; cx.fillRect(-bodyW/2,-bodyH/2,bodyW,bodyH);
     cx.strokeStyle=col; cx.lineWidth=1.5*s; cx.strokeRect(-bodyW/2,-bodyH/2,bodyW,bodyH);
     cx.strokeStyle=col+'55'; cx.lineWidth=1*s;
     cx.beginPath();cx.moveTo(-bodyW/2,bodyH*0.12);cx.lineTo(bodyW/2,bodyH*0.12);cx.stroke();
@@ -354,16 +354,16 @@ function drawMob(m) {
     // Front right arm
     cx.save(); cx.translate(bodyW*0.6, -bodyH*0.3);
     cx.rotate(knocked ? -1.4 : sw*0.7 + 0.2);
-    cx.fillStyle=col+'cc'; cx.fillRect(-armW/2,0,armW,uArmH);
+    cx.fillStyle=col; cx.fillRect(-armW/2,0,armW,uArmH);
     cx.beginPath();cx.arc(0,uArmH,armW*0.95,0,6.28);cx.fillStyle=col;cx.fill();
     cx.save(); cx.translate(0,uArmH);
     cx.rotate(knocked ? -0.9 : Math.max(0,sw)*0.5);
-    cx.fillStyle=col+'bb'; cx.fillRect(-armW/2,0,armW,lArmH);
+    cx.fillStyle=col+'ee'; cx.fillRect(-armW/2,0,armW,lArmH);
     cx.beginPath();cx.arc(0,lArmH,armW*0.95,0,6.28);cx.fillStyle=col;cx.fill();
     cx.restore();cx.restore();
 
     // Neck
-    cx.fillStyle=col+'99'; cx.fillRect(-3*s,-bodyH/2-neckH,6*s,neckH+2*s);
+    cx.fillStyle=col+'cc'; cx.fillRect(-3*s,-bodyH/2-neckH,6*s,neckH+2*s);
 
     // Head (chunky square)
     var hTop=-bodyH/2-neckH-headH*2;
