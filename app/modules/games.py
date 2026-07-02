@@ -1502,11 +1502,35 @@ var cx = cv.getContext('2d');
 var W = 560, H = 340;
 
 var WEAPONS = {
-    kyber:     {name:'ML-KEM',   emoji:'🔐', color:'#10b981', dmg:1, splash:0,  unlockAt:0,   fact:'ML-KEM (Kyber FIPS 203) blasts enemies with lattice math!'},
-    dilithium: {name:'ML-DSA',   emoji:'✍️',  color:'#3b82f6', dmg:2, splash:0,  unlockAt:200, fact:'ML-DSA (Dilithium FIPS 204) fires signature bolts!'},
-    sphincs:   {name:'SPHINCS+', emoji:'🌲', color:'#8b5cf6', dmg:1, splash:60, unlockAt:500, fact:'SLH-DSA (SPHINCS+ FIPS 205) fires a hash storm!'},
-    falcon:    {name:'Falcon',   emoji:'🦅', color:'#f59e0b', dmg:5, splash:0,  unlockAt:1000,fact:'FN-DSA (Falcon FIPS 206) fires compact NTRU spikes!'},
+    kyber:     {name:'ML-KEM',   emoji:'🔐', color:'#10b981', dmg:1,  splash:0,  unlockAt:0,    upgrades:['ML-KEM-512','ML-KEM-768','ML-KEM-1024'], baseDmg:1,  fact:'ML-KEM (Kyber FIPS 203) blasts enemies with lattice math!'},
+    dilithium: {name:'ML-DSA',   emoji:'✍️',  color:'#3b82f6', dmg:2,  splash:0,  unlockAt:200,  upgrades:['ML-DSA-44','ML-DSA-65','ML-DSA-87'],    baseDmg:2,  fact:'ML-DSA (Dilithium FIPS 204) fires signature bolts!'},
+    sphincs:   {name:'SPHINCS+', emoji:'🌲', color:'#8b5cf6', dmg:1,  splash:60, unlockAt:500,  upgrades:['SPHINCS-128s','SPHINCS-192s','SPHINCS-256s'], baseDmg:1, fact:'SLH-DSA (SPHINCS+ FIPS 205) fires a hash storm!'},
+    falcon:    {name:'Falcon',   emoji:'🦅', color:'#f59e0b', dmg:5,  splash:0,  unlockAt:1000, upgrades:['Falcon-512','Falcon-1024','Falcon-MAX'],  baseDmg:5,  fact:'FN-DSA (Falcon FIPS 206) fires compact NTRU spikes!'},
 };
+// Weapon upgrade levels (0=base, 1=mid, 2=max)
+var weaponLevels = {kyber:0, dilithium:0, sphincs:0, falcon:0};
+
+function getWeaponDmg(type) {
+    var w = WEAPONS[type];
+    return w.baseDmg * (1 + weaponLevels[type] * 0.8);
+}
+function getWeaponSplash(type) {
+    var w = WEAPONS[type];
+    return w.splash > 0 ? w.splash + weaponLevels[type] * 20 : 0;
+}
+function upgradeWeapons() {
+    // Auto-upgrade weapons every 2 waves
+    var lvl = Math.min(Math.floor((wave-1)/3), 2);
+    ['kyber','dilithium','sphincs','falcon'].forEach(function(k){
+        if (unlockedWeapons.includes(k) && weaponLevels[k] < lvl) {
+            weaponLevels[k] = lvl;
+            var w = WEAPONS[k];
+            addFloat(W/2, H/2-20, w.emoji+' '+w.upgrades[lvl]+' UPGRADED!', w.color);
+            showFact(w.emoji+' '+w.name+' upgraded to '+w.upgrades[lvl]+'! Damage: '+getWeaponDmg(k).toFixed(1));
+        }
+    });
+    updateWeaponBar();
+}
 
 var ZOMBIE_TYPES = [
     {emoji:'🧟', hp:4,  speed:0.4, pts:10,  color:'#10b981', name:'Baby Shor'},
@@ -1526,6 +1550,8 @@ var FACTS = [
 // Game state
 var zombies = [], bullets = [], particles = [], floatTexts = [], crystals = [];
 var score = 0, wave = 1, combo = 1, comboTimer = 0, serverHp = 100;
+var serverMaxHp = 100;
+function getServerMaxHp() { return 100 + (wave-1) * 20; } // +20 HP per wave
 var crystalCount = 0, gameActive = false, frameId = null;
 var selectedWeapon = 'kyber', unlockedWeapons = ['kyber'];
 var spawnTimer = 0, spawnCount = 0, spawnTotal = 0, waveClearing = false;
@@ -1536,7 +1562,8 @@ for (var si = 0; si < 60; si++) {
 
 function startGame() {
     zombies=[]; bullets=[]; particles=[]; crystals=[]; floatTexts=[];
-    score=0; wave=1; combo=1; comboTimer=0; serverHp=100;
+    score=0; wave=1; combo=1; comboTimer=0; serverHp=100; serverMaxHp=100;
+    weaponLevels={kyber:0,dilithium:0,sphincs:0,falcon:0};
     crystalCount=0; waveClearing=false; spawnCount=0; spawnTimer=0;
     unlockedWeapons=['kyber']; selectedWeapon='kyber';
     updateWeaponBar();
@@ -1639,7 +1666,7 @@ function shoot(mx, my) {
 }
 
 function damageZombie(z, dmg) {
-    z.hp -= dmg * combo;
+    z.hp -= dmg * combo * (1 + weaponLevels[selectedWeapon]*0.8);
     spawnParticles(z.x, z.y, z.color, 6);
     addFloat(z.x, z.y, '-'+(dmg*combo), z.color);
     if (z.hp <= 0) killZombie(z);
@@ -1740,9 +1767,15 @@ function waveComplete() {
     var bonus = wave * 100;
     score += bonus;
     wave++;
+    // Refill server HP to new max
+    serverMaxHp = getServerMaxHp();
+    serverHp = serverMaxHp;
+    updateServerHp();
+    // Upgrade weapons
+    upgradeWeapons();
     updateHUD();
     addFloat(W/2, H/2, 'Wave Clear! +'+bonus+'⭐', '#fbbf24');
-    setMsg('Wave '+(wave-1)+' cleared! +'+bonus+' bonus! Wave '+wave+' starting...');
+    setMsg('Wave '+(wave-1)+' cleared! +'+bonus+' bonus! Server HP refilled to '+serverMaxHp+'! Wave '+wave+' starting...');
     if (wave > 10) { victory(); return; }
     setTimeout(function() { startWave(); waveClearing=false; }, 1200);
 }
@@ -1765,7 +1798,8 @@ function resetGame() {
     if (frameId) cancelAnimationFrame(frameId);
     gameActive = false;
     zombies=[]; bullets=[]; particles=[]; crystals=[]; floatTexts=[];
-    score=0; wave=1; combo=1; comboTimer=0; serverHp=100;
+    score=0; wave=1; combo=1; comboTimer=0; serverHp=100; serverMaxHp=100;
+    weaponLevels={kyber:0,dilithium:0,sphincs:0,falcon:0};
     crystalCount=0; unlockedWeapons=['kyber']; selectedWeapon='kyber';
     document.getElementById('start-btn').disabled = false;
     updateHUD(); updateServerHp(); updateWeaponBar();
@@ -1849,6 +1883,10 @@ function updateWeaponBar() {
         var el = document.getElementById('wp-'+k);
         if (!el) return;
         el.className = 'wpn-btn' + (k===selectedWeapon?' active':'') + (unlockedWeapons.includes(k)?'':' locked');
+        var w = WEAPONS[k];
+        var stars = ['','⭐','⭐⭐'][weaponLevels[k]||0];
+        var lvlName = w.upgrades ? w.upgrades[weaponLevels[k]||0] : w.name;
+        el.innerHTML = w.emoji+' '+w.name+(stars?' '+stars:'')+'<br><span style="font-size:7px;color:#475569">'+(unlockedWeapons.includes(k)?lvlName:'🔒 Score '+w.unlockAt)+'</span>';
     });
 }
 
@@ -1869,9 +1907,9 @@ function updateHUD() {
 }
 
 function updateServerHp() {
-    var pct=Math.max(0,serverHp);
+    var pct=Math.max(0,serverHp/serverMaxHp*100);
     document.getElementById('server-bar').style.width=pct+'%';
-    document.getElementById('server-pct').textContent=Math.round(pct)+'%';
+    document.getElementById('server-pct').textContent=Math.round(serverHp)+'/'+serverMaxHp;
     document.getElementById('server-pct').style.color=pct>50?'#10b981':pct>25?'#fbbf24':'#ef4444';
     document.getElementById('server-bar').style.background=pct>50?'linear-gradient(90deg,#10b981,#34d399)':pct>25?'linear-gradient(90deg,#fbbf24,#f97316)':'linear-gradient(90deg,#ef4444,#dc2626)';
 }
