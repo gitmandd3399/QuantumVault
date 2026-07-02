@@ -1565,7 +1565,6 @@ const WEAPONS = {
 
 // ── ZOMBIE TYPES ──────────────────────────────────────────────────────────────
 const ZOMBIE_TYPES=[
-const ZOMBIE_TYPES=[
     {emoji:"🧟",hp:4, speed:0.4, pts:10, color:"#10b981", name:"Baby Shor"},
     {emoji:"👾",hp:6, speed:0.6, pts:15, color:"#3b82f6", name:"Shor Bot"},
     {emoji:"🤖",hp:10,speed:0.8, pts:25, color:"#ef4444", name:"RSA Zombie"},
