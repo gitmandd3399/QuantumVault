@@ -1623,7 +1623,7 @@ function spawnZombie(){
     const waveIdx=Math.min(Math.floor(wave/2),ZOMBIE_TYPES.length-1);
     const type=ZOMBIE_TYPES[waveIdx];
     // Spawn from left or right edge
-    spawnCount_side=(spawnCount_side||0)+1; const fromLeft=spawnCount_side%2===0;
+    const fromLeft=spawnCount%2===0;
     zombies.push({
         x:fromLeft?-30:W+30,y:80+Math.random()*(H-160),
         vx:fromLeft?type.speed:-type.speed,
@@ -1850,7 +1850,7 @@ function waveComplete(){
     addFloatText(W/2,H/2,'Wave Clear! +'+bonus+'⭐','#fbbf24');
     setMsg('✅ Wave '+(wave-1)+' cleared! +'+bonus+' bonus! Wave '+wave+' starting...');
     if(wave>10){ victory(); return; }
-    setTimeout(()=>{ startWave(); waveClearing=false; },500);
+    setTimeout(()=>{ startWave(); waveClearing=false; },1200);
 }
 
 function victory(){
