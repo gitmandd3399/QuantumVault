@@ -296,138 +296,105 @@ function updateMob(m) {
     m.rotation = Math.max(-0.3, Math.min(0.3, m.vx * 0.05));
 }
 
-// ── DRAW MOB — People Playground pixel humanoid ───────────────────────────────
+// ── DRAW MOB — People Playground chunky pixel style ─────────────────────────
 function drawMob(m) {
     var s = m.s;
-    var x = m.x, y = m.y;
-    var swing = Math.sin(m.walkPhase) * 0.45;
     var knocked = m.knockTimer > 5;
-    var col = m.color;
-    var dark = col;
-
+    var sw = Math.sin(m.walkPhase) * 0.45;
     cx.save();
-    cx.translate(x, y);
+    cx.translate(m.x, m.y);
     cx.rotate(m.rotation);
+    var col = m.color;
+    var bodyW=13*s, bodyH=16*s;
+    var headW=11*s, headH=11*s;
+    var uLegH=12*s, lLegH=12*s, legW=5*s;
+    var uArmH=9*s, lArmH=8*s, armW=4*s;
+    var neckH=4*s;
 
-    if (m.shielded) { cx.shadowColor='#10b981'; cx.shadowBlur=10; }
+    // Back left arm
+    cx.save(); cx.translate(-bodyW*0.6, -bodyH*0.3);
+    cx.rotate(knocked ? 1.4 : -sw*0.7 - 0.2);
+    cx.fillStyle=col+'88'; cx.fillRect(-armW/2,0,armW,uArmH);
+    cx.save(); cx.translate(0,uArmH);
+    cx.rotate(knocked ? 0.9 : Math.max(0,-sw)*0.5);
+    cx.fillRect(-armW/2,0,armW,lArmH);
+    cx.beginPath();cx.arc(0,lArmH,armW*0.9,0,6.28);cx.fillStyle=col+'77';cx.fill();
+    cx.restore();cx.restore();
 
-    // ── LEGS ──────────────────────────────────────────────────────────────────
-    var thighL = 10*s, shinL = 10*s, limbW = 4*s;
-    // Left leg: thigh + knee + shin
-    cx.save();
-    cx.translate(-5*s, 6*s);
-    cx.rotate(knocked ? 0.8 : swing*0.8);
-    cx.fillStyle = col+'bb';
-    cx.fillRect(-limbW/2, 0, limbW, thighL);
-    // Knee joint
-    cx.beginPath(); cx.arc(0, thighL, limbW*0.8, 0, 6.28); cx.fillStyle=col; cx.fill();
-    // Shin
-    cx.save(); cx.translate(0, thighL);
-    cx.rotate(knocked ? 0.5 : Math.max(0, swing)*0.5);
-    cx.fillStyle = col+'99';
-    cx.fillRect(-limbW/2, 0, limbW, shinL);
-    // Foot
-    cx.fillStyle = col;
-    cx.fillRect(-limbW, shinL-2*s, limbW*2.5, 3*s);
-    cx.restore();
-    cx.restore();
+    // Left leg
+    cx.save(); cx.translate(-legW*0.9, bodyH*0.45);
+    cx.rotate(knocked ? 0.9 : sw*0.8);
+    cx.fillStyle=col+'cc'; cx.fillRect(-legW/2,0,legW,uLegH);
+    cx.beginPath();cx.arc(0,uLegH,legW*0.9,0,6.28);cx.fillStyle=col;cx.fill();
+    cx.save(); cx.translate(0,uLegH);
+    cx.rotate(knocked ? 0.7 : Math.max(0,sw)*0.6);
+    cx.fillStyle=col+'bb'; cx.fillRect(-legW/2,0,legW,lLegH);
+    cx.fillStyle=col; cx.fillRect(-legW*1.3,lLegH-2*s,legW*3,3.5*s);
+    cx.restore();cx.restore();
 
     // Right leg
-    cx.save();
-    cx.translate(5*s, 6*s);
-    cx.rotate(knocked ? -0.8 : -swing*0.8);
-    cx.fillStyle = col+'bb';
-    cx.fillRect(-limbW/2, 0, limbW, thighL);
-    cx.beginPath(); cx.arc(0, thighL, limbW*0.8, 0, 6.28); cx.fillStyle=col; cx.fill();
-    cx.save(); cx.translate(0, thighL);
-    cx.rotate(knocked ? -0.5 : Math.max(0,-swing)*0.5);
-    cx.fillStyle = col+'99';
-    cx.fillRect(-limbW/2, 0, limbW, shinL);
-    cx.fillStyle = col;
-    cx.fillRect(-limbW, shinL-2*s, limbW*2.5, 3*s);
-    cx.restore();
-    cx.restore();
+    cx.save(); cx.translate(legW*0.9, bodyH*0.45);
+    cx.rotate(knocked ? -0.9 : -sw*0.8);
+    cx.fillStyle=col+'cc'; cx.fillRect(-legW/2,0,legW,uLegH);
+    cx.beginPath();cx.arc(0,uLegH,legW*0.9,0,6.28);cx.fillStyle=col;cx.fill();
+    cx.save(); cx.translate(0,uLegH);
+    cx.rotate(knocked ? -0.7 : Math.max(0,-sw)*0.6);
+    cx.fillStyle=col+'bb'; cx.fillRect(-legW/2,0,legW,lLegH);
+    cx.fillStyle=col; cx.fillRect(-legW*1.3,lLegH-2*s,legW*3,3.5*s);
+    cx.restore();cx.restore();
 
-    // ── TORSO ─────────────────────────────────────────────────────────────────
-    var tw = 7*s, th = 14*s;
-    cx.fillStyle = col+'dd';
-    cx.beginPath();
-    if (cx.roundRect) cx.roundRect(-tw, -th, tw*2, th*2, 2*s);
-    else cx.rect(-tw, -th, tw*2, th*2);
-    cx.fill();
-    cx.strokeStyle = col; cx.lineWidth = 1*s; cx.stroke();
-    cx.shadowBlur = 0;
+    // Torso
+    if(m.shielded){cx.shadowColor='#10b981';cx.shadowBlur=12;}
+    cx.fillStyle=col+'dd'; cx.fillRect(-bodyW/2,-bodyH/2,bodyW,bodyH);
+    cx.strokeStyle=col; cx.lineWidth=1.5*s; cx.strokeRect(-bodyW/2,-bodyH/2,bodyW,bodyH);
+    cx.strokeStyle=col+'55'; cx.lineWidth=1*s;
+    cx.beginPath();cx.moveTo(-bodyW/2,bodyH*0.12);cx.lineTo(bodyW/2,bodyH*0.12);cx.stroke();
+    cx.shadowBlur=0;
 
-    // ── ARMS ──────────────────────────────────────────────────────────────────
-    var uArmL = 8*s, lArmL = 7*s, armW = 3.5*s;
-    // Left arm: upper + elbow + forearm
-    cx.save();
-    cx.translate(-tw, -th*0.5);
-    cx.rotate(knocked ? 1.2 : -swing*0.6 - 0.1);
-    cx.fillStyle = col+'cc';
-    cx.fillRect(-armW/2, 0, armW, uArmL);
-    cx.beginPath(); cx.arc(0, uArmL, armW*0.9, 0, 6.28); cx.fillStyle=col; cx.fill();
-    cx.save(); cx.translate(0, uArmL);
-    cx.rotate(knocked ? 0.8 : Math.max(0,-swing)*0.4);
-    cx.fillStyle = col+'99';
-    cx.fillRect(-armW/2, 0, armW, lArmL);
-    cx.beginPath(); cx.arc(0, lArmL, armW*1.1, 0, 6.28); cx.fillStyle=col; cx.fill();
-    cx.restore(); cx.restore();
+    // Front right arm
+    cx.save(); cx.translate(bodyW*0.6, -bodyH*0.3);
+    cx.rotate(knocked ? -1.4 : sw*0.7 + 0.2);
+    cx.fillStyle=col+'cc'; cx.fillRect(-armW/2,0,armW,uArmH);
+    cx.beginPath();cx.arc(0,uArmH,armW*0.95,0,6.28);cx.fillStyle=col;cx.fill();
+    cx.save(); cx.translate(0,uArmH);
+    cx.rotate(knocked ? -0.9 : Math.max(0,sw)*0.5);
+    cx.fillStyle=col+'bb'; cx.fillRect(-armW/2,0,armW,lArmH);
+    cx.beginPath();cx.arc(0,lArmH,armW*0.95,0,6.28);cx.fillStyle=col;cx.fill();
+    cx.restore();cx.restore();
 
-    // Right arm
-    cx.save();
-    cx.translate(tw, -th*0.5);
-    cx.rotate(knocked ? -1.2 : swing*0.6 + 0.1);
-    cx.fillStyle = col+'cc';
-    cx.fillRect(-armW/2, 0, armW, uArmL);
-    cx.beginPath(); cx.arc(0, uArmL, armW*0.9, 0, 6.28); cx.fillStyle=col; cx.fill();
-    cx.save(); cx.translate(0, uArmL);
-    cx.rotate(knocked ? -0.8 : Math.max(0,swing)*0.4);
-    cx.fillStyle = col+'99';
-    cx.fillRect(-armW/2, 0, armW, lArmL);
-    cx.beginPath(); cx.arc(0, lArmL, armW*1.1, 0, 6.28); cx.fillStyle=col; cx.fill();
-    cx.restore(); cx.restore();
+    // Neck
+    cx.fillStyle=col+'99'; cx.fillRect(-3*s,-bodyH/2-neckH,6*s,neckH+2*s);
 
-    // ── NECK ──────────────────────────────────────────────────────────────────
-    cx.fillStyle = col+'88';
-    cx.fillRect(-2.5*s, -th-3*s, 5*s, 4*s);
-
-    // ── HEAD (square pixel style) ─────────────────────────────────────────────
-    var hw = 8*s, hh = 8*s;
-    var hTop = -th - hh*2 - 2*s;
-    cx.fillStyle = col;
-    cx.beginPath();
-    if (cx.roundRect) cx.roundRect(-hw, hTop, hw*2, hh*2, 3*s);
-    else cx.rect(-hw, hTop, hw*2, hh*2);
-    cx.fill();
-    cx.strokeStyle = col; cx.lineWidth = 1*s; cx.stroke();
+    // Head (chunky square)
+    var hTop=-bodyH/2-neckH-headH*2;
+    if(m.shielded){cx.shadowColor='#10b981';cx.shadowBlur=10;}
+    cx.fillStyle=col; cx.fillRect(-headW/2,hTop,headW,headH*2);
+    cx.strokeStyle=col; cx.lineWidth=1.5*s; cx.strokeRect(-headW/2,hTop,headW,headH*2);
+    cx.shadowBlur=0;
 
     // Face
-    cx.fillStyle = '#0a1628';
-    if (knocked) {
-        // X eyes
-        cx.strokeStyle = '#0a1628'; cx.lineWidth = 1.5*s;
-        cx.beginPath();cx.moveTo(-hw*0.45,hTop+hh*0.5);cx.lineTo(-hw*0.1,hTop+hh*0.9);cx.stroke();
-        cx.beginPath();cx.moveTo(-hw*0.1,hTop+hh*0.5);cx.lineTo(-hw*0.45,hTop+hh*0.9);cx.stroke();
-        cx.beginPath();cx.moveTo(hw*0.1,hTop+hh*0.5);cx.lineTo(hw*0.45,hTop+hh*0.9);cx.stroke();
-        cx.beginPath();cx.moveTo(hw*0.45,hTop+hh*0.5);cx.lineTo(hw*0.1,hTop+hh*0.9);cx.stroke();
+    if(knocked){
+        cx.strokeStyle='#0a1628'; cx.lineWidth=1.5*s;
+        var ey=hTop+headH*0.7;
+        cx.beginPath();cx.moveTo(-headW*0.38,ey-3*s);cx.lineTo(-headW*0.1,ey+3*s);cx.stroke();
+        cx.beginPath();cx.moveTo(-headW*0.1,ey-3*s);cx.lineTo(-headW*0.38,ey+3*s);cx.stroke();
+        cx.beginPath();cx.moveTo(headW*0.1,ey-3*s);cx.lineTo(headW*0.38,ey+3*s);cx.stroke();
+        cx.beginPath();cx.moveTo(headW*0.38,ey-3*s);cx.lineTo(headW*0.1,ey+3*s);cx.stroke();
     } else {
-        cx.fillRect(-hw*0.45, hTop+hh*0.4, 2.5*s, 2.5*s);
-        cx.fillRect(hw*0.1,   hTop+hh*0.4, 2.5*s, 2.5*s);
-        cx.fillRect(-hw*0.25, hTop+hh*1.1, hw*0.5, 1.5*s);
+        cx.fillStyle='#0a1628';
+        cx.fillRect(-headW*0.38,hTop+headH*0.55,3*s,3*s);
+        cx.fillRect(headW*0.08,hTop+headH*0.55,3*s,3*s);
+        cx.fillRect(-headW*0.25,hTop+headH*1.2,headW*0.5,2*s);
     }
 
     // HP bar
-    if (m.hp < m.maxHp) {
-        var bw = hw*2.5;
-        cx.fillStyle='#1e293b'; cx.fillRect(-bw/2, hTop-8*s, bw, 4*s);
+    if(m.hp<m.maxHp){
+        var bw=headW*2.2;
+        cx.fillStyle='#1e293b';cx.fillRect(-bw/2,hTop-8*s,bw,4*s);
         cx.fillStyle=m.hp/m.maxHp>0.5?'#10b981':'#ef4444';
-        cx.fillRect(-bw/2, hTop-8*s, bw*Math.max(0,m.hp/m.maxHp), 4*s);
+        cx.fillRect(-bw/2,hTop-8*s,bw*Math.max(0,m.hp/m.maxHp),4*s);
     }
-    if (m.frozen) {
-        cx.font='11px serif'; cx.textAlign='center'; cx.textBaseline='middle';
-        cx.fillText('❄️', 0, hTop-14*s);
-    }
+    if(m.frozen){cx.font=(11*s)+'px serif';cx.textAlign='center';cx.textBaseline='middle';cx.fillText('❄️',0,hTop-14*s);}
     cx.restore();
 }
 
