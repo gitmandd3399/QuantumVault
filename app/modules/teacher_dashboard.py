@@ -1,4 +1,215 @@
+"""cd ~/Desktop/QV_fresh
+python3 - << 'EOF'
+# What this does:
+# Completely rewrites the mob system in quantum_sandbox.py to match
+# People Playground character style:
+# - Two-segment limbs (upper arm + forearm, thigh + shin)
+# - Visible elbow and knee joints as small circles
+# - Verlet physics on EACH segment independently (not just one body)
+# - Grab individual limbs and body follows
+# - Limp collapse when knocked hard (joint stiffness drops to near-zero)
+# - Different mob types have different proportions
+
+with open('app/modules/quantum_sandbox.py', 'r') as f:
+    content = f.read()
+
+# ── Find and replace the entire mob system ────────────────────────────────────
+old_mob_system_start = content.find('// ── SIMPLE MOB PHYSICS')
+old_mob_system_end = content.find('\n// ── REGULAR OBJECTS')
+
+if old_mob_system_start == -1 or old_mob_system_end == -1:
+    print('Markers not found!')
+    # Show what we have
+    idx = content.find('function createMob')
+    print(repr(content[idx:idx+100]))
+else:
+    new_system = r"""// ══════════════════════════════════════════════════════════════════════════════
+// PEOPLE PLAYGROUND STYLE MOB SYSTEM
+// Each mob is a skeleton of Verlet points connected by distance constraints.
+// Two-segment limbs: upper arm + forearm, thigh + shin.
+// Joints are visible circles. Grab any point and drag — body follows.
+// Knockback sets all joint velocities. Collapse flag loosens all constraints.
+// ══════════════════════════════════════════════════════════════════════════════
+
+const GRAVITY_MOB = 0.45;
+const AIR_DAMP = 0.993;     // very light air resistance
+const GND_BOUNCE = 0.28;
+const GND_FRIC   = 0.82;
+const WALL_BOUNCE = 0.35;
+const CONSTRAINT_ITERS = 6; // iterations per frame (higher = stiffer joints)
+
+// ── Verlet point ──────────────────────────────────────────────────────────────
+function mkPt(x, y) {
+    return { x, y, ox: x, oy: y, pinned: false };
+}
+
+// ── Integrate one point ───────────────────────────────────────────────────────
+function integratePt(p, grav) {
+    if (p.pinned) return;
+    const vx = (p.x - p.ox) * AIR_DAMP;
+    const vy = (p.y - p.oy) * AIR_DAMP;
+    p.ox = p.x; p.oy = p.y;
+    p.x += vx;
+    p.y += vy + grav;
+}
+
+// ── Collide one point with world ──────────────────────────────────────────────
+function collidePt(p, r, groundY) {
+    if (p.y + r > groundY) {
+        const vx = p.x - p.ox;
+        p.y = groundY - r;
+        p.oy = p.y + (p.y - p.oy) * GND_BOUNCE * -1;
+        p.ox = p.x - vx * GND_FRIC;
+    }
+    if (p.x - r < 0)  { p.x = r;   p.ox = p.x + (p.x - p.ox) * WALL_BOUNCE; }
+    if (p.x + r > W)  { p.x = W-r; p.ox = p.x + (p.x - p.ox) * WALL_BOUNCE; }
+    if (p.y - r < 0)  { p.y = r;   p.oy = p.y + (p.y - p.oy) * WALL_BOUNCE; }
+}
+
+// ── Distance constraint (keep two points a fixed length apart) ────────────────
+function constrain(a, b, len, stiff) {
+    const dx = b.x - a.x, dy = b.y - a.y;
+    const d = Math.sqrt(dx*dx + dy*dy) || 0.0001;
+    const diff = (d - len) / d * 0.5 * stiff;
+    const offX = dx * diff, offY = dy * diff;
+    if (!a.pinned) { a.x += offX; a.y += offY; }
+    if (!b.pinned) { b.x -= offX; b.y -= offY; }
+}
+
+// ── Build a mob skeleton ──────────────────────────────────────────────────────
+// Skeleton layout (all offsets from spawn centre):
+//
+//          [HEAD]
+//            |
+//          [NECK]
+//         /      \
+//     [LSHO]    [RSHO]   <- shoulders
+//       |            |
+//     [LELB]    [RELB]   <- elbows
+//       |            |
+//     [LHAN]    [RHAN]   <- hands
+//
+//          [HIP]
+//         /      \
+//     [LKNE]    [RKNE]   <- knees
+//       |            |
+//     [LFOT]    [RFOT]   <- feet
+//
+// Extra "cheat" sticks keep head above hips so standing is stable:
+// NECK<->HIP   LSHO<->RSHO (shoulder brace)   LKNE<->RKNE (hip brace)
+
+function createMob(cx_spawn, cy_spawn, template) {
+    const s = (template.scale || 1) * (0.9 + Math.random() * 0.2); // slight height variance
+    const c = template.color;
+
+    // Joint positions (y increases downward)
+    const head  = mkPt(cx_spawn,        cy_spawn - 36*s);
+    const neck  = mkPt(cx_spawn,        cy_spawn - 24*s);
+    const lsho  = mkPt(cx_spawn - 10*s, cy_spawn - 20*s);
+    const rsho  = mkPt(cx_spawn + 10*s, cy_spawn - 20*s);
+    const lelb  = mkPt(cx_spawn - 18*s, cy_spawn - 8*s);
+    const relb  = mkPt(cx_spawn + 18*s, cy_spawn - 8*s);
+    const lhan  = mkPt(cx_spawn - 18*s, cy_spawn + 4*s);
+    const rhan  = mkPt(cx_spawn + 18*s, cy_spawn + 4*s);
+    const hip   = mkPt(cx_spawn,        cy_spawn);
+    const lkne  = mkPt(cx_spawn - 6*s,  cy_spawn + 14*s);
+    const rkne  = mkPt(cx_spawn + 6*s,  cy_spawn + 14*s);
+    const lfot  = mkPt(cx_spawn - 6*s,  cy_spawn + 28*s);
+    const rfot  = mkPt(cx_spawn + 6*s,  cy_spawn + 28*s);
+
+    const pts = { head, neck, lsho, rsho, lelb, relb, lhan, rhan,
+                  hip, lkne, rkne, lfot, rfot };
+
+    // Sticks: {a, b, len, stiff}
+    const dist = (a,b) => Math.hypot(a.x-b.x, a.y-b.y);
+    const sticks = [
+        // Spine
+        {a:'head', b:'neck', len:dist(head,neck), stiff:0.9},
+        {a:'neck', b:'hip',  len:dist(neck,hip),  stiff:0.85},
+        // Shoulders
+        {a:'neck', b:'lsho', len:dist(neck,lsho), stiff:0.85},
+        {a:'neck', b:'rsho', len:dist(neck,rsho), stiff:0.85},
+        {a:'lsho', b:'rsho', len:dist(lsho,rsho), stiff:0.7},  // shoulder brace
+        // Arms
+        {a:'lsho', b:'lelb', len:dist(lsho,lelb), stiff:0.88},
+        {a:'rsho', b:'relb', len:dist(rsho,relb), stiff:0.88},
+        {a:'lelb', b:'lhan', len:dist(lelb,lhan), stiff:0.88},
+        {a:'relb', b:'rhan', len:dist(relb,rhan), stiff:0.88},
+        // Hips and legs
+        {a:'hip',  b:'lkne', len:dist(hip, lkne), stiff:0.88},
+        {a:'hip',  b:'rkne', len:dist(hip, rkne), stiff:0.88},
+        {a:'lkne', b:'rkne', len:dist(lkne,rkne), stiff:0.6},  // hip brace
+        {a:'lkne', b:'lfot', len:dist(lkne,lfot), stiff:0.88},
+        {a:'rkne', b:'rfot', len:dist(rkne,rfot), stiff:0.88},
+        // Cross braces to stop full collapse
+        {a:'neck', b:'lkne', len:dist(neck,lkne), stiff:0.3},
+        {a:'neck', b:'rkne', len:dist(neck,rkne), stiff:0.3},
+    ];
+
+    return {
+        type: 'mob',
+        pts, sticks, s, c,
+        face: template.face,
+        color: template.color,
+        hp: template.hp, maxHp: template.hp,
+        frozen: false, shielded: false,
+        id: Math.random(),
+        collapsed: false,
+        // convenience centre for HUD / collision queries
+        get x() { return (this.pts.neck.x + this.pts.hip.x) * 0.5; },
+        get y() { return (this.pts.neck.y + this.pts.hip.y) * 0.5; },
+    };
+}
+
+// ── Update one mob ────────────────────────────────────────────────────────────
+function updateMobNew(mob, groundY) {
+    if (mob.frozen) return;
+    const grav = gravityOn ? GRAVITY_MOB : 0;
+    const ptArr = Object.values(mob.pts);
+
+    // 1. Integrate (apply gravity + inertia to every point)
+    ptArr.forEach(p => integratePt(p, grav));
+
+    // 2. Satisfy constraints + collide (several passes)
+    const stiffScale = mob.collapsed ? 0.15 : 1.0;
+    for (let iter = 0; iter < CONSTRAINT_ITERS; iter++) {
+        mob.sticks.forEach(s => {
+            constrain(mob.pts[s.a], mob.pts[s.b], s.len, s.stiff * stiffScale);
+        });
+        ptArr.forEach(p => collidePt(p, 3, groundY));
+    }
+}
+
+// ── Apply impulse (knockback) ─────────────────────────────────────────────────
+function knockMob(mob, srcX, srcY, force) {
+    Object.values(mob.pts).forEach(p => {
+        const dx = p.x - srcX, dy = p.y - srcY;
+        const d = Math.sqrt(dx*dx + dy*dy) || 1;
+        const f = force * Math.max(0, 1 - d / 240);
+        // Move oldX/oldY backward to create Verlet velocity impulse
+        p.ox -= (dx/d) * f * (0.4 + Math.random()*0.35);
+        p.oy -= (dy/d) * f * (0.4 + Math.random()*0.35) + f * 0.12;
+    });
+    if (force > 7) { mob.collapsed = true; setTimeout(() => mob.collapsed = false, 1200); }
+}
+
+// ── Find mob/point at screen position ────────────────────────────────────────
+function getMobAt(x, y) {
+    return mobs.find(m => {
+        return Object.values(m.pts).some(p => Math.hypot(p.x-x, p.y-y) < 10);
+    });
+}
+function getMobPtKeyAt(mob, x, y) {
+    return Object.entries(mob.pts)
+        .find(([k,p]) => Math.hypot(p.x-x, p.y-y) < 14)?.[0] || null;
+}
+
 """
+    content = content[:old_mob_system_start] + new_system + content[old_mob_system_end:]
+    with open('app/modules/quantum_sandbox.py', 'w') as f:
+        f.write(content)
+    print('Mob system replaced with People Playground skeleton style!')
+EOF
 modules/teacher_dashboard.py
 ─────────────────────────────
 Full teacher dashboard — class insights, progress charts,
@@ -465,105 +676,3 @@ def render_teacher_feedback():
 
 
 
-def render_teacher_feedback():
-    """Teacher feedback form — sends directly to developer."""
-    import requests
-    st.markdown("---")
-    st.subheader("📬 Send Feedback to QuantumVault")
-    st.markdown(
-        "Have a suggestion, found a bug, or want to share what your students loved? "
-        "We read every message and use your feedback to improve the platform!"
-    )
-
-    feedback_type = st.selectbox(
-        "Feedback type:",
-        [
-            "💡 Feature Request — I want something new",
-            "🐛 Bug Report — Something is broken",
-            "❤️ Positive Feedback — Something students loved",
-            "📚 Curriculum Suggestion — Content improvement",
-            "💰 Pricing Feedback — About the plans",
-            "🔧 Technical Issue — Performance or display problem",
-            "❓ Question — I need help with something",
-        ],
-        key="feedback_type"
-    )
-
-    col1, col2 = st.columns(2)
-    with col1:
-        teacher_name = st.text_input("Your name:", placeholder="Ms. Johnson", key="fb_name")
-        school_name  = st.text_input("School:", placeholder="Lincoln Elementary", key="fb_school")
-    with col2:
-        teacher_email = st.text_input("Your email:", placeholder="teacher@school.edu", key="fb_email")
-        grade_level   = st.selectbox("Grade level you teach:", [
-            "K-5 Elementary", "6-8 Middle School", "9-12 High School", "Mixed grades"
-        ], key="fb_grade")
-
-    feedback_text = st.text_area(
-        "Your feedback:",
-        placeholder=(
-            "Tell us what you think! Be as specific as possible — "
-            "which activity, which grade level, what happened, what you'd like to see..."
-        ),
-        height=150,
-        max_chars=2000,
-        key="fb_text"
-    )
-
-    rating = st.select_slider(
-        "Overall rating of QuantumVault Academy:",
-        options=["⭐", "⭐⭐", "⭐⭐⭐", "⭐⭐⭐⭐", "⭐⭐⭐⭐⭐"],
-        value="⭐⭐⭐⭐⭐",
-        key="fb_rating"
-    )
-
-    would_recommend = st.radio(
-        "Would you recommend QuantumVault to other teachers?",
-        ["Yes, definitely!", "Probably yes", "Not sure", "Probably not"],
-        horizontal=True,
-        key="fb_recommend"
-    )
-
-    if st.button("📬 Send Feedback!", key="fb_submit", type="primary"):
-        if not feedback_text or len(feedback_text.strip()) < 10:
-            st.error("Please write at least a sentence of feedback!")
-        elif not teacher_email or "@" not in teacher_email:
-            st.error("Please enter a valid email address!")
-        else:
-            msg = (
-                f"TYPE: {feedback_type}\n"
-                f"FROM: {teacher_name or 'Anonymous'} at {school_name or 'Unknown School'}\n"
-                f"EMAIL: {teacher_email}\n"
-                f"GRADE: {grade_level}\n"
-                f"RATING: {rating}\n"
-                f"RECOMMEND: {would_recommend}\n\n"
-                f"FEEDBACK:\n{feedback_text}"
-            )
-            try:
-                resp = requests.post(
-                    "https://formspree.io/f/mredvlgp",
-                    data={
-                        "email": teacher_email,
-                        "subject": f"QuantumVault Teacher Feedback: {feedback_type[:30]}",
-                        "message": msg,
-                        "_replyto": teacher_email,
-                    },
-                    headers={"Accept": "application/json"},
-                    timeout=10
-                )
-                if resp.status_code == 200:
-                    st.success(
-                        "✅ Feedback sent! Thank you so much — "
-                        "we read every message and will follow up within 48 hours."
-                    )
-                    st.balloons()
-                else:
-                    st.warning(
-                        "Feedback form unavailable right now. "
-                        "Please email us directly at hello@quantumvaultacademy.com"
-                    )
-            except Exception:
-                st.info(
-                    "Could not connect to feedback service. "
-                    "Please email hello@quantumvaultacademy.com directly!"
-                )
