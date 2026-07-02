@@ -1658,26 +1658,18 @@ cv.addEventListener('touchstart',e=>{
 document.addEventListener('keydown', function(e) {
     if (e.key === ' ' && gameActive) {
         e.preventDefault();
-        // Find nearest zombie to center of screen
         var nearest = null, nearestDist = Infinity;
         zombies.forEach(function(z) {
             var d = Math.hypot(z.x - W/2, z.y - H/2);
             if (d < nearestDist) { nearestDist = d; nearest = z; }
         });
-        if (nearest) {
-            shoot(nearest.x, nearest.y);
-            // Visual flash on target
-            spawnParticles(nearest.x, nearest.y, WEAPONS[selectedWeapon].color || '#fbbf24', 6);
-        } else {
-            // No zombie — shoot center
-            shoot(W/2, H/2);
-        }
+        if (nearest) shoot(nearest.x, nearest.y);
+        else shoot(W/2, H/2);
     }
-    // Number keys 1-4 switch weapons
-    if (e.key === '1') selectWeapon('kyber');
-    if (e.key === '2') selectWeapon('dilithium');
-    if (e.key === '3') selectWeapon('sphincs');
-    if (e.key === '4') selectWeapon('falcon');
+    if (e.key==='1') selectedWeapon='kyber';
+    if (e.key==='2') selectedWeapon='dilithium';
+    if (e.key==='3') selectedWeapon='sphincs';
+    if (e.key==='4') selectedWeapon='falcon';
 });
 
 
