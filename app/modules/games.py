@@ -1783,8 +1783,8 @@ function update(){
         z.wobble+=0.08;
         const dx=W/2-z.x, dy=H*0.85-z.y;
         const d=Math.sqrt(dx*dx+dy*dy)||1;
-        z.x+=z.vx*0.5+(dx/d)*z.vx*0.5;
-        z.y+=z.vy+(dy/d)*Math.abs(z.vx)*0.3;
+        z.x+=( dx/d)*Math.abs(z.vx);
+        z.y+=(dy/d)*Math.abs(z.vx)*0.3+z.vy;
         z.x=Math.max(-30,Math.min(W+30,z.x));
         z.y=Math.max(40,Math.min(H-40,z.y));
 
