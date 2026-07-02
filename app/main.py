@@ -92,7 +92,10 @@ import time as _time
 _SESSION_TTL = 8 * 3600  # 8 hours
 if st.session_state.get("mfa_verified"):
     _login_time = st.session_state.get("login_timestamp", 0)
-    if _time.time() - _login_time > _SESSION_TTL:
+    # Only expire if timestamp exists (0 means pre-existing session — give it a fresh stamp)
+    if _login_time == 0:
+        st.session_state["login_timestamp"] = _time.time()
+    elif _time.time() - _login_time > _SESSION_TTL:
         # Session expired - clear auth state
         for _k in ["mfa_verified","user_email","mfa_step","mfa_code","mfa_code_time","mfa_email","mfa_attempts"]:
             if _k in st.session_state:
