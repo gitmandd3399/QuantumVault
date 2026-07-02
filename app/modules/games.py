@@ -1428,14 +1428,14 @@ setMsg('Click any grid tile to place a tower! Avoid the path tiles.');
 """, height=600)
 
 def render_zombie_blast(difficulty: str = "easy"):
-    """Elementary: Zombie Blast — UPGRADED 2026 — tap to shoot Shor Zombies, collect PQC shields."""
+    """Elementary: Zombie Blast — tap to shoot Shor Zombies, collect PQC shields."""
     import streamlit as st
     import streamlit.components.v1 as components
     st.subheader("🧟 Quantum Zombie Blast!")
     st.markdown(
         "**Shor Zombies are attacking your server!** "
-        "Click/tap zombies to blast them with quantum shields! "
-        "Collect power crystals to unlock special weapons!"
+        "Click/tap zombies to blast them! "
+        "Spacebar shoots the nearest zombie. Keys 1-4 switch weapons!"
     )
     components.html(r"""
 <!DOCTYPE html>
@@ -1445,621 +1445,486 @@ def render_zombie_blast(difficulty: str = "easy"):
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
 body{background:#020d14;font-family:'Segoe UI',sans-serif;color:white;overflow:hidden;}
-#wrap{display:flex;flex-direction:column;align-items:center;padding:8px;max-width:580px;margin:0 auto;}
-.hud{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;width:100%;margin-bottom:6px;}
-.hb{background:#071520;border:1px solid #1a3a5a;border-radius:8px;padding:5px 3px;
-    text-align:center;font-size:9px;color:#60a5fa;}
+#wrap{max-width:580px;margin:0 auto;padding:8px;}
+.hud{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-bottom:6px;}
+.hb{background:#071520;border:1px solid #1a3a5a;border-radius:8px;padding:5px 3px;text-align:center;font-size:9px;color:#60a5fa;}
 .hb b{display:block;font-size:14px;color:white;}
-
-/* SERVER HP BAR */
-#server-hp-wrap{width:100%;background:#071520;border:1px solid #ef444440;
-    border-radius:8px;padding:5px 10px;margin-bottom:6px;
-    display:flex;align-items:center;gap:8px;}
+#server-hp-wrap{width:100%;background:#071520;border:1px solid #ef444440;border-radius:8px;padding:5px 10px;margin-bottom:6px;display:flex;align-items:center;gap:8px;}
 #server-label{font-size:10px;color:#ef4444;white-space:nowrap;}
 #server-bar-bg{flex:1;height:10px;background:#1e293b;border-radius:5px;}
-#server-bar{height:10px;border-radius:5px;transition:width 0.3s;
-    background:linear-gradient(90deg,#ef4444,#fbbf24,#10b981);}
+#server-bar{height:10px;border-radius:5px;transition:width 0.3s;background:linear-gradient(90deg,#ef4444,#fbbf24,#10b981);}
 #server-pct{font-size:10px;color:#10b981;white-space:nowrap;font-weight:bold;}
-
-/* CANVAS */
-#cv{border:2px solid #1d4ed8;border-radius:10px;display:block;cursor:crosshair;
-    box-shadow:0 0 20px rgba(29,78,216,0.2);}
-
-/* WEAPON SELECTOR */
+#cv{border:2px solid #1d4ed8;border-radius:10px;display:block;cursor:crosshair;box-shadow:0 0 20px rgba(29,78,216,0.2);}
 #weapon-bar{display:flex;gap:4px;justify-content:center;margin-top:5px;flex-wrap:wrap;}
-.wpn-btn{padding:5px 10px;border-radius:8px;border:2px solid #1a3a5a;
-    background:#071520;color:#94a3b8;font-size:10px;cursor:pointer;transition:all 0.15s;}
-.wpn-btn:hover{border-color:#3b82f6;color:white;}
+.wpn-btn{padding:5px 10px;border-radius:8px;border:2px solid #1a3a5a;background:#071520;color:#94a3b8;font-size:10px;cursor:pointer;transition:all 0.15s;}
 .wpn-btn.active{border-color:#fbbf24;background:#1a1500;color:#fbbf24;}
 .wpn-btn.locked{opacity:0.3;cursor:not-allowed;}
-.wpn-btn .we{font-size:16px;display:block;margin-bottom:1px;}
-
-/* BUTTONS */
-.btns{display:flex;gap:4px;margin-top:5px;width:100%;}
-.btn{flex:1;padding:7px;border-radius:8px;border:none;cursor:pointer;
-    font-size:11px;font-weight:bold;color:white;transition:all 0.15s;}
-.btn:hover{filter:brightness(1.2);}
+.btns{display:flex;gap:4px;margin-top:5px;}
+.btn{flex:1;padding:7px;border-radius:8px;border:none;cursor:pointer;font-size:11px;font-weight:bold;color:white;}
 .btn-start{background:linear-gradient(135deg,#059669,#10b981);}
 .btn-reset{background:#334155;}
-
-/* MSG + FACT */
-#msg-bar{background:#071520;border:1px solid #1a3a5a;border-radius:8px;
-    padding:5px 12px;width:100%;margin-top:5px;font-size:10px;
-    color:#60a5fa;text-align:center;min-height:22px;}
-#fact-box{background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.3);
-    border-radius:8px;padding:6px 10px;margin-top:4px;font-size:10px;
-    color:#93c5fd;display:none;line-height:1.5;width:100%;text-align:center;}
-
-/* CONFETTI */
-.cp{position:fixed;pointer-events:none;z-index:999;width:8px;height:8px;
-    border-radius:2px;animation:cf linear forwards;}
-@keyframes cf{0%{transform:translateY(-20px) rotate(0deg);opacity:1;}
-    100%{transform:translateY(600px) rotate(720deg);opacity:0;}}
-
-/* FLOATING TEXT */
-.float-text{position:absolute;pointer-events:none;font-size:14px;font-weight:bold;
-    animation:floatUp 0.8s ease forwards;z-index:50;}
-@keyframes floatUp{0%{opacity:1;transform:translateY(0);}100%{opacity:0;transform:translateY(-40px);}}
+#msg-bar{background:#071520;border:1px solid #1a3a5a;border-radius:8px;padding:5px 12px;width:100%;margin-top:5px;font-size:10px;color:#60a5fa;text-align:center;min-height:22px;}
+#fact-box{background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.3);border-radius:8px;padding:6px 10px;margin-top:4px;font-size:10px;color:#93c5fd;display:none;line-height:1.5;width:100%;text-align:center;}
+.cp{position:fixed;pointer-events:none;z-index:999;width:8px;height:8px;border-radius:2px;animation:cf linear forwards;}
+@keyframes cf{0%{transform:translateY(-20px) rotate(0deg);opacity:1;}100%{transform:translateY(600px) rotate(720deg);opacity:0;}}
 </style>
 </head>
 <body>
 <div id="wrap">
-
 <div class="hud">
     <div class="hb">⭐ Score<br><b id="h-score">0</b></div>
     <div class="hb">🌊 Wave<br><b id="h-wave">1</b>/10</div>
     <div class="hb">💎 Crystals<br><b id="h-crystals">0</b></div>
     <div class="hb">🔥 Combo<br><b id="h-combo">x1</b></div>
 </div>
-
 <div id="server-hp-wrap">
     <span id="server-label">🖥️ Server:</span>
     <div id="server-bar-bg"><div id="server-bar" style="width:100%"></div></div>
     <span id="server-pct">100%</span>
 </div>
-
-<div style="position:relative;width:560px;">
-    <canvas id="cv" width="560" height="340"></canvas>
-</div>
-
+<canvas id="cv" width="560" height="340"></canvas>
 <div id="weapon-bar">
-    <div class="wpn-btn active" onclick="selectWeapon('kyber')" id="wp-kyber">
-        <span class="we">🔐</span>ML-KEM
-    </div>
-    <div class="wpn-btn locked" onclick="selectWeapon('dilithium')" id="wp-dilithium">
-        <span class="we">✍️</span>ML-DSA
-    </div>
-    <div class="wpn-btn locked" onclick="selectWeapon('sphincs')" id="wp-sphincs">
-        <span class="we">🌲</span>SPHINCS+
-    </div>
-    <div class="wpn-btn locked" onclick="selectWeapon('falcon')" id="wp-falcon">
-        <span class="we">🦅</span>Falcon
-    </div>
+    <div class="wpn-btn active" id="wp-kyber" onclick="selectWeapon('kyber')">🔐 ML-KEM [1]</div>
+    <div class="wpn-btn locked" id="wp-dilithium" onclick="selectWeapon('dilithium')">✍️ ML-DSA [2]</div>
+    <div class="wpn-btn locked" id="wp-sphincs" onclick="selectWeapon('sphincs')">🌲 SPHINCS+ [3]</div>
+    <div class="wpn-btn locked" id="wp-falcon" onclick="selectWeapon('falcon')">🦅 Falcon [4]</div>
 </div>
-
 <div class="btns">
     <button class="btn btn-start" id="start-btn" onclick="startGame()">▶ Start!</button>
     <button class="btn btn-reset" onclick="resetGame()">🔄 Reset</button>
 </div>
-
-<div id="msg-bar">Click START to defend your server from Shor Zombies!</div>
+<div id="msg-bar">Click START to defend your server! Spacebar = shoot nearest zombie</div>
 <div id="fact-box"></div>
 </div>
-
 <script>
-const cv = document.getElementById('cv');
-const cx = cv.getContext('2d');
-const W=560, H=340;
+var cv = document.getElementById('cv');
+var cx = cv.getContext('2d');
+var W = 560, H = 340;
 
-// ── WEAPONS ───────────────────────────────────────────────────────────────────
-const WEAPONS = {
-    kyber:    {name:'ML-KEM',  emoji:'🔐', color:'#10b981', dmg:1, splash:0, unlockAt:0,
-               fact:'ML-KEM (Kyber FIPS 203) blasts enemies with lattice math — quantum computers cannot crack it!'},
-    dilithium:{name:'ML-DSA',  emoji:'✍️',  color:'#3b82f6', dmg:2, splash:0, unlockAt:5,
-               fact:'ML-DSA (Dilithium FIPS 204) fires signature bolts that verify your identity — unbreakable!'},
-    sphincs:  {name:'SPHINCS+',emoji:'🌲', color:'#8b5cf6', dmg:1, splash:60, unlockAt:10,
-               fact:'SLH-DSA (SPHINCS+ FIPS 205) fires a hash storm that hits ALL nearby enemies!'},
-    falcon:   {name:'Falcon',  emoji:'🦅', color:'#f59e0b', dmg:5, splash:0, unlockAt:20,
-               fact:'FN-DSA (Falcon FIPS 206) fires compact NTRU spikes — 5x damage, one-shot weaker zombies!'},
+var WEAPONS = {
+    kyber:     {name:'ML-KEM',   emoji:'🔐', color:'#10b981', dmg:1, splash:0,  unlockAt:0,   fact:'ML-KEM (Kyber FIPS 203) blasts enemies with lattice math!'},
+    dilithium: {name:'ML-DSA',   emoji:'✍️',  color:'#3b82f6', dmg:2, splash:0,  unlockAt:200, fact:'ML-DSA (Dilithium FIPS 204) fires signature bolts!'},
+    sphincs:   {name:'SPHINCS+', emoji:'🌲', color:'#8b5cf6', dmg:1, splash:60, unlockAt:500, fact:'SLH-DSA (SPHINCS+ FIPS 205) fires a hash storm!'},
+    falcon:    {name:'Falcon',   emoji:'🦅', color:'#f59e0b', dmg:5, splash:0,  unlockAt:1000,fact:'FN-DSA (Falcon FIPS 206) fires compact NTRU spikes!'},
 };
 
-// ── ZOMBIE TYPES ──────────────────────────────────────────────────────────────
-const ZOMBIE_TYPES=[
-    {emoji:"🧟",hp:4, speed:0.4, pts:10, color:"#10b981", name:"Baby Shor"},
-    {emoji:"👾",hp:6, speed:0.6, pts:15, color:"#3b82f6", name:"Shor Bot"},
-    {emoji:"🤖",hp:10,speed:0.8, pts:25, color:"#ef4444", name:"RSA Zombie"},
-    {emoji:"💀",hp:16,speed:1.0, pts:40, color:"#8b5cf6", name:"Grover Ghost"},
-    {emoji:"👑",hp:40,speed:0.5, pts:100,color:"#fbbf24", name:"Quantum Boss"},
-
-// ── PQC FACTS (shown on crystal collect) ────────────────────────────────────
-const FACTS=[
-    '🔐 You collected a Kyber Crystal! ML-KEM (FIPS 203) protects key exchange with lattice math!',
-    '✍️ You collected a Dilithium Crystal! ML-DSA (FIPS 204) creates unbreakable digital signatures!',
-    '🌲 You collected a SPHINCS+ Crystal! SLH-DSA (FIPS 205) uses SHA-3 hash trees for safety!',
-    '🦅 You collected a Falcon Crystal! FN-DSA (FIPS 206) makes the smallest quantum-safe signatures!',
+var ZOMBIE_TYPES = [
+    {emoji:'🧟', hp:4,  speed:0.4, pts:10,  color:'#10b981', name:'Baby Shor'},
+    {emoji:'👾', hp:6,  speed:0.6, pts:15,  color:'#3b82f6', name:'Shor Bot'},
+    {emoji:'🤖', hp:10, speed:0.8, pts:25,  color:'#ef4444', name:'RSA Zombie'},
+    {emoji:'💀', hp:16, speed:1.0, pts:40,  color:'#8b5cf6', name:'Grover Ghost'},
+    {emoji:'👑', hp:40, speed:0.5, pts:100, color:'#fbbf24', name:'Quantum Boss'},
 ];
 
-// ── GAME STATE ────────────────────────────────────────────────────────────────
-let zombies=[], bullets=[], particles=[], floatTexts=[], crystals=[];
-let score=0, wave=1, combo=1, comboTimer=0, serverHp=100;
-let crystalCount=0, gameActive=false, frameId=null;
-let selectedWeapon='kyber', unlockedWeapons=['kyber'];
-let spawnTimer=0, spawnCount=0, spawnTotal=0, waveClearing=false;
-let bgStars=[];
+var FACTS = [
+    'ML-KEM (Kyber FIPS 203) protects key exchange with lattice math!',
+    'ML-DSA (Dilithium FIPS 204) creates unbreakable digital signatures!',
+    'SLH-DSA (SPHINCS+ FIPS 205) uses SHA-3 hash trees!',
+    'FN-DSA (Falcon FIPS 206) makes tiny quantum-safe signatures!',
+];
 
-// ── BACKGROUND ────────────────────────────────────────────────────────────────
-for(let i=0;i<60;i++){
-    bgStars.push({x:Math.random()*W,y:Math.random()*H,
-        r:Math.random()*1.5,alpha:Math.random()*0.5+0.2,
-        twinkle:Math.random()*Math.PI*2});
+// Game state
+var zombies = [], bullets = [], particles = [], floatTexts = [], crystals = [];
+var score = 0, wave = 1, combo = 1, comboTimer = 0, serverHp = 100;
+var crystalCount = 0, gameActive = false, frameId = null;
+var selectedWeapon = 'kyber', unlockedWeapons = ['kyber'];
+var spawnTimer = 0, spawnCount = 0, spawnTotal = 0, waveClearing = false;
+var bgStars = [];
+for (var si = 0; si < 60; si++) {
+    bgStars.push({x:Math.random()*W, y:Math.random()*H, r:Math.random()*1.5, a:Math.random()*0.5+0.2});
 }
 
-function startGame(){
+function startGame() {
     zombies=[]; bullets=[]; particles=[]; crystals=[]; floatTexts=[];
     score=0; wave=1; combo=1; comboTimer=0; serverHp=100;
     crystalCount=0; waveClearing=false; spawnCount=0; spawnTimer=0;
-    unlockedWeapons=['kyber'];
-    selectedWeapon='kyber';
+    unlockedWeapons=['kyber']; selectedWeapon='kyber';
     updateWeaponBar();
     startWave();
     gameActive=true;
-    if(frameId) cancelAnimationFrame(frameId);
-    loop();
-    document.getElementById('start-btn').disabled=true;
+    if (frameId) cancelAnimationFrame(frameId);
+    frameId = requestAnimationFrame(loop);
+    document.getElementById('start-btn').disabled = true;
     updateHUD();
-    setMsg('🧟 Wave 1 starting! Click zombies to blast them!');
+    setMsg('Wave 1 starting! Click zombies or press SPACE to blast them!');
 }
 
-function startWave(){
-    const waveIdx=Math.min(wave-1,9);
-    spawnTotal=8+wave*3;
-    spawnCount=0; spawnTimer=0; waveClearing=false;
-    const zombieType=ZOMBIE_TYPES[Math.min(Math.floor(wave/2),ZOMBIE_TYPES.length-1)];
-    setMsg('🌊 Wave '+wave+': '+spawnTotal+'x '+zombieType.name+' incoming!');
+function startWave() {
+    spawnTotal = 8 + wave * 3;
+    spawnCount = 0; spawnTimer = 0; waveClearing = false;
+    var zombieType = ZOMBIE_TYPES[Math.min(Math.floor(wave/2), ZOMBIE_TYPES.length-1)];
+    setMsg('Wave ' + wave + ': ' + spawnTotal + 'x ' + zombieType.name + ' incoming!');
 }
 
-function spawnZombie(){
-    const waveIdx=Math.min(Math.floor(wave/2),ZOMBIE_TYPES.length-1);
-    const type=ZOMBIE_TYPES[waveIdx];
-    // Spawn from left or right edge
-    const fromLeft=spawnCount%2===0;
+function spawnZombie() {
+    var waveIdx = Math.min(Math.floor(wave/2), ZOMBIE_TYPES.length-1);
+    var type = ZOMBIE_TYPES[waveIdx];
+    var fromLeft = spawnCount % 2 === 0;
+    var speed = type.speed * (1 + wave * 0.08);
     zombies.push({
-        x:fromLeft?10:W-10,y:80+Math.random()*(H-160),
-        vx:fromLeft?type.speed*(1+wave*0.08):-type.speed*(1+wave*0.08)*1.8,
-        vy:(Math.random()-0.5)*0.3,
-        hp:type.hp*(1+wave*0.2), maxHp:type.hp*(1+wave*0.2),
-        emoji:type.emoji, color:type.color,
-        pts:type.pts, r:18,
-        wobble:Math.random()*Math.PI*2,
-        id:Math.random(),
+        x: fromLeft ? 10 : W-10,
+        y: 80 + Math.random() * (H-160),
+        vx: fromLeft ? speed * 0.9 : -speed * 1.8,
+        vy: (Math.random()-0.5) * 0.3,
+        hp: type.hp * (1 + wave * 0.2),
+        maxHp: type.hp * (1 + wave * 0.2),
+        emoji: type.emoji, color: type.color,
+        pts: type.pts, r: 18,
+        wobble: Math.random() * Math.PI * 2,
+        id: Math.random(),
     });
 }
 
-// ── CLICK TO SHOOT ────────────────────────────────────────────────────────────
-cv.addEventListener('click',e=>{
-    if(!gameActive) return;
-    const rect=cv.getBoundingClientRect();
-    const mx=(e.clientX-rect.left)*(W/rect.width);
-    const my=(e.clientY-rect.top)*(H/rect.height);
-    shoot(mx,my);
-});
-cv.addEventListener('touchstart',e=>{
-    if(!gameActive) return;
-    e.preventDefault();
-    const rect=cv.getBoundingClientRect();
-    const t=e.touches[0];
-    const mx=(t.clientX-rect.left)*(W/rect.width);
-    const my=(t.clientY-rect.top)*(H/rect.height);
-    shoot(mx,my);
-},{passive:false});
-
-
-
-function shoot(mx,my){
-    const wpn=WEAPONS[selectedWeapon];
-    // Find zombie at click point
-    const hit=zombies.find(z=>Math.hypot(z.x-mx,z.y-my)<z.r+10);
-    if(hit){
-        // Direct hit
-        if(wpn.splash>0){
-            // Splash damage
-            zombies.forEach(z=>{
-                if(Math.hypot(z.x-hit.x,z.y-hit.y)<wpn.splash){
-                    damageZombie(z,wpn.dmg,mx,my);
-                }
-            });
-            spawnParticles(hit.x,hit.y,wpn.color,15);
-        } else {
-            damageZombie(hit,wpn.dmg,mx,my);
+// Click to shoot
+cv.addEventListener('click', function(e) {
+    if (!gameActive) return;
+    var rect = cv.getBoundingClientRect();
+    var mx = (e.clientX-rect.left)*(W/rect.width);
+    var my = (e.clientY-rect.top)*(H/rect.height);
+    // Check crystal
+    for (var ci = crystals.length-1; ci >= 0; ci--) {
+        var c = crystals[ci];
+        if (Math.hypot(c.x-mx, c.y-my) < 20) {
+            crystals.splice(ci, 1);
+            crystalCount++;
+            score += 100;
+            showFact(FACTS[crystalCount%FACTS.length]);
+            addFloat(mx, my, '💎+100', '#fbbf24');
+            confetti();
+            checkUnlocks();
+            updateHUD();
+            return;
         }
-        // Combo
-        combo=Math.min(combo+1,8);
-        comboTimer=90;
-        updateHUD();
+    }
+    shoot(mx, my);
+});
+
+cv.addEventListener('touchstart', function(e) {
+    if (!gameActive) return;
+    e.preventDefault();
+    var rect = cv.getBoundingClientRect();
+    var t = e.touches[0];
+    var mx = (t.clientX-rect.left)*(W/rect.width);
+    var my = (t.clientY-rect.top)*(H/rect.height);
+    shoot(mx, my);
+}, {passive:false});
+
+function shoot(mx, my) {
+    var wpn = WEAPONS[selectedWeapon];
+    var hit = null;
+    for (var zi = 0; zi < zombies.length; zi++) {
+        if (Math.hypot(zombies[zi].x-mx, zombies[zi].y-my) < zombies[zi].r+10) {
+            hit = zombies[zi]; break;
+        }
+    }
+    if (hit) {
+        if (wpn.splash > 0) {
+            for (var si2 = zombies.length-1; si2 >= 0; si2--) {
+                if (Math.hypot(zombies[si2].x-hit.x, zombies[si2].y-hit.y) < wpn.splash) {
+                    damageZombie(zombies[si2], wpn.dmg);
+                }
+            }
+            spawnParticles(hit.x, hit.y, wpn.color, 15);
+        } else {
+            damageZombie(hit, wpn.dmg);
+        }
+        combo = Math.min(combo+1, 8);
+        comboTimer = 90;
     } else {
-        // Miss — fire bullet toward click
-        bullets.push({
-            x:W/2,y:H+20,tx:mx,ty:my,
-            speed:8,dmg:wpn.dmg,color:wpn.color,
-            emoji:wpn.emoji,r:6,splash:wpn.splash,
-            id:Math.random(),
-        });
-        combo=Math.max(1,combo-1);
+        bullets.push({x:W/2, y:H+20, tx:mx, ty:my, speed:8, dmg:wpn.dmg, color:wpn.color, emoji:wpn.emoji, splash:wpn.splash, id:Math.random()});
+        combo = Math.max(1, combo-1);
     }
-    spawnParticles(mx,my,wpn.color,4);
+    spawnParticles(mx, my, wpn.color, 4);
+    updateHUD();
 }
 
-function damageZombie(z,dmg,sx,sy){
-    const wpn=WEAPONS[selectedWeapon];
-    z.hp-=dmg*combo;
-    spawnParticles(z.x,z.y,z.color,6);
-    addFloatText(z.x,z.y,'-'+(dmg*combo)+'💀',z.color);
-    if(z.hp<=0){
-        killZombie(z,sx,sy);
-    }
+function damageZombie(z, dmg) {
+    z.hp -= dmg * combo;
+    spawnParticles(z.x, z.y, z.color, 6);
+    addFloat(z.x, z.y, '-'+(dmg*combo), z.color);
+    if (z.hp <= 0) killZombie(z);
 }
 
-function killZombie(z,sx,sy){
-    zombies=zombies.filter(zz=>zz!==z);
-    const pts=z.pts*combo;
-    score+=pts;
-    addFloatText(z.x,z.y,'+'+pts+'⭐','#fbbf24');
-    spawnParticles(z.x,z.y,'#fbbf24',10);
-    // Crystal drop chance
-    if(Math.random()<0.3){
-        const ci=crystalCount%4;
-        crystals.push({x:z.x,y:z.y,emoji:['🔐','✍️','🌲','🦅'][ci],
-            color:['#10b981','#3b82f6','#8b5cf6','#f59e0b'][ci],
-            id:Math.random(),timer:180,ci});
+function killZombie(z) {
+    zombies = zombies.filter(function(zz){return zz!==z;});
+    var pts = z.pts * combo;
+    score += pts;
+    addFloat(z.x, z.y, '+'+pts+'⭐', '#fbbf24');
+    spawnParticles(z.x, z.y, '#fbbf24', 10);
+    if (Math.random() < 0.3) {
+        var ci = crystalCount % 4;
+        crystals.push({x:z.x, y:z.y, emoji:['🔐','✍️','🌲','🦅'][ci], color:['#10b981','#3b82f6','#8b5cf6','#f59e0b'][ci], id:Math.random(), timer:180, ci:ci});
     }
-    // Unlock weapons at crystal milestones
     checkUnlocks();
     updateHUD();
 }
 
-function checkUnlocks(){
-    if(score>=200&&!unlockedWeapons.includes('dilithium')){
-        unlockedWeapons.push('dilithium');
-        showFact('✍️ ML-DSA (Dilithium) UNLOCKED! Fires double-damage signature bolts!');
-        updateWeaponBar();
-    }
-    if(score>=500&&!unlockedWeapons.includes('sphincs')){
-        unlockedWeapons.push('sphincs');
-        showFact('🌲 SPHINCS+ UNLOCKED! Fires a hash storm that hits ALL nearby enemies!');
-        updateWeaponBar();
-    }
-    if(score>=1000&&!unlockedWeapons.includes('falcon')){
-        unlockedWeapons.push('falcon');
-        showFact('🦅 Falcon UNLOCKED! 5x damage NTRU spikes — one-shot weaker zombies!');
-        updateWeaponBar();
-    }
+function checkUnlocks() {
+    if (score>=200 && !unlockedWeapons.includes('dilithium')) { unlockedWeapons.push('dilithium'); showFact('✍️ ML-DSA UNLOCKED! Double damage!'); updateWeaponBar(); }
+    if (score>=500 && !unlockedWeapons.includes('sphincs'))   { unlockedWeapons.push('sphincs');   showFact('🌲 SPHINCS+ UNLOCKED! Splash damage!'); updateWeaponBar(); }
+    if (score>=1000&& !unlockedWeapons.includes('falcon'))    { unlockedWeapons.push('falcon');    showFact('🦅 Falcon UNLOCKED! 5x damage!'); updateWeaponBar(); }
 }
 
-// ── CRYSTAL COLLECTION ────────────────────────────────────────────────────────
-function checkCrystalPickup(){
-    crystals.forEach(c=>{
-        // Auto-collect crystals (they just float and disappear after timer)
-        c.timer--;
-        if(c.timer<=0){
-            crystals=crystals.filter(cr=>cr!==c);
-            crystalCount++;
-            score+=50;
-            showFact(FACTS[c.ci%FACTS.length]);
-            addFloatText(c.x,c.y,'💎+50','#fbbf24');
-            updateHUD();
-        }
-    });
-    // Click to collect early
-}
-cv.addEventListener('click',e=>{
-    if(!gameActive) return;
-    const rect=cv.getBoundingClientRect();
-    const mx=(e.clientX-rect.left)*(W/rect.width);
-    const my=(e.clientY-rect.top)*(H/rect.height);
-    crystals.forEach(c=>{
-        if(Math.hypot(c.x-mx,c.y-my)<20){
-            crystals=crystals.filter(cr=>cr!==c);
-            crystalCount++;
-            score+=100;
-            showFact(FACTS[c.ci%FACTS.length]);
-            addFloatText(c.x,c.y,'💎+100⭐','#fbbf24');
-            confetti();
-            updateHUD();
-        }
-    });
-});
-
-// ── UPDATE ────────────────────────────────────────────────────────────────────
-function update(){
-    if(!gameActive) return;
-
-    // Spawn zombies
-    if(spawnCount<spawnTotal){
+function update() {
+    if (!gameActive) return;
+    if (comboTimer > 0) { comboTimer--; if (comboTimer===0) combo = Math.max(1,combo-1); }
+    if (spawnCount < spawnTotal) {
         spawnTimer++;
-        if(spawnTimer>=15){ spawnTimer=0; spawnCount++; spawnZombie(); }
+        if (spawnTimer >= 15) { spawnTimer=0; spawnCount++; spawnZombie(); }
     }
-
-    // Move zombies toward server (center bottom)
-    zombies.forEach(z=>{
-        z.wobble+=0.08;
-        const dx=W/2-z.x, dy=H*0.85-z.y;
-        const d=Math.sqrt(dx*dx+dy*dy)||1;
-        z.x+=( dx/d)*Math.abs(z.vx);
-        z.y+=(dy/d)*Math.abs(z.vx)*0.3+z.vy;
-        z.x=Math.max(-30,Math.min(W+30,z.x));
-        z.y=Math.max(40,Math.min(H-40,z.y));
-
-        // Reached server
-        if(d<50){
-            serverHp-=0.5;
+    // Move zombies toward server
+    for (var zi = zombies.length-1; zi >= 0; zi--) {
+        var z = zombies[zi];
+        z.wobble += 0.08;
+        var dx = W/2-z.x, dy = H*0.85-z.y;
+        var d = Math.sqrt(dx*dx+dy*dy) || 1;
+        z.x += (dx/d) * Math.abs(z.vx);
+        z.y += (dy/d) * Math.abs(z.vx) * 0.3 + z.vy;
+        if (d < 50) {
+            serverHp -= 0.5;
             updateServerHp();
-            if(serverHp<=0) gameOver();
+            if (serverHp <= 0) { gameOver(); return; }
         }
-    });
-
+    }
     // Move bullets
-    bullets.forEach(b=>{
-        const dx=b.tx-b.x, dy=b.ty-b.y;
-        const d=Math.sqrt(dx*dx+dy*dy)||1;
-        b.x+=dx/d*b.speed; b.y+=dy/d*b.speed;
-        if(d<b.speed+4){
-            // Check zombie hits
-            if(b.splash>0){
-                zombies.forEach(z=>{
-                    if(Math.hypot(z.x-b.tx,z.y-b.ty)<b.splash) damageZombie(z,b.dmg,b.x,b.y);
-                });
-                spawnParticles(b.tx,b.ty,b.color,12);
+    for (var bi = bullets.length-1; bi >= 0; bi--) {
+        var b = bullets[bi];
+        var bdx = b.tx-b.x, bdy = b.ty-b.y;
+        var bd = Math.sqrt(bdx*bdx+bdy*bdy) || 1;
+        b.x += bdx/bd*b.speed; b.y += bdy/bd*b.speed;
+        if (bd < b.speed+4) {
+            if (b.splash > 0) {
+                for (var si3 = zombies.length-1; si3 >= 0; si3--) {
+                    if (Math.hypot(zombies[si3].x-b.tx, zombies[si3].y-b.ty) < b.splash) damageZombie(zombies[si3], b.dmg);
+                }
             } else {
-                const hit=zombies.find(z=>Math.hypot(z.x-b.tx,z.y-b.ty)<z.r+10);
-                if(hit) damageZombie(hit,b.dmg,b.x,b.y);
+                var bh = null;
+                for (var bzi = 0; bzi < zombies.length; bzi++) {
+                    if (Math.hypot(zombies[bzi].x-b.tx, zombies[bzi].y-b.ty) < zombies[bzi].r+10) { bh=zombies[bzi]; break; }
+                }
+                if (bh) damageZombie(bh, b.dmg);
             }
-            b.dead=true;
-        }
-        if(b.y<-20||b.y>H+20) b.dead=true;
-    });
-    bullets=bullets.filter(b=>!b.dead);
-
-    // Combo decay
-    if(comboTimer>0){ comboTimer--; if(comboTimer===0) combo=Math.max(1,combo-1); }
-
+            bullets.splice(bi, 1);
+        } else if (b.y < -20 || b.y > H+20) { bullets.splice(bi, 1); }
+    }
     // Crystal timers
-    checkCrystalPickup();
-
+    for (var ci2 = crystals.length-1; ci2 >= 0; ci2--) {
+        crystals[ci2].timer--;
+        if (crystals[ci2].timer <= 0) {
+            crystalCount++;
+            score += 50;
+            addFloat(crystals[ci2].x, crystals[ci2].y, '💎+50', '#fbbf24');
+            crystals.splice(ci2, 1);
+            updateHUD();
+        }
+    }
     // Particles
-    particles.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=0.08;p.alpha-=0.03;p.r*=0.95;});
-    particles=particles.filter(p=>p.alpha>0);
-
+    for (var pi = particles.length-1; pi >= 0; pi--) {
+        var p = particles[pi];
+        p.x+=p.vx; p.y+=p.vy; p.vy+=0.08; p.alpha-=0.03; p.r*=0.95;
+        if (p.alpha <= 0) particles.splice(pi, 1);
+    }
     // Float texts
-    floatTexts.forEach(f=>f.timer--);
-    floatTexts=floatTexts.filter(f=>f.timer>0);
-
-    // Wave clear check
-    if(spawnCount>=spawnTotal&&zombies.length===0&&!waveClearing){
-        waveClearing=true;
+    for (var fi = floatTexts.length-1; fi >= 0; fi--) {
+        floatTexts[fi].timer--;
+        if (floatTexts[fi].timer <= 0) floatTexts.splice(fi, 1);
+    }
+    // Wave clear
+    if (spawnCount >= spawnTotal && zombies.length === 0 && !waveClearing) {
+        waveClearing = true;
         waveComplete();
     }
-
-    // Background star twinkle
-    bgStars.forEach(s=>s.twinkle+=0.03);
 }
 
-function waveComplete(){
-    const bonus=wave*100;
-    score+=bonus;
+function waveComplete() {
+    var bonus = wave * 100;
+    score += bonus;
     wave++;
     updateHUD();
-    addFloatText(W/2,H/2,'Wave Clear! +'+bonus+'⭐','#fbbf24');
-    setMsg('✅ Wave '+(wave-1)+' cleared! +'+bonus+' bonus! Wave '+wave+' starting...');
-    if(wave>10){ victory(); return; }
-    setTimeout(()=>{ startWave(); waveClearing=false; },1200);
+    addFloat(W/2, H/2, 'Wave Clear! +'+bonus+'⭐', '#fbbf24');
+    setMsg('Wave '+(wave-1)+' cleared! +'+bonus+' bonus! Wave '+wave+' starting...');
+    if (wave > 10) { victory(); return; }
+    setTimeout(function() { startWave(); waveClearing=false; }, 1200);
 }
 
-function victory(){
-    gameActive=false;
-    setMsg('👑 ALL 10 WAVES DEFEATED! Server protected! Score: '+score);
+function victory() {
+    gameActive = false;
+    setMsg('👑 ALL 10 WAVES DEFEATED! Score: '+score);
     confetti();
-    document.getElementById('start-btn').disabled=false;
+    document.getElementById('start-btn').disabled = false;
 }
 
-function gameOver(){
-    gameActive=false;
-    serverHp=0; updateServerHp();
-    setMsg('💀 SERVER DESTROYED! Wave: '+wave+' | Score: '+score+' | Try again!');
-    document.getElementById('start-btn').disabled=false;
+function gameOver() {
+    gameActive = false;
+    serverHp = 0; updateServerHp();
+    setMsg('💀 SERVER DESTROYED! Wave: '+wave+' | Score: '+score);
+    document.getElementById('start-btn').disabled = false;
 }
 
-function resetGame(){
-    if(frameId) cancelAnimationFrame(frameId);
-    gameActive=false;
+function resetGame() {
+    if (frameId) cancelAnimationFrame(frameId);
+    gameActive = false;
     zombies=[]; bullets=[]; particles=[]; crystals=[]; floatTexts=[];
     score=0; wave=1; combo=1; comboTimer=0; serverHp=100;
     crystalCount=0; unlockedWeapons=['kyber']; selectedWeapon='kyber';
-    document.getElementById('start-btn').disabled=false;
+    document.getElementById('start-btn').disabled = false;
     updateHUD(); updateServerHp(); updateWeaponBar();
-    setMsg('Click START to defend your server from Shor Zombies!');
+    setMsg('Click START to defend your server!');
     document.getElementById('fact-box').style.display='none';
 }
 
-// ── DRAW ──────────────────────────────────────────────────────────────────────
-function draw(){
+function draw() {
     cx.clearRect(0,0,W,H);
-    // Sky gradient
-    const sky=cx.createLinearGradient(0,0,0,H);
-    sky.addColorStop(0,'#020d14'); sky.addColorStop(1,'#041020');
-    cx.fillStyle=sky; cx.fillRect(0,0,W,H);
-
-    // Background stars
-    bgStars.forEach(s=>{
-        cx.beginPath();cx.arc(s.x,s.y,s.r,0,Math.PI*2);
-        cx.fillStyle='rgba(255,255,255,'+(s.alpha*(0.5+0.5*Math.sin(s.twinkle)))+')';
-        cx.fill();
-    });
-
-    // Ground
+    cx.fillStyle='#020d14'; cx.fillRect(0,0,W,H);
+    bgStars.forEach(function(s) { cx.beginPath(); cx.arc(s.x,s.y,s.r,0,6.28); cx.fillStyle='rgba(255,255,255,'+s.a+')'; cx.fill(); });
     cx.fillStyle='#0a1f35'; cx.fillRect(0,H*0.85,W,H*0.15);
     cx.strokeStyle='#1d4ed840'; cx.lineWidth=2;
-    cx.beginPath();cx.moveTo(0,H*0.85);cx.lineTo(W,H*0.85);cx.stroke();
-
-    // Server (target)
-    cx.font='28px serif';cx.textAlign='center';cx.textBaseline='middle';
+    cx.beginPath(); cx.moveTo(0,H*0.85); cx.lineTo(W,H*0.85); cx.stroke();
+    // Server
+    cx.font='28px serif'; cx.textAlign='center'; cx.textBaseline='middle';
     cx.shadowColor=serverHp>50?'#10b981':'#ef4444'; cx.shadowBlur=15;
-    cx.fillText('🖥️',W/2,H*0.85+20);
-    cx.shadowBlur=0;
-
-    // Crystals (floating, pulsing)
-    crystals.forEach(c=>{
-        const pulse=0.8+0.2*Math.sin(Date.now()*0.005+c.id*10);
-        cx.font=(18*pulse)+'px serif';cx.textAlign='center';cx.textBaseline='middle';
-        cx.shadowColor=c.color; cx.shadowBlur=12*pulse;
-        cx.fillText(c.emoji,c.x,c.y-Math.sin(Date.now()*0.003+c.id*5)*6);
+    cx.fillText('🖥️',W/2,H*0.85+20); cx.shadowBlur=0;
+    // Crystals
+    crystals.forEach(function(c) {
+        cx.font='18px serif'; cx.textAlign='center'; cx.textBaseline='middle';
+        cx.shadowColor=c.color; cx.shadowBlur=12;
+        cx.fillText(c.emoji, c.x, c.y-Math.sin(Date.now()*0.003+c.id*5)*6);
         cx.shadowBlur=0;
     });
-
     // Zombies
-    zombies.forEach(z=>{
-        // Wobble animation
-        const wobbleX=Math.sin(z.wobble)*3;
-        const wobbleY=Math.cos(z.wobble*0.7)*2;
-        cx.font='26px serif';cx.textAlign='center';cx.textBaseline='middle';
+    zombies.forEach(function(z) {
+        cx.font='26px serif'; cx.textAlign='center'; cx.textBaseline='middle';
         cx.shadowColor=z.color; cx.shadowBlur=8;
-        cx.fillText(z.emoji,z.x+wobbleX,z.y+wobbleY);
+        cx.fillText(z.emoji, z.x+Math.sin(z.wobble)*3, z.y+Math.cos(z.wobble*0.7)*2);
         cx.shadowBlur=0;
-        // HP bar
-        const bw=28;
+        var bw=28;
         cx.fillStyle='#1e293b'; cx.fillRect(z.x-bw/2,z.y-24,bw,4);
         cx.fillStyle=z.hp/z.maxHp>0.5?'#10b981':'#ef4444';
         cx.fillRect(z.x-bw/2,z.y-24,bw*Math.max(0,z.hp/z.maxHp),4);
     });
-
     // Bullets
-    bullets.forEach(b=>{
-        cx.font='16px serif';cx.textAlign='center';cx.textBaseline='middle';
+    bullets.forEach(function(b) {
+        cx.font='16px serif'; cx.textAlign='center'; cx.textBaseline='middle';
         cx.shadowColor=b.color; cx.shadowBlur=10;
-        cx.fillText(b.emoji,b.x,b.y);
-        cx.shadowBlur=0;
+        cx.fillText(b.emoji,b.x,b.y); cx.shadowBlur=0;
     });
-
     // Particles
-    particles.forEach(p=>{
-        cx.beginPath();cx.arc(p.x,p.y,p.r,0,Math.PI*2);
+    particles.forEach(function(p) {
+        cx.beginPath(); cx.arc(p.x,p.y,p.r,0,6.28);
         cx.fillStyle=p.color+Math.floor(p.alpha*255).toString(16).padStart(2,'0');
         cx.fill();
     });
-
     // Float texts
-    floatTexts.forEach(f=>{
-        const alpha=f.timer/40;
-        const offset=1-(f.timer/40);
-        cx.font='bold 14px sans-serif';cx.textAlign='center';
+    floatTexts.forEach(function(f) {
+        var alpha = f.timer/40;
+        cx.font='bold 14px sans-serif'; cx.textAlign='center';
         cx.fillStyle=f.color+Math.floor(alpha*255).toString(16).padStart(2,'0');
-        cx.fillText(f.text,f.x,f.y-offset*30);
+        cx.fillText(f.text, f.x, f.y-(1-f.timer/40)*30);
     });
-
-    // Combo display
-    if(combo>1){
-        cx.font='bold '+(14+combo)+'px sans-serif';cx.textAlign='left';
+    if (combo > 1) {
+        cx.font='bold '+(14+combo)+'px sans-serif'; cx.textAlign='left';
         cx.fillStyle='#fbbf24';
         cx.fillText('🔥 x'+combo+' COMBO!',8,20);
     }
-
-    // Weapon indicator
-    const wpn=WEAPONS[selectedWeapon];
-    cx.font='11px sans-serif';cx.textAlign='right';cx.fillStyle=wpn.color;
-    cx.fillText(wpn.emoji+' '+wpn.name,W-8,20);
+    var wpn = WEAPONS[selectedWeapon];
+    cx.font='11px sans-serif'; cx.textAlign='right'; cx.fillStyle=wpn.color;
+    cx.fillText(wpn.emoji+' '+wpn.name, W-8, 20);
 }
 
-function loop(){frameId=requestAnimationFrame(loop);update();draw();}
+function loop() {
+    frameId = requestAnimationFrame(loop);
+    update();
+    draw();
+}
 
-// ── HELPERS ───────────────────────────────────────────────────────────────────
-function selectWeapon(type){
-    if(!unlockedWeapons.includes(type)){ setMsg('🔒 Unlock by reaching '+WEAPONS[type].unlockAt+' crystals!'); return; }
-    selectedWeapon=type;
+function selectWeapon(type) {
+    if (!unlockedWeapons.includes(type)) { setMsg('🔒 Score more to unlock '+WEAPONS[type].name+'!'); return; }
+    selectedWeapon = type;
     updateWeaponBar();
-    const w=WEAPONS[type];
-    setMsg('Selected: '+w.emoji+' '+w.name+' ('+w.dmg+'x dmg'+(w.splash>0?' splash':'')+')')
+    setMsg('Selected: '+WEAPONS[type].emoji+' '+WEAPONS[type].name);
 }
-function updateWeaponBar(){
-    Object.keys(WEAPONS).forEach(k=>{
-        const el=document.getElementById('wp-'+k);
-        if(!el) return;
-        el.classList.remove('active','locked');
-        if(k===selectedWeapon) el.classList.add('active');
-        if(!unlockedWeapons.includes(k)) el.classList.add('locked');
+
+function updateWeaponBar() {
+    ['kyber','dilithium','sphincs','falcon'].forEach(function(k) {
+        var el = document.getElementById('wp-'+k);
+        if (!el) return;
+        el.className = 'wpn-btn' + (k===selectedWeapon?' active':'') + (unlockedWeapons.includes(k)?'':' locked');
     });
 }
-function spawnParticles(x,y,color,n){
-    for(let i=0;i<n;i++){
-        const a=Math.random()*Math.PI*2,s=1+Math.random()*3;
-        particles.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s-1,r:2+Math.random()*3,alpha:1,color});
+
+function spawnParticles(x,y,color,n) {
+    for (var i=0;i<n;i++) {
+        var a=Math.random()*6.28, s=1+Math.random()*3;
+        particles.push({x:x,y:y,vx:Math.cos(a)*s,vy:Math.sin(a)*s-1,r:2+Math.random()*3,alpha:1,color:color});
     }
 }
-function addFloatText(x,y,text,color){
-    floatTexts.push({x,y,text,color,timer:40});
-}
-function updateHUD(){
+
+function addFloat(x,y,text,color) { floatTexts.push({x:x,y:y,text:text,color:color,timer:40}); }
+
+function updateHUD() {
     document.getElementById('h-score').textContent=score;
     document.getElementById('h-wave').textContent=wave;
     document.getElementById('h-crystals').textContent=crystalCount;
     document.getElementById('h-combo').textContent='x'+combo;
 }
-function updateServerHp(){
-    const pct=Math.max(0,serverHp);
+
+function updateServerHp() {
+    var pct=Math.max(0,serverHp);
     document.getElementById('server-bar').style.width=pct+'%';
     document.getElementById('server-pct').textContent=Math.round(pct)+'%';
     document.getElementById('server-pct').style.color=pct>50?'#10b981':pct>25?'#fbbf24':'#ef4444';
-    document.getElementById('server-bar').style.background=
-        pct>50?'linear-gradient(90deg,#10b981,#34d399)':
-        pct>25?'linear-gradient(90deg,#fbbf24,#f97316)':
-               'linear-gradient(90deg,#ef4444,#dc2626)';
+    document.getElementById('server-bar').style.background=pct>50?'linear-gradient(90deg,#10b981,#34d399)':pct>25?'linear-gradient(90deg,#fbbf24,#f97316)':'linear-gradient(90deg,#ef4444,#dc2626)';
 }
-function setMsg(m){document.getElementById('msg-bar').textContent=m;}
-let factTimer=null;
-function showFact(t){
-    const el=document.getElementById('fact-box');
-    el.textContent=t;el.style.display='block';
-    if(factTimer)clearTimeout(factTimer);
-    factTimer=setTimeout(()=>el.style.display='none',6000);
+
+function setMsg(m) { document.getElementById('msg-bar').textContent=m; }
+
+var factTimer=null;
+function showFact(t) {
+    var el=document.getElementById('fact-box');
+    el.textContent=t; el.style.display='block';
+    if (factTimer) clearTimeout(factTimer);
+    factTimer=setTimeout(function(){el.style.display='none';},6000);
 }
-function confetti(){
-    const cols=['#fbbf24','#10b981','#3b82f6','#8b5cf6','#ef4444'];
-    for(let i=0;i<20;i++){
-        setTimeout(()=>{
-            const el=document.createElement('div');
-            el.className='cp';el.style.left=Math.random()*100+'vw';
+
+function confetti() {
+    var cols=['#fbbf24','#10b981','#3b82f6','#8b5cf6','#ef4444'];
+    for (var i=0;i<20;i++) {
+        setTimeout(function() {
+            var el=document.createElement('div'); el.className='cp';
+            el.style.left=Math.random()*100+'vw';
             el.style.background=cols[Math.floor(Math.random()*cols.length)];
             el.style.animationDuration=(1+Math.random()*2)+'s';
             document.body.appendChild(el);
-            setTimeout(()=>el.remove(),3000);
+            setTimeout(function(){el.remove();},3000);
         },i*40);
     }
 }
 
-// ── INIT ─────────────────────────────────────────────────────────────────────
-// Spacebar shoots at nearest zombie
+// Keyboard controls
 document.addEventListener('keydown', function(e) {
-    if (e.key === ' ' && gameActive) {
+    if (e.key===' ' && gameActive) {
         e.preventDefault();
-        var nearest = null, nearestDist = Infinity;
-        zombies.forEach(function(z) {
-            var d = Math.hypot(z.x - W/2, z.y - H/2);
-            if (d < nearestDist) { nearestDist = d; nearest = z; }
-        });
+        var nearest=null, nearestDist=Infinity;
+        for (var zi=0;zi<zombies.length;zi++) {
+            var d=Math.hypot(zombies[zi].x-W/2, zombies[zi].y-H/2);
+            if (d<nearestDist) { nearestDist=d; nearest=zombies[zi]; }
+        }
         if (nearest) shoot(nearest.x, nearest.y);
         else shoot(W/2, H/2);
     }
-    if (e.key==='1') selectedWeapon='kyber';
-    if (e.key==='2') selectedWeapon='dilithium';
-    if (e.key==='3') selectedWeapon='sphincs';
-    if (e.key==='4') selectedWeapon='falcon';
+    if (e.key==='1') selectWeapon('kyber');
+    if (e.key==='2') selectWeapon('dilithium');
+    if (e.key==='3') selectWeapon('sphincs');
+    if (e.key==='4') selectWeapon('falcon');
 });
 
+// Init
 updateHUD();
 updateServerHp();
-// Draw initial screen
-cx.fillStyle='#020d14';cx.fillRect(0,0,W,H);
-cx.font='bold 22px sans-serif';cx.fillStyle='#60a5fa';cx.textAlign='center';
+cx.fillStyle='#020d14'; cx.fillRect(0,0,W,H);
+cx.font='bold 22px sans-serif'; cx.fillStyle='#60a5fa'; cx.textAlign='center';
 cx.fillText('🧟 Quantum Zombie Blast',W/2,H/2-20);
-cx.font='12px sans-serif';cx.fillStyle='#94a3b8';
+cx.font='12px sans-serif'; cx.fillStyle='#94a3b8';
 cx.fillText('Click START to defend your server!',W/2,H/2+10);
 </script>
 </body>
