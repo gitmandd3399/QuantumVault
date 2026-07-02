@@ -1565,12 +1565,12 @@ const WEAPONS = {
 
 // ── ZOMBIE TYPES ──────────────────────────────────────────────────────────────
 const ZOMBIE_TYPES=[
-    {emoji:'🧟',hp:4, speed:1.2, pts:10, color:'#10b981', name:'Baby Shor'},
-    {emoji:'👾',hp:6, speed:1.5, pts:15, color:'#3b82f6', name:'Shor Bot'},
-    {emoji:'🤖',hp:10, speed:1.3, pts:25, color:'#ef4444', name:'RSA Zombie'},
-    {emoji:'💀',hp:16, speed:1.8, pts:40, color:'#8b5cf6', name:'Grover Ghost'},
-    {emoji:'👑',hp:40,speed:0.9, pts:100,color:'#fbbf24', name:'Quantum Boss'},
-];
+const ZOMBIE_TYPES=[
+    {emoji:"🧟",hp:4, speed:0.4, pts:10, color:"#10b981", name:"Baby Shor"},
+    {emoji:"👾",hp:6, speed:0.6, pts:15, color:"#3b82f6", name:"Shor Bot"},
+    {emoji:"🤖",hp:10,speed:0.8, pts:25, color:"#ef4444", name:"RSA Zombie"},
+    {emoji:"💀",hp:16,speed:1.0, pts:40, color:"#8b5cf6", name:"Grover Ghost"},
+    {emoji:"👑",hp:40,speed:0.5, pts:100,color:"#fbbf24", name:"Quantum Boss"},
 
 // ── PQC FACTS (shown on crystal collect) ────────────────────────────────────
 const FACTS=[
@@ -1626,7 +1626,7 @@ function spawnZombie(){
     const fromLeft=spawnCount%2===0;
     zombies.push({
         x:fromLeft?10:W-10,y:80+Math.random()*(H-160),
-        vx:fromLeft?type.speed*1.1:-type.speed*2.2,
+        vx:fromLeft?type.speed*(1+wave*0.08):-type.speed*(1+wave*0.08)*1.8,
         vy:(Math.random()-0.5)*0.3,
         hp:type.hp*(1+wave*0.2), maxHp:type.hp*(1+wave*0.2),
         emoji:type.emoji, color:type.color,
@@ -1653,6 +1653,33 @@ cv.addEventListener('touchstart',e=>{
     const my=(t.clientY-rect.top)*(H/rect.height);
     shoot(mx,my);
 },{passive:false});
+
+// Spacebar shoots at nearest zombie
+document.addEventListener('keydown', function(e) {
+    if (e.key === ' ' && gameActive) {
+        e.preventDefault();
+        // Find nearest zombie to center of screen
+        var nearest = null, nearestDist = Infinity;
+        zombies.forEach(function(z) {
+            var d = Math.hypot(z.x - W/2, z.y - H/2);
+            if (d < nearestDist) { nearestDist = d; nearest = z; }
+        });
+        if (nearest) {
+            shoot(nearest.x, nearest.y);
+            // Visual flash on target
+            spawnParticles(nearest.x, nearest.y, WEAPONS[selectedWeapon].color || '#fbbf24', 6);
+        } else {
+            // No zombie — shoot center
+            shoot(W/2, H/2);
+        }
+    }
+    // Number keys 1-4 switch weapons
+    if (e.key === '1') selectWeapon('kyber');
+    if (e.key === '2') selectWeapon('dilithium');
+    if (e.key === '3') selectWeapon('sphincs');
+    if (e.key === '4') selectWeapon('falcon');
+});
+
 
 function shoot(mx,my){
     const wpn=WEAPONS[selectedWeapon];
