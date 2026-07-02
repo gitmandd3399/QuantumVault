@@ -1626,7 +1626,7 @@ function spawnZombie(){
     const fromLeft=spawnCount%2===0;
     zombies.push({
         x:fromLeft?10:W-10,y:80+Math.random()*(H-160),
-        vx:fromLeft?type.speed*1.5:-type.speed*1.5,
+        vx:fromLeft?type.speed*1.1:-type.speed*2.2,
         vy:(Math.random()-0.5)*0.3,
         hp:type.hp*(1+wave*0.2), maxHp:type.hp*(1+wave*0.2),
         emoji:type.emoji, color:type.color,
