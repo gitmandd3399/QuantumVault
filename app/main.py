@@ -86,6 +86,40 @@ if _query.get("google_verify") == "a3abbd1f357726a3":
     st.stop()
 
 # ── Load user plan from DB if logged in ──────────────────────────────────────
+# ── SESSION EXPIRY (8 hours) ─────────────────────────────────────────────────
+import time as _time
+_SESSION_TTL = 8 * 3600  # 8 hours
+if st.session_state.get("mfa_verified"):
+    _login_time = st.session_state.get("login_timestamp", 0)
+    if _time.time() - _login_time > _SESSION_TTL:
+        # Session expired - clear auth state
+        for _k in ["mfa_verified","user_email","mfa_step","mfa_code","mfa_code_time","mfa_email","mfa_attempts"]:
+            if _k in st.session_state:
+                del st.session_state[_k]
+        st.warning("Session expired. Please log in again.")
+        st.rerun()
+
+# ── AUDIT LOGGING ─────────────────────────────────────────────────────────────
+import logging as _logging
+_audit_log = _logging.getLogger("quantumvault.audit")
+if not _audit_log.handlers:
+    _h = _logging.StreamHandler()
+    _h.setFormatter(_logging.Formatter('%(asctime)s AUDIT %(message)s'))
+    _audit_log.addHandler(_h)
+    _audit_log.setLevel(_logging.INFO)
+
+def log_audit(action, detail=""):
+    _email = st.session_state.get("user_email", "anonymous")
+    _audit_log.info(f"user={_email} action={action} detail={detail}")
+
+# ── CSP HEADERS via Streamlit meta injection ──────────────────────────────────
+st.markdown("""
+<meta http-equiv="Content-Security-Policy" 
+    content="default-src 'self' https:; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline';">
+<meta http-equiv="X-Content-Type-Options" content="nosniff">
+<meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
+""", unsafe_allow_html=True)
+
 _user_email = st.session_state.get("user_email", "")
 if _user_email and st.session_state.get("mfa_verified"):
     _db_user = get_user(_user_email)
