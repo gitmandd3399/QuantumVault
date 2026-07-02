@@ -1653,23 +1653,6 @@ cv.addEventListener('touchstart',e=>{
     shoot(mx,my);
 },{passive:false});
 
-// Spacebar shoots at nearest zombie
-document.addEventListener('keydown', function(e) {
-    if (e.key === ' ' && gameActive) {
-        e.preventDefault();
-        var nearest = null, nearestDist = Infinity;
-        zombies.forEach(function(z) {
-            var d = Math.hypot(z.x - W/2, z.y - H/2);
-            if (d < nearestDist) { nearestDist = d; nearest = z; }
-        });
-        if (nearest) shoot(nearest.x, nearest.y);
-        else shoot(W/2, H/2);
-    }
-    if (e.key==='1') selectedWeapon='kyber';
-    if (e.key==='2') selectedWeapon='dilithium';
-    if (e.key==='3') selectedWeapon='sphincs';
-    if (e.key==='4') selectedWeapon='falcon';
-});
 
 
 function shoot(mx,my){
@@ -2052,6 +2035,24 @@ function confetti(){
 }
 
 // ── INIT ─────────────────────────────────────────────────────────────────────
+// Spacebar shoots at nearest zombie
+document.addEventListener('keydown', function(e) {
+    if (e.key === ' ' && gameActive) {
+        e.preventDefault();
+        var nearest = null, nearestDist = Infinity;
+        zombies.forEach(function(z) {
+            var d = Math.hypot(z.x - W/2, z.y - H/2);
+            if (d < nearestDist) { nearestDist = d; nearest = z; }
+        });
+        if (nearest) shoot(nearest.x, nearest.y);
+        else shoot(W/2, H/2);
+    }
+    if (e.key==='1') selectedWeapon='kyber';
+    if (e.key==='2') selectedWeapon='dilithium';
+    if (e.key==='3') selectedWeapon='sphincs';
+    if (e.key==='4') selectedWeapon='falcon';
+});
+
 updateHUD();
 updateServerHp();
 // Draw initial screen
