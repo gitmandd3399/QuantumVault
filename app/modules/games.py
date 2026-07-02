@@ -2126,7 +2126,7 @@ def render_quantumcraft_elementary():
             if(keys['ArrowDown']||keys['s'])ny++;
             if(keys['ArrowLeft']||keys['a'])nx--;
             if(keys['ArrowRight']||keys['d'])nx++;
-            if(canWalk(nx,ny)){player.x=nx;player.y=ny;}
+            if(keys['ArrowRight']||keys['d'])nx++;
             enemies.forEach((e,i)=>{
                 e.timer++;if(e.timer<e.rate)return;e.timer=0;
                 const dx=player.x-e.x,dy=player.y-e.y;
@@ -2381,7 +2381,7 @@ function doMine(){
         var bd=BLOCKS[bt];
         if(bd&&bd.mine){
             if(!mineProgress||mineProgress.c!==nc||mineProgress.r!==nr){
-                mineProgress={c:nc,r:nr,prog:0,max:bd.hard*6};
+                mineProgress={c:nc,r:nr,prog:0,max:bd.hard*3};
             }
             mineProgress.prog++;
             spawnParticles(nc*TS+TS/2-camera.x,nr*TS+TS/2-camera.y,bd.color||'#888',2);
