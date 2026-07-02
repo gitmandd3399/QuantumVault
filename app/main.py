@@ -36,6 +36,7 @@ from modules.algo_battle import render_algo_battle
 from modules.quantum_orbital import render_quantum_orbital
 from modules.games import render_prime_factor_game, render_network_defender, render_secret_message, render_falling_blocks, render_ctf_game, render_code_shield, render_pqc_python_lab, render_cipher_quest
 from modules.career_explorer import render_career_explorer
+from modules.harvest_timeline import render_harvest_timeline
 from modules.pqc_demo import render_pqc_demo
 from modules.story_adventure import render_story_adventure
 from modules.quantum_sandbox import render_quantum_sandbox
@@ -560,6 +561,7 @@ def main():
         "📊 My Progress",
         "🔢 Prime Factor Cracker",
         "🌐 Network Defender",
+        "☠️ Harvest Timeline",
         "🚀 Quantum Orbital",
         "🔤 Secret Message Maker",
         "🧱 Falling Blocks",
@@ -718,6 +720,8 @@ def main():
         render_pqc_demo()
     elif "Career Explorer" in level:
         render_career_explorer()
+    elif "Harvest Timeline" in level:
+        render_harvest_timeline()
     elif "Privacy Policy" in level:
         render_privacy_policy()
     elif "Terms of Service" in level:
