@@ -1122,6 +1122,13 @@ function showInfo(key) {
                 st.error(f"❌ Quantum-vulnerable! Even at {key_bytes} bytes, Shor breaks it.")
 
         st.markdown("---")
+        st.markdown("### 🎮 Interactive Key Size Tools")
+        import streamlit.components.v1 as _ksc
+        with open("app/assets/key_size_interactive.html", "r") as _f:
+            _ksc.html(_f.read(), height=560)
+        st.markdown("---")
+
+
 
         # ── QUIZ ─────────────────────────────────────────────────────────────
         st.markdown("### 🧠 Key Size Expert Quiz!")
