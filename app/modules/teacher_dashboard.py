@@ -1,19 +1,4 @@
-"""cd ~/Desktop/QV_fresh
-python3 - << 'EOF'
-# What this does:
-# Completely rewrites the mob system in quantum_sandbox.py to match
-# People Playground character style:
-# - Two-segment limbs (upper arm + forearm, thigh + shin)
-# - Visible elbow and knee joints as small circles
-# - Verlet physics on EACH segment independently (not just one body)
-# - Grab individual limbs and body follows
-# - Limp collapse when knocked hard (joint stiffness drops to near-zero)
-# - Different mob types have different proportions
 
-with open('app/modules/quantum_sandbox.py', 'r') as f:
-    content = f.read()
-
-# ── Find and replace the entire mob system ────────────────────────────────────
 def render_teacher_dashboard():
     st.title("👨‍🏫 Teacher Dashboard")
 
