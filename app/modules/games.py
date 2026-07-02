@@ -1555,6 +1555,7 @@ function getServerMaxHp() { return 100 + (wave-1) * 20; } // +20 HP per wave
 var crystalCount = 0, gameActive = false, frameId = null;
 var selectedWeapon = 'kyber', unlockedWeapons = ['kyber'];
 var spawnTimer = 0, spawnCount = 0, spawnTotal = 0, waveClearing = false;
+var mouseX = W/2, mouseY = H/2;
 var bgStars = [];
 for (var si = 0; si < 60; si++) {
     bgStars.push({x:Math.random()*W, y:Math.random()*H, r:Math.random()*1.5, a:Math.random()*0.5+0.2});
@@ -1624,6 +1625,12 @@ cv.addEventListener('click', function(e) {
         }
     }
     shoot(mx, my);
+});
+
+cv.addEventListener('mousemove', function(e) {
+    var rect = cv.getBoundingClientRect();
+    mouseX = (e.clientX-rect.left)*(W/rect.width);
+    mouseY = (e.clientY-rect.top)*(H/rect.height);
 });
 
 cv.addEventListener('touchstart', function(e) {
@@ -1942,13 +1949,8 @@ function confetti() {
 document.addEventListener('keydown', function(e) {
     if (e.key===' ' && gameActive) {
         e.preventDefault();
-        var nearest=null, nearestDist=Infinity;
-        for (var zi=0;zi<zombies.length;zi++) {
-            var d=Math.hypot(zombies[zi].x-W/2, zombies[zi].y-H/2);
-            if (d<nearestDist) { nearestDist=d; nearest=zombies[zi]; }
-        }
-        if (nearest) shoot(nearest.x, nearest.y);
-        else shoot(W/2, H/2);
+        // Shoot toward current mouse position
+        shoot(mouseX, mouseY);
     }
     if (e.key==='1') selectWeapon('kyber');
     if (e.key==='2') selectWeapon('dilithium');
