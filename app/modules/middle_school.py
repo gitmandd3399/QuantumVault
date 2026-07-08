@@ -45,6 +45,9 @@ def render_middle_school():
         ["📖 Story Time", "🏗️ Lattice Explorer", "🏭 Hash Factory", "⚡ Quantum Race", "🔑 Key Workshop", "🌀 Mini Game", "🎨 Hash Visualizer", "🔬 Key Size Lab", "⚡ Logic Gates"]
     )
 
+    with tab9:
+        render_logic_gates()
+
     # ── Tab 2: Lattice Explorer ───────────────────────────────────────────────
     with tab1:
         st.subheader("📖 The Codebreaker Crew")
