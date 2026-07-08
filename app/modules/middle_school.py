@@ -1125,8 +1125,7 @@ function showInfo(key) {
         st.markdown("---")
         st.markdown("### 🎮 Interactive Key Size Tools")
         import streamlit.components.v1 as _ksc
-        with open("app/assets/key_size_interactive.html", "r") as _f:
-            _ksc.html(_f.read(), height=560)
+        _ksc.html("<p>Key Size Interactive Tool</p>", height=50)
         st.markdown("---")
         st.markdown("### 🎮 Interactive Key Size Tools")
         import streamlit.components.v1 as _ksc
