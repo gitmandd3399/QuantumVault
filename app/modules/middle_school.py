@@ -1250,6 +1250,3 @@ def award_badge(badge: str, xp: int = 10):
 
 
 # ── Main render ───────────────────────────────────────────────────────────────
-
-    with tab9:
-        render_logic_gates()
