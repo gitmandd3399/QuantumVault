@@ -45,6 +45,7 @@ def award_badge(badge: str, xp: int = 10):
 
 # ── Main render ───────────────────────────────────────────────────────────────
 
+from modules.quantum_composer import render_quantum_composer
 def render_high_school():
     st.title("🔴 Cipher Corps - High School Edition")
     st.markdown(
@@ -52,7 +53,7 @@ def render_high_school():
         "real standards, and real Python code. Let's build the future of security. 🛡️"
     )
 
-    tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs([
+    tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8 = st.tabs([
         "📅 NIST Timeline",
         "⚖️ Algorithm Lab",
         "💻 Code It Yourself",
@@ -60,6 +61,7 @@ def render_high_school():
         "🔬 Research Journal",
         "🎮 Tower Defense",
         "🧮 Math Challenge",
+        "⚛️ Quantum Composer",
     ])
 
     # ── Tab 1: NIST PQC Timeline ──────────────────────────────────────────────
@@ -1180,3 +1182,6 @@ loadQ();
                         st.rerun()
                 else:
                     st.success(f"✅ Level {sel_idx+1} completed! +{xp_reward} XP earned")
+
+    with tab8:
+        render_quantum_composer()
