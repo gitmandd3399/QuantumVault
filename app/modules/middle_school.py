@@ -1,5 +1,4 @@
 from modules.progress_tracker import mark_complete, is_complete
-from modules.logic_gates import render_logic_gates
 
 
 import hashlib
