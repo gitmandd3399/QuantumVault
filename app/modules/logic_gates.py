@@ -163,7 +163,7 @@ function mkGate(t,x,y){return{id:nid++,t:t,x:x,y:y,w:t==='IN'||t==='OUT'?50:66,h
 function outPt(g){return{x:g.x+g.w,y:g.y+g.h/2};}
 function inPts(g){if(g.t==='IN'||g.t==='OUT')return [{x:g.x,y:g.y+g.h/2}];var n=g.t==='NOT'?1:2;var pts=[];for(var i=0;i<n;i++)pts.push({x:g.x,y:g.y+g.h*(i+1)/(n+1)});return pts;}
 function gateAt(mx,my){for(var i=gates.length-1;i>=0;i--){var g=gates[i];if(mx>=g.x&&mx<=g.x+g.w&&my>=g.y&&my<=g.y+g.h)return g;}return null;}
-function portAt(mx,my){var found=null;gates.forEach(function(g){if(g.t!=='IN'){var op=outPt(g);if(Math.hypot(mx-op.x,my-op.y)<10)found={g:g,k:'out'};}if(g.t!=='OUT'){inPts(g).forEach(function(p,i){if(Math.hypot(mx-p.x,my-p.y)<10)found={g:g,k:'in',i:i};});}});return found;}
+function portAt(mx,my){var found=null;gates.forEach(function(g){if(g.t!=='OUT'){var op=outPt(g);if(Math.hypot(mx-op.x,my-op.y)<10)found={g:g,k:'out'};}if(g.t!=='IN'){inPts(g).forEach(function(p,i){if(Math.hypot(mx-p.x,my-p.y)<10)found={g:g,k:'in',i:i};});}});return found;}
 
 cv.addEventListener('click',function(e){
     if(W===0)resize();
