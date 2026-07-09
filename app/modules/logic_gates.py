@@ -358,8 +358,47 @@ function confetti(){
     },i*40);}
 }
 
+// ── Palette drag & drop ──────────────────────────────────────────────
+var pdragType=null,pghost=null,pmoved=false,psx=0,psy=0;
+document.querySelectorAll('.gi').forEach(function(el){
+    el.addEventListener('mousedown',function(e){
+        pdragType=el.id.replace('si-','');psx=e.clientX;psy=e.clientY;pmoved=false;
+        e.preventDefault();
+    });
+});
+document.addEventListener('mousemove',function(e){
+    if(!pdragType)return;
+    if(!pmoved&&Math.abs(e.clientX-psx)+Math.abs(e.clientY-psy)<6)return;
+    if(!pghost){
+        pmoved=true;
+        pghost=document.createElement('div');
+        pghost.textContent=pdragType;
+        var col=COLORS[pdragType]||'#7c3aed';
+        pghost.style.cssText='position:fixed;z-index:9999;pointer-events:none;'+
+            'padding:8px 14px;border-radius:8px;background:#1e293b;border:2px solid '+col+
+            ';color:'+col+';font-weight:700;font-size:13px;transform:translate(-50%,-50%);opacity:.9';
+        document.body.appendChild(pghost);
+    }
+    pghost.style.left=e.clientX+'px';pghost.style.top=e.clientY+'px';
+});
+document.addEventListener('mouseup',function(e){
+    if(!pdragType)return;
+    if(pmoved){
+        var r=cv.getBoundingClientRect();
+        if(e.clientX>=r.left&&e.clientX<=r.right&&e.clientY>=r.top&&e.clientY<=r.bottom){
+            selType(pdragType);
+            var ng=mkGate(pdragType,e.clientX-r.left-33,e.clientY-r.top-23);
+            gates.push(ng);score+=5;sim();chk();
+            var gv=document.getElementById('gv');if(gv)gv.textContent=gates.length;
+            setMsg(pdragType+' placed! Drag more gates, or hit Wire mode to connect them.');
+        }
+    }
+    if(pghost){pghost.remove();pghost=null;}
+    pdragType=null;pmoved=false;
+});
+
 showTT('AND');
-setMsg('Pick a gate from the left panel, then click the canvas to place it!');
+setMsg('Drag a gate from the left panel onto the board! (Or click a gate, then click the board.)');
 function loop(){requestAnimationFrame(loop);draw();}
 loop();
 </script>
