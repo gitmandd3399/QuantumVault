@@ -132,8 +132,11 @@ body{background:#020d14;font-family:'Segoe UI',sans-serif;color:white;}
 
 <script>
 var cv=document.getElementById('cv'),ctx=cv.getContext('2d'),W=0,H=0;
-function resize(){var r=document.getElementById('cv-wrap').getBoundingClientRect();W=cv.width=r.width;H=cv.height=r.height;}
+function resize(){var r=document.getElementById('cv-wrap').getBoundingClientRect();if(r.width>0&&r.height>0){W=cv.width=r.width;H=cv.height=r.height;}}
 resize();
+window.addEventListener('resize',resize);
+if(window.ResizeObserver){new ResizeObserver(resize).observe(document.getElementById('cv-wrap'));}
+var szTry=setInterval(function(){if(W>0){clearInterval(szTry);}else{resize();}},250);
 
 var gates=[],wires=[],mode='place',selT='AND',wireFrom=null,score=0,nid=1,curCh=0;
 
@@ -163,6 +166,7 @@ function gateAt(mx,my){for(var i=gates.length-1;i>=0;i--){var g=gates[i];if(mx>=
 function portAt(mx,my){var found=null;gates.forEach(function(g){if(g.t!=='IN'){var op=outPt(g);if(Math.hypot(mx-op.x,my-op.y)<10)found={g:g,k:'out'};}if(g.t!=='OUT'){inPts(g).forEach(function(p,i){if(Math.hypot(mx-p.x,my-p.y)<10)found={g:g,k:'in',i:i};});}});return found;}
 
 cv.addEventListener('click',function(e){
+    if(W===0)resize();
     var r=cv.getBoundingClientRect(),mx=e.clientX-r.left,my=e.clientY-r.top;
     if(mode==='place'){
         var g=gateAt(mx,my);
