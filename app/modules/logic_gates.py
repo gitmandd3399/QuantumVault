@@ -10,7 +10,7 @@ def render_logic_gates():
         "Toggle inputs and watch the circuit come alive!"
     )
 
-    components.html("""
+    components.html(r"""
 <!DOCTYPE html>
 <html>
 <head>
