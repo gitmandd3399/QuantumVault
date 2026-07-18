@@ -806,14 +806,12 @@ def render_high_school():
                     st.write(j["entry"])
 
     with tab6:
-        from modules.games import render_tower_defense, render_zombie_blast, render_quantumcraft_highschool
+        from modules.games import render_tower_defense, render_zombie_blast
         game_choice = st.radio("Pick a game:", ["🛡️ Tower Defense", "🧟 Zombie Blast", "🏃 Cipher Ruins"], horizontal=True)
         if game_choice == "🛡️ Tower Defense":
             render_tower_defense()
         elif game_choice == "🧟 Zombie Blast":
             render_zombie_blast(difficulty="hard")
-        else:
-            render_quantumcraft_highschool()
     with tab7:
         import streamlit.components.v1 as _math_comp
         import json as _json

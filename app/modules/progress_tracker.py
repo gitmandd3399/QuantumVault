@@ -26,7 +26,6 @@ ACTIVITIES = {
             "vocab_cards":       "📝 Completed vocabulary flashcards",
             "falling_blocks":    "🧱 Played Falling Blocks game",
             "zombie_blast_easy": "🧟 Played Zombie Blast (Easy)",
-            "quantumcraft_elem": "⛏️ Played QuantumCraft Crypto Kingdom",
         }
     },
     "middle_school": {
@@ -41,7 +40,6 @@ ACTIVITIES = {
             "kyber_workshop":      "🔑 Completed the Kyber key workshop",
             "lattice_maze":        "🌀 Played the lattice maze",
             "zombie_blast_medium": "🧟 Played Zombie Blast (Medium)",
-            "quantumcraft_mid":    "⛏️ Played QuantumCraft Lattice Mines",
         }
     },
     "high_school": {
@@ -55,7 +53,6 @@ ACTIVITIES = {
             "threat_modeler":      "🛡️ Used the threat modeler",
             "tower_defense":       "🛡️ Played PQC Tower Defense",
             "zombie_blast_hard":   "🧟 Played Zombie Blast (Hard)",
-            "quantumcraft_hs":     "🏃 Played Cipher Ruins runner",
         }
     }
 }

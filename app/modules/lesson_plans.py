@@ -99,7 +99,7 @@ In Quantum Lock Drop, you'll protect servers using new quantum-safe locks. Every
         },
         {
             "title": "⛏️ Lesson 3: Mining for Quantum Crystals",
-            "game": "⛏️ QuantumCraft (Elementary)",
+            "game": "🧱 Falling Blocks (Elementary)",
             "time": "8 minutes",
             "objective": "Students will understand that different algorithms have different strengths, just like different tools for different jobs.",
             "vocab": [
@@ -122,7 +122,7 @@ A plumber has different tools — a wrench for pipes, a plunger for clogs. Crypt
 Imagine sending a letter. A tiny envelope costs less postage. In computing, smaller = faster and cheaper to send! Falcon makes the TINIEST quantum-safe signatures — perfect for smart devices like your smartwatch or IoT sensors!
 
 **Get Ready to Play:**
-In QuantumCraft, you'll mine different crystals that represent these algorithms. Each crystal has different properties — just like the real algorithms!
+In Falling Blocks, you'll catch blocks representing these algorithms. Each block type has different properties — just like the real algorithms!
             """,
             "check": "Ask students: Name one PQC algorithm and what it protects."
         },
