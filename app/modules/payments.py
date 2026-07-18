@@ -51,7 +51,7 @@ PLANS = {
             "Leaderboard access",
             "Progress tracking dashboard",
             "Email support",
-            "30-day free trial",
+            "14-day free trial",
         ],
         "color": "#3b82f6",
         "emoji": "🍎",
@@ -72,7 +72,7 @@ PLANS = {
             "Priority support",
             "Custom school branding",
             "NSA GenCyber grant eligible",
-            "30-day free trial",
+            "14-day free trial",
         ],
         "color": "#7c6dfa",
         "emoji": "🏫",
@@ -91,7 +91,7 @@ PLANS = {
             "Teacher dashboard",
             "Minimum 30 students ($150/yr)",
             "Scales with your school",
-            "30-day free trial",
+            "14-day free trial",
         ],
         "color": "#10b981",
         "emoji": "🎓",
@@ -158,6 +158,7 @@ def create_checkout_session(plan_key, school_name, email):
                 "quantity": 1,
             }],
             mode="subscription",
+            subscription_data={"trial_period_days": 14},
             customer_email=email,
             success_url="https://quantumvaultacademy.streamlit.app/?session_id={CHECKOUT_SESSION_ID}",
             cancel_url="https://www.quantumvaultacademy.com",
@@ -178,7 +179,7 @@ def verify_checkout_session(session_id):
     stripe.api_key = get_stripe_key()
     try:
         session = stripe.checkout.Session.retrieve(session_id)
-        if getattr(session, "payment_status", None) == "paid":
+        if getattr(session, "payment_status", None) in ("paid", "no_payment_required"):
             logging.info("Verified paid checkout session")
             return session, None
         return None, "Payment not completed"
@@ -191,7 +192,7 @@ def render_pricing_page():
     st.title("💎 QuantumVault Academy — Pricing")
     st.markdown(
         "The **only K-12 platform** teaching NIST post-quantum cryptography standards. "
-        "All plans include a 30-day free trial. No credit card required."
+        "All plans include a 14-day free trial. No credit card required."
     )
 
     # ── Free tier quick signup ───────────────────────────────────────────
@@ -338,7 +339,7 @@ def render_pricing_page():
     st.markdown("### 🚀 Start Your Free Trial")
     st.markdown(
         "Fill in your details below. You will not be charged "
-        "until after your 30-day free trial ends."
+        "until after your 14-day free trial ends."
     )
 
     col1, col2 = st.columns(2)
@@ -402,9 +403,12 @@ def render_pricing_page():
                     st.error("Payment error: " + error)
                     st.info("Having trouble? Email hello@quantumvaultacademy.com")
                 else:
-                    st.success("Redirecting to secure checkout...")
-                    st.markdown(
-                        f"[Click here if not redirected]({checkout_url})"
+                    st.success("Your checkout is ready — card required, $0 due today, first charge after your 14-day trial.")
+                    st.link_button(
+                        "🔒 Continue to Secure Checkout →",
+                        checkout_url,
+                        use_container_width=True,
+                        type="primary",
                     )
 
     st.markdown("---")
