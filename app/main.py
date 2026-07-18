@@ -41,7 +41,6 @@ from modules.harvest_timeline import render_harvest_timeline
 from modules.lesson_plans import render_lesson_plans
 from modules.pqc_demo import render_pqc_demo
 from modules.story_adventure import render_story_adventure
-from modules.quantum_sandbox import render_quantum_sandbox
 from modules.privacy_policy import render_privacy_policy, render_terms_of_service
 # ── Page config ───────────────────────────────────────────────────────────────
 st.set_page_config(
@@ -218,7 +217,6 @@ def sidebar():
             ("🌐", "Network Defender",  "🌐 Network Defender"),
             ("🚀", "Quantum Orbital", "🚀 Quantum Orbital"),
             ("🧱", "Falling Blocks",    "🧱 Falling Blocks"),
-            ("🧪", "Quantum Sandbox",   "🧪 Quantum Sandbox"),
             ("🚩", "CTF Challenge",    "🚩 CTF Challenge"),
             ("─", "── Coding Games Trial ──", "─ Coding Games"),
             ("🛡️", "Code the Shield",   "🛡️ Code the Shield"),
@@ -711,8 +709,6 @@ def main():
         render_quantum_composer()
     elif "Secret Message" in level:
         render_secret_message()
-    elif "Quantum Sandbox" in level:
-        render_quantum_sandbox()
     elif "Falling Blocks" in level:
         render_falling_blocks()
     elif "CTF Challenge" in level:
