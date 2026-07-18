@@ -667,12 +667,15 @@ def render_middle_school():
 
     with tab6:
         from modules.games import render_lattice_maze, render_zombie_blast
-        game_choice = st.radio("Pick a game:", ["🌀 Lattice Maze", "🧟 Zombie Blast"], horizontal=True)
+        game_choice = st.radio("Pick a game:", ["🌀 Lattice Maze", "🧟 Zombie Blast", "🧪 Quantum Sandbox"], horizontal=True)
         if game_choice == "🌀 Lattice Maze":
             render_lattice_maze()
         elif game_choice == "🧟 Zombie Blast":
             render_zombie_blast(difficulty="medium")
 
+        elif "Sandbox" in game_choice:
+            from modules.quantum_sandbox import render_quantum_sandbox
+            render_quantum_sandbox()
     with tab7:
         import streamlit.components.v1 as _ms7
         st.subheader("🎨 Live Hash Visualizer — Watch the Avalanche!")

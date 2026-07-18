@@ -706,11 +706,14 @@ body{{margin:0;background:#0f172a;font-family:sans-serif;}}
 
     with tab5:
         from modules.games import render_falling_blocks, render_zombie_blast
-        game_choice = st.radio("Pick a game:", ["🧱 Falling Blocks", "🧟 Zombie Blast"], horizontal=True)
+        game_choice = st.radio("Pick a game:", ["🧱 Falling Blocks", "🧟 Zombie Blast", "🧪 Quantum Sandbox"], horizontal=True)
         if game_choice == "🧱 Falling Blocks":
             render_falling_blocks()
         elif game_choice == "🧟 Zombie Blast":
             render_zombie_blast(difficulty="easy")
+        elif "Sandbox" in game_choice:
+            from modules.quantum_sandbox import render_quantum_sandbox
+            render_quantum_sandbox()
     with tab6:
         st.subheader("🔤 PQC Word Search — 12 Levels!")
         st.markdown("Find all the hidden words! Each level gets bigger and harder!")
