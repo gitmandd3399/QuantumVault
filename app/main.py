@@ -35,7 +35,7 @@ from modules.threat_thermometer import render_threat_thermometer
 from modules.algo_battle import render_algo_battle
 # PARKED-ORBITAL # from modules.quantum_orbital import render_quantum_orbital
 from modules.quantum_composer import render_quantum_composer
-from modules.games import render_prime_factor_game, render_network_defender, render_secret_message, render_falling_blocks, render_ctf_game, render_code_shield, render_pqc_python_lab, render_cipher_quest
+from modules.games import render_prime_factor_game, render_secret_message, render_falling_blocks, render_ctf_game, render_code_shield, render_pqc_python_lab, render_cipher_quest
 from modules.career_explorer import render_career_explorer
 from modules.harvest_timeline import render_harvest_timeline
 from modules.lesson_plans import render_lesson_plans
@@ -214,7 +214,7 @@ def sidebar():
         {"label": "🎮 GAMES", "color": "#f59e0b", "items": [
             ("🔤", "Secret Message",    "🔤 Secret Message Maker"),
             ("🔢", "Prime Factor",      "🔢 Prime Factor Cracker"),
-            ("🌐", "Network Defender",  "🌐 Network Defender"),
+# PARKED-DEFENDER #             ("🌐", "Network Defender",  "🌐 Network Defender"),
 # PARKED-ORBITAL #             ("🚀", "Quantum Orbital", "🚀 Quantum Orbital"),
             ("🧱", "Falling Blocks",    "🧱 Falling Blocks"),
             ("🚩", "CTF Challenge",    "🚩 CTF Challenge"),
@@ -592,7 +592,7 @@ def main():
         "🗺️ Mission Map",
         "📊 My Progress",
         "🔢 Prime Factor Cracker",
-        "🌐 Network Defender",
+# PARKED-DEFENDER #         "🌐 Network Defender",
         "☠️ Harvest Timeline",
 # PARKED-ORBITAL #         "🚀 Quantum Orbital",
         "⚛️ Quantum Composer",
@@ -701,8 +701,8 @@ def main():
         render_trading_cards()
     elif "Prime Factor" in level:
         render_prime_factor_game()
-    elif "Network Defender" in level:
-        render_network_defender()
+# PARKED-DEFENDER #     elif "Network Defender" in level:
+# PARKED-DEFENDER #         render_network_defender()
 # PARKED-ORBITAL #     elif "Quantum Orbital" in level:
 # PARKED-ORBITAL #         render_quantum_orbital()
     elif "Quantum Composer" in level:
