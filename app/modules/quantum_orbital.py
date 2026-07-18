@@ -305,6 +305,43 @@ function nextTutorial() {
 function skipTutorial() { showTutorial = false; }
 
 
+// ── Palette drag & drop (parts stack on drop) ──────────────────────────
+var odragType=null,oghost=null,omoved=false,osx=0,osy=0;
+document.querySelectorAll('.part-btn').forEach(function(el){
+    el.addEventListener('mousedown',function(e){
+        odragType=el.id.replace('pb-','');osx=e.clientX;osy=e.clientY;omoved=false;
+        e.preventDefault();
+    });
+});
+document.addEventListener('mousemove',function(e){
+    if(!odragType)return;
+    if(!omoved&&Math.abs(e.clientX-osx)+Math.abs(e.clientY-osy)<6)return;
+    if(!oghost){
+        omoved=true;
+        oghost=document.createElement('div');
+        oghost.textContent=(PARTS[odragType]?PARTS[odragType].name:odragType);
+        oghost.style.cssText='position:fixed;z-index:9999;pointer-events:none;'+
+            'padding:7px 13px;border-radius:8px;background:#1e293b;border:2px solid #8b5cf6;'+
+            'color:#c4b5fd;font-weight:700;font-size:12px;transform:translate(-50%,-50%);opacity:.9';
+        document.body.appendChild(oghost);
+    }
+    oghost.style.left=e.clientX+'px';oghost.style.top=e.clientY+'px';
+});
+document.addEventListener('mouseup',function(e){
+    if(!odragType)return;
+    if(omoved){
+        var r=cv.getBoundingClientRect();
+        if(e.clientX>=r.left&&e.clientX<=r.right&&e.clientY>=r.top&&e.clientY<=r.bottom){
+            if(showTutorial){showTutorial=false;}
+            if(phase==='build'){
+                selectPart(odragType);
+                addPart(odragType);
+            }
+        }
+    }
+    if(oghost){oghost.remove();oghost=null;}
+    odragType=null;omoved=false;
+});
 // ── INIT STARS ────────────────────────────────────────────────────────────────
 for (var i=0;i<80;i++) {
     stars.push({
