@@ -2230,35 +2230,20 @@ body{background:#020d14;font-family:'Segoe UI',sans-serif;color:white;overflow-x
 
 <script>
 // ── WAVE DEFINITIONS ──────────────────────────────────────────────────────────
-// Each wave has: title, subtitle, numbers to factor, time limit
+// Wave data — every N is the verified product of two primes
 const WAVES = [
-    {title:'Wave 1 — Warm Up',      sub:'Small numbers — easy factors!',        nums:[[6,2,3],[10,2,5],[15,3,5],[21,3,7],[14,2,7]],       time:20},
-    {title:'Wave 2 — Getting Real', sub:'Slightly bigger — stay focused!',       nums:[[35,5,7],[77,7,11],[91,7,13],[143,11,13],[187,11,17]], time:22},
-    {title:'Wave 3 — RSA Basics',   sub:'Two-digit primes — Shor Bot speeds up!',nums:[[221,13,17],[323,17,19],[437,19,23],[667,23,29],[899,29,31]],time:25},
-    {title:'Wave 4 — Triple Digits',sub:'Three digits — think carefully!',        nums:[[1147,31,37],[1517,37,41],[1763,41,43],[2021,43,47],[2491,47,53]],time:28},
-    {title:'Wave 5 — RSA-64',       sub:'Real RSA territory — Shor Bot angry!',  nums:[[3127,53,59],[3599,59,61],[4087,61,67],[4757,67,71],[5183,71,73]],time:30},
-    {title:'Wave 6 — Speed Round',  sub:'Fast fingers! 15 seconds each!',        nums:[[6557,79,83],[7663,79,97],[9409,97,97],[10403,101,103],[11021,103,107]],time:15},
-    {title:'Wave 7 — Boss Level',   sub:'The Shor Bot is ANGRY — hurry!',        nums:[[11663,107,109],[12317,109,113],[14351,113,127],[16637,127,131],[17947,131,137]],time:20},
-    {title:'Wave 8 — Elite',        sub:'Only the best cryptographers survive!', nums:[[21277,127,167],[25123,139,181],[28441,151,179],[33511,163,193],[39403,181,211]],time:25},
-    {title:'Wave 9 — Legendary',    sub:'Modern RSA uses 2048-bit numbers!',     nums:[[46189,199,233],[54869,211,257],[65183,229,271],[76843,251,307],[91567,271,337]],time:30},
-    {title:'Wave 10 — FINAL BOSS',  sub:'QUANTUM THREAT LEVEL: MAXIMUM!',       nums:[[104537,317,311],[121399,347,311],[144169,389,371],[169om,409,421],[196om,439,449]],time:35},
+    {title:'Wave 1 — Warm Up', sub:'Small numbers — easy factors!', time:20, nums:[[6,2,3],[10,2,5],[15,3,5],[21,3,7],[14,2,7]]},
+    {title:'Wave 2 — Getting Real', sub:'Slightly bigger — stay focused!', time:22, nums:[[35,5,7],[77,7,11],[91,7,13],[143,11,13],[187,11,17]]},
+    {title:'Wave 3 — RSA Basics', sub:'Two-digit primes — Shor Bot speeds up!', time:25, nums:[[221,13,17],[323,17,19],[437,19,23],[667,23,29],[899,29,31]]},
+    {title:'Wave 4 — Triple Digits', sub:'Three digits — think carefully!', time:28, nums:[[1147,31,37],[1517,37,41],[1763,41,43],[2021,43,47],[2491,47,53]]},
+    {title:'Wave 5 — RSA Territory', sub:'Real RSA territory — Shor Bot angry!', time:30, nums:[[3127,53,59],[3599,59,61],[4087,61,67],[4757,67,71],[5183,71,73]]},
+    {title:'Wave 6 — Speed Round', sub:'Fast fingers! 15 seconds each!', time:15, nums:[[5767,73,79],[6557,79,83],[7387,83,89],[8633,89,97],[9797,97,101]]},
+    {title:'Wave 7 — Boss Level', sub:'The Shor Bot is ANGRY — hurry!', time:20, nums:[[10403,101,103],[11021,103,107],[11663,107,109],[12317,109,113],[14351,113,127]]},
+    {title:'Wave 8 — Elite', sub:'Only the best cryptographers survive!', time:25, nums:[[16637,127,131],[17947,131,137],[19043,137,139],[20711,139,149],[22499,149,151]]},
+    {title:'Wave 9 — Legendary', sub:'Modern RSA uses 2048-bit numbers!', time:30, nums:[[23707,151,157],[25591,157,163],[27221,163,167],[28891,167,173],[30967,173,179]]},
+    {title:'Wave 10 — FINAL BOSS', sub:'QUANTUM THREAT LEVEL: MAXIMUM!', time:35, nums:[[34571,181,191],[36863,191,193],[38021,193,197],[39203,197,199],[41989,199,211]]},
 ];
-
-// Fix wave 5 and 10 typos
-WAVES[4].nums[2] = [4rr,61,67];
-// Actually let me use cleaner numbers
-const CLEAN_WAVES = [
-    {title:'Wave 1 — Warm Up',       sub:'Small numbers — easy factors!',         time:20, nums:[[6,2,3],[10,2,5],[15,3,5],[21,3,7],[14,2,7]]},
-    {title:'Wave 2 — Getting Real',  sub:'Slightly bigger — stay focused!',        time:22, nums:[[35,5,7],[77,7,11],[91,7,13],[143,11,13],[187,11,17]]},
-    {title:'Wave 3 — RSA Basics',    sub:'Two-digit primes — Shor Bot speeds up!', time:25, nums:[[221,13,17],[323,17,19],[437,19,23],[667,23,29],[899,29,31]]},
-    {title:'Wave 4 — Triple Digits', sub:'Three digits — think carefully!',         time:28, nums:[[1147,31,37],[1517,37,41],[1763,41,43],[2021,43,47],[2491,47,53]]},
-    {title:'Wave 5 — RSA Territory', sub:'Real RSA territory — Shor Bot angry!',   time:30, nums:[[3127,53,59],[3599,59,61],[4087,61,67],[5183,67,71],[5767,71,73]]},
-    {title:'Wave 6 — Speed Round',   sub:'Fast fingers! 15 seconds each!',          time:15, nums:[[6557,73,89],[7921,89,89],[9409,97,97],[10403,101,103],[11021,101,109]]},
-    {title:'Wave 7 — Boss Level',    sub:'The Shor Bot is ANGRY — hurry!',          time:20, nums:[[12319,107,109],[13013,101,131],[15251,107,139],[17081,113,151],[18721,131,149]]},
-    {title:'Wave 8 — Elite',         sub:'Only the best cryptographers survive!',   time:25, nums:[[21277,127,167],[25123,139,181],[28441,157,179],[33511,163,193],[39403,181,211]]},
-    {title:'Wave 9 — Legendary',     sub:'Modern RSA uses 2048-bit numbers!',       time:30, nums:[[46189,199,233],[54869,211,257],[65183,229,281],[76843,251,307],[91567,271,337]]},
-    {title:'Wave 10 — FINAL BOSS',   sub:'QUANTUM THREAT LEVEL: MAXIMUM!',         time:35, nums:[[104537,317,331],[121399,347,349],[144169,379,383],[169013,409,421],[196013,441,449]]},
-];
+const CLEAN_WAVES = WAVES; // legacy alias
 
 // ── PQC FACTS ────────────────────────────────────────────────────────────────
 const FACTS = [
