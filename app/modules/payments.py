@@ -159,13 +159,32 @@ def create_checkout_session(plan_key, school_name, email):
             }],
             mode="subscription",
             customer_email=email,
-            success_url="https://gitmandd3399.github.io/QuantumVault/landing/index.html?payment=success",
-            cancel_url="https://gitmandd3399.github.io/QuantumVault/landing/index.html",
+            success_url="https://quantumvaultacademy.streamlit.app/?session_id={CHECKOUT_SESSION_ID}",
+            cancel_url="https://www.quantumvaultacademy.com",
             metadata={"plan": plan_key, "school": school_name}
         )
         return session.url, None
     except Exception as e:
         return None, str(e)
+
+
+def verify_checkout_session(session_id):
+    """Server-side verification of a completed checkout via Stripe's API.
+
+    Returns (session, None) only if Stripe confirms payment_status == 'paid'.
+    This cannot be spoofed with URL parameters: the session is retrieved
+    directly from Stripe using the secret key.
+    """
+    stripe.api_key = get_stripe_key()
+    try:
+        session = stripe.checkout.Session.retrieve(session_id)
+        if getattr(session, "payment_status", None) == "paid":
+            logging.info("Verified paid checkout session")
+            return session, None
+        return None, "Payment not completed"
+    except Exception as e:
+        logging.warning(f"Checkout verification failed: {type(e).__name__}")
+        return None, "Could not verify payment"
 
 
 def render_pricing_page():

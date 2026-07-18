@@ -64,6 +64,33 @@ if "xp" not in st.session_state:
     st.session_state.xp = 0
 if "plan_type" not in st.session_state:
     st.session_state.plan_type = "free"
+
+# ── Stripe checkout return: verify payment server-side ──────────────────
+_sid = st.query_params.get("session_id")
+if _sid and not st.session_state.get("_checkout_processed"):
+    from modules.payments import verify_checkout_session
+    from modules import users as _users
+    _sess, _err = verify_checkout_session(_sid)
+    st.session_state["_checkout_processed"] = True
+    st.query_params.clear()
+    if _sess:
+        _paid_plan = (_sess.metadata or {}).get("plan", "classroom")
+        _paid_email = getattr(_sess, "customer_email", None) or (
+            getattr(_sess, "customer_details", None) and _sess.customer_details.get("email")
+        )
+        st.session_state.plan_type = _paid_plan
+        if _paid_email:
+            try:
+                if not _users.user_exists(_paid_email):
+                    _users.create_user(_paid_email, plan=_paid_plan)
+                else:
+                    _users.update_plan(_paid_email, _paid_plan)
+            except Exception:
+                pass  # session unlock still applies; account sync retried on next login
+        st.balloons()
+        st.success(f"🎉 Payment confirmed — your {_paid_plan.title()} plan is active! Welcome to QuantumVault Academy.")
+    else:
+        st.warning("We couldn't verify that payment just yet. If you completed checkout, log in with your purchase email — or contact hello@quantumvaultacademy.com and we'll sort it out fast.")
 if "free_module" not in st.session_state:
     st.session_state.free_module = None
 
