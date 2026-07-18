@@ -651,7 +651,7 @@ def main():
                 st.markdown(
                     "<div style='text-align:center;margin-top:8px;"
                     "font-size:0.85rem;color:#475569'>"
-                    "School license from $1,999/yr · 30-day free trial · No credit card</div>",
+                    "School license from $1,999/yr · 14-day free trial · 30-day money-back guarantee</div>",
                     unsafe_allow_html=True
                 )
             st.stop()

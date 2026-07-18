@@ -192,7 +192,7 @@ def render_pricing_page():
     st.title("💎 QuantumVault Academy — Pricing")
     st.markdown(
         "The **only K-12 platform** teaching NIST post-quantum cryptography standards. "
-        "All plans include a 14-day free trial. No credit card required."
+        "All plans include a 14-day free trial — $0 due today, cancel anytime."
     )
 
     # ── Free tier quick signup ───────────────────────────────────────────
