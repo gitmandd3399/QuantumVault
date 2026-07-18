@@ -532,7 +532,7 @@ In Quantum Composer, you'll build real circuits in a visual interface matching I
         },
         {
             "title": "💻 Lesson 3: Code It Yourself — Implementing PQC in Python",
-            "game": "🐍 PQC Python Lab",
+            "game": "🗝️ Cipher Quest",
             "time": "15 minutes",
             "objective": "Students will understand how to use NIST-standardized PQC algorithms in real Python code using the liboqs library.",
             "vocab": [
@@ -619,7 +619,7 @@ ML-KEM security reduces to the hardness of Module-LWE. Specifically:
 - No quantum algorithm achieves better than 2^128 operations for ML-KEM-768
 
 **Get Ready to Play:**
-In PQC Python Lab, you'll run real liboqs code in the browser, generate actual ML-KEM and ML-DSA keys, and complete coding challenges with an AI tutor that guides you through the implementation!
+In Cipher Quest, you'll work through hands-on coding challenges that apply these PQC concepts step by step, with guidance as you implement each idea!
             """,
             "check": "Ask students: Write pseudocode for a complete ML-KEM key exchange between Alice and Bob. Identify what each party keeps private and what they share publicly."
         },

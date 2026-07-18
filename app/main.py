@@ -35,7 +35,7 @@ from modules.threat_thermometer import render_threat_thermometer
 from modules.algo_battle import render_algo_battle
 # PARKED-ORBITAL # from modules.quantum_orbital import render_quantum_orbital
 from modules.quantum_composer import render_quantum_composer
-from modules.games import render_prime_factor_game, render_secret_message, render_falling_blocks, render_ctf_game, render_code_shield, render_pqc_python_lab, render_cipher_quest
+from modules.games import render_prime_factor_game, render_secret_message, render_falling_blocks, render_ctf_game, render_code_shield, render_cipher_quest
 from modules.career_explorer import render_career_explorer
 from modules.harvest_timeline import render_harvest_timeline
 from modules.lesson_plans import render_lesson_plans
@@ -220,7 +220,7 @@ def sidebar():
             ("🚩", "CTF Challenge",    "🚩 CTF Challenge"),
             ("─", "── Coding Games Trial ──", "─ Coding Games"),
             ("🛡️", "Code the Shield",   "🛡️ Code the Shield"),
-            ("🐍", "PQC Python Lab",    "🐍 PQC Python Lab"),
+# PARKED-PYLAB #             ("🐍", "PQC Python Lab",    "🐍 PQC Python Lab"),
             ("🎮", "Cipher Quest",      "🎮 Cipher Quest"),
             ("─", "── Premium Games ──", "─"),
             ("🧩", "Cipher Decoder",   "🧩 Cipher Decoder"),
@@ -600,7 +600,7 @@ def main():
         "🧱 Falling Blocks",
         "🚩 CTF Challenge",
         "🛡️ Code the Shield",
-        "🐍 PQC Python Lab",
+# PARKED-PYLAB #         "🐍 PQC Python Lab",
         "🎮 Cipher Quest",
         "⚛️ PQC Live Demo",
         "🦸 Story Adventure",
@@ -715,8 +715,8 @@ def main():
         render_ctf_game()
     elif "Code the Shield" in level:
         render_code_shield()
-    elif "PQC Python Lab" in level:
-        render_pqc_python_lab()
+# PARKED-PYLAB #     elif "PQC Python Lab" in level:
+# PARKED-PYLAB #         render_pqc_python_lab()
     elif "Cipher Quest" in level:
         render_cipher_quest()
     elif "Daily Challenge" in level:

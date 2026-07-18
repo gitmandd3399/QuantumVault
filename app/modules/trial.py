@@ -2,7 +2,7 @@ import streamlit as st
 import datetime
 import json
 
-TRIAL_GAMES = ["code_shield", "pqc_python_lab", "cipher_quest"]
+TRIAL_GAMES = ["code_shield", "cipher_quest"]  # pqc_python_lab parked
 TRIAL_DAYS = 7
 
 def start_trial(game_key: str):
