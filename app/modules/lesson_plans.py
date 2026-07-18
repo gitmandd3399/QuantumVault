@@ -85,7 +85,7 @@ But what if you had a MAGICAL LOCK that even the magic key couldn't open? That's
 
 **The Timeline (Super Simple):**
 - 1977: Scientists made RSA locks 🔒 (great for 40+ years!)
-- 2019: Scientists realized quantum computers could break RSA 😱
+- 1994: A mathematician named Peter Shor discovered quantum computers could break RSA 😱
 - 2024: NIST said "everyone must switch to ML-KEM!" ✅
 - TODAY: Google, Apple, and banks are switching right now!
 
@@ -98,14 +98,14 @@ In Quantum Lock Drop, you'll protect servers using new quantum-safe locks. Every
             "check": "Ask students: Why do we need NEW locks if the old RSA locks worked for 40 years?"
         },
         {
-            "title": "⛏️ Lesson 3: Mining for Quantum Crystals",
+            "title": "🧱 Lesson 3: Catching the Right Algorithm",
             "game": "🧱 Falling Blocks (Elementary)",
             "time": "8 minutes",
             "objective": "Students will understand that different algorithms have different strengths, just like different tools for different jobs.",
             "vocab": [
                 ("Algorithm", "A set of step-by-step instructions a computer follows to solve a problem. Like a recipe — if you follow the steps exactly, you get the right result!"),
                 ("PQC", "Post-Quantum Cryptography. 'Post' means AFTER. So PQC means cryptography (secret codes) designed for the world AFTER quantum computers exist. It's the future of keeping secrets safe!"),
-                ("Kyber Crystal", "In the game, Kyber crystals represent ML-KEM — the strongest quantum-safe key exchange algorithm. In real life, ML-KEM protects the keys that lock your data!"),
+                ("Kyber Block", "In the game, Kyber blocks represent ML-KEM — the strongest quantum-safe key exchange algorithm. In real life, ML-KEM protects the keys that lock your data!"),
                 ("Dilithium", "Another PQC algorithm — ML-DSA. It creates DIGITAL SIGNATURES, like a super-secure electronic signature that proves YOU sent a message and nobody changed it."),
             ],
             "lesson": """
@@ -220,13 +220,13 @@ In 500 dimensions? IMPOSSIBLE. No computer in the universe can do it fast enough
 That's the secret behind ML-KEM!
 
 **Why Quantum Computers Can't Break Lattices:**
-Quantum computers are great at ONE thing: trying many possibilities at the same time (called superposition). This is how Shor Algorithm breaks RSA — it tries all possible factors simultaneously.
+Quantum computers are great at ONE thing: trying many possibilities at the same time (called superposition). This is how Shor Algorithm breaks RSA — it uses superposition to find hidden repeating patterns (called periods) in RSA math, exponentially faster than any regular computer.
 
 BUT for lattice problems, trying all possibilities doesn't help. The search space is TOO large — even with quantum superposition, you can't navigate a 500-dimensional maze any faster!
 
 **Real World Numbers:**
 - RSA-2048 has a search space of about 2^2048 possibilities
-- A quantum computer can crack RSA-2048 in hours using Shor Algorithm
+- A large enough quantum computer could crack RSA-2048 in hours using Shor Algorithm (none exists yet — but nation-states are racing to build one)
 - ML-KEM has a lattice so complex that even with quantum superposition, cracking it would take longer than the age of the universe (13.8 billion years!)
 
 **The NIST Decision (August 13, 2024):**
@@ -422,7 +422,7 @@ def render_high_lessons():
             "objective": "Students will understand the historical context of the PQC standardization process and what the 2024 FIPS standards mean for the world.",
             "vocab": [
                 ("NIST", "National Institute of Standards and Technology. A US federal agency that sets technical standards for industry and government. When NIST mandates an algorithm, it becomes the law for all federal systems and heavily influences private industry worldwide."),
-                ("FIPS", "Federal Information Processing Standards. Official US government standards for cryptography. FIPS 140-2 covers hardware security modules. The 2024 PQC standards are FIPS 203, 204, 205, and 206."),
+                ("FIPS", "Federal Information Processing Standards. Official US government standards for cryptography. FIPS 140-2 covers hardware security modules. The 2024 standards are FIPS 203, 204, and 205; FIPS 206 (Falcon) is still being finalized."),
                 ("Shor's Algorithm", "A quantum algorithm discovered by MIT mathematician Peter Shor in 1994. It factors large numbers EXPONENTIALLY faster than any classical algorithm. RSA security relies on factoring being hard — Shor's Algorithm makes it easy on a quantum computer. Factoring 2048-bit RSA: classical = 2^86 years, quantum = ~hours."),
                 ("CRQC", "Cryptographically Relevant Quantum Computer. A quantum computer powerful enough to run Shor's Algorithm on real-world key sizes (2048+ bit RSA, 256-bit ECC). Current estimates: CRQC requires ~4,000 logical qubits. IBM projects this is possible by 2033."),
                 ("Harvest Now Decrypt Later", "HNDL — a nation-state attack strategy where adversaries intercept and STORE encrypted network traffic today, then decrypt it retroactively once a CRQC exists. Chinese, Russian, and US intelligence agencies are believed to be doing this NOW."),
@@ -441,13 +441,13 @@ def render_high_lessons():
 - **2026-2027**: Google, Apple, Cloudflare, AWS complete migration. NSA compliance deadline approaches.
 - **2030-2033**: Estimated CRQC arrival. All non-migrated systems at risk retroactively.
 
-**What FIPS 203, 204, 205, 206 Actually Mandate:**
+**What FIPS 203, 204, 205 Mandate (plus draft FIPS 206):**
 | Standard | Algorithm | Type | Key/Sig Size | Security Level |
 |----------|-----------|------|--------------|----------------|
 | FIPS 203 | ML-KEM-768 | Key Encapsulation | 1,184B pub key | 192-bit quantum |
 | FIPS 204 | ML-DSA-65 | Digital Signature | 1,952B pub key | 192-bit quantum |
 | FIPS 205 | SLH-DSA-128s | Hash Signature | 32B pub key | 128-bit quantum |
-| FIPS 206 | FN-DSA-512 (Falcon) | Compact Signature | 897B pub key | 128-bit quantum |
+| FIPS 206 (draft) | FN-DSA-512 (Falcon) | Compact Signature | 897B pub key | 128-bit quantum |
 
 **The Harvest Now Decrypt Later Threat:**
 Think about what data gets encrypted today that's STILL sensitive in 10-15 years:
@@ -687,7 +687,7 @@ The biggest risk to PQC migration isn't technical — it's organizational. Most 
 - Budget allocated after a breach rather than before
 - Legacy systems 20+ years old that can't be updated
 
-Security professionals who understand PQC migration are among the highest-paid in cybersecurity right now. Starting salaries: $130,000-$180,000.
+Security professionals who understand PQC migration are in high demand — it is one of the better-paid specializations in cybersecurity, and demand is growing every year.
             """,
             "check": "Ask students: A hospital has patient records dating back to 2010, encrypted with RSA-2048. Write a one-paragraph threat assessment explaining their quantum risk and your recommended migration priority."
         },
