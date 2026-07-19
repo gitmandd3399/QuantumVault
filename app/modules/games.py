@@ -2244,6 +2244,35 @@ const WAVES = [
     {title:'Wave 10 — FINAL BOSS', sub:'QUANTUM THREAT LEVEL: MAXIMUM!', time:35, nums:[[34571,181,191],[36863,191,193],[38021,193,197],[39203,197,199],[41989,199,211]]},
 ];
 const CLEAN_WAVES = WAVES; // legacy alias
+// Prime pools per wave — factors grow as waves advance; pairs picked randomly each round
+const PRIME_TIERS=[
+    [2,3,5,7],
+    [5,7,11,13,17],
+    [13,17,19,23,29,31],
+    [31,37,41,43,47,53],
+    [53,59,61,67,71,73],
+    [73,79,83,89,97,101],
+    [101,103,107,109,113,127],
+    [127,131,137,139,149,151],
+    [151,157,163,167,173,179],
+    [181,191,193,197,199,211,223,227]
+];
+let usedNs={};
+function genPair(tierIdx){
+    const pool=PRIME_TIERS[Math.max(0,Math.min(9,tierIdx))];
+    for(let tries=0;tries<30;tries++){
+        const p=pool[Math.floor(Math.random()*pool.length)];
+        const q=pool[Math.floor(Math.random()*pool.length)];
+        const lo=Math.min(p,q),hi=Math.max(p,q),n=lo*hi;
+        if(!usedNs[n]||tries>20){
+            usedNs[n]=true;
+            if(Object.keys(usedNs).length>40)usedNs={};
+            return [n,lo,hi];
+        }
+    }
+    const p=pool[0],q=pool[pool.length-1];
+    return [p*q,p,q];
+}
 
 // ── PQC FACTS ────────────────────────────────────────────────────────────────
 const FACTS = [
@@ -2299,7 +2328,8 @@ function loadNumber(){
         waveComplete();
         return;
     }
-    const [n,p,q]=currentWave.nums[currentNumIdx];
+    const tierIdx=WAVES.indexOf(currentWave);
+    const [n,p,q]=genPair(tierIdx>=0?tierIdx:0);
     currentNum=n; factor1=p; factor2=q;
     foundFactors=[];
     hintsShown=0;
@@ -2612,7 +2642,7 @@ showFact(FACTS[0]);
 </script>
 </body>
 </html>
-""", height=720)
+""", height=880)
 
 def render_network_defender():
     """Free game: Quantum Fortress — UPGRADED 2026 — Melon-style network defense."""
