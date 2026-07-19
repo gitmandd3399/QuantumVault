@@ -5,15 +5,37 @@ import json
 TRIAL_GAMES = ["code_shield", "cipher_quest"]  # pqc_python_lab parked
 TRIAL_DAYS = 7
 
+def _user_email():
+    return st.session_state.get("user_email") or st.session_state.get("email")
+
+
 def start_trial(game_key: str):
-    """Start 7-day trial for a game if not already started."""
+    """Start 7-day trial for a game if never started for this ACCOUNT (persists across logins)."""
+    from modules import users as _users
     trial_key = "trial_start_" + game_key
-    if trial_key not in st.session_state:
-        st.session_state[trial_key] = datetime.datetime.utcnow().isoformat()
+    email = _user_email()
+    if email:
+        existing = _users.get_trial_start(email, game_key)
+        if existing:
+            st.session_state[trial_key] = existing
+            return
+        now = datetime.datetime.utcnow().isoformat()
+        _users.set_trial_start(email, game_key, now)
+        st.session_state[trial_key] = now
+    else:
+        if trial_key not in st.session_state:
+            st.session_state[trial_key] = datetime.datetime.utcnow().isoformat()
 
 def get_trial_days_left(game_key: str) -> int:
-    """Returns days left in trial. -1 if never started."""
+    """Returns days left in trial. -1 if never started. Checks the ACCOUNT record first."""
+    from modules import users as _users
     trial_key = "trial_start_" + game_key
+    if trial_key not in st.session_state:
+        email = _user_email()
+        if email:
+            existing = _users.get_trial_start(email, game_key)
+            if existing:
+                st.session_state[trial_key] = existing
     if trial_key not in st.session_state:
         return -1
     start = datetime.datetime.fromisoformat(st.session_state[trial_key])

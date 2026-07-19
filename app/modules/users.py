@@ -54,6 +54,25 @@ def get_user(email: str) -> dict:
     key = _hash_email(email)
     return users.get(key, {})
 
+def get_trial_start(email: str, game_key: str):
+    """Return persisted trial-start ISO timestamp for this email+game, or None."""
+    user = get_user(email)
+    if not user:
+        return None
+    return user.get("trials", {}).get(game_key)
+
+
+def set_trial_start(email: str, game_key: str, iso_ts: str):
+    """Persist a trial start against the user record. First write wins - never overwrites."""
+    users = _load_users()
+    key = _hash_email(email)
+    if key in users:
+        trials = users[key].setdefault("trials", {})
+        if game_key not in trials:
+            trials[game_key] = iso_ts
+            _save_users(users)
+
+
 def update_plan(email: str, plan: str):
     users = _load_users()
     key = _hash_email(email)
