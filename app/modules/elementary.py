@@ -995,6 +995,10 @@ resetWS();
         level = st.session_state.cw_level
 
         import streamlit.components.v1 as components
+        # Grid sizes per level (mirrors the JS LEVELS dict)
+        _CW_SIZES = {1:7, 2:8, 3:9, 4:10, 5:10, 6:11, 7:12, 8:12, 9:13, 10:13, 11:14, 12:14}
+        _sz = _CW_SIZES.get(st.session_state.cw_level, 14)
+        _cw_height = 340 + _sz * 36
         components.html(f"""
 <!DOCTYPE html>
 <html>
