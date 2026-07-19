@@ -1025,6 +1025,11 @@ background:#4f46e5;color:white;font-size:11px;font-weight:bold;margin:3px;}}
 <body>
 <div class="wrap">
 <div id="msg">Click a white square and type your answer!</div>
+<div style="text-align:center;background:#111c30;border:1px solid #334155;border-radius:10px;
+padding:8px 10px;margin:6px auto;max-width:540px;">
+<div style="font-size:11px;color:#a5b4fc;font-weight:bold;margin-bottom:6px;">📋 WORD BANK — find these words!</div>
+<div id="word-bank" style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center;"></div>
+</div>
 <div style="text-align:center">
 <div class="cw-grid" id="grid"></div>
 </div>
@@ -1277,6 +1282,63 @@ const LEVELS = {{
 }};
 
 const ldata = LEVELS[LEVEL];
+// ── Word bank: derive answer words from the grid itself ──
+function extractWords() {{
+    const words = [], seen = {{}};
+    const g = ldata.ans, S = ldata.size;
+    // horizontal runs
+    for (let r = 0; r < S; r++) {{
+        let run = [];
+        for (let col = 0; col <= S; col++) {{
+            const ch = col < S ? g[r][col] : null;
+            if (ch) {{ run.push({{r: r, c: col, ch: ch}}); }}
+            else {{
+                if (run.length >= 2) {{
+                    const w = run.map(x => x.ch).join('');
+                    if (!seen[w]) {{ seen[w] = true; words.push({{word: w, cells: run.slice()}}); }}
+                }}
+                run = [];
+            }}
+        }}
+    }}
+    // vertical runs
+    for (let col = 0; col < S; col++) {{
+        let run = [];
+        for (let r = 0; r <= S; r++) {{
+            const ch = r < S ? g[r][col] : null;
+            if (ch) {{ run.push({{r: r, c: col, ch: ch}}); }}
+            else {{
+                if (run.length >= 2) {{
+                    const w = run.map(x => x.ch).join('');
+                    if (!seen[w]) {{ seen[w] = true; words.push({{word: w, cells: run.slice()}}); }}
+                }}
+                run = [];
+            }}
+        }}
+    }}
+    words.sort((a, b) => a.word.localeCompare(b.word));
+    return words;
+}}
+const BANK_WORDS = extractWords();
+function renderBank() {{
+    const el = document.getElementById('word-bank');
+    if (!el) return;
+    el.innerHTML = BANK_WORDS.map(function(w, i) {{
+        const solved = isWordSolved(w);
+        return '<span id="bw-' + i + '" style="padding:5px 12px;border-radius:14px;font-size:14px;' +
+            'font-weight:bold;letter-spacing:1px;' +
+            (solved
+                ? 'background:#05301f;color:#34d399;border:1px solid #10b981;text-decoration:line-through;'
+                : 'background:#1e293b;color:#e2e8f0;border:1px solid #475569;') +
+            '">' + (solved ? '✓ ' : '') + w.word + '</span>';
+    }}).join('');
+}}
+function isWordSolved(w) {{
+    return w.cells.every(function(cell) {{
+        const inp = document.querySelector('input[data-r="' + cell.r + '"][data-c="' + cell.c + '"]');
+        return inp && inp.value.toUpperCase() === cell.ch;
+    }});
+}}
 const SIZE = ldata.size;
 const ANS = ldata.ans;
 const NUMS = ldata.nums;
@@ -1324,7 +1386,9 @@ function buildClues() {{
                    "<div class='clue-sec'><h4>DOWN</h4>"+down+"</div>";
 }}
 
+function refreshBank() {{ renderBank(); }}
 function checkAll() {{
+    refreshBank();
     let ok=0,tot=0;
     document.querySelectorAll(".white input").forEach(inp=>{{
         tot++;
@@ -1352,6 +1416,8 @@ function clearAll() {{
 }}
 
 buildGrid();
+renderBank();
+document.addEventListener("input",function(e){{if(e.target&&e.target.tagName==="INPUT")renderBank();}});
 </script>
 </body>
 </html>
