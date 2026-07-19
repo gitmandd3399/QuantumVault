@@ -494,6 +494,12 @@ def render_middle_school():
             st.session_state.race_running = False
         if "race_shown" not in st.session_state:
             st.session_state.race_shown = set()
+        if "race_bets" not in st.session_state:
+            st.session_state.race_bets = {}
+        if "race_score" not in st.session_state:
+            st.session_state.race_score = 0
+        if "race_streak" not in st.session_state:
+            st.session_state.race_streak = 0
 
         prob = problems[st.session_state.race_idx]
         color = "#ef4444" if prob["winner"] == "quantum" else "#10b981" if prob["winner"] == "tie" else "#f59e0b"
@@ -517,6 +523,31 @@ def render_middle_school():
         )
 
         if st.session_state.race_idx in st.session_state.race_shown:
+            _w = prob["winner"]
+            _cl_t, _q_t = (3.2, 1.1) if _w == "quantum" else (1.3, 3.4) if _w == "classical_safe" else (2.6, 2.6)
+            _cl_end, _q_end = (62, 100) if _w == "quantum" else (100, 55) if _w == "classical_safe" else (88, 88)
+            _ms4.html(f"""
+<div style='font-family:Segoe UI,sans-serif;background:#0b1526;border-radius:12px;padding:14px 16px'>
+<div style='color:#94a3b8;font-size:12px;margin-bottom:4px'>🖥️ Classical Computer</div>
+<div style='background:#1e293b;border-radius:8px;height:22px;overflow:hidden;margin-bottom:10px'>
+  <div style='height:100%;width:0;background:linear-gradient(90deg,#3b82f6,#60a5fa);border-radius:8px;
+       animation:cl {_cl_t}s ease-out forwards'></div></div>
+<div style='color:#94a3b8;font-size:12px;margin-bottom:4px'>⚛️ Quantum Computer</div>
+<div style='background:#1e293b;border-radius:8px;height:22px;overflow:hidden'>
+  <div style='height:100%;width:0;background:linear-gradient(90deg,#8b5cf6,#c084fc);border-radius:8px;
+       animation:qu {_q_t}s ease-out forwards'></div></div>
+<style>
+@keyframes cl {{ to {{ width:{_cl_end}%; }} }}
+@keyframes qu {{ to {{ width:{_q_end}%; }} }}
+</style></div>""", height=140)
+            _bet = st.session_state.race_bets.get(st.session_state.race_idx)
+            if _bet is not None:
+                if _bet == prob["winner"]:
+                    _bonus = (st.session_state.race_streak - 1) * 5
+                    st.success(f"🎯 **You called it!** +10 pts" + (f" (+{_bonus} streak bonus!)" if _bonus > 0 else "") + f" — Score: {st.session_state.race_score} · 🔥 Streak: {st.session_state.race_streak}")
+                else:
+                    _names = {"quantum": "⚛️ Quantum", "classical_safe": "🖥️ Classical", "tie": "🤝 Tie"}
+                    st.warning(f"😮 **Surprise!** The answer was {_names.get(prob['winner'], prob['winner'])} — this is one of the tricky ones. Score: {st.session_state.race_score}")
             st.info(f"💡 **Why:** {prob['why']}")
             st.markdown(
                 f"<div style='background:{prob['pqc_color']}15;border:1px solid {prob['pqc_color']}50;"
@@ -538,10 +569,31 @@ def render_middle_school():
                         mark_complete("quantum_race")
                         award_badge("⚡ Quantum Racer", xp=25)
                         st.session_state.xp = st.session_state.get("xp", 0) + 25
+                        _n_right = sum(1 for _i, _b in st.session_state.race_bets.items()
+                                       if _i < len(problems) and _b == problems[_i]["winner"])
+                        st.success(f"🏆 **Quantum Racer earned!** You predicted {_n_right}/{len(problems)} races correctly — final score {st.session_state.race_score} pts!")
                         st.balloons()
         else:
-            if st.button("🏁 Run the Race!", key=f"race_run_{st.session_state.race_idx}", type="primary", use_container_width=True):
+            st.markdown("**🎲 Place your bet — who wins this race?**")
+            bc1, bc2, bc3 = st.columns(3)
+            bet = None
+            with bc1:
+                if st.button("🖥️ Classical", key=f"bet_c_{st.session_state.race_idx}", use_container_width=True):
+                    bet = "classical_safe"
+            with bc2:
+                if st.button("⚛️ Quantum", key=f"bet_q_{st.session_state.race_idx}", use_container_width=True):
+                    bet = "quantum"
+            with bc3:
+                if st.button("🤝 It's a Tie", key=f"bet_t_{st.session_state.race_idx}", use_container_width=True):
+                    bet = "tie"
+            if bet is not None:
+                st.session_state.race_bets[st.session_state.race_idx] = bet
                 st.session_state.race_shown.add(st.session_state.race_idx)
+                if bet == prob["winner"]:
+                    st.session_state.race_streak += 1
+                    st.session_state.race_score += 10 + (st.session_state.race_streak - 1) * 5
+                else:
+                    st.session_state.race_streak = 0
                 st.rerun()
 
         st.markdown("---")
