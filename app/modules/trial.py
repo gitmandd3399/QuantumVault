@@ -57,6 +57,20 @@ def trial_gate(game_key: str, game_name: str) -> bool:
     if plan == "paid":
         return True
 
+    # Trials require a logged-in account (prevents reload/incognito trial farming)
+    if not _user_email():
+        st.markdown(
+            "<div style='background:#071520;border:2px solid #1d4ed8;border-radius:16px;"
+            "padding:26px;text-align:center;margin:16px 0'>"
+            "<div style='font-size:2.6rem;margin-bottom:8px'>🎁</div>"
+            "<h3 style='color:#60a5fa;margin-bottom:6px'>" + game_name + " — Free 7-Day Trial</h3>"
+            "<p style='color:#94a3b8;margin-bottom:4px'>Sign in with your email to unlock your free trial.<br>"
+            "One trial per account — no credit card needed.</p>"
+            "</div>",
+            unsafe_allow_html=True
+        )
+        return False
+
     # Start trial on first visit
     trial_key = "trial_start_" + game_key
     if trial_key not in st.session_state:

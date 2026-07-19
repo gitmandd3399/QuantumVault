@@ -61,6 +61,18 @@ if "badges" not in st.session_state:
     st.session_state.badges = []
 if "xp" not in st.session_state:
     st.session_state.xp = 0
+st.markdown("""
+<style>
+.qv-mobile-note{display:none;}
+@media (max-width: 820px){
+  .qv-mobile-note{display:block;background:#1a1500;border:1px solid #fbbf24;
+    border-radius:8px;padding:8px 12px;margin-bottom:10px;text-align:center;
+    font-size:12px;color:#fbbf24;}
+}
+</style>
+<div class="qv-mobile-note">💻 QuantumVault works best on a computer or Chromebook — some games need a mouse and keyboard!</div>
+""", unsafe_allow_html=True)
+
 if "plan_type" not in st.session_state:
     st.session_state.plan_type = "free"
 
