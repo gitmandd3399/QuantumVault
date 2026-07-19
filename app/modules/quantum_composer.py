@@ -18,7 +18,7 @@ def render_quantum_composer():
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
 body{background:#0a0a14;font-family:'Segoe UI',monospace,sans-serif;color:#e2e8f0;overflow-x:hidden;}
-#wrap{display:grid;grid-template-columns:140px 1fr 200px;height:620px;gap:0;}
+#wrap{display:grid;grid-template-columns:140px 1fr 200px;min-height:620px;gap:0;align-items:stretch;}
 
 /* GATE PALETTE */
 #palette{background:#0d1117;border-right:1px solid #1e3a5a;overflow-y:auto;padding:8px 6px;}
