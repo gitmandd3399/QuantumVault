@@ -104,7 +104,7 @@ var paddle={x:W/2,w:70,y:H-30,h:14};
 var score=0,combo=1,comboTimer=0,lives=3,level=1;
 var gameActive=false,shielded=false,slowActive=false,doubleActive=false;
 var shieldTimer=0,slowTimer=0,doubleTimer=0;
-var spawnTimer=0,spawnRate=60,fallSpeed=2;
+var spawnTimer=0,spawnRate=70,fallSpeed=2;
 var boss=null,bossHP=0,bossDir=1;
 var bgStars=[];
 for(var i=0;i<40;i++) bgStars.push({x:Math.random()*W,y:Math.random()*H*0.7,r:Math.random()*1.2,a:Math.random()*0.6+0.2});
@@ -154,7 +154,7 @@ function spawnItem(){
 
 function spawnBoss(){
     boss={x:W/2,y:60,w:60,h:40,hp:5+level,maxHP:5+level,
-          emoji:'🤖',color:'#ef4444',dir:1,speed:2+level*0.3,
+          emoji:'🤖',color:'#ef4444',dir:1,speed:1.5+level*0.2,
           shootTimer:0,shootRate:80};
     setMsg('💀 BOSS: Quantum Shor Machine! Dodge its attacks!');
 }
@@ -180,14 +180,18 @@ function update(){
     var newLevel=Math.floor(score/200)+1;
     if(newLevel>level){
         level=newLevel;
-        fallSpeed=2+level*0.3;
-        spawnRate=Math.max(25,60-level*4);
+        fallSpeed=1.4+level*0.18;
+        spawnRate=Math.max(38,70-level*3);
         setMsg('LEVEL '+level+'! Faster drops incoming!');
         confetti();
     }
 
     // Move items
-    var speed=slowActive?0.4:1;
+    var now=performance.now();
+    if(!window._ld_last)window._ld_last=now;
+    var dt=Math.min(3,(now-window._ld_last)/16.67); // 60fps baseline, capped for tab-switch jumps
+    window._ld_last=now;
+    var speed=(slowActive?0.4:1)*dt;
     items.forEach(function(it){it.y+=it.vy*speed;});
 
     // Boss logic
