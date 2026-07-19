@@ -998,7 +998,7 @@ resetWS();
         # Grid sizes per level (mirrors the JS LEVELS dict)
         _CW_SIZES = {1:7, 2:8, 3:9, 4:10, 5:10, 6:11, 7:12, 8:12, 9:13, 10:13, 11:14, 12:14}
         _sz = _CW_SIZES.get(st.session_state.cw_level, 14)
-        _cw_height = 340 + _sz * 36
+        _cw_height = 470 + _sz * 42  # room for grid + word bank rows + two clue columns
         components.html(f"""
 <!DOCTYPE html>
 <html>
@@ -1425,7 +1425,7 @@ document.addEventListener("input",function(e){{if(e.target&&e.target.tagName==="
 </script>
 </body>
 </html>
-""", height=_cw_height)
+""", height=_cw_height, scrolling=True)
 
         if f"cw_complete_{level}" not in st.session_state:
             if st.button(f"Mark Level {level} Complete! +{level*8} XP", key=f"cw_done_{level}"):
