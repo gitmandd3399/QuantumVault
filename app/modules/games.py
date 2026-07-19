@@ -53,7 +53,7 @@ body{background:#020d14;font-family:'Segoe UI',sans-serif;color:white;overflow:h
 <div class="hud">
     <div class="hb">⭐ Score<br><b id="h-score">0</b></div>
     <div class="hb">🔥 Combo<br><b id="h-combo">x1</b></div>
-    <div class="hb">❤️ Lives<br><b id="h-lives">3</b></div>
+    <div class="hb">❤️ Lives<br><b id="h-lives">5</b></div>
     <div class="hb">🌊 Level<br><b id="h-level">1</b></div>
 </div>
 <canvas id="cv" width="400" height="420"></canvas>
@@ -101,19 +101,19 @@ var FACTS=[
 // State
 var items=[],particles=[],floats=[];
 var paddle={x:W/2,w:70,y:H-30,h:14};
-var score=0,combo=1,comboTimer=0,lives=3,level=1;
+var score=0,combo=1,comboTimer=0,lives=5,level=1;
 var gameActive=false,shielded=false,slowActive=false,doubleActive=false;
 var shieldTimer=0,slowTimer=0,doubleTimer=0;
-var spawnTimer=0,spawnRate=70,fallSpeed=2;
+var spawnTimer=0,spawnRate=70,fallSpeed=1.4;
 var boss=null,bossHP=0,bossDir=1;
 var bgStars=[];
 for(var i=0;i<40;i++) bgStars.push({x:Math.random()*W,y:Math.random()*H*0.7,r:Math.random()*1.2,a:Math.random()*0.6+0.2});
 
 function startGame(){
     items=[];particles=[];floats=[];
-    score=0;combo=1;comboTimer=0;lives=3;level=1;
+    score=0;combo=1;comboTimer=0;lives=5;level=1;
     gameActive=true;shielded=false;slowActive=false;doubleActive=false;
-    spawnTimer=0;spawnRate=60;fallSpeed=2;boss=null;
+    spawnTimer=0;spawnRate=70;fallSpeed=1.4;boss=null;
     paddle.x=W/2;
     updateHUD();
     setMsg('Catch the quantum-safe locks! Avoid broken crypto!');
