@@ -100,7 +100,7 @@ var FACTS=[
 
 // State
 var items=[],particles=[],floats=[];
-var paddle={x:W/2,w:70,y:H-30,h:14};
+var paddle={x:W/2,w:95,y:H-30,h:14};
 var score=0,combo=1,comboTimer=0,lives=5,level=1;
 var gameActive=false,shielded=false,slowActive=false,doubleActive=false;
 var shieldTimer=0,slowTimer=0,doubleTimer=0;
@@ -135,12 +135,13 @@ cv.addEventListener('touchmove',function(e){
 
 function spawnItem(){
     var roll=Math.random();
+    var badChance=level<3?0:0.22; // levels 1-2: pure success warm-up, no bad items
     var item;
     if(roll<0.08){
         var pu=POWERUPS[Math.floor(Math.random()*POWERUPS.length)];
         item={x:20+Math.random()*(W-40),y:-20,vy:fallSpeed*0.7,
               emoji:pu.emoji,name:pu.name,color:pu.color,type:'power',effect:pu.effect,r:18};
-    } else if(roll<0.35){
+    } else if(roll<0.08+badChance){
         var b=BAD[Math.floor(Math.random()*BAD.length)];
         item={x:20+Math.random()*(W-40),y:-20,vy:fallSpeed*(0.9+Math.random()*0.4),
               emoji:b.emoji,name:b.name,color:b.color,type:'bad',dmg:b.dmg,r:16};
@@ -444,7 +445,7 @@ body{background:#020d14;font-family:'Segoe UI',sans-serif;color:white;overflow:h
 <div id="wrap">
 <div class="hud">
     <div class="hb">⭐ Score<br><b id="h-score">0</b></div>
-    <div class="hb">❤️ Lives<br><b id="h-lives">3</b></div>
+    <div class="hb">❤️ Lives<br><b id="h-lives">5</b></div>
     <div class="hb">💎 Crystals<br><b id="h-crystals">0</b>/4</div>
     <div class="hb">🌊 Level<br><b id="h-level">1</b></div>
 </div>
