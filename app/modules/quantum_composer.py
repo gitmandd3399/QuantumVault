@@ -18,7 +18,7 @@ def render_quantum_composer():
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
 body{background:#0a0a14;font-family:'Segoe UI',monospace,sans-serif;color:#e2e8f0;overflow-x:hidden;}
-#wrap{display:grid;grid-template-columns:140px 1fr 200px;min-height:620px;gap:0;align-items:stretch;}
+#wrap{display:grid;grid-template-columns:140px minmax(0,1fr) 200px;min-height:620px;gap:0;align-items:stretch;max-width:100%;}
 
 /* GATE PALETTE */
 #palette{background:#0d1117;border-right:1px solid #1e3a5a;overflow-y:auto;padding:8px 6px;}
@@ -50,7 +50,7 @@ body{background:#0a0a14;font-family:'Segoe UI',monospace,sans-serif;color:#e2e8f
 .tb-btn.active{background:#1d4ed8;color:white;border-color:#3b82f6;}
 #circuit-label{font-size:10px;color:#475569;margin-left:auto;}
 
-#circuit-canvas-wrap{flex:1;overflow:hidden;position:relative;}
+#circuit-canvas-wrap{flex:1;overflow:auto;position:relative;}
 #circuit-cv{display:block;}
 
 /* RIGHT PANEL */
