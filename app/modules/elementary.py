@@ -1421,7 +1421,7 @@ document.addEventListener("input",function(e){{if(e.target&&e.target.tagName==="
 </script>
 </body>
 </html>
-""", height=700)
+""", height=_cw_height)
 
         if f"cw_complete_{level}" not in st.session_state:
             if st.button(f"Mark Level {level} Complete! +{level*8} XP", key=f"cw_done_{level}"):
