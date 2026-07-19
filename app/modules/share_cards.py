@@ -108,7 +108,7 @@ function downloadCard() {{
 </script>
 </body>
 </html>
-""", height=480)
+""", height=480, scrolling=True)
 
 
 def render_share_page():

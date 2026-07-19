@@ -399,7 +399,7 @@ body{margin:0;background:#0f172a;font-family:sans-serif;padding:8px;text-align:c
 <div class="label" style="color:#a5b4fc">Quantum Monster &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Secret Vault &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Agent Pixel</div>
 <div style="color:#f59e0b;font-size:0.8rem;margin-top:6px;font-weight:bold">Pick the right lock to stop the monster! 🛡️</div>
 </div>
-""", height=160)
+""", height=160, scrolling=True)
 
         st.markdown("### 🔑 Choose Agent Pixel's Lock:")
         st.caption("Only ONE lock can stop a quantum computer — read the clues carefully!")
@@ -611,7 +611,7 @@ body{{margin:0;background:#0f172a;font-family:sans-serif;}}
 </div>
 </div>
 </div>
-""", height=240)
+""", height=240, scrolling=True)
 
             col1, col2, col3 = st.columns([1, 2, 1])
             with col1:
@@ -942,7 +942,7 @@ document.getElementById("wlist").innerHTML=
 WDS.map(w=>"<div class='ws-word"+(fd.includes(w)?" found":"")+"'>"+w+"</div>").join("");}}
 resetWS();
 </script>
-""", height=560)
+""", height=560, scrolling=True)
 
         # XP reward for completing levels
         if f"ws_complete_{lvl['level']}" not in st.session_state:

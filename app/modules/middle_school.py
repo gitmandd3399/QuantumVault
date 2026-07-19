@@ -727,7 +727,7 @@ async function update() {
 }
 update();
 </script>
-""", height=480)
+""", height=480, scrolling=True)
 
         st.markdown("---")
         col1, col2 = st.columns(2)
@@ -1018,7 +1018,7 @@ function showInfo(key) {
 </script>
 </body>
 </html>
-""", height=720)
+""", height=720, scrolling=True)
 
         st.markdown("---")
 

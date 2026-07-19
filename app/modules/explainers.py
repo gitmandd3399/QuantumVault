@@ -175,7 +175,7 @@ setInterval(() => {
 </script>
 </body>
 </html>
-""", height=420)
+""", height=420, scrolling=True)
 
 
 def render_kyber_explained():
@@ -288,7 +288,7 @@ setInterval(()=>{if(current<total)nextScene();},5000);
 </script>
 </body>
 </html>
-""", height=420)
+""", height=420, scrolling=True)
 
 
 def render_lattice_math():
@@ -413,7 +413,7 @@ setInterval(()=>{if(current<total)nextScene();},5000);
 </script>
 </body>
 </html>
-""", height=420)
+""", height=420, scrolling=True)
 
 
 def render_hash_functions():
@@ -513,7 +513,7 @@ setInterval(()=>{if(current<total)nextScene();},5000);
 </script>
 </body>
 </html>
-""", height=420)
+""", height=420, scrolling=True)
 
 
 def render_explainers_page():

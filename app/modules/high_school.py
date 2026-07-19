@@ -1163,7 +1163,7 @@ function restart(){{
 }}
 loadQ();
 </script>
-""", height=520)
+""", height=520, scrolling=True)
 
                 done_key = f"math_done_{sel_idx}"
                 xp_reward = (sel_idx + 1) * 15

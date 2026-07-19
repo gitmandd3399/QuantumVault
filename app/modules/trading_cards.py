@@ -392,7 +392,7 @@ def render_trading_cards():
         {"✅ UNLOCKED" if unlocked_card else "🔒 Unlock: " + card["unlock"]}
     </div>
 </div>
-""", height=380 if unlocked_card else 220)
+""", height=380 if unlocked_card else 220, scrolling=True)
 
     with filter_tab1:
         render_cards(CARDS)

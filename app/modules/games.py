@@ -390,7 +390,7 @@ cx.fillText('Press START to play!',W/2,H/2+15);
 </script>
 </body>
 </html>
-""", height=580)
+""", height=580, scrolling=True)
 
 def render_lattice_maze():
     """6-8: Lattice Maze — UPGRADED 2026 — Pac-Man style with enemies, power-ups, boss waves."""
@@ -939,7 +939,7 @@ cx.fillText('Press START to rescue the NIST crystals!',W/2,H/2+10);
 </script>
 </body>
 </html>
-""", height=560)
+""", height=560, scrolling=True)
 
 def render_tower_defense():
     """All grades: Tower Defense — UPGRADED 2026 — place PQC towers, survive 10 waves."""
@@ -1430,7 +1430,7 @@ setMsg('Click any grid tile to place a tower! Avoid the path tiles.');
 </script>
 </body>
 </html>
-""", height=600)
+""", height=600, scrolling=True)
 
 def render_zombie_blast(difficulty: str = "easy"):
     """Elementary: Zombie Blast — tap to shoot Shor Zombies, collect PQC shields."""
@@ -1974,7 +1974,7 @@ cx.fillText('Click START to defend your server!',W/2,H/2+10);
 </script>
 </body>
 </html>
-""", height=580)
+""", height=580, scrolling=True)
 
 def render_prime_factor_game():
     """Free game: Prime Factor Cracker — UPGRADED 2026 with Shor Bot battle!"""
@@ -2647,7 +2647,7 @@ showFact(FACTS[0]);
 </script>
 </body>
 </html>
-""", height=880)
+""", height=880, scrolling=True)
 
 def render_network_defender():
     """Free game: Quantum Fortress — UPGRADED 2026 — Melon-style network defense."""
@@ -3346,7 +3346,7 @@ setMsg('👆 Click START to defend your network from Shor Bots!');
 </script>
 </body>
 </html>
-""", height=680)
+""", height=680, scrolling=True)
 
 def render_secret_message():
     """Free game: Secret Message Maker — K-5 cipher introduction — UPGRADED 2026!"""
@@ -4096,7 +4096,7 @@ setMsg('🔐 Type a message above to encrypt it — or try the Decode tab!');
 </script>
 </body>
 </html>
-""", height=720)
+""", height=720, scrolling=True)
 
 def render_ctf_game():
     """Free game: QuantumVault CTF v2 — Hacker terminal UI with dramatic story, animations, real challenges."""
@@ -4802,7 +4802,7 @@ boot();
 </script>
 </body>
 </html>
-""", height=860)
+""", height=860, scrolling=True)
 
 
 """
@@ -5545,7 +5545,7 @@ initLevel();
 </script>
 </body>
 </html>
-""", height=820)
+""", height=820, scrolling=True)
 
 def render_cipher_quest():
     """Middle School 6-8: Cipher Quest — UPGRADED 2026 — RPG quest map, coins, shop, boss fights."""
@@ -6210,7 +6210,7 @@ setMsg('🗺️ Pick a quest from the map to start your mission!','#60a5fa');
 </script>
 </body>
 </html>
-""", height=720)
+""", height=720, scrolling=True)
 
 def render_pqc_python_lab():
     """High School 9-12: PQC Python Lab — UPGRADED 2026 — AI reviewer, speed bonus, certificates."""

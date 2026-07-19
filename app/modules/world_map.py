@@ -211,7 +211,7 @@ document.querySelectorAll('.zone').forEach(zone => {{
 </script>
 </body>
 </html>
-""", height=580)
+""", height=580, scrolling=True)
 
     st.markdown("---")
     st.markdown("### 🗺️ Navigate Directly")

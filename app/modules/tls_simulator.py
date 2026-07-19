@@ -75,7 +75,7 @@ padding:12px 16px;width:180px;text-align:center;}}
 <div class="party-msg">{current["server"]}</div>
 </div>
 </div>
-""", height=160)
+""", height=160, scrolling=True)
 
     st.markdown(
         f"<div style='background:#1e293b;border-left:4px solid {color};"

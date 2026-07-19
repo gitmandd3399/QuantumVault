@@ -112,7 +112,7 @@ Solve 5 cryptography puzzles to unlock each door</div>
 <div class="rule-item"><span>📚</span><span>Every puzzle teaches real PQC concepts</span></div>
 </div>
 </div>
-""", height=340)
+""", height=340, scrolling=True)
 
         col1, col2, col3 = st.columns([1, 2, 1])
         with col2:
@@ -157,7 +157,7 @@ body{{margin:0;background:#0f172a;font-family:sans-serif;color:white;padding:16p
 </div>
 </div>
 </div>
-""", height=280)
+""", height=280, scrolling=True)
         if st.button("🔄 Play Again!", key="escape_reset", type="primary"):
             st.session_state.escape_started = False
             st.session_state.escape_complete = False

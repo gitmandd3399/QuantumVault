@@ -119,7 +119,7 @@ body{{margin:0;background:#0f172a;font-family:sans-serif;}}
     <div class="char-outfit">{outfit["name"]} · {bg["name"]}</div>
     <div class="char-xp">⭐ {xp} XP</div>
 </div>
-""", height=280)
+""", height=280, scrolling=True)
 
         st.markdown("<br>", unsafe_allow_html=True)
         new_name = st.text_input(
