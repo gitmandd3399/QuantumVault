@@ -4,7 +4,7 @@ import datetime
 import hashlib
 import logging
 
-USERS_FILE = pathlib.Path(__file__).parent.parent / "static" / "users.json"
+USERS_FILE = pathlib.Path(__file__).parent.parent / "data" / "users.json"
 
 def _load_users() -> dict:
     try:
@@ -16,6 +16,7 @@ def _load_users() -> dict:
     return {}
 
 def _save_users(users: dict):
+    USERS_FILE.parent.mkdir(parents=True, exist_ok=True)
     try:
         USERS_FILE.parent.mkdir(parents=True, exist_ok=True)
         with open(USERS_FILE, "w") as f:

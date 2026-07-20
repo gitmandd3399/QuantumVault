@@ -169,6 +169,8 @@ if _user_email and st.session_state.get("mfa_verified"):
     _db_user = get_user(_user_email)
     if _db_user:
         st.session_state.plan_type = _db_user.get("plan", "free")
+        if _db_user.get("free_module"):
+            st.session_state.free_module = _db_user.get("free_module")
 
 # ── Email MFA Gate — only for paid/upgraded users ────────────────────────────
 _gmail = st.secrets.get("GMAIL_USER", "")
