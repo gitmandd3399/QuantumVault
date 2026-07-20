@@ -22,7 +22,7 @@ def get_stripe_key():
 
 PLANS = {
     "free": {
-        "name": "Free Trial",
+        "name": "Free Plan",
         "price": 0,
         "price_display": "$0",
         "period": "forever",
@@ -205,13 +205,26 @@ def render_pricing_page():
                 ["🟢 Elementary (K-5)", "🟡 Middle School (6-8)", "🔴 High School (9-12)"],
                 key="free_mod_select"
             )
+            free_email = st.text_input(
+                "Your email (to save your free plan):",
+                key="free_email_input",
+                placeholder="teacher@school.edu",
+            )
         with col2:
             st.markdown("<br>", unsafe_allow_html=True)
             if st.button("Start Free", type="primary", key="start_free"):
-                st.session_state.free_module = free_mod
-                st.session_state.plan_type = "free"
-                st.success("Free plan activated! Enjoy your free module.")
-                st.rerun()
+                if not free_email or "@" not in free_email:
+                    st.error("Please enter a valid email to activate your free plan.")
+                else:
+                    from modules import users as _users
+                    if not _users.user_exists(free_email):
+                        _users.create_user(free_email, plan="free")
+                    _u = _users.get_user(free_email) or {}
+                    st.session_state.user_email = free_email
+                    st.session_state.free_module = free_mod
+                    st.session_state.plan_type = _u.get("plan", "free")
+                    st.success("Free plan activated and saved to your account — welcome!")
+                    st.rerun()
         st.markdown("---")
 
     # ── Trust bar ─────────────────────────────────────────────────────────
