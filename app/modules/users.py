@@ -73,6 +73,23 @@ def set_trial_start(email: str, game_key: str, iso_ts: str):
             _save_users(users)
 
 
+def get_free_module(email: str):
+    """Return the permanently chosen free module for this account, or None."""
+    user = get_user(email)
+    if not user:
+        return None
+    return user.get("free_module")
+
+
+def set_free_module(email: str, module: str):
+    """Persist the free module choice. First write wins - the choice is permanent."""
+    users = _load_users()
+    key = _hash_email(email)
+    if key in users and not users[key].get("free_module"):
+        users[key]["free_module"] = module
+        _save_users(users)
+
+
 def update_plan(email: str, plan: str):
     users = _load_users()
     key = _hash_email(email)

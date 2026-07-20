@@ -219,9 +219,15 @@ def render_pricing_page():
                     from modules import users as _users
                     if not _users.user_exists(free_email):
                         _users.create_user(free_email, plan="free")
+                    _existing_mod = _users.get_free_module(free_email)
+                    if _existing_mod and _existing_mod != free_mod:
+                        st.warning(f"This email already chose its free module: **{_existing_mod}** — that choice is permanent. Upgrade to unlock all grade levels!")
+                        st.session_state.free_module = _existing_mod
+                    else:
+                        _users.set_free_module(free_email, free_mod)
+                        st.session_state.free_module = _users.get_free_module(free_email) or free_mod
                     _u = _users.get_user(free_email) or {}
                     st.session_state.user_email = free_email
-                    st.session_state.free_module = free_mod
                     st.session_state.plan_type = _u.get("plan", "free")
                     st.success("Free plan activated and saved to your account — welcome!")
                     st.rerun()
