@@ -9,3 +9,4 @@ streamlit-google-auth==1.1.8
 pyotp==2.9.0
 liboqs-python==0.15.0
 
+supabase
