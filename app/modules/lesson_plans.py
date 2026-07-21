@@ -27,51 +27,53 @@ def render_elementary_lessons():
 
     st.markdown("---")
     st.markdown("## 🟢 Elementary School Lesson Plans (K–5)")
-    st.markdown("*Estimated total time: 45–60 minutes across all activities*")
+    st.markdown("*Fun secret-code lessons for kids — about 10 minutes each!*")
 
     lessons = [
         {
             "title": "📖 Lesson 1: What is a Secret Code?",
             "game": "🔤 Secret Message Maker",
             "time": "10 minutes",
-            "objective": "Students will understand that secret codes hide messages so only the right person can read them.",
+            "objective": "Kids will learn that a secret code hides a message so only the right person can read it.",
             "vocab": [
-                ("Secret Code", "A special way of writing a message that only certain people can understand. Like a secret language between you and your best friend!"),
-                ("Encrypt", "To LOCK a message so it looks like gibberish to strangers. Like putting your diary in a locked box."),
-                ("Decrypt", "To UNLOCK a message and read it. Only the person with the right key can do this."),
-                ("Key", "The special trick or tool that lets you lock AND unlock a secret message. Without the key, the message is impossible to read!"),
+                ("Secret Code", "A special way to write so only your friend can read it. Like a secret language!"),
+                ("Lock a Message", "To make a message look silly and mixed up. Now a stranger can't read it! (Big-kid word: encrypt.)"),
+                ("Unlock a Message", "To turn the mixed-up message back into real words you can read. (Big-kid word: decrypt.)"),
+                ("Key", "The special tool that locks and unlocks your secret message. No key? No peeking!"),
             ],
             "lesson": """
-**🎯 Big Idea:** Information needs to be protected, just like your house needs a lock.
+**🎯 Big Idea:** We lock messages to keep them safe. Just like we lock our door!
 
 **Story Time:** 
-Imagine you and your best friend want to pass notes in class without anyone else reading them. You could make up a secret code — maybe A=1, B=2, C=3. So "HI" becomes "8 9". Anyone else who reads it just sees numbers and gets confused!
+You want to pass a note to your friend. But you don't want anyone else to read it!
 
-That's EXACTLY what computers do with your information every time you use the internet. When you log into a game or your parents buy something online, the computer ENCRYPTS (locks) the information first so hackers can't read it.
+So you make a secret code. Let's say A=1, B=2, C=3. Now the word "HI" turns into "8 9". Anyone else just sees numbers. They get confused!
 
-**Think About It:** 
-- 🤔 What would happen if there were NO secret codes on the internet?
-- 🤔 Who needs to protect information? (Banks? Doctors? Schools? YOU?)
+Computers do this too. When you log into a game, the computer locks your info first. Now bad guys can't read it.
 
-**Real Life Example:**
-When your parent types their password on a website, it gets ENCRYPTED before it travels through the internet. Without encryption, anyone sitting nearby could steal it!
+**Let's Think:** 
+- 🤔 What if there were NO secret codes online?
+- 🤔 Who needs to keep secrets safe? (Banks? Doctors? YOU?)
 
-**Get Ready to Play:**
-In Secret Message Maker, you'll create and decode your own secret messages — just like real cryptographers (people who make and break codes)!
+**In Real Life:**
+When a grown-up types a password, the computer locks it first. Then it's safe to send!
+
+**Let's Play:**
+In Secret Message Maker, you get to make your own secret codes. You are a code maker now! (Big-kid word: cryptographer.)
             """,
-            "check": "Ask students: Can you explain what 'encrypt' means using your own words and an example from daily life?"
+            "check": "Ask kids: What does it mean to LOCK a message? Can you show it with your own example?"
         },
         {
             "title": "🔑 Lesson 2: Keys, Locks, and Quantum Locks",
             "game": "🧱 Quantum Lock Drop & Tower Defense",
             "time": "10 minutes",
-            "objective": "Students will understand the difference between old locks (RSA) and new quantum-safe locks (ML-KEM).",
+            "objective": "Kids will learn that old locks can break. We need new super-locks!",
             "vocab": [
-                ("Lock", "In computers, a lock is a math puzzle so hard that it would take MILLIONS of years for a regular computer to solve it."),
-                ("RSA", "The OLD type of computer lock used for 40+ years. Like a padlock — strong against normal thieves but could be broken by a quantum computer. RSA stands for Rivest–Shamir–Adleman — the last names of the three scientists who invented it in 1977!"),
-                ("Quantum Computer", "A super-powerful NEW type of computer that uses special physics to solve certain math puzzles MUCH faster than regular computers. It could break RSA locks!"),
-                ("ML-KEM", "The NEW quantum-safe lock! ML stands for Module Lattice, KEM stands for Key Encapsulation Mechanism. It uses math that even quantum computers CANNOT solve. Think of it as an upgraded, unbreakable lock!"),
-                ("NIST", "The National Institute of Standards and Technology — a US government organization of scientists who decide which locks are safe enough to protect America's secrets. In 2024 they said: Use ML-KEM!"),
+                ("Computer Lock", "A math puzzle so hard it keeps your info safe. A normal computer can't solve it!"),
+                ("Old Lock", "A lock computers used for a long time. It was great — but a super-computer can pop it open. (Big-kid word: RSA.)"),
+                ("Quantum Computer", "A brand-new super-computer. It's SO fast it can break the old locks!"),
+                ("Super-Lock", "A new lock that even the super-computer can't open! We use it now. (Big-kid word: ML-KEM.)"),
+                ("NIST", "A team of smart scientists in the government. They pick the safest locks for everyone to use."),
             ],
             "lesson": """
 **🎯 Big Idea:** Old computer locks are in danger. We need NEW quantum-safe locks!
@@ -95,71 +97,71 @@ Hold up your hand. Your 5 fingers represent 5 years. How many hands until 2030? 
 **Get Ready to Play:**
 In Quantum Lock Drop, you'll protect servers using new quantum-safe locks. Every lock you place = one piece of data protected from quantum hackers!
             """,
-            "check": "Ask students: Why do we need NEW locks if the old RSA locks worked for 40 years?"
+            "check": "Ask kids: The old lock worked for a long time. So why do we need a new super-lock now?"
         },
         {
             "title": "🧱 Lesson 3: Catching the Right Algorithm",
             "game": "🧱 Falling Blocks (Elementary)",
             "time": "8 minutes",
-            "objective": "Students will understand that different algorithms have different strengths, just like different tools for different jobs.",
+            "objective": "Kids will learn that different tools do different jobs — even secret-code tools!",
             "vocab": [
-                ("Algorithm", "A set of step-by-step instructions a computer follows to solve a problem. Like a recipe — if you follow the steps exactly, you get the right result!"),
-                ("PQC", "Post-Quantum Cryptography. 'Post' means AFTER. So PQC means cryptography (secret codes) designed for the world AFTER quantum computers exist. It's the future of keeping secrets safe!"),
-                ("Kyber Block", "In the game, Kyber blocks represent ML-KEM — the strongest quantum-safe key exchange algorithm. In real life, ML-KEM protects the keys that lock your data!"),
-                ("Dilithium", "Another PQC algorithm — ML-DSA. It creates DIGITAL SIGNATURES, like a super-secure electronic signature that proves YOU sent a message and nobody changed it."),
+                ("Algorithm", "A list of steps a computer follows, like a recipe! Follow the steps and you get the right answer."),
+                ("Quantum-Safe Code", "A secret code built to be safe even from super-computers. It keeps our secrets safe in the future! (Big-kid word: PQC.)"),
+                ("Kyber Block", "A block in the game! It stands for our super-lock that keeps keys safe. (Big-kid name: ML-KEM.)"),
+                ("Signature Block", "A block that works like your special signature. It proves YOU sent a message! (Big-kid name: ML-DSA.)"),
             ],
             "lesson": """
-**🎯 Big Idea:** Different crypto tools protect different things — like how different keys open different locks.
+**🎯 Big Idea:** Different tools do different jobs. Secret-code tools are the same way!
 
-**The Toolbox Analogy:**
-A plumber has different tools — a wrench for pipes, a plunger for clogs. Cryptographers have different algorithms:
-- 🔑 **ML-KEM (Kyber)** → Protects the KEY that locks your data
-- ✍️ **ML-DSA (Dilithium)** → Proves a message is REALLY from you
-- 🌲 **SLH-DSA (SPHINCS+)** → Extra secure signatures using math trees
-- 🦅 **FN-DSA (Falcon)** → Super small signatures for tiny devices
+**The Toolbox Story:**
+A plumber has lots of tools. A wrench for pipes. A plunger for clogs. Code makers have lots of tools too:
+- 🔑 **Key Tool** → Keeps the key to your data safe
+- ✍️ **Signature Tool** → Proves a message is really from you
+- 🌲 **Tree Tool** → Extra-safe signatures made with math trees
+- 🦅 **Tiny Tool** → Super-small signatures for tiny gadgets
 
-**Why does size matter?**
-Imagine sending a letter. A tiny envelope costs less postage. In computing, smaller = faster and cheaper to send! Falcon makes the TINIEST quantum-safe signatures — perfect for smart devices like your smartwatch or IoT sensors!
+**Why is small good?**
+Think about mailing a letter. A tiny letter is cheap and fast to send! The Tiny Tool makes the smallest safe signatures. Great for little gadgets like a smartwatch!
 
-**Get Ready to Play:**
-In Falling Blocks, you'll catch blocks representing these algorithms. Each block type has different properties — just like the real algorithms!
+**Let's Play:**
+In Falling Blocks, you catch blocks. Each block is a different tool. Catch the right one for the job!
             """,
-            "check": "Ask students: Name one PQC algorithm and what it protects."
+            "check": "Ask kids: Name one secret-code tool. What job does it do?"
         },
         {
             "title": "🧟 Lesson 4: Defending Against Cyber Attacks",
             "game": "🧟 Quantum Zombie Blast",
             "time": "8 minutes",
-            "objective": "Students will understand what hackers try to steal and how encryption protects us.",
+            "objective": "Kids will learn what bad guys try to steal, and how locks protect us.",
             "vocab": [
-                ("Hacker", "Someone who tries to break into computer systems WITHOUT permission to steal information. Not all hackers are bad — some are 'white hat' hackers who find problems to FIX them!"),
-                ("Data Breach", "When a hacker successfully steals information from a computer system. Like a burglar getting into a house and taking valuables."),
-                ("Shor Algorithm", "A special program that only runs on quantum computers. It can break RSA encryption MUCH faster than any regular computer. Named after mathematician Peter Shor who discovered it in 1994."),
-                ("Server", "A powerful computer that stores information and provides services to other computers. When you play an online game, a server keeps track of your score and other players!"),
-                ("Firewall", "A digital security guard that blocks suspicious activity from entering a computer network — like a bouncer at a party who only lets in invited guests."),
+                ("Hacker", "Someone who tries to sneak into computers to steal stuff. (Good news: some hackers are helpers who fix problems!)"),
+                ("Data Stolen", "When a hacker takes info from a computer. Like a robber taking things from a house. (Big-kid word: data breach.)"),
+                ("The Code-Breaker", "A special program that runs on super-computers. It can break the old locks fast! (Big-kid name: Shor's Algorithm.)"),
+                ("Server", "A big strong computer that saves info. When you play online, a server keeps your score!"),
+                ("Firewall", "A computer guard. It blocks bad guys from getting in — like a guard at a door who only lets in friends."),
             ],
             "lesson": """
-**🎯 Big Idea:** Hackers use tools like Shor Algorithm to break old encryption. We defend with PQC!
+**🎯 Big Idea:** Bad guys try to break old locks. We stop them with new super-locks!
 
-**The Zombie Analogy:**
-In Quantum Zombie Blast, zombies represent SHOR ALGORITHM — the quantum computing attack that can break RSA. Your weapons are PQC algorithms (ML-KEM, ML-DSA) that the zombies CANNOT break through!
+**The Zombie Story:**
+In Quantum Zombie Blast, the zombies are the code-breaker attack. Your weapons are the new super-locks. The zombies CANNOT break through them!
 
-**What Hackers Actually Steal:**
-- 🏥 Medical records (your health history)
-- 🏦 Bank account information
-- 🎮 Game account passwords
-- 📧 Private messages and emails
-- 🏫 School records and grades
+**What Bad Guys Try to Steal:**
+- 🏥 Doctor records
+- 🏦 Bank info
+- 🎮 Game passwords
+- 📧 Private messages
+- 🏫 School grades
 
 **The Good News:**
-With PQC (Post-Quantum Cryptography), even if a hacker has a quantum computer, they CANNOT break the new locks! It's like the zombies hitting an unbreakable shield!
+With our new super-locks, even a super-computer can't break in! It's like zombies bonking into a shield they can't smash!
 
-**Real Fact:** In 2023, hackers stole data from over 3,000 companies. Most of that data was protected with OLD encryption. With PQC, that data would have been safe!
+**Cool Fact:** Bad guys try to steal from thousands of companies every year. New super-locks help keep that stuff safe!
 
-**Get Ready to Play:**
-Use ML-KEM, ML-DSA, SPHINCS+, and Falcon weapons to destroy Shor Zombies before they reach your server. Each weapon represents a real PQC algorithm approved by NIST in 2024!
+**Let's Play:**
+Use your super-lock weapons to zap the zombies before they reach your server. Each weapon is a real safe-code tool the scientists picked!
             """,
-            "check": "Ask students: What is Shor Algorithm and why is it dangerous?"
+            "check": "Ask kids: What does the code-breaker do? Why is that a problem?"
         },
     ]
 
@@ -169,7 +171,7 @@ Use ML-KEM, ML-DSA, SPHINCS+, and Falcon weapons to destroy Shor Zombies before 
             st.markdown(f"**⏱️ Time:** {lesson['time']}")
             st.markdown(f"**🎯 Learning Goal:** {lesson['objective']}")
 
-            st.markdown("### 📖 Vocabulary — Learn These Words First!")
+            st.markdown("### 📖 New Words — Learn These First!")
             for term, definition in lesson['vocab']:
                 st.markdown(f"""
 <div style='background:#071520;border-left:3px solid #3b82f6;border-radius:6px;
@@ -260,8 +262,10 @@ In Lattice Explorer, you'll navigate through lattice grids and see why finding t
 Every person has unique fingerprints. Police find a fingerprint at a crime scene and match it to a suspect. 
 
 Hash functions do the same for files:
-- Document A → SHA-3 → "7f83b1657ff1fc53b92..."
-- Document B (one letter changed) → SHA-3 → "adf3e7891ab2cd47f1..." (COMPLETELY different!)
+- Document A → SHA-3 → a scrambled code like "7f83b1..."
+- Document B (just ONE letter changed) → SHA-3 → a totally different code like "adf3e7..." 
+
+Even a tiny change flips the whole fingerprint!
 
 If ANYONE changes even ONE character in a document, the hash changes entirely. This is how you know a file hasn't been tampered with!
 
@@ -306,7 +310,7 @@ A 12-digit lock has 1,000,000,000,000 combinations.
 
 Each extra digit makes it 10 times harder to crack. In binary (0s and 1s):
 - Each extra BIT makes it 2 times harder to crack
-- Going from 128-bit to 256-bit makes it 2^128 = 340 undecillion times harder!
+- Going from 128-bit to 256-bit makes it 2^128 times harder — a number so big it has 39 digits!
 
 **The Quantum Threat to Key Size:**
 - Classical computer cracking AES-128: 2^128 attempts needed ✅ Safe
