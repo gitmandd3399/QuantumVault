@@ -190,6 +190,40 @@ def verify_checkout_session(session_id):
 
 def render_pricing_page():
     st.title("💎 QuantumVault Academy — Pricing")
+    # ── Persistent trial status for logged-in trial users ──
+    _email = st.session_state.get("user_email")
+    _plan = st.session_state.get("plan_type", "free")
+    if _email and _plan not in ("paid", "admin", "classroom", "school"):
+        import datetime as _dt
+        from modules import users as _users
+        _ts = _users.get_trial_start(_email, "grade_module")
+        if _ts:
+            try:
+                _started = _dt.datetime.fromisoformat(_ts)
+            except Exception:
+                _started = _dt.datetime.utcnow()
+            _rem = _dt.timedelta(days=7) - (_dt.datetime.utcnow() - _started)
+            _modlabel = st.session_state.get("free_module", "your grade level")
+            if _rem.total_seconds() > 0:
+                _d = _rem.days; _h = _rem.seconds // 3600
+                st.markdown(
+                    "<div style='background:#0c2e1e;border:2px solid #10b981;border-radius:12px;"
+                    "padding:14px 18px;margin-bottom:14px;text-align:center'>"
+                    "<span style='font-size:1.4rem'>⏳</span> "
+                    "<b style='color:#34d399;font-size:1.05rem'>Your " + str(_modlabel) + " trial: "
+                    + str(_d) + " days " + str(_h) + " hours remaining</b>"
+                    "<div style='color:#94a3b8;font-size:0.82rem;margin-top:4px'>"
+                    "Upgrade below to keep full access after your trial ends.</div></div>",
+                    unsafe_allow_html=True)
+            else:
+                st.markdown(
+                    "<div style='background:#2d0a0a;border:2px solid #ef4444;border-radius:12px;"
+                    "padding:14px 18px;margin-bottom:14px;text-align:center'>"
+                    "<span style='font-size:1.4rem'>⏰</span> "
+                    "<b style='color:#f87171;font-size:1.05rem'>Your free trial has ended</b>"
+                    "<div style='color:#94a3b8;font-size:0.82rem;margin-top:4px'>"
+                    "Choose a plan below to restore full access to your grade level.</div></div>",
+                    unsafe_allow_html=True)
     st.markdown(
         "The **only K-12 platform** teaching NIST post-quantum cryptography standards. "
         "All plans include a 14-day free trial — $0 due today, cancel anytime."
@@ -197,7 +231,7 @@ def render_pricing_page():
 
     # ── Free tier quick signup ───────────────────────────────────────────
     if st.session_state.get("plan_type", "free") == "free" and not st.session_state.get("free_module"):
-        st.success("🆓 **Start for free — no credit card required!**")
+        st.success("🎁 **Start your FREE 7-day trial — no credit card required!**")
         col1, col2 = st.columns([2,1])
         with col1:
             free_mod = st.selectbox(
@@ -206,7 +240,7 @@ def render_pricing_page():
                 key="free_mod_select"
             )
             free_email = st.text_input(
-                "Your email (to save your free plan):",
+                "Your email (to start your 7-day trial):",
                 key="free_email_input",
                 placeholder="teacher@school.edu",
             )
@@ -226,10 +260,12 @@ def render_pricing_page():
                     else:
                         _users.set_free_module(free_email, free_mod)
                         st.session_state.free_module = _users.get_free_module(free_email) or free_mod
+                    import datetime as _dt
+                    _users.set_trial_start(free_email, "grade_module", _dt.datetime.utcnow().isoformat())
                     _u = _users.get_user(free_email) or {}
                     st.session_state.user_email = free_email
                     st.session_state.plan_type = _u.get("plan", "free")
-                    st.success("Free plan activated and saved to your account — welcome!")
+                    st.success("🎉 Your 7-day free trial has started — enjoy full access to your grade level!")
                     st.rerun()
         st.markdown("---")
 

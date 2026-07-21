@@ -678,20 +678,55 @@ def main():
             unsafe_allow_html=True
         )
         st.stop()
-    if "Elementary" in level:
-        render_elementary()
-    elif "Middle" in level:
-        render_middle_school()
-    elif "High School" in level:
-        plan = st.session_state.get("plan_type", "free")
-        free_mod = st.session_state.get("free_module", "")
-        if plan == "free" and free_mod and "High" not in free_mod:
-            st.warning("Your free plan includes: " + free_mod)
-            st.markdown("Upgrade to access all three grade levels!")
-            if st.button("Upgrade Now", type="primary", key="upg_hs"):
+    def _grade_gate(_mod_label):
+        """7-day trial gate for grade modules. True = allow (renders countdown), False = blocked."""
+        import datetime as _dt
+        from modules import users as _u
+        _p = st.session_state.get("plan_type", "free")
+        if _p in ("paid", "admin", "classroom", "school"):
+            return True
+        _email = st.session_state.get("user_email")
+        if not _email:
+            st.warning("🎁 **Start your free 7-day trial!** Head to the 💎 Pricing tab and sign in with your email to unlock this grade level.")
+            if st.button("💎 Go to Pricing", key="gate_signin_" + _mod_label, type="primary"):
                 st.session_state.level = "💎 Pricing & Plans"
                 st.rerun()
-        else:
+            return False
+        _start = _u.get_trial_start(_email, "grade_module")
+        if not _start:
+            _now = _dt.datetime.utcnow().isoformat()
+            _u.set_trial_start(_email, "grade_module", _now)
+            _start = _now
+        try:
+            _started = _dt.datetime.fromisoformat(_start)
+        except Exception:
+            _started = _dt.datetime.utcnow()
+        _rem = _dt.timedelta(days=7) - (_dt.datetime.utcnow() - _started)
+        if _rem.total_seconds() <= 0:
+            st.markdown(
+                "<div style='background:#071520;border:2px solid #1d4ed8;border-radius:16px;"
+                "padding:26px;text-align:center;margin:16px 0'>"
+                "<div style='font-size:2.6rem'>⏰</div>"
+                "<h2 style='color:#60a5fa;margin:6px 0'>Your 7-Day Trial Has Ended</h2>"
+                "<p style='color:#94a3b8'>Upgrade to keep full access to this grade level and all its games.</p>"
+                "</div>", unsafe_allow_html=True)
+            if st.button("💎 Upgrade to Keep Access", key="gate_expired_" + _mod_label, type="primary", use_container_width=True):
+                st.session_state.level = "💎 Pricing & Plans"
+                st.rerun()
+            return False
+        _d = _rem.days
+        _h = _rem.seconds // 3600
+        st.info("⏳ **Free trial:** " + str(_d) + "d " + str(_h) + "h remaining · Upgrade anytime to keep access")
+        return True
+
+    if "Elementary" in level:
+        if _grade_gate("elem"):
+            render_elementary()
+    elif "Middle" in level:
+        if _grade_gate("mid"):
+            render_middle_school()
+    elif "High School" in level:
+        if _grade_gate("hs"):
             render_high_school()
     elif "Leaderboard" in level:
         render_leaderboard()
