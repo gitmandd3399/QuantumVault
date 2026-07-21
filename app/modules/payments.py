@@ -51,7 +51,7 @@ PLANS = {
             "Leaderboard access",
             "Progress tracking dashboard",
             "Email support",
-            "14-day free trial",
+            "7-day free trial",
         ],
         "color": "#3b82f6",
         "emoji": "🍎",
@@ -72,7 +72,7 @@ PLANS = {
             "Priority support",
             "Custom school branding",
             "NSA GenCyber grant eligible",
-            "14-day free trial",
+            "7-day free trial",
         ],
         "color": "#7c6dfa",
         "emoji": "🏫",
@@ -91,7 +91,7 @@ PLANS = {
             "Teacher dashboard",
             "Minimum 30 students ($150/yr)",
             "Scales with your school",
-            "14-day free trial",
+            "7-day free trial",
         ],
         "color": "#10b981",
         "emoji": "🎓",
@@ -226,7 +226,7 @@ def render_pricing_page():
                     unsafe_allow_html=True)
     st.markdown(
         "The **only K-12 platform** teaching NIST post-quantum cryptography standards. "
-        "All plans include a 14-day free trial — $0 due today, cancel anytime."
+        "All plans include a 7-day free trial — $0 due today, cancel anytime."
     )
 
     # ── Free tier quick signup ───────────────────────────────────────────
@@ -294,7 +294,7 @@ def render_pricing_page():
             "<div style='background:#1e293b;border:1px solid #334155;border-radius:8px;"
             "padding:10px;text-align:center;'>"
             "<div style='font-size:1.5rem'>↩️</div>"
-            "<div style='font-size:0.75rem;font-weight:bold;color:#a5b4fc'>30-Day Trial</div>"
+            "<div style='font-size:0.75rem;font-weight:bold;color:#a5b4fc'>7-Day Trial</div>"
             "<div style='font-size:0.7rem;color:#888'>No credit card needed</div>"
             "</div>", unsafe_allow_html=True
         )
@@ -394,7 +394,7 @@ def render_pricing_page():
     st.markdown("### 🚀 Start Your Free Trial")
     st.markdown(
         "Fill in your details below. You will not be charged "
-        "until after your 14-day free trial ends."
+        "until after your 7-day free trial ends."
     )
 
     col1, col2 = st.columns(2)
