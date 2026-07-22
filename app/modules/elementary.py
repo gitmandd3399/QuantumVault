@@ -48,8 +48,8 @@ def render_elementary():
         "Messages so safe that even a monster can't read them! 🐉🔐"
     )
 
-    tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs(
-        ["📖 Story Time", "🎨 Color Mixing Keys", "🔒 Lock Puzzle", "📝 Vocab Cards", "🧱 Mini Game", "🔤 Word Search", "✏️ Crossword"]
+    tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8 = st.tabs(
+        ["📖 Story Time", "🎨 Color Mixing Keys", "🔒 Lock Puzzle", "📝 Vocab Cards", "🧱 Mini Game", "🔤 Word Search", "✏️ Crossword", "🦸 Word Rescue"]
     )
 
     # ── Tab 1: Story Mode ──────────────────────────────────────────────────────
@@ -1438,3 +1438,7 @@ document.addEventListener("input",function(e){{if(e.target&&e.target.tagName==="
                     st.rerun()
         else:
             st.success(f"Level {level} already completed! +{level*8} XP")
+
+    with tab8:
+        from modules.word_rescue import render_word_rescue
+        render_word_rescue()
