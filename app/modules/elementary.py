@@ -44,8 +44,8 @@ def award_badge(badge: str, xp: int = 10):
 def render_elementary():
     st.title("🟢 Secret Keepers — Elementary Edition")
     st.markdown(
-        "Welcome, young agent! Your mission: learn how to send secret messages "
-        "that even the scariest quantum monsters can't crack. 🐉🔐"
+        "Welcome, agent! 🕵️ Your job: learn to send secret messages. "
+        "Messages so safe that even a monster can't read them! 🐉🔐"
     )
 
     tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs(
@@ -97,10 +97,10 @@ def render_elementary():
                     "**Yep. We need NEW locks. Quantum-safe ones.** 🔒"
                 ),
                 "quiz": {
-                    "question": "Why is the Quantum Monster dangerous to RSA locks?",
+                    "question": "Why is the Quantum Monster scary to old locks?",
                     "options": [
                         "It is very smelly",
-                        "It uses Shor's Algorithm to try all answers at once",
+                        "It tries every answer all at once!",
                         "It has seventeen eyes",
                         "It ate the keys"
                     ],
@@ -116,8 +116,8 @@ def render_elementary():
                 "text": (
                     "Agent Pixel pulls out her secret weapon — a glowing blue crystal called **KYBER**. ✨\n\n"
                     "**What does it do?** beeps Byte.\n\n"
-                    "**It uses LATTICE math** — imagine a dot-to-dot puzzle with a TRILLION dots "
-                    "across a THOUSAND dimensions.\n\n"
+                    "**It uses a giant dot puzzle!** Imagine a dot-to-dot with SO many dots "
+                    "you could never count them all.\n\n"
                     "Byte tries to imagine this. Byte's brain overheats. 🤯\n\n"
                     "**Even the Quantum Monster cannot solve that puzzle!**\n\n"
                     "She installs Kyber locks on everything. The Quantum Monster runs up and tries to eat one.\n\n"
@@ -125,10 +125,10 @@ def render_elementary():
                     "**QUANTUM SAFE!** cheers Byte. 🎉"
                 ),
                 "quiz": {
-                    "question": "What is Kyber based on?",
+                    "question": "What is the blue crystal made of?",
                     "options": [
-                        "Lattice math — a giant dot grid across thousands of dimensions!",
-                        "RSA prime numbers",
+                        "A giant dot puzzle nobody can solve!",
+                        "Old lock numbers",
                         "Byte's brain",
                         "Homework"
                     ],
@@ -145,8 +145,8 @@ def render_elementary():
                     "But the Quantum Monster has PLAN B — a giant hammer labelled **Grover's Algorithm**. 🔨\n\n"
                     "**Uh oh** beeps Byte. *(Again.)*\n\n"
                     "Agent Pixel calls in backup:\n\n"
-                    "🛡️ **DILITHIUM** — big and strong, signs documents so you know they are real.\n\n"
-                    "🌲 **SPHINCS+** — speedy, uses fingerprint math as a backup plan.\n\n"
+                    "🛡️ **DILITHIUM** — big and strong. It signs things so you know they are real.\n\n"
+                    "🌲 **SPHINCS+** — quick and clever. It uses fingerprint math!\n\n"
                     "**KYBER! DILITHIUM! SPHINCS+!** The wall holds.\n\n"
                     "The Quantum Monster sits down and eats its own tail in frustration. 🤦\n\n"
                     "**Should we help it?** beeps Byte.\n\n"
@@ -251,8 +251,8 @@ def render_elementary():
 
         st.subheader("🎨 Secret Color Mixing Adventure!")
         st.markdown(
-            "🕵️ **Agent Pixel needs your help!** She and her friend Byte want to share a "
-            "secret color — but the Quantum Monster is watching! Can you help them?"
+            "🕵️ **Agent Pixel needs you!** She wants to share a secret color with Byte. "
+            "But the Quantum Monster is watching! Can you help?"
         )
 
         # Step by step story reveal
@@ -260,10 +260,10 @@ def render_elementary():
             st.session_state.color_step = 1
 
         steps = [
-            ("🌍 Step 1 — The Public Color", "Everyone in the world can see this color — even the Quantum Monster! That's OK because it's just the START."),
-            ("🔴 Step 2 — Alice's Secret Color", "Alice picks a SECRET color that ONLY SHE knows. She mixes it with the public color and sends the result to Byte!"),
-            ("🔵 Step 3 — Byte's Secret Color", "Byte picks HIS own secret color. He mixes it with the public color and sends it back to Alice!"),
-            ("🎉 Step 4 — The Shared Secret!", "Now BOTH Alice and Byte mix the OTHER person's result with their OWN secret color. They get THE SAME COLOR! The Quantum Monster never figured it out! 🛡️"),
+            ("🌍 Step 1 — The Color Everyone Sees", "Everyone can see this color. Even the monster! That's OK. It's just the start."),
+            ("🔴 Step 2 — Alice's Secret Color", "Alice picks a secret color. Only she knows it! She mixes it with the everyone color. Then she sends it to Byte."),
+            ("🔵 Step 3 — Byte's Secret Color", "Byte picks his own secret color too. He mixes and sends it back to Alice!"),
+            ("🎉 Step 4 — They Match!", "Now they each add their own secret color again. Ta-da! They both get the SAME color. The monster never guessed it! 🛡️"),
         ]
 
         step = st.session_state.color_step
@@ -295,7 +295,7 @@ def render_elementary():
             st.markdown(
                 f"<div style='background:{public_color};border-radius:10px;padding:14px;"
                 f"text-align:center;color:#333;font-weight:bold;font-size:0.9rem'>"
-                f"🌍 Public Color<br>(Everyone sees!)</div>",
+                f"🌍 Everyone Color<br>(All can see!)</div>",
                 unsafe_allow_html=True
             )
         with col2:
@@ -324,14 +324,14 @@ def render_elementary():
             st.markdown(
                 f"<div style='background:{alice_mix};border-radius:10px;padding:12px;"
                 f"text-align:center;color:white;font-weight:bold'>"
-                f"📨 Alice sends Byte<br><small>(public + Alice's secret)</small></div>",
+                f"📨 Alice sends this<br><small>(everyone color + her secret)</small></div>",
                 unsafe_allow_html=True
             )
         with col2:
             st.markdown(
                 f"<div style='background:{bob_mix};border-radius:10px;padding:12px;"
                 f"text-align:center;color:white;font-weight:bold'>"
-                f"📨 Byte sends Alice<br><small>(public + Byte's secret)</small></div>",
+                f"📨 Byte sends this<br><small>(everyone color + his secret)</small></div>",
                 unsafe_allow_html=True
             )
 
@@ -340,9 +340,9 @@ def render_elementary():
             f"<div style='background:{shared_secret};border:3px solid #10b981;"
             f"border-radius:16px;padding:24px;text-align:center;"
             f"color:white;font-weight:bold;font-size:1.3rem;margin:10px 0'>"
-            f"🔐 Both Alice AND Byte get this SAME color!<br>"
-            f"<small style='font-size:0.8rem;opacity:0.8'>The Quantum Monster only saw mixed colors — "
-            f"it can NEVER figure out the secret! 🛡️</small>"
+            f"🔐 Alice and Byte both get this SAME color!<br>"
+            f"<small style='font-size:0.8rem;opacity:0.8'>The monster only saw mixed-up colors. "
+            f"It can never guess the secret! 🛡️</small>"
             f"</div>",
             unsafe_allow_html=True
         )
@@ -350,23 +350,23 @@ def render_elementary():
         # Fun quiz
         st.markdown("### 🧠 Quick Check!")
         q_ans = st.radio(
-            "Why can't the Quantum Monster figure out the secret?",
+            "Why can't the monster guess the secret?",
             [
-                "Because it doesn't have eyes 👀",
-                "Because it only sees the MIXED colors, not the secret colors! 🎨",
-                "Because the colors disappear 💨",
-                "Because Alice runs away 🏃",
+                "It doesn't have eyes 👀",
+                "It only sees the mixed colors — not the secret ones! 🎨",
+                "The colors disappear 💨",
+                "Alice runs away 🏃",
             ],
             key="color_quiz"
         )
         if st.button("Check my answer! 🎯", key="color_check"):
             if "MIXED colors" in q_ans:
                 st.balloons()
-                st.success("🎉 CORRECT! The Quantum Monster only sees Alice+Public and Byte+Public — never the secret colors alone!")
+                st.success("🎉 YES! The monster only sees mixed colors. It never sees a secret color by itself!")
                 award_badge("🎨 Color Cryptographer", xp=15)
                 st.session_state.color_step = 4
             else:
-                st.error("Not quite! Think about what the Quantum Monster actually gets to see... 🤔")
+                st.error("Not quite! Think about what the monster can see... 🤔")
                 st.session_state.color_step = max(st.session_state.color_step, 2)
 
     # ── Tab 3: Lock Puzzle ────────────────────────────────────────────────────
@@ -377,9 +377,9 @@ def render_elementary():
 
         st.subheader("🔒 Agent Pixel's Lock Challenge!")
         st.markdown(
-            "🚨 **EMERGENCY!** The Quantum Monster is trying to break into the Secret Vault! "
-            "Agent Pixel needs the RIGHT lock — one that even a quantum computer can't crack! "
-            "**Help her choose!**"
+            "🚨 **HELP!** The monster is trying to get into the Secret Vault! "
+            "Agent Pixel needs the right lock. One the monster can't break! "
+            "**Which lock should she pick?**"
         )
 
         _lock_comp.html("""
@@ -402,7 +402,7 @@ body{margin:0;background:#0f172a;font-family:sans-serif;padding:8px;text-align:c
 """, height=160, scrolling=True)
 
         st.markdown("### 🔑 Choose Agent Pixel's Lock:")
-        st.caption("Only ONE lock can stop a quantum computer — read the clues carefully!")
+        st.caption("Only ONE lock can stop the monster. Read the clues!")
 
         if "quiz_start" not in st.session_state:
             st.session_state.quiz_start = time.time()
@@ -426,17 +426,17 @@ body{margin:0;background:#0f172a;font-family:sans-serif;padding:8px;text-align:c
 
         LOCKS = [
             {"emoji": "🔑", "name": "RSA Lock", "color": "#ef4444",
-             "clue": "Uses BIG numbers — hard to split apart... unless you have a quantum computer! 😬",
-             "correct": False, "wrong_msg": "❌ Uh oh! The Quantum Monster knows Shor's trick to break RSA!"},
+             "clue": "Uses really BIG numbers. Hard to break... unless you're a super-computer! 😬",
+             "correct": False, "wrong_msg": "❌ Oh no! The monster has a trick for this lock!"},
             {"emoji": "🏗️", "name": "Lattice Lock", "color": "#10b981",
-             "clue": "Uses a SUPER tangled grid of dots. Finding the secret path is IMPOSSIBLE — even for quantum computers!",
+             "clue": "A giant tangled grid of dots! Nobody can find the secret path. Not even a super-computer!",
              "correct": True, "wrong_msg": ""},
             {"emoji": "🔓", "name": "Old Padlock", "color": "#6b7280",
              "clue": "Just a plain metal lock. A toddler could figure this one out! 😂",
              "correct": False, "wrong_msg": "❌ Even a regular computer breaks this in seconds!"},
             {"emoji": "🌀", "name": "ECC Lock", "color": "#f59e0b",
-             "clue": "Uses squiggly curve math. Smart... but the Quantum Monster has a trick for this too!",
-             "correct": False, "wrong_msg": "❌ Shor Algorithm breaks ECC too — not safe from quantum!"},
+             "clue": "Uses squiggly curvy math. Clever... but the monster can break this one too!",
+             "correct": False, "wrong_msg": "❌ The monster breaks this lock too. Not safe!"},
         ]
 
         cols = st.columns(2)
@@ -475,8 +475,8 @@ body{margin:0;background:#0f172a;font-family:sans-serif;padding:8px;text-align:c
                 f"border-radius:16px;padding:20px;text-align:center;margin:10px 0'>"
                 f"<div style='font-size:3rem'>🎉</div>"
                 f"<h2 style='color:#10b981;margin:8px 0'>VAULT SAVED! YOU DID IT!</h2>"
-                f"<p style='color:#ccc'>The Lattice Lock stopped the Quantum Monster cold! "
-                f"The tangled grid is impossible to solve — even for quantum computers!</p>"
+                f"<p style='color:#ccc'>The Lattice Lock stopped the monster! "
+                f"That tangled dot grid is too hard for anyone to solve!</p>"
                 f"<div style='font-size:1.2rem;font-weight:bold;color:#f59e0b;margin:8px 0'>"
                 f"+{xp_earned} XP {'⚡ Speed Bonus!' if elapsed_final < 10 else '🌟 Great job!'}</div>"
                 f"<p style='font-size:0.8rem;color:#888'>"
@@ -492,10 +492,11 @@ body{margin:0;background:#0f172a;font-family:sans-serif;padding:8px;text-align:c
 
         st.markdown("---")
         st.info(
-            "💡 **Why the Lattice Lock wins:** Imagine hiding a needle in a grid of "
-            "one TRILLION dots spread across 1000 dimensions. That's what the lattice math does! "
-            "Even the fastest quantum computer gets completely lost. That's why NIST chose "
-            "**Kyber (the Lattice Lock)** to protect the internet! 🏗️🔐"
+            "💡 **Why the Lattice Lock wins:** Think about hiding one tiny dot "
+            "in a HUGE grid of dots. So many you could never count them! "
+            "Even the fastest super-computer gets lost. That's why the smart scientists "
+            "picked this lock to keep the internet safe! 🏗️🔐 "
+            "(🎓 Big-kid name: Kyber, also called ML-KEM.)"
         )
 
     # ── Tab 4: Vocabulary Cards ───────────────────────────────────────────────
@@ -504,8 +505,8 @@ body{margin:0;background:#0f172a;font-family:sans-serif;padding:8px;text-align:c
 
         st.subheader("📝 PQC Vocabulary Adventure!")
         st.markdown(
-            "🕵️ **Agent Pixel's Secret Dictionary!** Learn the words that keep the world safe. "
-            "Click a word to flip the card, then test yourself!"
+            "🕵️ **Agent Pixel's Secret Word Book!** Learn the words that keep us safe. "
+            "Tap a word to flip the card. Then try the quiz!"
         )
 
         VOCAB = [
@@ -515,14 +516,14 @@ body{margin:0;background:#0f172a;font-family:sans-serif;padding:8px;text-align:c
              "example": "When you pass a secret note in class — that is cryptography!",
              "color": "#10b981"},
             {"word": "Quantum Computer", "emoji": "⚛️",
-             "simple": "A SUPER powerful computer that uses magic tiny particles!",
+             "simple": "A super-fast computer that uses teeny tiny magic bits!",
              "full": "A computer that uses quantum mechanics — qubits that can be 0 AND 1 at the same time — to solve some problems exponentially faster.",
-             "example": "Like having a million calculators all working at the same time!",
+             "example": "Like a million calculators all working at once!",
              "color": "#8b5cf6"},
             {"word": "Lattice", "emoji": "🏗️",
              "simple": "A giant grid of dots with a secret hidden inside!",
              "full": "A mathematical structure — a regular grid of points in space. In 1000 dimensions, finding the secret dot is impossible even for quantum computers.",
-             "example": "Like a huge 3D puzzle where pieces are spread across 1000 dimensions!",
+             "example": "Like a giant puzzle with too many pieces to count!",
              "color": "#3b82f6"},
             {"word": "Encryption", "emoji": "🔒",
              "simple": "Scrambling a message so it looks like nonsense!",
@@ -530,24 +531,24 @@ body{margin:0;background:#0f172a;font-family:sans-serif;padding:8px;text-align:c
              "example": "Hello → #$@!kX9 (only your friend with the key can turn it back!)",
              "color": "#f59e0b"},
             {"word": "Kyber", "emoji": "💎",
-             "simple": "The new super-lock that quantum computers CANNOT break!",
+             "simple": "The new super-lock that nobody can break!",
              "full": "ML-KEM FIPS 203 — the NIST approved post-quantum key exchange algorithm. Uses lattice math based on the Module-LWE problem.",
-             "example": "Kyber is like a lock with a trillion trillion trillion possible combinations!",
+             "example": "It's a lock with more combinations than stars in the sky!",
              "color": "#10b981"},
             {"word": "Shor's Algorithm", "emoji": "💥",
-             "simple": "The quantum monster's secret weapon against old locks!",
+             "simple": "The monster's secret weapon for popping old locks!",
              "full": "A quantum algorithm created by Peter Shor in 1994 that can factor large numbers exponentially faster than classical computers, breaking RSA.",
-             "example": "Like having a cheat code that instantly solves the old RSA math puzzle!",
+             "example": "Like a cheat code that solves the puzzle right away!",
              "color": "#ef4444"},
             {"word": "Post-Quantum Cryptography", "emoji": "🛡️",
-             "simple": "NEW secret codes that EVEN quantum computers cannot crack!",
+             "simple": "New secret codes that nobody can crack!",
              "full": "Cryptographic algorithms designed to be secure against both classical and quantum computers. NIST approved 4 standards in 2024.",
              "example": "Kyber, Dilithium, SPHINCS+, and Falcon are the four new quantum-safe heroes!",
              "color": "#4f46e5"},
             {"word": "NIST", "emoji": "🏛️",
-             "simple": "The US government team that picks the BEST secret codes!",
+             "simple": "The team of smart scientists who pick the best locks!",
              "full": "National Institute of Standards and Technology — a US federal agency that runs competitions to find the best cryptographic algorithms.",
-             "example": "NIST tested 69 algorithms for 6 years and picked 4 winners in 2024!",
+             "example": "They tested lots of locks for years. Then they picked the winners!",
              "color": "#f97316"},
         ]
 
