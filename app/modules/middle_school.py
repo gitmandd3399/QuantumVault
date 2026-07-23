@@ -662,6 +662,7 @@ color:#10b981;margin:4px 0;min-height:36px;line-height:1.7;letter-spacing:0.5px;
 .stat-l{font-size:0.65rem;color:#888;text-transform:uppercase;}
 .avalanche{text-align:center;padding:10px;border-radius:8px;font-size:0.85rem;font-weight:bold;margin:6px 0;}
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/js-sha3/0.8.0/sha3.min.js"></script>
 <div class="hv-wrap">
 <div class="label">Message 1</div>
 <input class="hv-input" id="m1" value="Hello Kyber World!" oninput="update()" placeholder="Type your message...">
@@ -686,19 +687,16 @@ Type in both boxes to compare hashes!
 </div>
 
 <script>
-async function sha3_256(msg) {
-    const enc = new TextEncoder();
-    const data = enc.encode(msg);
-    // Use SubtleCrypto for SHA-256 as SHA-3 requires a library
-    const buf = await crypto.subtle.digest('SHA-256', data);
-    return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+function sha3_256(msg) {
+    // Real SHA3-256 (Keccak) via js-sha3
+    return sha3_256_lib(msg);
 }
 
-async function update() {
+function update() {
     const m1 = document.getElementById('m1').value;
     const m2 = document.getElementById('m2').value;
-    const h1 = await sha3_256(m1);
-    const h2 = await sha3_256(m2);
+    const h1 = sha3_256(m1);
+    const h2 = sha3_256(m2);
 
     // Highlight differences
     let s1 = '', s2 = '';
