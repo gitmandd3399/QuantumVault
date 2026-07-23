@@ -45,6 +45,10 @@ def render_middle_school():
         ["📖 Story Time", "🏗️ Lattice Explorer", "🏭 Hash Factory", "🏇 Quantum Derby", "🔑 Key Workshop", "🌀 Mini Game", "🎨 Hash Visualizer", "🔬 Key Size Lab", "⚡ Logic Gates", "🧠 Quiz Board"]
     )
 
+    with tab10:
+        from modules.quiz_board import render_quiz_board
+        render_quiz_board()
+
     with tab9:
         render_logic_gates()
 
@@ -1205,6 +1209,3 @@ def award_badge(badge: str, xp: int = 10):
 
 # ── Main render ───────────────────────────────────────────────────────────────
 
-    with tab10:
-        from modules.quiz_board import render_quiz_board
-        render_quiz_board()
