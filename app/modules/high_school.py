@@ -63,7 +63,8 @@ def render_high_school():
         "🧮 Math Challenge",
         "⚛️ Quantum Composer",
         "🛰️ Mission Control",
-    , "🌐 Secure Network"])
+        "🌐 Secure Network",
+    ])
 
     with tab10:
         from modules.secure_network import render_secure_network
