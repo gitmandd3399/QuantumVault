@@ -41,8 +41,8 @@ def render_middle_school():
         "post-quantum cryptography. Let's go! 🚀"
     )
 
-    tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9 = st.tabs(
-        ["📖 Story Time", "🏗️ Lattice Explorer", "🏭 Hash Factory", "⚡ Quantum Race", "🔑 Key Workshop", "🌀 Mini Game", "🎨 Hash Visualizer", "🔬 Key Size Lab", "⚡ Logic Gates"]
+    tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9, tab10 = st.tabs(
+        ["📖 Story Time", "🏗️ Lattice Explorer", "🏭 Hash Factory", "🏇 Quantum Derby", "🔑 Key Workshop", "🌀 Mini Game", "🎨 Hash Visualizer", "🔬 Key Size Lab", "⚡ Logic Gates", "🧠 Quiz Board"]
     )
 
     with tab9:
@@ -1204,3 +1204,7 @@ def award_badge(badge: str, xp: int = 10):
 
 
 # ── Main render ───────────────────────────────────────────────────────────────
+
+    with tab10:
+        from modules.quiz_board import render_quiz_board
+        render_quiz_board()
