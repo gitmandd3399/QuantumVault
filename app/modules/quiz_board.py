@@ -1,27 +1,40 @@
 def render_quiz_board():
-    """Middle School: Quantum Quiz Board - 5 categories, 25 questions, plus a final wager round."""
+    """Middle School: Quantum Quiz Board - 10 themed rounds, 250 questions, wager finale each round."""
     import streamlit as st
     import streamlit.components.v1 as components
 
     st.subheader("\U0001f9e0 Quantum Quiz Board")
     st.markdown(
-        "**Pick a category and a point value!** Answer right and bank the points. "
-        "Clear all 25 tiles to unlock the **Final Challenge** \u2014 where you wager your points "
-        "on one last question. How high can you score?"
+        "**10 rounds. 250 questions. Pick your topic!** Each round has 5 categories and a "
+        "**Final Challenge** where you wager your points. Rounds get broader as you go \u2014 "
+        "from PQC basics to code history, internet security, quantum physics, and cyber careers."
     )
 
     components.html(r"""<!DOCTYPE html>
 <html><head><meta charset="UTF-8"><style>
 *{margin:0;padding:0;box-sizing:border-box;}
 body{background:#0b1526;font-family:'Segoe UI',system-ui,sans-serif;color:#e2e8f0;padding:10px;}
-.wrap{max-width:760px;margin:0 auto;}
+.wrap{max-width:780px;margin:0 auto;}
 .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
 .sbox{background:#1a1500;border:2px solid #fbbf24;border-radius:10px;padding:6px 16px;
-font-weight:800;color:#fbbf24;font-size:17px;}
+font-weight:800;color:#fbbf24;font-size:16px;}
 .pbox{color:#94a3b8;font-size:12px;}
+h2{color:#a5b4fc;font-size:19px;margin-bottom:4px;}
+.sub2{color:#64748b;font-size:12.5px;margin-bottom:12px;}
+#rounds{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;}
+.rb{display:flex;align-items:center;gap:10px;background:#111c30;border:2px solid #334155;
+border-radius:11px;padding:12px;color:#e2e8f0;font-size:13.5px;font-weight:700;
+cursor:pointer;text-align:left;transition:.12s;}
+.rb:hover{border-color:#a5b4fc;background:#18243c;}
+.rb.done{border-color:#10b981;}
+.rn{background:#4f46e5;border-radius:7px;min-width:28px;height:28px;display:flex;
+align-items:center;justify-content:center;font-weight:800;font-size:13px;flex-shrink:0;}
+.rb.done .rn{background:#059669;}
+.rt{flex:1;line-height:1.3;}
+.chk{color:#34d399;font-size:11px;font-weight:800;}
 .brow{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin-bottom:5px;}
 .cat{background:#1e1b4b;border:1px solid #4f46e5;border-radius:8px;padding:8px 4px;
-text-align:center;font-size:11px;font-weight:800;color:#c7d2fe;min-height:52px;
+text-align:center;font-size:10.5px;font-weight:800;color:#c7d2fe;min-height:54px;
 display:flex;align-items:center;justify-content:center;line-height:1.25;}
 .tile{background:#111c30;border:1px solid #334155;border-radius:8px;padding:14px 4px;
 font-size:19px;font-weight:800;color:#fbbf24;cursor:pointer;transition:.12s;}
@@ -39,10 +52,13 @@ border-radius:9px;padding:11px 14px;margin-bottom:7px;color:#e2e8f0;font-size:14
 #mwhy,#fwhy{display:none;background:#0c1a30;border-left:3px solid #60a5fa;border-radius:6px;
 padding:10px 12px;font-size:13px;line-height:1.5;margin-top:8px;}
 .ok{color:#34d399;} .no{color:#f87171;}
-#mback,.againb,#startf{display:none;width:100%;margin-top:10px;padding:11px;border:none;
+#mback,.againb,#startf{display:block;width:100%;margin-top:10px;padding:11px;border:none;
 border-radius:9px;background:linear-gradient(135deg,#4f46e5,#7c3aed);color:white;
 font-weight:800;font-size:14px;cursor:pointer;}
-#startf,.againb{display:block;}
+#mback{display:none;}
+.backlink{background:none;border:none;color:#64748b;font-size:12.5px;cursor:pointer;
+margin-bottom:8px;padding:0;}
+.backlink:hover{color:#a5b4fc;}
 #finalwrap h2{color:#fbbf24;font-size:19px;margin-bottom:6px;text-align:center;}
 #wagerbox{text-align:center;}
 select{padding:8px 12px;border-radius:8px;background:#1e293b;color:#e2e8f0;
@@ -55,199 +71,224 @@ border:2px solid #475569;font-size:14px;font-weight:700;margin:8px 0;}
 animation:cf linear forwards;z-index:999;}
 @keyframes cf{to{transform:translateY(105vh) rotate(600deg);opacity:0;}}
 </style></head><body><div class="wrap">
-<div class="top">
-  <div class="sbox">&#11088; <span id="sc">0</span> points</div>
-  <div class="pbox">Answered: <span id="prog">0 / 25</span></div>
-</div>
-<div id="board"></div>
-<div id="modal">
-  <div id="mcat"></div>
-  <div id="mq"></div>
-  <div id="mopts"></div>
-  <div id="mwhy"></div>
-  <button id="mback" onclick="backToBoard()">&#8592; Back to the Board</button>
-</div>
-<div id="finalwrap">
-  <h2>&#127942; FINAL CHALLENGE</h2>
-  <div id="wagerbox">
-    <p style="font-size:14px;color:#94a3b8">You have <b id="fscore" style="color:#fbbf24">0</b> points.<br>
-    How many will you risk on the last question?</p>
-    <select id="wagerSel"></select><br>
-    <button id="startf" onclick="startFinal()">Lock in my wager!</button>
+<div id="picker">
+  <div class="top">
+    <div><h2>&#129504; Quantum Quiz Board</h2>
+    <div class="sub2">10 rounds &middot; 250 questions &middot; pick a round to play</div></div>
+    <div class="sbox">&#11088; <span id="totsc">0</span> total</div>
   </div>
-  <div id="finalq" style="display:none">
-    <div id="fq"></div>
-    <div id="fopts"></div>
-    <div id="fwhy"></div>
-    <div id="fdone"></div>
+  <div id="rounds"></div>
+</div>
+<div id="game" style="display:none">
+  <button class="backlink" onclick="showPicker()">&#8592; All rounds</button>
+  <div class="top">
+    <div class="pbox" id="rname"></div>
+    <div class="sbox">&#11088; <span id="sc">0</span> &middot; <span id="prog">0 / 25</span></div>
+  </div>
+  <div id="board"></div>
+  <div id="modal">
+    <div id="mcat"></div><div id="mq"></div><div id="mopts"></div><div id="mwhy"></div>
+    <button id="mback" onclick="backToBoard()">&#8592; Back to the Board</button>
+  </div>
+  <div id="finalwrap">
+    <h2>&#127942; FINAL CHALLENGE</h2>
+    <div id="wagerbox">
+      <p style="font-size:14px;color:#94a3b8">You have <b id="fscore" style="color:#fbbf24">0</b> points.<br>
+      How many will you risk on the last question?</p>
+      <select id="wagerSel"></select>
+      <button id="startf" onclick="startFinal()">Lock in my wager!</button>
+    </div>
+    <div id="finalq" style="display:none">
+      <div id="fq"></div><div id="fopts"></div><div id="fwhy"></div><div id="fdone"></div>
+    </div>
   </div>
 </div>
 </div>
 <script>
 
-var DATA = {"cats": [{"name": "\ud83d\udd10 Code Basics", "qs": [[100, "Locking a message so it looks like scrambled nonsense is called this.", ["Encryption", "Compression", "Deletion", "Downloading"], 0, "Encryption! Your message goes in as words and comes out as gibberish."], [200, "This is the secret tool that both locks AND unlocks a message.", ["A key", "A mouse", "A screen", "A cable"], 0, "A key! No key, no reading the message."], [300, "A 'hash' is best described as this.", ["A digital fingerprint for data", "A type of password", "A quantum computer", "A kind of cable"], 0, "A fingerprint! Change one letter of the input and the whole hash changes."], [400, "This word means turning a scrambled message back into readable words.", ["Decryption", "Encryption", "Hashing", "Uploading"], 0, "Decryption \u2014 unlocking the message."], [500, "XOR is famous in cryptography because doing it TWICE with the same key does this.", ["Gives you the original message back", "Deletes the message", "Doubles the message", "Turns it into a hash"], 0, "It gives you the original back! XOR is its own undo button."]]}, {"name": "\u269b\ufe0f Quantum Stuff", "qs": [[100, "A quantum bit has this shorter nickname.", ["Qubit", "Quark", "Qubyte", "Quantumite"], 0, "A qubit! Like a bit, but way weirder."], [200, "A qubit can be in this state that a normal bit cannot.", ["Both 0 and 1 at once", "The number 2", "Upside down", "Invisible"], 0, "Superposition \u2014 0 and 1 at the same time, until you measure it."], [300, "When two qubits are linked so measuring one tells you the other, it's called this.", ["Entanglement", "Tangling", "Twinning", "Magnetism"], 0, "Entanglement! Einstein called it 'spooky action at a distance.'"], [400, "This gate puts a qubit into superposition \u2014 the 'coin flip' gate.", ["Hadamard (H)", "Pauli-X", "CNOT", "Measure"], 0, "The Hadamard gate! It spins the coin into the air."], [500, "Doing this to a qubit forces it to pick 0 or 1 and stop being fuzzy.", ["Measuring it", "Shouting at it", "Cooling it", "Copying it"], 0, "Measuring it! The coin lands and superposition is over."]]}, {"name": "\ud83d\udca5 The Big Threat", "qs": [[100, "The quantum algorithm that could break today's internet encryption is named after this person.", ["Peter Shor", "Alan Turing", "Ada Lovelace", "Alice Bob"], 0, "Peter Shor! He published it in 1994."], [200, "Shor's algorithm is dangerous because it can do this fast.", ["Find the prime factors of huge numbers", "Guess passwords", "Delete files", "Send emails"], 0, "Factoring! And RSA's whole security depends on factoring being slow."], [300, "'Harvest now, decrypt later' means bad guys are doing this today.", ["Stealing encrypted data to unlock in the future", "Farming vegetables", "Deleting old files", "Guessing passwords"], 0, "Stealing data now, waiting for quantum computers to crack it later!"], [400, "Grover's algorithm speeds up searching \u2014 but only by this much.", ["Square root (a lot less scary than Shor)", "A million times", "Not at all", "Infinite"], 0, "Square-root speedup. That's why doubling hash sizes beats Grover."], [500, "This is why bigger hash outputs (like SHA3-256) stay safe from Grover.", ["Doubling the size undoes the speedup", "Grover cannot count", "Hashes are magic", "Grover only breaks RSA"], 0, "Double the bits, and Grover's advantage cancels out."]]}, {"name": "\ud83d\udee1\ufe0f The New Heroes", "qs": [[100, "This lattice-based algorithm is the new standard for exchanging keys safely.", ["ML-KEM (Kyber)", "RSA", "MD5", "WiFi"], 0, "ML-KEM, also called Kyber \u2014 FIPS 203."], [200, "This one creates digital signatures that prove a message is really from you.", ["ML-DSA (Dilithium)", "ML-KEM", "SHA-3", "ECC"], 0, "ML-DSA, also called Dilithium \u2014 FIPS 204."], [300, "Falcon's superpower compared to other signature algorithms is this.", ["Really small signatures", "Really big keys", "It is faster than light", "It never works"], 0, "Tiny signatures \u2014 perfect for smartwatches and small devices."], [400, "SPHINCS+ is different because its security is built entirely from this.", ["Hash functions", "Prime numbers", "Curves", "Passwords"], 0, "Hashes only! No fancy math assumptions, just hashing."], [500, "Lattice problems resist quantum attacks because of this.", ["No quantum algorithm gives a big speedup on them", "They are secret", "Quantum computers are slow", "They use huge passwords"], 0, "Quantum computers just do not have a good shortcut for lattices."]]}, {"name": "\ud83c\udf0d In Real Life", "qs": [[100, "The US agency that ran the contest to pick quantum-safe algorithms is called this.", ["NIST", "NASA", "FBI", "NBA"], 0, "NIST \u2014 the National Institute of Standards and Technology."], [200, "NIST announced its first post-quantum standards in this year.", ["2024", "1999", "2010", "2050"], 0, "August 2024 \u2014 FIPS 203, 204, and 205."], [300, "The little lock icon in your browser bar means this is happening.", ["Your connection is encrypted", "The site is closed", "You are logged out", "The page is loading"], 0, "Encryption in action, every time you browse!"], [400, "Companies need years to switch to new encryption mainly because of this.", ["Crypto is built into millions of devices and systems", "It is expensive to buy", "Nobody knows how", "It is illegal"], 0, "It is everywhere \u2014 phones, cars, banks, browsers, chips."], [500, "A 'cryptographically relevant quantum computer' means one that can do this.", ["Actually break real encryption", "Play games fast", "Store lots of files", "Run cold"], 0, "One powerful enough to break real-world crypto. None exists yet!"]]}], "final": {"cat": "\ud83c\udfc6 FINAL CHALLENGE \u2014 Putting It All Together", "q": "A hospital needs to send your X-ray safely to a specialist, AND prove the file really came from that hospital. Which two tools do they need?", "options": ["ML-KEM to lock it, and ML-DSA to sign it", "Two copies of ML-KEM", "Grover's algorithm and a password", "Shor's algorithm and a firewall"], "answer": 0, "why": "ML-KEM protects the key that locks the file, and ML-DSA signs it so you know the sender is real. Locking and proving are two different jobs!"}};
-var score = 0, answered = {}, current = null, finalDone = false, wager = 0, correctCount = 0;
+var ROUNDS = [{"name": "Round 1: PQC Basics", "cats": [{"name": "\ud83d\udd10 Code Basics", "qs": [[100, "Locking a message so it looks like scrambled nonsense is called this.", ["Encryption", "Compression", "Deletion", "Downloading"], 0, "Encryption! Words go in, gibberish comes out."], [200, "This secret tool both locks AND unlocks a message.", ["A key", "A mouse", "A screen", "A cable"], 0, "A key! No key, no reading."], [300, "A 'hash' is best described as this.", ["A digital fingerprint for data", "A type of password", "A quantum computer", "A kind of cable"], 0, "A fingerprint. Change one letter and the whole hash changes."], [400, "This word means turning a scrambled message back into readable words.", ["Decryption", "Encryption", "Hashing", "Uploading"], 0, "Decryption \u2014 unlocking the message."], [500, "XOR is famous because doing it TWICE with the same key does this.", ["Gives you the original back", "Deletes it", "Doubles it", "Turns it into a hash"], 0, "XOR is its own undo button. That's why it's everywhere in crypto."]]}, {"name": "\u269b\ufe0f Quantum Stuff", "qs": [[100, "A quantum bit has this shorter nickname.", ["Qubit", "Quark", "Qubyte", "Quantumite"], 0, "A qubit \u2014 like a bit, but way weirder."], [200, "A qubit can be in this state a normal bit cannot.", ["Both 0 and 1 at once", "The number 2", "Upside down", "Invisible"], 0, "Superposition \u2014 until you measure it."], [300, "Two qubits linked so measuring one tells you the other is called this.", ["Entanglement", "Tangling", "Twinning", "Magnetism"], 0, "Entanglement. Einstein called it 'spooky action at a distance.'"], [400, "This gate puts a qubit into superposition \u2014 the 'coin flip' gate.", ["Hadamard (H)", "Pauli-X", "CNOT", "Measure"], 0, "The Hadamard gate spins the coin into the air."], [500, "Doing this forces a qubit to pick 0 or 1 and stop being fuzzy.", ["Measuring it", "Shouting at it", "Cooling it", "Copying it"], 0, "Measuring. The coin lands and superposition ends."]]}, {"name": "\ud83d\udca5 The Big Threat", "qs": [[100, "The algorithm that could break internet encryption is named after this person.", ["Peter Shor", "Alan Turing", "Ada Lovelace", "Grace Hopper"], 0, "Peter Shor, 1994."], [200, "Shor's algorithm is dangerous because it can do this fast.", ["Find prime factors of huge numbers", "Guess passwords", "Delete files", "Send emails"], 0, "Factoring \u2014 and RSA's security depends on factoring being slow."], [300, "'Harvest now, decrypt later' means attackers are doing this today.", ["Stealing encrypted data to unlock later", "Farming vegetables", "Deleting old files", "Guessing passwords"], 0, "Stealing now, waiting for quantum computers."], [400, "Grover's algorithm speeds up searching by this much.", ["Square root \u2014 less scary than Shor", "A million times", "Not at all", "Infinite"], 0, "Square-root speedup, which doubling hash sizes defeats."], [500, "Bigger hash outputs stay safe from Grover because of this.", ["Doubling the size undoes the speedup", "Grover can't count", "Hashes are magic", "Grover only breaks RSA"], 0, "Double the bits and Grover's advantage cancels out."]]}, {"name": "\ud83d\udee1\ufe0f The New Heroes", "qs": [[100, "This lattice-based algorithm is the standard for exchanging keys.", ["ML-KEM (Kyber)", "RSA", "MD5", "WiFi"], 0, "ML-KEM \u2014 FIPS 203."], [200, "This one creates signatures proving a message is really from you.", ["ML-DSA (Dilithium)", "ML-KEM", "SHA-3", "ECC"], 0, "ML-DSA \u2014 FIPS 204."], [300, "Falcon's superpower compared to other signatures is this.", ["Really small signatures", "Really big keys", "Faster than light", "It never works"], 0, "Tiny signatures \u2014 great for smartwatches."], [400, "SPHINCS+ builds its security entirely from this.", ["Hash functions", "Prime numbers", "Curves", "Passwords"], 0, "Hashes only \u2014 no fancy math assumptions."], [500, "Lattice problems resist quantum attacks because of this.", ["No quantum algorithm gives a big speedup", "They're secret", "Quantum computers are slow", "They use huge passwords"], 0, "Quantum computers have no good shortcut for lattices."]]}, {"name": "\ud83c\udf0d In Real Life", "qs": [[100, "The US agency that picked the quantum-safe algorithms.", ["NIST", "NASA", "FBI", "NBA"], 0, "NIST \u2014 National Institute of Standards and Technology."], [200, "NIST announced its first post-quantum standards in this year.", ["2024", "1999", "2010", "2050"], 0, "August 2024 \u2014 FIPS 203, 204, 205."], [300, "The lock icon in your browser means this is happening.", ["Your connection is encrypted", "The site is closed", "You're logged out", "The page is loading"], 0, "Encryption in action, every time you browse."], [400, "Switching to new encryption takes years mainly because of this.", ["Crypto is built into millions of devices", "It's expensive to buy", "Nobody knows how", "It's illegal"], 0, "It's everywhere \u2014 phones, cars, banks, chips."], [500, "A 'cryptographically relevant quantum computer' can do this.", ["Actually break real encryption", "Play games fast", "Store lots of files", "Run cold"], 0, "One powerful enough to break real crypto. None exists yet."]]}], "final": {"q": "A hospital sends your X-ray to a specialist AND must prove the file really came from them. Which two tools?", "options": ["ML-KEM to lock it, and ML-DSA to sign it", "Two copies of ML-KEM", "Grover's algorithm and a password", "Shor's algorithm and a firewall"], "answer": 0, "why": "ML-KEM protects the key that locks the file; ML-DSA signs it so you know the sender is real. Locking and proving are different jobs."}}, {"name": "Round 2: Codes Through History", "cats": [{"name": "\ud83c\udfdb\ufe0f Ancient Codes", "qs": [[100, "Julius Caesar's cipher worked by doing this to each letter.", ["Shifting it down the alphabet", "Deleting it", "Doubling it", "Reversing the word"], 0, "The Caesar shift \u2014 move each letter a fixed number of spots."], [200, "The Spartans wrapped a strip of leather around a rod to read messages. The rod was called this.", ["A scytale", "A scroll", "A tablet", "A stylus"], 0, "A scytale \u2014 one of the oldest known cipher devices."], [300, "In a 'substitution cipher,' each letter is replaced by this.", ["A different letter or symbol", "A number only", "Nothing", "A picture of itself"], 0, "Every letter maps to another symbol consistently."], [400, "Substitution ciphers can be cracked by counting this.", ["How often each letter appears", "How many words there are", "The page numbers", "The author's name"], 0, "Frequency analysis \u2014 E is the most common English letter."], [500, "This Arab scholar described frequency analysis around 850 CE.", ["Al-Kindi", "Euclid", "Newton", "Pythagoras"], 0, "Al-Kindi wrote the first known text on breaking ciphers."]]}, {"name": "\u2699\ufe0f War Machines", "qs": [[100, "The famous German cipher machine of World War II was called this.", ["Enigma", "Riddle", "Puzzle", "Mystery"], 0, "The Enigma machine."], [200, "This British mathematician helped break Enigma.", ["Alan Turing", "Isaac Newton", "Charles Babbage", "Peter Shor"], 0, "Alan Turing, at Bletchley Park."], [300, "Enigma scrambled letters using these spinning parts.", ["Rotors", "Magnets", "Springs", "Batteries"], 0, "Rotors \u2014 they changed the wiring with every keypress."], [400, "A big Enigma weakness was that a letter could never do this.", ["Encrypt to itself", "Repeat", "Be capitalized", "Be a vowel"], 0, "No letter ever mapped to itself \u2014 a huge clue for codebreakers."], [500, "US forces in the Pacific used this unbreakable 'code' based on a language.", ["Navajo code talkers", "Latin", "Morse code", "Binary"], 0, "Navajo code talkers \u2014 the code was never broken."]]}, {"name": "\ud83d\udd11 The Key Problem", "qs": [[100, "In old ciphers, both people had to share this ahead of time.", ["The same secret key", "Their phone numbers", "A password hint", "A computer"], 0, "The shared key \u2014 and getting it to them safely was the hard part."], [200, "This is the classic problem: how do you send a key safely?", ["The key distribution problem", "The math problem", "The storage problem", "The speed problem"], 0, "Key distribution \u2014 solved by public-key crypto in the 1970s."], [300, "Public-key crypto uses this many keys per person.", ["Two \u2014 one public, one private", "One", "Three", "Zero"], 0, "A keypair: share the public one, guard the private one."], [400, "RSA is named after this.", ["The last names of its three inventors", "A Roman god", "A city", "An acronym for 'Really Secure Algorithm'"], 0, "Rivest, Shamir, and Adleman \u2014 1977."], [500, "Diffie and Hellman's 1976 breakthrough let two people do this.", ["Agree on a secret without meeting", "Send email", "Build computers", "Break RSA"], 0, "Key exchange over an open channel \u2014 the color-mixing trick!"]]}, {"name": "\ud83d\udcbb Digital Age", "qs": [[100, "This standard encrypts most files and WiFi today.", ["AES", "MP3", "JPEG", "HTML"], 0, "AES \u2014 the Advanced Encryption Standard."], [200, "AES replaced this older, weaker standard.", ["DES", "RSA", "SHA", "TLS"], 0, "DES \u2014 its 56-bit key became crackable."], [300, "The 's' in 'https' stands for this.", ["Secure", "Speed", "Server", "System"], 0, "Secure \u2014 your connection is encrypted."], [400, "MD5 and SHA-1 are no longer trusted because of these.", ["Collisions were found", "They're too slow", "They're too new", "They cost money"], 0, "Two different inputs producing the same hash breaks the whole point."], [500, "The current recommended hash family is this.", ["SHA-2 and SHA-3", "MD5", "SHA-1", "CRC32"], 0, "SHA-2 and SHA-3 are the modern standards."]]}, {"name": "\ud83c\udfac Codes in Culture", "qs": [[100, "In movies, a 'cipher' usually means this.", ["A secret code", "A car", "A weapon", "A computer virus"], 0, "A cipher is a method of encoding a message."], [200, "The word 'cryptography' comes from Greek words meaning this.", ["Hidden writing", "Fast math", "Secret box", "Number talk"], 0, "Kryptos (hidden) + graphein (writing)."], [300, "A 'cryptographer' does this job.", ["Designs secret codes", "Digs up fossils", "Studies weather", "Fixes cars"], 0, "They design and analyze codes."], [400, "A 'cryptanalyst' does this instead.", ["Tries to break codes", "Writes novels", "Builds hardware", "Sells software"], 0, "Breaking codes \u2014 the other side of the coin."], [500, "This CIA sculpture has a coded message still unsolved after decades.", ["Kryptos", "The Sphinx", "The Obelisk", "Enigma"], 0, "Kryptos \u2014 part 4 has never been cracked publicly."]]}], "final": {"q": "Why could a WWII codebreaker crack a substitution cipher without knowing the key?", "options": ["Letter frequencies leak the pattern", "The key was printed on the machine", "Computers existed", "Letters were random"], "answer": 0, "why": "Frequency analysis: E, T, and A show up far more than Q or Z, and that pattern survives substitution."}}, {"name": "Round 3: How the Internet Works", "cats": [{"name": "\ud83d\udce1 Getting Connected", "qs": [[100, "Every device on a network gets one of these addresses.", ["IP address", "Email address", "Home address", "Web address"], 0, "An IP address identifies your device."], [200, "This turns a website name into an IP address.", ["DNS", "GPS", "USB", "RAM"], 0, "DNS \u2014 the internet's phone book."], [300, "Data travels the internet broken into these chunks.", ["Packets", "Boxes", "Files", "Bits only"], 0, "Packets, reassembled at the destination."], [400, "A 'router' does this job.", ["Directs packets toward their destination", "Stores websites", "Encrypts everything", "Charges your phone"], 0, "It routes traffic between networks."], [500, "This protocol makes sure packets arrive and in order.", ["TCP", "JPEG", "HTML", "SMTP"], 0, "TCP handles reliable delivery."]]}, {"name": "\ud83d\udd12 Safe Browsing", "qs": [[100, "The protocol that encrypts web traffic is called this.", ["TLS", "FTP", "HTTP", "IRC"], 0, "TLS \u2014 Transport Layer Security."], [200, "A website proves its identity using one of these.", ["A digital certificate", "A username", "A logo", "A phone number"], 0, "A certificate signed by a trusted authority."], [300, "Public WiFi is risky mainly because of this.", ["Others may intercept your traffic", "It's slow", "It costs money", "It uses batteries"], 0, "Anyone nearby may be listening \u2014 encryption is your protection."], [400, "A VPN protects you by doing this.", ["Encrypting traffic through a tunnel", "Blocking ads", "Speeding up WiFi", "Deleting cookies"], 0, "It wraps your traffic in an encrypted tunnel."], [500, "In a 'man-in-the-middle' attack, the attacker does this.", ["Secretly relays and may alter messages", "Steals your laptop", "Breaks your router", "Sends spam"], 0, "They sit between you and the site, reading everything."]]}, {"name": "\ud83d\udddd\ufe0f The Handshake", "qs": [[100, "Before sending data, TLS does this first.", ["A handshake to agree on keys", "A download", "A restart", "A scan"], 0, "The handshake establishes the shared key."], [200, "During the handshake, the two sides agree on this.", ["A shared secret key", "A password", "A username", "A file name"], 0, "A session key used for the rest of the conversation."], [300, "This is why the handshake matters for post-quantum security.", ["It's where the key gets established", "It's the fastest part", "It uses no math", "It's optional"], 0, "Break the handshake and you get everything after it."], [400, "'Hybrid' key exchange means doing this.", ["Combining classical and post-quantum", "Using two passwords", "Encrypting twice", "Using two servers"], 0, "Both must be broken for the attacker to win."], [500, "Chrome and Cloudflare already deploy this hybrid combo.", ["X25519 + ML-KEM", "RSA + DES", "AES + MD5", "TCP + UDP"], 0, "X25519 plus ML-KEM-768 in real production traffic."]]}, {"name": "\u26a0\ufe0f Threats", "qs": [[100, "A fake email trying to steal your password is called this.", ["Phishing", "Fishing", "Farming", "Mining"], 0, "Phishing \u2014 bait designed to look legitimate."], [200, "Software that locks your files for money is called this.", ["Ransomware", "Adware", "Freeware", "Firmware"], 0, "Ransomware encrypts your files and demands payment."], [300, "A DDoS attack works by doing this.", ["Flooding a server with traffic", "Stealing passwords", "Deleting files", "Rewriting code"], 0, "Overwhelming it so real users can't get through."], [400, "'Social engineering' attacks target this.", ["People, not computers", "Routers", "Databases", "Cables"], 0, "Tricking humans is often easier than breaking crypto."], [500, "A 'zero-day' is this kind of vulnerability.", ["One with no fix available yet", "One that's very old", "One that lasts a day", "One that's harmless"], 0, "Defenders have had zero days to patch it."]]}, {"name": "\ud83e\uddf0 Defenses", "qs": [[100, "This blocks unwanted traffic from entering a network.", ["A firewall", "A hard drive", "A monitor", "A printer"], 0, "A firewall filters traffic by rules."], [200, "Two-factor authentication adds this.", ["A second proof beyond your password", "A second password", "A backup file", "A faster login"], 0, "Something you know plus something you have."], [300, "Keeping software updated matters because of this.", ["Updates patch security holes", "Updates look nicer", "Updates are free", "Updates are faster"], 0, "Most breaches exploit known, already-patched bugs."], [400, "Passwords should be stored by websites in this form.", ["Hashed and salted", "Plain text", "In an email", "On paper"], 0, "Never plain text \u2014 hash them with a unique salt."], [500, "A 'salt' in password storage is this.", ["Random data added before hashing", "A spice", "An encryption key", "A username"], 0, "It makes identical passwords hash differently."]]}], "final": {"q": "An attacker records your encrypted bank session today but cannot read it. Why might they keep it?", "options": ["To decrypt it years later with a quantum computer", "To resell the file", "To slow your internet", "To test their WiFi"], "answer": 0, "why": "Harvest now, decrypt later \u2014 which is why long-lived secrets need PQC today, not in 2035."}}, {"name": "Round 4: The Math Behind It", "cats": [{"name": "\ud83d\udd22 Numbers", "qs": [[100, "A prime number is divisible only by these.", ["1 and itself", "2 and 4", "Any even number", "Zero"], 0, "That's what makes primes special."], [200, "This is the smallest prime number.", ["2", "1", "0", "3"], 0, "2 \u2014 and it's the only even prime."], [300, "Multiplying two large primes is easy, but this is hard.", ["Factoring the result back", "Adding them", "Writing them down", "Counting them"], 0, "That asymmetry is exactly what RSA relies on."], [400, "Modular arithmetic is sometimes called this.", ["Clock arithmetic", "Fast math", "Prime math", "Fuzzy math"], 0, "Numbers wrap around, like hours on a clock."], [500, "In mod 12, 15 equals this.", ["3", "15", "12", "0"], 0, "15 wraps past 12 and lands on 3."]]}, {"name": "\ud83d\udcd0 Lattices", "qs": [[100, "A lattice is best described as this.", ["A regular grid of points", "A single line", "A circle", "A random blob"], 0, "An evenly spaced grid of points in space."], [200, "The 'shortest vector problem' asks you to find this.", ["The closest grid point to the origin", "The biggest number", "The fastest route", "The largest grid"], 0, "Easy in 2D, brutally hard in high dimensions."], [300, "Lattice problems get harder as you add more of these.", ["Dimensions", "Colors", "Numbers", "Letters"], 0, "Hundreds of dimensions make them intractable."], [400, "'LWE' stands for this.", ["Learning With Errors", "Long Wave Encryption", "Low Weight Encoding", "Linked Web Entry"], 0, "Learning With Errors \u2014 the core problem behind ML-KEM."], [500, "In LWE, adding small random 'noise' does this.", ["Hides the secret", "Speeds it up", "Deletes data", "Makes it public"], 0, "The noise is what makes recovering the secret hard."]]}, {"name": "\ud83c\udfb2 Randomness", "qs": [[100, "Good encryption keys must be this.", ["Random and unpredictable", "Short and memorable", "Written down", "Reused"], 0, "Predictable keys are broken keys."], [200, "Computers usually generate 'pseudorandom' numbers, meaning this.", ["They look random but come from a formula", "They're truly random", "They're always the same", "They're not numbers"], 0, "A seed plus a formula produces the sequence."], [300, "If an attacker learns the seed, this happens.", ["They can predict every 'random' number", "Nothing", "The program crashes", "The key gets stronger"], 0, "Seed compromise breaks the whole chain."], [400, "Quantum measurement is useful for randomness because it's this.", ["Truly unpredictable", "Very fast", "Free", "Repeatable"], 0, "Quantum outcomes are fundamentally random."], [500, "A 'nonce' is a number used this many times.", ["Once", "Twice", "Always", "Never"], 0, "Number used once \u2014 reusing one can break encryption."]]}, {"name": "\ud83e\uddee Complexity", "qs": [[100, "An 'algorithm' is best described as this.", ["A step-by-step procedure", "A computer", "A password", "A network"], 0, "A recipe of steps to solve a problem."], [200, "Cryptography relies on problems that are this.", ["Easy one way, hard the other", "Easy both ways", "Impossible", "Random"], 0, "One-way functions \u2014 the heart of crypto."], [300, "'Exponential' growth means the work does this.", ["Multiplies rapidly with each step", "Stays flat", "Shrinks", "Grows slowly"], 0, "Doubling each step quickly becomes impossible."], [400, "A 128-bit key has roughly this many possible values.", ["More than atoms in a person", "A thousand", "A million", "Exactly 128"], 0, "2^128 is astronomically large."], [500, "'Brute force' means doing this.", ["Trying every possible key", "Guessing once", "Using a hammer", "Asking nicely"], 0, "Trying all keys \u2014 infeasible if the keyspace is big enough."]]}, {"name": "\ud83d\udd0d Proofs", "qs": [[100, "A hash function should make it impossible to do this.", ["Work backwards to the input", "Compute the hash", "Compare hashes", "Store the hash"], 0, "One-way: input to hash is easy, hash to input is not."], [200, "A hash 'collision' means this.", ["Two inputs give the same hash", "A crash", "A slow computer", "A lost file"], 0, "Collisions break the fingerprint guarantee."], [300, "The 'avalanche effect' means a tiny input change does this.", ["Changes the whole hash", "Changes one character", "Does nothing", "Deletes the hash"], 0, "One flipped bit scrambles the entire output."], [400, "A digital signature proves both of these.", ["Who sent it and that it's unchanged", "Speed and size", "Cost and time", "Color and shape"], 0, "Authenticity and integrity together."], [500, "You verify a signature using this key.", ["The sender's public key", "Your private key", "A password", "The hash only"], 0, "Sign with private, verify with public."]]}], "final": {"q": "Why does adding random 'noise' in Learning With Errors make the problem hard?", "options": ["It hides the exact secret among many near-solutions", "It deletes the secret", "It speeds up the math", "It shortens the key"], "answer": 0, "why": "Without noise, the equations solve instantly. Noise is the whole security."}}, {"name": "Round 5: Quantum Physics", "cats": [{"name": "\u269b\ufe0f Tiny Things", "qs": [[100, "Quantum mechanics describes things at this scale.", ["Atoms and smaller", "Planets", "Buildings", "Oceans"], 0, "The very small \u2014 where normal rules break down."], [200, "Light behaves as both of these.", ["A wave and a particle", "Hot and cold", "Big and small", "Fast and slow"], 0, "Wave-particle duality."], [300, "The particle of light is called this.", ["A photon", "An electron", "A neutron", "A proton"], 0, "Photons \u2014 often used to carry qubits."], [400, "Heisenberg's uncertainty principle says you can't perfectly know both of these.", ["Position and momentum", "Color and size", "Mass and charge", "Speed and weight"], 0, "Measuring one precisely blurs the other."], [500, "The 'observer effect' means measuring a quantum system does this.", ["Changes it", "Records it perfectly", "Speeds it up", "Has no effect"], 0, "Measurement collapses the state."]]}, {"name": "\ud83c\udf9b\ufe0f Quantum Gates", "qs": [[100, "The X gate does this to a qubit.", ["Flips 0 to 1 and 1 to 0", "Deletes it", "Copies it", "Measures it"], 0, "The quantum NOT gate."], [200, "Applying H twice to a qubit does this.", ["Returns it to where it started", "Doubles it", "Randomizes it more", "Deletes it"], 0, "H is its own inverse \u2014 the surprise result!"], [300, "CNOT stands for this.", ["Controlled-NOT", "Copy NOT", "Clear NOT", "Count NOT"], 0, "It flips the target only if the control is 1."], [400, "H followed by CNOT creates this famous state.", ["A Bell state (entanglement)", "A zero state", "A random number", "A hash"], 0, "The Bell state \u2014 measure one, know the other."], [500, "The real programming language for quantum circuits is this.", ["OpenQASM", "Python only", "HTML", "Java"], 0, "OpenQASM \u2014 used on real IBM quantum machines."]]}, {"name": "\ud83e\uddca Building One", "qs": [[100, "Most quantum computers must be kept this way.", ["Extremely cold", "Very hot", "Underwater", "In sunlight"], 0, "Near absolute zero \u2014 colder than deep space."], [200, "'Decoherence' means qubits do this.", ["Lose their quantum state", "Get faster", "Multiply", "Heat up"], 0, "Noise destroys the fragile quantum state."], [300, "Because qubits are error-prone, engineers use this.", ["Quantum error correction", "Bigger screens", "More cables", "Faster internet"], 0, "Many physical qubits combine into one reliable logical qubit."], [400, "Today's quantum computers are limited mainly by this.", ["Qubit count and error rates", "Screen size", "Internet speed", "Storage"], 0, "Scaling reliable qubits is the central challenge."], [500, "Breaking RSA-2048 would need roughly this many reliable qubits.", ["Millions", "Ten", "A hundred", "One"], 0, "Estimates run into the millions of physical qubits."]]}, {"name": "\ud83d\ude80 Quantum Uses", "qs": [[100, "Besides breaking codes, quantum computers may help with this.", ["Designing new medicines", "Making movies", "Printing books", "Driving cars"], 0, "Simulating molecules is a natural quantum task."], [200, "Quantum computers are good at simulating this.", ["Molecules and materials", "Websites", "Spreadsheets", "Videos"], 0, "Nature is quantum, so quantum computers model it well."], [300, "Quantum computers will NOT do this.", ["Replace your laptop for everyday tasks", "Simulate chemistry", "Factor numbers", "Search databases"], 0, "They're specialized tools, not general replacements."], [400, "'Quantum advantage' means this.", ["Solving something faster than any classical computer", "Being cheaper", "Being smaller", "Being quieter"], 0, "Beating the best classical approach on a real task."], [500, "Quantum key distribution (QKD) uses this to detect eavesdroppers.", ["Measurement disturbs the qubits", "Passwords", "Firewalls", "Cameras"], 0, "If someone looks, the disturbance shows up."]]}, {"name": "\ud83e\udd14 Myths", "qs": [[100, "True or false: quantum computers try every answer at once and pick the right one.", ["False \u2014 it's more subtle", "True", "Only on Tuesdays", "Nobody knows"], 0, "They use interference to amplify correct answers, not brute force."], [200, "True or false: quantum computers exist today.", ["True, but small and error-prone", "False, none exist", "True, and they broke RSA", "Only in movies"], 0, "Real machines exist; none can break real encryption yet."], [300, "True or false: quantum computers make all encryption useless.", ["False \u2014 PQC and AES survive", "True", "Only for banks", "Only for email"], 0, "Lattice-based crypto and big AES keys hold up."], [400, "AES-256 against quantum attacks is best described as this.", ["Still considered safe", "Completely broken", "Slower", "Illegal"], 0, "Grover only halves its effective strength \u2014 still enormous."], [500, "The main reason to switch to PQC NOW is this.", ["Data stolen today can be decrypted later", "Quantum computers are here", "Old crypto stopped working", "It's cheaper"], 0, "Harvest now, decrypt later makes it urgent today."]]}], "final": {"q": "Applying a Hadamard gate twice returns the qubit to 0. What does that prove?", "options": ["Quantum gates are precise rotations, not random dice", "H is broken", "Measurement is optional", "Qubits are just bits"], "answer": 0, "why": "Two H gates cancel exactly \u2014 quantum operations are reversible rotations, not coin flips."}}, {"name": "Round 6: Cyber Defense", "cats": [{"name": "\ud83e\udda0 Malware", "qs": [[100, "Software designed to harm or steal is called this.", ["Malware", "Hardware", "Freeware", "Firmware"], 0, "Malicious software \u2014 malware for short."], [200, "A program that spreads by attaching to other files is this.", ["A virus", "A firewall", "A router", "A cookie"], 0, "Viruses attach and spread."], [300, "A 'trojan' tricks you by doing this.", ["Pretending to be useful software", "Spreading by email only", "Encrypting itself", "Deleting itself"], 0, "Named after the Trojan horse."], [400, "A 'worm' differs from a virus because it does this.", ["Spreads on its own without a host file", "Needs a host file", "Only affects phones", "Is harmless"], 0, "Worms self-propagate across networks."], [500, "'Spyware' is designed to do this.", ["Secretly collect your information", "Speed up your PC", "Block ads", "Update software"], 0, "Silent surveillance on your device."]]}, {"name": "\ud83c\udfa3 Tricks", "qs": [[100, "A suspicious email asking for your password is likely this.", ["Phishing", "A newsletter", "An update", "A receipt"], 0, "Classic phishing."], [200, "'Spear phishing' is different because it's this.", ["Targeted at a specific person", "Sent to everyone", "Only on phones", "Always harmless"], 0, "Personalized using details about you."], [300, "A red flag in a phishing email is often this.", ["Urgent pressure to act fast", "Correct spelling", "A plain design", "A short subject"], 0, "Urgency short-circuits careful thinking."], [400, "Before clicking a link you should do this.", ["Hover to see the real address", "Click quickly", "Forward it", "Reply first"], 0, "The visible text can hide a different URL."], [500, "'Vishing' uses this method.", ["Phone calls", "Text messages", "Websites", "Printers"], 0, "Voice phishing \u2014 scam calls."]]}, {"name": "\ud83d\udee1\ufe0f Protection", "qs": [[100, "A strong password is mainly this.", ["Long and unique", "Short and simple", "Your pet's name", "Reused everywhere"], 0, "Length beats complexity, and never reuse."], [200, "A password manager does this.", ["Generates and stores unique passwords", "Deletes passwords", "Shares passwords", "Prints passwords"], 0, "One strong master password protects the rest."], [300, "Backing up your data protects against this.", ["Ransomware and hardware failure", "Slow internet", "Spam", "Ads"], 0, "Good backups make ransomware far less scary."], [400, "'Least privilege' means giving users this.", ["Only the access they need", "All access", "No access", "Access on weekends"], 0, "Limit the blast radius of any compromise."], [500, "'Defense in depth' means doing this.", ["Layering multiple protections", "Using one strong tool", "Hiding your computer", "Turning off WiFi"], 0, "If one layer fails, others still hold."]]}, {"name": "\ud83d\udd75\ufe0f Good Guys", "qs": [[100, "A 'white hat' hacker does this.", ["Finds flaws to help fix them", "Steals data", "Sells viruses", "Breaks laws"], 0, "Ethical hackers on the defense side."], [200, "A 'penetration test' is this.", ["An authorized simulated attack", "A real attack", "A software update", "A password check"], 0, "Hired hackers testing defenses with permission."], [300, "A 'bug bounty' program does this.", ["Pays people for finding security flaws", "Sells software", "Fixes printers", "Trains staff"], 0, "Companies pay researchers to report bugs."], [400, "'Responsible disclosure' means doing this.", ["Telling the vendor before going public", "Posting it online first", "Selling the flaw", "Ignoring it"], 0, "Give them time to patch before announcing."], [500, "A SOC in cybersecurity is this.", ["A Security Operations Center", "A type of chip", "A software license", "A network cable"], 0, "The team that monitors and responds to threats."]]}, {"name": "\ud83d\udccb Rules", "qs": [[100, "Laws protecting student education records in the US are called this.", ["FERPA", "HIPAA", "COPPA", "GDPR"], 0, "FERPA covers education records."], [200, "The US law protecting kids' online privacy under 13 is this.", ["COPPA", "FERPA", "HIPAA", "DMCA"], 0, "COPPA \u2014 the Children's Online Privacy Protection Act."], [300, "HIPAA protects this kind of information.", ["Health records", "Bank records", "School grades", "Passwords"], 0, "Medical privacy in the US."], [400, "GDPR is a privacy law from this region.", ["The European Union", "Japan", "Canada", "Australia"], 0, "The EU's General Data Protection Regulation."], [500, "A 'data breach notification' law requires companies to do this.", ["Tell affected people about a breach", "Pay a fine only", "Close down", "Change their name"], 0, "Notification duties are now widespread."]]}], "final": {"q": "A company has perfect encryption but an employee clicks a phishing link. What failed?", "options": ["The human layer \u2014 crypto cannot fix trust decisions", "The encryption", "The firewall math", "The hash function"], "answer": 0, "why": "Attackers target the easiest layer, and that is almost always people."}}, {"name": "Round 7: The NIST Standards", "cats": [{"name": "\ud83d\udcdc FIPS Numbers", "qs": [[100, "FIPS 203 is the standard for this.", ["ML-KEM key encapsulation", "Signatures", "Hashing", "Passwords"], 0, "FIPS 203 = ML-KEM (Kyber)."], [200, "FIPS 204 is the standard for this.", ["ML-DSA signatures", "Key exchange", "Encryption", "Compression"], 0, "FIPS 204 = ML-DSA (Dilithium)."], [300, "FIPS 205 is the standard for this.", ["SLH-DSA hash-based signatures", "Key exchange", "Random numbers", "Firewalls"], 0, "FIPS 205 = SLH-DSA (SPHINCS+)."], [400, "'FIPS' stands for this.", ["Federal Information Processing Standards", "Fast Internet Protocol System", "Full Integrity Proof Standard", "Federal Internet Privacy System"], 0, "US government technical standards."], [500, "The three finalized 2024 PQC standards are these.", ["203, 204, and 205", "1, 2, and 3", "100, 200, 300", "197, 198, 199"], 0, "FIPS 203, 204, and 205, published August 2024."]]}, {"name": "\ud83c\udfc6 The Contest", "qs": [[100, "NIST chose the new algorithms through this process.", ["A multi-year public competition", "A private vote", "A lottery", "A survey"], 0, "Open competition starting in 2016."], [200, "Anyone could do this during the competition.", ["Try to break the candidates", "Only watch", "Pay to enter", "Vote online"], 0, "Public cryptanalysis is the whole point."], [300, "Some candidates were eliminated because of this.", ["Researchers broke them", "They were too popular", "They cost too much", "They were too fast"], 0, "SIKE famously fell to a classical attack in 2022."], [400, "Public competitions produce stronger standards because of this.", ["Global experts attack them for years", "They're faster to run", "They're cheaper", "Fewer people see them"], 0, "Sunlight is the best security test."], [500, "NIST also runs an 'additional signatures' round to get this.", ["More diversity beyond lattices", "Faster algorithms only", "Smaller keys only", "Free software"], 0, "Diversity guards against one family being broken."]]}, {"name": "\ud83d\udd11 ML-KEM", "qs": [[100, "ML-KEM's job is this.", ["Establishing a shared secret key", "Signing documents", "Hashing files", "Storing passwords"], 0, "Key encapsulation."], [200, "The security levels of ML-KEM are named these.", ["512, 768, and 1024", "1, 2, 3", "A, B, C", "Low, Mid, High"], 0, "ML-KEM-512, -768, and -1024."], [300, "'KEM' stands for this.", ["Key Encapsulation Mechanism", "Key Exchange Method", "Keyed Encryption Model", "Kilobyte Error Margin"], 0, "Key Encapsulation Mechanism."], [400, "ML-KEM's 'ML' refers to this.", ["Module Lattice", "Machine Learning", "Multi Level", "Message Length"], 0, "Module-Lattice \u2014 the math it's built on."], [500, "Compared to RSA, ML-KEM public keys are this.", ["Larger, which affects bandwidth", "Much smaller", "Exactly the same", "Not used"], 0, "Bigger keys are the main migration cost."]]}, {"name": "\u270d\ufe0f Signatures", "qs": [[100, "A digital signature is created with this key.", ["The private key", "The public key", "A password", "A hash only"], 0, "Sign with private, verify with public."], [200, "ML-DSA is generally preferred over SLH-DSA because it's this.", ["Faster with smaller signatures", "More secure always", "Free", "Older"], 0, "Better performance for everyday signing."], [300, "SLH-DSA is preferred when you want this.", ["Security based only on hashes", "The fastest speed", "The smallest signature", "No keys"], 0, "Conservative security with no lattice assumptions."], [400, "Firmware signing favors SLH-DSA because of this.", ["Very long trust lifetimes", "Small file size", "Low cost", "Fast verification"], 0, "Roots of trust may need to last decades."], [500, "FN-DSA (Falcon) stands out because of this.", ["Compact signatures", "Huge keys", "No verification", "Zero math"], 0, "Small signatures suit constrained devices."]]}, {"name": "\ud83d\udd04 Migration", "qs": [[100, "'Crypto agility' means systems can do this.", ["Swap algorithms without a rebuild", "Run faster", "Use less power", "Skip encryption"], 0, "Designing for change is the lesson of this transition."], [200, "A 'cryptographic inventory' is this.", ["A list of where crypto is used in your systems", "A price list", "A user list", "A backup"], 0, "You can't migrate what you haven't found."], [300, "Hybrid mode during migration means this.", ["Running classical and PQC together", "Running two servers", "Encrypting twice with AES", "Using no crypto"], 0, "Safety net while PQC gets more battle-tested."], [400, "Migration is slow mainly because of this.", ["Crypto is embedded everywhere", "Nobody cares", "It's illegal", "Standards are secret"], 0, "Billions of devices, protocols, and certificates."], [500, "The most urgent data to protect first is this.", ["Data that must stay secret for many years", "Public web pages", "Temporary files", "Cached images"], 0, "Long-lived secrets face harvest-now-decrypt-later."]]}], "final": {"q": "Why did NIST standardize both ML-DSA and SLH-DSA instead of just the faster one?", "options": ["Diversity \u2014 if lattice math is ever weakened, hash-based signatures survive", "They forgot", "Cost reasons", "They are identical"], "answer": 0, "why": "Never bet everything on one mathematical assumption."}}, {"name": "Round 8: Signatures & Trust", "cats": [{"name": "\ud83d\udd8a\ufe0f How Signing Works", "qs": [[100, "A digital signature proves this about a message.", ["Who sent it and that it wasn't changed", "Only who sent it", "Only the date", "Only the size"], 0, "Authenticity plus integrity."], [200, "Signing usually happens on this, not the whole file.", ["A hash of the file", "The file name", "The first line", "The file size"], 0, "Sign the digest for speed."], [300, "If one bit of a signed file changes, verification does this.", ["Fails", "Still passes", "Repairs the file", "Ignores it"], 0, "The hash changes, so the signature no longer matches."], [400, "'Non-repudiation' means the signer cannot do this.", ["Deny they signed it", "Change their mind", "Sign again", "Share the file"], 0, "That's what makes signatures legally meaningful."], [500, "A signature does NOT do this.", ["Keep the contents secret", "Prove the sender", "Detect tampering", "Provide non-repudiation"], 0, "Signing is not encryption \u2014 content stays readable."]]}, {"name": "\ud83c\udfc5 Certificates", "qs": [[100, "A digital certificate links a public key to this.", ["An identity", "A password", "A file", "An IP only"], 0, "It binds a key to a name."], [200, "Certificates are issued by these.", ["Certificate Authorities", "Internet providers", "Governments only", "Browsers"], 0, "CAs vouch for the binding."], [300, "Your browser trusts a site because of this.", ["A chain of trust up to a root CA", "Its logo", "Its name", "Its speed"], 0, "Trust chains up to preinstalled roots."], [400, "An expired certificate causes this.", ["A browser warning", "Faster loading", "Better security", "Nothing"], 0, "Expiry limits damage from stolen keys."], [500, "PQC affects certificates mainly because of this.", ["Signature and key sizes grow", "Colors change", "Names change", "They expire faster"], 0, "Bigger certs mean more bandwidth and protocol tweaks."]]}, {"name": "\ud83d\udce6 Supply Chain", "qs": [[100, "'Code signing' proves software came from this.", ["The claimed developer", "The internet", "Your computer", "A store"], 0, "Verify the publisher before installing."], [200, "A supply chain attack targets this.", ["A trusted vendor to reach many victims", "One person", "Only banks", "Only phones"], 0, "Compromise one supplier, hit thousands of customers."], [300, "The SolarWinds attack spread through this.", ["A trusted software update", "Email attachments", "USB drives", "Phone calls"], 0, "A poisoned update reached thousands of organizations."], [400, "An 'SBOM' is this.", ["A list of software components", "A backup file", "A firewall rule", "A password vault"], 0, "Software Bill of Materials \u2014 know what's inside."], [500, "Reproducible builds help by doing this.", ["Letting anyone verify the binary matches the source", "Making builds faster", "Reducing file size", "Encrypting code"], 0, "Independent verification catches tampering."]]}, {"name": "\ud83d\udd10 Key Management", "qs": [[100, "Your private key should be this.", ["Never shared with anyone", "Posted publicly", "Emailed to friends", "Written on a whiteboard"], 0, "Private means private."], [200, "A public key can safely be this.", ["Shared with anyone", "Kept secret only", "Deleted", "Encrypted always"], 0, "That's the entire point of public-key crypto."], [300, "'Key rotation' means doing this.", ["Replacing keys periodically", "Spinning a device", "Sharing keys", "Deleting all keys"], 0, "Limits how much a stolen key can expose."], [400, "An HSM is this.", ["Hardware that protects keys", "A hard drive", "A monitor", "A router"], 0, "Hardware Security Module \u2014 tamper-resistant key storage."], [500, "'Forward secrecy' means a stolen long-term key cannot do this.", ["Decrypt past sessions", "Sign messages", "Be replaced", "Be stored"], 0, "Each session uses fresh ephemeral keys."]]}, {"name": "\u2696\ufe0f Trust", "qs": [[100, "'Zero trust' security assumes this.", ["Nothing is trusted by default", "Everything inside is safe", "Firewalls are enough", "Passwords are enough"], 0, "Verify every request, every time."], [200, "A 'root of trust' is this.", ["The foundation everything else is verified against", "A password", "A backup", "A cable"], 0, "Break the root and the whole chain falls."], [300, "Open source crypto is often trusted more because of this.", ["Anyone can inspect it", "It's free", "It's newer", "It's faster"], 0, "Security through obscurity doesn't work."], [400, "'Kerckhoffs's principle' says a system should stay secure even if this is known.", ["Everything except the key", "Nothing", "The key", "The user"], 0, "Only the key needs to be secret."], [500, "Rolling your own crypto is discouraged because of this.", ["Subtle flaws are extremely easy to introduce", "It's illegal", "It's slow", "It's expensive"], 0, "Use reviewed, standardized implementations."]]}], "final": {"q": "A signed software update is intercepted and modified in transit. What happens?", "options": ["Verification fails because the hash no longer matches", "It installs normally", "The signature auto-repairs", "Nothing changes"], "answer": 0, "why": "Any change breaks the hash, so the signature check fails \u2014 that is the entire point."}}, {"name": "Round 9: Everyday Security", "cats": [{"name": "\ud83d\udcf1 Your Devices", "qs": [[100, "Locking your phone with a passcode protects against this.", ["Someone picking it up and reading it", "Slow WiFi", "Low battery", "Spam"], 0, "Physical access is a real threat."], [200, "Full-disk encryption protects your data when this happens.", ["Your device is lost or stolen", "You're online", "You update apps", "You charge it"], 0, "Encrypted at rest means the thief gets gibberish."], [300, "App permissions matter because apps can otherwise access this.", ["Your camera, mic, and location", "Only their own files", "Nothing", "Your battery only"], 0, "Grant only what the app truly needs."], [400, "Public charging stations can pose this risk.", ["Data transfer over the USB port", "Overcharging", "Slow charging", "Battery leaks"], 0, "Use a charge-only cable or adapter."], [500, "Old devices become risky mainly because of this.", ["They stop getting security updates", "They're slower", "They look old", "They cost more"], 0, "Unpatched known bugs are easy targets."]]}, {"name": "\ud83d\udd11 Passwords", "qs": [[100, "Reusing the same password everywhere is risky because of this.", ["One breach exposes every account", "It's hard to remember", "It's slower", "It's not allowed"], 0, "Credential stuffing attacks rely on reuse."], [200, "A passphrase like 'correct-horse-battery-staple' is strong because of this.", ["It's long", "It's short", "It has symbols", "It's a real sentence"], 0, "Length is the biggest factor."], [300, "'Have I Been Pwned' lets you check this.", ["If your email appeared in a known breach", "Your password strength", "Your WiFi speed", "Your device age"], 0, "A free breach-lookup service."], [400, "SMS two-factor is weaker than an app because of this.", ["SIM swapping attacks", "It's slower", "It costs money", "It needs WiFi"], 0, "Attackers can hijack your phone number."], [500, "'Passkeys' improve on passwords because they use this.", ["Public-key cryptography with no shared secret", "Longer passwords", "More symbols", "Two passwords"], 0, "Nothing phishable is ever sent to the site."]]}, {"name": "\ud83c\udf10 Online Life", "qs": [[100, "Before entering personal info, check for this.", ["https and the lock icon", "A colorful design", "A logo", "Fast loading"], 0, "Encryption in transit is the baseline."], [200, "Oversharing on social media can help attackers do this.", ["Answer your security questions", "Break encryption", "Steal your WiFi", "Slow your phone"], 0, "Pet names and birthdays are common answers."], [300, "A shortened link is risky because of this.", ["It hides the real destination", "It's slower", "It expires", "It costs money"], 0, "Preview it before clicking."], [400, "Downloading software from unofficial sites risks this.", ["Bundled malware", "Slower downloads", "Higher price", "Worse graphics"], 0, "Stick to official sources."], [500, "Your 'digital footprint' is this.", ["The trail of data you leave online", "Your shoe size", "Your download speed", "Your screen size"], 0, "It's larger and more permanent than most people think."]]}, {"name": "\ud83c\udfeb At School", "qs": [[100, "School WiFi is safer to use with this.", ["HTTPS sites and a VPN if needed", "No password", "Public sharing", "Old browsers"], 0, "Assume shared networks are observed."], [200, "Sharing your school login with a friend risks this.", ["Actions taken under your name", "Nothing", "Better grades", "Faster access"], 0, "You're responsible for what your account does."], [300, "If you spot a security flaw at school, you should do this.", ["Report it to a teacher or IT", "Exploit it", "Post it online", "Ignore it"], 0, "Responsible disclosure applies at school too."], [400, "Chromebooks stay relatively secure because of this.", ["Automatic updates and sandboxing", "No internet", "No apps", "No screen"], 0, "Sandboxing limits what a bad app can reach."], [500, "A strong reason schools care about encryption is this.", ["Student records are legally protected", "It looks modern", "It's cheap", "It's required for WiFi"], 0, "FERPA obligations make it a legal duty."]]}, {"name": "\ud83e\udded Habits", "qs": [[100, "The single best security habit is this.", ["Keeping software updated", "Buying new devices", "Using dark mode", "Clearing cookies"], 0, "Most attacks use already-patched bugs."], [200, "'Think before you click' mainly defends against this.", ["Phishing", "Power outages", "Slow WiFi", "Hardware failure"], 0, "Humans are the most targeted layer."], [300, "Locking your screen when you walk away prevents this.", ["Someone using your open session", "Battery drain", "Slow WiFi", "Overheating"], 0, "An unlocked machine is an open door."], [400, "Backups follow the '3-2-1 rule,' which means this.", ["3 copies, 2 media types, 1 offsite", "3 passwords", "2 devices only", "1 backup yearly"], 0, "Redundancy across locations and media."], [500, "Security is best described as this.", ["An ongoing process, not a product", "A one-time purchase", "A single app", "A password"], 0, "Threats evolve, so defenses must too."]]}], "final": {"q": "You reuse one password across ten sites and one site is breached. What is the risk?", "options": ["Attackers try that password everywhere \u2014 credential stuffing", "Only that site is affected", "Nothing", "Your device slows"], "answer": 0, "why": "This is why unique passwords plus a manager matter more than complexity rules."}}, {"name": "Round 10: Future & Careers", "cats": [{"name": "\ud83d\udcbc Cyber Jobs", "qs": [[100, "A person who tests systems by attacking them legally is this.", ["A penetration tester", "A janitor", "A pilot", "A chef"], 0, "Ethical hacking as a career."], [200, "A 'security analyst' mainly does this.", ["Monitors and investigates threats", "Designs logos", "Sells hardware", "Writes novels"], 0, "Watching, detecting, responding."], [300, "A cryptographer typically needs strong skills in this.", ["Mathematics", "Cooking", "Painting", "Driving"], 0, "Crypto is applied math."], [400, "A 'security architect' does this.", ["Designs how systems stay secure", "Builds houses", "Repairs phones", "Manages payroll"], 0, "Designing defenses at the system level."], [500, "Certifications like Security+ and CISSP are used for this.", ["Demonstrating verified knowledge", "Getting free software", "Building computers", "Learning to type"], 0, "Common hiring signals in the field."]]}, {"name": "\ud83d\udd2e What's Next", "qs": [[100, "Post-quantum migration will likely take this long.", ["Many years", "One week", "One day", "No time"], 0, "Global crypto transitions take a decade or more."], [200, "'Q-Day' is a nickname for this.", ["The day quantum computers can break current crypto", "A holiday", "A product launch", "A conference"], 0, "Nobody knows the date \u2014 which is why we prepare now."], [300, "Homomorphic encryption allows this.", ["Computing on encrypted data without decrypting", "Faster downloads", "Smaller files", "Free storage"], 0, "Process data while it stays encrypted."], [400, "'Zero-knowledge proofs' let you prove this.", ["A statement is true without revealing why", "Your identity only", "Your password", "Nothing"], 0, "Prove you know a secret without exposing it."], [500, "AI affects cybersecurity in this way.", ["It helps both attackers and defenders", "Only helps attackers", "Only helps defenders", "Has no effect"], 0, "A tool for both sides of the fight."]]}, {"name": "\ud83c\udfe2 Who's Switching", "qs": [[100, "Signal added post-quantum protection to do this.", ["Protect messages against future decryption", "Speed up chats", "Add stickers", "Save battery"], 0, "PQXDH protects against harvest-now-decrypt-later."], [200, "Browsers like Chrome adopted hybrid key exchange to protect this.", ["Web traffic today", "Bookmarks", "Downloads only", "Extensions"], 0, "Live TLS traffic already uses ML-KEM hybrids."], [300, "Banks care about PQC because of this.", ["Financial data must stay secret for years", "They like new tech", "It's free", "It's required for ATMs"], 0, "Long confidentiality windows plus regulation."], [400, "Governments push PQC timelines mainly because of this.", ["Classified data has decades-long secrecy needs", "Budgets", "Elections", "Tourism"], 0, "National security data outlives current crypto."], [500, "The NSA's post-quantum guidance suite is called this.", ["CNSA 2.0", "NSA-PQ", "QuantumGuard", "SecureNet"], 0, "Commercial National Security Algorithm Suite 2.0."]]}, {"name": "\ud83c\udf93 Learning More", "qs": [[100, "The open-source library for trying PQC in code is this.", ["liboqs (Open Quantum Safe)", "OpenSSL only", "jQuery", "NumPy"], 0, "liboqs implements the PQC algorithms."], [200, "You can run real quantum circuits online through this.", ["Cloud quantum platforms", "Any laptop", "A phone app only", "A calculator"], 0, "IBM and others offer cloud access to real hardware."], [300, "A CTF in cybersecurity is this.", ["Capture The Flag \u2014 a hacking competition", "A file type", "A certificate", "A firewall"], 0, "Great hands-on practice."], [400, "Reading the actual FIPS documents is useful because they are this.", ["The authoritative specifications", "Short stories", "Marketing material", "Optional"], 0, "Standards are the ground truth."], [500, "The best way to really learn crypto is this.", ["Build and break small examples yourself", "Only read about it", "Memorize names", "Watch one video"], 0, "Hands-on beats passive reading every time."]]}, {"name": "\ud83c\udf1f Big Picture", "qs": [[100, "Cryptography ultimately protects this.", ["Privacy and trust in digital life", "Only bank accounts", "Only governments", "Only games"], 0, "It underpins everything digital."], [200, "Encryption matters for human rights because it protects these people.", ["Journalists, activists, and ordinary people", "Only companies", "Only soldiers", "Only programmers"], 0, "Privacy is a foundation for free expression."], [300, "The 'crypto wars' debate is about this.", ["Balancing privacy against law enforcement access", "Cryptocurrency prices", "Video games", "Patent law"], 0, "A decades-long policy tension."], [400, "A 'backdoor' in encryption is dangerous because of this.", ["Anyone who finds it can use it", "It's slow", "It costs money", "It's hard to build"], 0, "You cannot build a door only good guys can open."], [500, "The main lesson of the PQC transition is this.", ["Prepare before the threat arrives", "Wait and see", "Ignore the math", "Trust one algorithm"], 0, "Migration takes years \u2014 starting early is the whole strategy."]]}], "final": {"q": "Why start migrating to post-quantum crypto before quantum computers can break anything?", "options": ["Migration takes years and today's data is already being harvested", "It is cheaper now", "It is required by law", "Quantum computers are here"], "answer": 0, "why": "Both halves matter: the transition is slow, and the threat is retroactive."}}];
+var R = null, rIdx = 0, score = 0, answered = {}, current = null, finalDone = false, wager = 0, correctCount = 0;
+var totalScore = 0, completed = {};
 
-function buildBoard() {
-    var b = document.getElementById("board");
-    var html = '<div class="brow">';
-    for (var c = 0; c < DATA.cats.length; c++) {
-        html += '<div class="cat">' + DATA.cats[c].name + "</div>";
+function el(id){return document.getElementById(id);}
+
+function showPicker(){
+    el("picker").style.display = "block";
+    el("game").style.display = "none";
+    var h = "";
+    for (var i = 0; i < ROUNDS.length; i++){
+        var done = completed[i];
+        h += "<button class='rb" + (done ? " done" : "") + "' onclick='startRound(" + i + ")'>" +
+             "<span class='rn'>" + (i+1) + "</span>" +
+             "<span class='rt'>" + ROUNDS[i].name.replace(/^Round \d+: /, "") + "</span>" +
+             (done ? "<span class='chk'>&#10003; " + done + "</span>" : "") +
+             "</button>";
     }
+    el("rounds").innerHTML = h;
+    el("totsc").textContent = totalScore;
+}
+
+function startRound(i){
+    rIdx = i; R = ROUNDS[i];
+    score = 0; answered = {}; current = null; finalDone = false; wager = 0; correctCount = 0;
+    el("picker").style.display = "none";
+    el("game").style.display = "block";
+    el("rname").textContent = R.name;
+    el("finalwrap").style.display = "none";
+    el("wagerbox").style.display = "block";
+    el("finalq").style.display = "none";
+    el("fwhy").style.display = "none";
+    el("fdone").style.display = "none";
+    el("board").style.display = "block";
+    buildBoard();
+    window.scrollTo(0,0);
+}
+
+function buildBoard(){
+    var b = el("board");
+    var html = "<div class='brow'>";
+    for (var c = 0; c < R.cats.length; c++){ html += "<div class='cat'>" + R.cats[c].name + "</div>"; }
     html += "</div>";
-    for (var r = 0; r < 5; r++) {
-        html += '<div class="brow">';
-        for (var c = 0; c < DATA.cats.length; c++) {
-            var key = c + "-" + r;
-            var val = DATA.cats[c].qs[r][0];
-            var done = answered[key];
-            html += '<button class="tile' + (done ? " done" : "") + '" ' +
-                (done ? "disabled" : 'onclick="openQ(' + c + "," + r + ')"') +
-                ">" + (done ? "&#10003;" : val) + "</button>";
+    for (var r = 0; r < 5; r++){
+        html += "<div class='brow'>";
+        for (var c = 0; c < R.cats.length; c++){
+            var key = c + "-" + r, val = R.cats[c].qs[r][0], done = answered[key];
+            html += "<button class='tile" + (done ? " done" : "") + "' " +
+                (done ? "disabled" : "onclick='openQ(" + c + "," + r + ")'") + ">" +
+                (done ? "&#10003;" : val) + "</button>";
         }
         html += "</div>";
     }
     b.innerHTML = html;
-    document.getElementById("sc").textContent = score;
-    var total = DATA.cats.length * 5;
+    el("sc").textContent = score;
     var n = Object.keys(answered).length;
-    document.getElementById("prog").textContent = n + " / " + total;
-    if (n === total && !finalDone) { showFinalPrompt(); }
+    el("prog").textContent = n + " / 25";
+    if (n === 25 && !finalDone){ showFinalPrompt(); }
 }
 
-function openQ(c, r) {
-    var q = DATA.cats[c].qs[r];
-    current = { c: c, r: r, val: q[0], answer: q[3], why: q[4] };
-    document.getElementById("board").style.display = "none";
-    var m = document.getElementById("modal");
-    m.style.display = "block";
-    document.getElementById("mcat").textContent = DATA.cats[c].name + " - " + q[0] + " points";
-    document.getElementById("mq").textContent = q[1];
+function openQ(c, r){
+    var q = R.cats[c].qs[r];
+    current = {c:c, r:r, val:q[0], answer:q[3], why:q[4]};
+    el("board").style.display = "none";
+    el("modal").style.display = "block";
+    el("mcat").textContent = R.cats[c].name + " - " + q[0] + " points";
+    el("mq").textContent = q[1];
     var opts = "";
-    for (var i = 0; i < q[2].length; i++) {
-        opts += '<button class="opt" onclick="answer(' + i + ',this)">' + q[2][i] + "</button>";
+    for (var i = 0; i < q[2].length; i++){
+        opts += "<button class='opt' onclick='answer(" + i + ",this)'>" + q[2][i] + "</button>";
     }
-    document.getElementById("mopts").innerHTML = opts;
-    document.getElementById("mwhy").style.display = "none";
-    document.getElementById("mback").style.display = "none";
+    el("mopts").innerHTML = opts;
+    el("mwhy").style.display = "none";
+    el("mback").style.display = "none";
 }
 
-function answer(i, btn) {
+function answer(i, btn){
     if (!current || current.locked) return;
     current.locked = true;
     var right = i === current.answer;
     var btns = document.querySelectorAll(".opt");
-    for (var k = 0; k < btns.length; k++) {
+    for (var k = 0; k < btns.length; k++){
         btns[k].disabled = true;
-        if (k === current.answer) { btns[k].classList.add("right"); }
+        if (k === current.answer){ btns[k].classList.add("right"); }
     }
-    if (!right) { btn.classList.add("wrong"); }
+    if (!right){ btn.classList.add("wrong"); }
     else { score += current.val; correctCount++; confetti(); }
-    var w = document.getElementById("mwhy");
-    w.style.display = "block";
-    w.innerHTML = (right ? "<b class='ok'>&#127881; Correct! +" + current.val + "</b><br>"
-                         : "<b class='no'>Not quite!</b><br>") + current.why;
+    el("mwhy").style.display = "block";
+    el("mwhy").innerHTML = (right ? "<b class='ok'>&#127881; Correct! +" + current.val + "</b><br>"
+                                  : "<b class='no'>Not quite!</b><br>") + current.why;
     answered[current.c + "-" + current.r] = true;
-    document.getElementById("mback").style.display = "block";
+    el("mback").style.display = "block";
 }
 
-function backToBoard() {
-    document.getElementById("modal").style.display = "none";
-    document.getElementById("board").style.display = "block";
+function backToBoard(){
+    el("modal").style.display = "none";
+    el("board").style.display = "block";
     current = null;
     buildBoard();
 }
 
-function showFinalPrompt() {
-    document.getElementById("board").style.display = "none";
-    document.getElementById("finalwrap").style.display = "block";
-    document.getElementById("fscore").textContent = score;
-    var sel = document.getElementById("wagerSel");
+function showFinalPrompt(){
+    el("board").style.display = "none";
+    el("finalwrap").style.display = "block";
+    el("fscore").textContent = score;
+    var sel = el("wagerSel");
     sel.innerHTML = "";
     var choices = [0, 100, 250, 500];
-    if (score > 500) { choices.push(score); }
-    for (var i = 0; i < choices.length; i++) {
-        if (choices[i] <= score || choices[i] === 0) {
-            sel.innerHTML += '<option value="' + choices[i] + '">' + choices[i] + " points</option>";
+    if (score > 500){ choices.push(score); }
+    for (var i = 0; i < choices.length; i++){
+        if (choices[i] <= score || choices[i] === 0){
+            sel.innerHTML += "<option value='" + choices[i] + "'>" + choices[i] + " points</option>";
         }
     }
-    if (!sel.innerHTML) { sel.innerHTML = '<option value="0">0 points</option>'; }
+    if (!sel.innerHTML){ sel.innerHTML = "<option value='0'>0 points</option>"; }
 }
 
-function startFinal() {
-    wager = parseInt(document.getElementById("wagerSel").value, 10) || 0;
-    document.getElementById("wagerbox").style.display = "none";
-    document.getElementById("finalq").style.display = "block";
-    document.getElementById("fq").textContent = DATA.final.q;
+function startFinal(){
+    wager = parseInt(el("wagerSel").value, 10) || 0;
+    el("wagerbox").style.display = "none";
+    el("finalq").style.display = "block";
+    el("fq").textContent = R.final.q;
     var opts = "";
-    for (var i = 0; i < DATA.final.options.length; i++) {
-        opts += '<button class="opt" onclick="finalAnswer(' + i + ',this)">' + DATA.final.options[i] + "</button>";
+    for (var i = 0; i < R.final.options.length; i++){
+        opts += "<button class='opt' onclick='finalAnswer(" + i + ",this)'>" + R.final.options[i] + "</button>";
     }
-    document.getElementById("fopts").innerHTML = opts;
+    el("fopts").innerHTML = opts;
 }
 
-function finalAnswer(i, btn) {
+function finalAnswer(i, btn){
     if (finalDone) return;
     finalDone = true;
-    var right = i === DATA.final.answer;
+    var right = i === R.final.answer;
     var btns = document.querySelectorAll("#fopts .opt");
-    for (var k = 0; k < btns.length; k++) {
+    for (var k = 0; k < btns.length; k++){
         btns[k].disabled = true;
-        if (k === DATA.final.answer) { btns[k].classList.add("right"); }
+        if (k === R.final.answer){ btns[k].classList.add("right"); }
     }
-    if (!right) { btn.classList.add("wrong"); score -= wager; }
+    if (!right){ btn.classList.add("wrong"); score -= wager; }
     else { score += wager; confetti(); }
-    if (score < 0) { score = 0; }
-    var w = document.getElementById("fwhy");
-    w.style.display = "block";
-    w.innerHTML = (right ? "<b class='ok'>&#127881; Correct! +" + wager + "</b><br>"
-                         : "<b class='no'>Not this time! -" + wager + "</b><br>") + DATA.final.why;
-    var verdict = score >= 5000 ? "&#127942; QUANTUM CHAMPION!"
-        : score >= 3000 ? "&#129352; Quantum Expert!"
-        : score >= 1500 ? "&#129353; Solid work, agent!"
-        : "&#128218; Good start - play again to level up!";
-    document.getElementById("fdone").style.display = "block";
-    document.getElementById("fdone").innerHTML =
+    if (score < 0){ score = 0; }
+    el("fwhy").style.display = "block";
+    el("fwhy").innerHTML = (right ? "<b class='ok'>&#127881; Correct! +" + wager + "</b><br>"
+                                  : "<b class='no'>Not this time! -" + wager + "</b><br>") + R.final.why;
+    var prev = completed[rIdx] || 0;
+    if (score > prev){ totalScore += (score - prev); completed[rIdx] = score; }
+    var verdict = score >= 5000 ? "&#127942; ROUND CHAMPION!"
+        : score >= 3000 ? "&#129352; Strong round!"
+        : score >= 1500 ? "&#129353; Nice work!"
+        : "&#128218; Replay to beat your score!";
+    el("fdone").style.display = "block";
+    el("fdone").innerHTML =
         "<div class='bigscore'>" + score + " points</div>" +
         "<div class='verdict'>" + verdict + "</div>" +
-        "<div class='sub'>You got " + correctCount + " of 25 board questions right.</div>" +
-        '<button class="againb" onclick="restart()">&#128260; Play Again</button>';
+        "<div class='sub'>" + correctCount + " of 25 correct &middot; Best for this round: " + completed[rIdx] + "</div>" +
+        "<button class='againb' onclick='startRound(" + rIdx + ")'>&#128260; Replay Round</button>" +
+        "<button class='againb' style='background:#334155' onclick='showPicker()'>&#8592; Choose Another Round</button>";
 }
 
-function restart() {
-    score = 0; answered = {}; current = null; finalDone = false; wager = 0; correctCount = 0;
-    document.getElementById("finalwrap").style.display = "none";
-    document.getElementById("wagerbox").style.display = "block";
-    document.getElementById("finalq").style.display = "none";
-    document.getElementById("fwhy").style.display = "none";
-    document.getElementById("fdone").style.display = "none";
-    document.getElementById("board").style.display = "block";
-    buildBoard();
-}
-
-function confetti() {
-    var c = ["#fbbf24", "#10b981", "#3b82f6", "#8b5cf6", "#ef4444", "#f97316"];
-    for (var i = 0; i < 20; i++) {
-        (function(n) {
-            setTimeout(function() {
-                var el = document.createElement("div");
-                el.className = "confp";
-                el.style.left = Math.random() * 100 + "vw";
-                el.style.background = c[Math.floor(Math.random() * c.length)];
-                el.style.animationDuration = (1 + Math.random() * 2) + "s";
-                document.body.appendChild(el);
-                setTimeout(function() { el.remove(); }, 3000);
-            }, n * 40);
+function confetti(){
+    var c = ["#fbbf24","#10b981","#3b82f6","#8b5cf6","#ef4444","#f97316"];
+    for (var i = 0; i < 18; i++){
+        (function(n){
+            setTimeout(function(){
+                var d = document.createElement("div");
+                d.className = "confp";
+                d.style.left = Math.random()*100 + "vw";
+                d.style.background = c[Math.floor(Math.random()*c.length)];
+                d.style.animationDuration = (1 + Math.random()*2) + "s";
+                document.body.appendChild(d);
+                setTimeout(function(){ d.remove(); }, 3000);
+            }, n*40);
         })(i);
     }
 }
 
-buildBoard();
+showPicker();
 
 </script></body></html>
-""", height=820, scrolling=True)
+""", height=880, scrolling=True)
 
     st.caption(
-        "\U0001f4a1 **Teacher tip:** Works great on a projector for whole-class play \u2014 "
-        "split into two teams and alternate picks. 25 questions plus a wager round runs about 20 minutes."
+        "\U0001f4a1 **Teacher tip:** One round takes about 15-20 minutes and works well on a projector "
+        "with two teams alternating picks. Rounds 1-5 cover core content; 6-10 broaden into "
+        "cyber defense, standards, trust, everyday security, and careers."
     )
