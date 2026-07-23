@@ -42,7 +42,7 @@ def render_middle_school():
     )
 
     tab1, tab2, tab4, tab5, tab6, tab7, tab8, tab9, tab10, tab11 = st.tabs(
-        ["📖 Story Time", "🏗️ Lattice Explorer", "🏇 Quantum Derby", "🔑 Key Workshop", "🌀 Mini Game", "🎨 Hash Visualizer", "🔬 Key Size Lab", "⚡ Logic Gates", "🧠 Quiz Board", "🌐 Secure Network"]
+        ["📖 Story Time", "🏗️ Lattice Explorer", "🏇 Quantum Derby", "🔑 Key Workshop", "🌀 Mini Game", "🏭 Hash Lab", "🔬 Key Size Lab", "⚡ Logic Gates", "🧠 Quiz Board", "🌐 Secure Network"]
     )
 
     with tab11:
@@ -502,147 +502,93 @@ def render_middle_school():
             from modules.quantum_sandbox import render_quantum_sandbox
             render_quantum_sandbox()
     with tab7:
-        import streamlit.components.v1 as _ms7
-        st.subheader("🎨 Live Hash Visualizer — Watch the Avalanche!")
+        import hashlib as _hl
+        st.subheader("\U0001f3ed Hash Lab \u2014 Watch the Avalanche!")
         st.markdown(
-            "⚡ **Type anything and watch SHA-3 react in real time!** "
-            "Try changing just ONE letter — the entire hash explodes into something completely different. "
-            "That is the **avalanche effect** and it is what makes hashing secure!"
+            "\u26a1 **Change ONE letter and watch the entire hash explode.** "
+            "That is the **avalanche effect**, and it is what makes hashing secure."
         )
 
-        _ms7.html("""
-<style>
-body{margin:0;background:#0f172a;font-family:sans-serif;padding:10px;}
-.hv-wrap{max-width:580px;margin:0 auto;}
-.hv-input{width:100%;padding:10px;background:#1e293b;border:1px solid #334155;
-border-radius:8px;color:#a5b4fc;font-size:14px;outline:none;box-sizing:border-box;margin-bottom:6px;}
-.hv-input:focus{border-color:#4f46e5;}
-.label{font-size:0.75rem;font-weight:bold;color:#888;margin:8px 0 3px;letter-spacing:1px;text-transform:uppercase;}
-.hv-hash{font-family:monospace;font-size:11px;word-break:break-all;
-padding:12px;background:#0f172a;border:1px solid #334155;border-radius:8px;
-color:#10b981;margin:4px 0;min-height:36px;line-height:1.7;letter-spacing:0.5px;}
-.diff-bar{height:8px;background:#1e293b;border-radius:4px;margin:6px 0;overflow:hidden;}
-.diff-fill{height:100%;border-radius:4px;background:linear-gradient(to right,#10b981,#f59e0b,#ef4444);transition:width 0.3s;}
-.stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin:6px 0;}
-.stat{background:#1e293b;border-radius:8px;padding:8px;text-align:center;}
-.stat-n{font-size:1.2rem;font-weight:bold;color:#a5b4fc;}
-.stat-l{font-size:0.65rem;color:#888;text-transform:uppercase;}
-.avalanche{text-align:center;padding:10px;border-radius:8px;font-size:0.85rem;font-weight:bold;margin:6px 0;}
-</style>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/js-sha3/0.8.0/sha3.min.js"></script>
-<div class="hv-wrap">
-<div class="label">Message 1</div>
-<input class="hv-input" id="m1" value="Hello Kyber World!" oninput="update()" placeholder="Type your message...">
-<div class="label">SHA-3 Hash</div>
-<div class="hv-hash" id="h1">...</div>
+        hcol1, hcol2 = st.columns(2)
+        with hcol1:
+            hmsg1 = st.text_input("Message 1:", value="Hello Kyber World!", key="hv_m1", max_chars=200)
+        with hcol2:
+            hmsg2 = st.text_input("Message 2 (change one letter!):", value="hello Kyber World!", key="hv_m2", max_chars=200)
 
-<div class="label">Message 2 (try changing one letter!)</div>
-<input class="hv-input" id="m2" value="hello Kyber World!" oninput="update()" placeholder="Change one character...">
-<div class="label">SHA-3 Hash</div>
-<div class="hv-hash" id="h2">...</div>
+        hh1 = _hl.sha3_256(hmsg1.encode()).hexdigest() if hmsg1 else ""
+        hh2 = _hl.sha3_256(hmsg2.encode()).hexdigest() if hmsg2 else ""
 
-<div class="diff-bar"><div class="diff-fill" id="diff-fill" style="width:50%"></div></div>
+        def _hv_diff(a, b):
+            o1 = o2 = ""
+            for c1, c2 in zip(a, b):
+                if c1 == c2:
+                    o1 += f"<span style='color:#6b7280'>{c1}</span>"
+                    o2 += f"<span style='color:#6b7280'>{c2}</span>"
+                else:
+                    o1 += f"<span style='color:#10b981;font-weight:bold'>{c1}</span>"
+                    o2 += f"<span style='color:#ef4444;font-weight:bold'>{c2}</span>"
+            return o1, o2
 
-<div class="stats">
-<div class="stat"><div class="stat-n" id="diff-count">-</div><div class="stat-l">Chars Changed</div></div>
-<div class="stat"><div class="stat-n" id="diff-pct">-</div><div class="stat-l">% Different</div></div>
-<div class="stat"><div class="stat-n" id="hash-bits">256</div><div class="stat-l">Bits Output</div></div>
-</div>
-<div class="avalanche" id="avalanche-msg" style="background:#10b98115;color:#10b981;border:1px solid #10b98140">
-Type in both boxes to compare hashes!
-</div>
-</div>
+        if hh1 and hh2:
+            d1, d2 = _hv_diff(hh1, hh2)
+            for lbl, dd in (("SHA3-256 of Message 1", d1), ("SHA3-256 of Message 2", d2)):
+                st.markdown(f"**{lbl}:**")
+                st.markdown(
+                    f"<div style='background:#0f172a;border:1px solid #334155;border-radius:8px;"
+                    f"padding:10px;font-family:monospace;font-size:11px;word-break:break-all;"
+                    f"line-height:1.7;letter-spacing:0.5px'>{dd}</div>",
+                    unsafe_allow_html=True,
+                )
 
-<script>
-function sha3_256(msg) {
-    // Real SHA3-256 (Keccak) via js-sha3
-    return sha3_256_lib(msg);
-}
+            ndiff = sum(1 for a, b in zip(hh1, hh2) if a != b)
+            pct = round(ndiff / len(hh1) * 100)
+            m1c, m2c, m3c = st.columns(3)
+            m1c.metric("Chars Changed", f"{ndiff}/64")
+            m2c.metric("% Different", f"{pct}%")
+            m3c.metric("Bits Output", "256")
 
-function update() {
-    const m1 = document.getElementById('m1').value;
-    const m2 = document.getElementById('m2').value;
-    const h1 = qvHash(m1);
-    const h2 = qvHash(m2);
-    if (!h1 || !h2) {
-        document.getElementById('h1').textContent = 'Loading SHA-3 library...';
-        document.getElementById('h2').textContent = '';
-        setTimeout(update, 300);
-        return;
-    }
-
-    // Highlight differences
-    let s1 = '', s2 = '';
-    let diff = 0;
-    for(let i=0;i<h1.length;i++){
-        if(h1[i]===h2[i]){
-            s1+=`<span style='color:#4b5563'>${h1[i]}</span>`;
-            s2+=`<span style='color:#4b5563'>${h2[i]}</span>`;
-        } else {
-            s1+=`<span style='color:#10b981;font-weight:bold'>${h1[i]}</span>`;
-            s2+=`<span style='color:#ef4444;font-weight:bold'>${h2[i]}</span>`;
-            diff++;
-        }
-    }
-    document.getElementById('h1').innerHTML = s1;
-    document.getElementById('h2').innerHTML = s2;
-
-    const pct = Math.round(diff/h1.length*100);
-    document.getElementById('diff-count').textContent = diff+'/64';
-    document.getElementById('diff-pct').textContent = pct+'%';
-    document.getElementById('diff-fill').style.width = pct+'%';
-
-    const msg = document.getElementById('avalanche-msg');
-    if(m1===m2){
-        msg.textContent='✅ Same input = SAME hash every time!';
-        msg.style.background='#10b98115';msg.style.color='#10b981';msg.style.border='1px solid #10b98140';
-    } else if(pct>40){
-        msg.textContent='🌊 AVALANCHE EFFECT! '+pct+'% of the hash changed — from just a tiny input difference!';
-        msg.style.background='#ef444415';msg.style.color='#ef4444';msg.style.border='1px solid #ef444440';
-    } else {
-        msg.textContent='⚡ '+pct+'% changed so far — try more differences!';
-        msg.style.background='#f59e0b15';msg.style.color='#f59e0b';msg.style.border='1px solid #f59e0b40';
-    }
-}
-window.addEventListener('load', update);
-update();
-</script>
-""", height=480, scrolling=True)
+            if hmsg1 == hmsg2:
+                st.success("\u2705 Same input = SAME hash, every single time.")
+            elif pct > 40:
+                st.error(f"\U0001f30a AVALANCHE EFFECT! {pct}% of the hash changed \u2014 from a tiny input difference!")
+            else:
+                st.warning(f"\u26a1 {pct}% changed so far \u2014 try a bigger difference!")
+            st.progress(pct / 100)
 
         st.markdown("---")
-        col1, col2 = st.columns(2)
-        with col1:
+        fcol1, fcol2 = st.columns(2)
+        with fcol1:
             st.markdown(
                 "<div style='background:#1e293b;border-radius:10px;padding:12px'>"
-                "<h4 style='color:#a5b4fc;margin:0 0 6px'>🔐 Real SHA-3 Facts</h4>"
+                "<h4 style='color:#a5b4fc;margin:0 0 6px'>\U0001f510 Real SHA-3 Facts</h4>"
                 "<ul style='color:#ccc;font-size:0.82rem;line-height:1.8;margin:0;padding-left:16px'>"
                 "<li>SHA3-256 = 256 bits (64 hex chars)</li>"
                 "<li>SHA3-512 = 512 bits (128 hex chars)</li>"
                 "<li>Used inside SPHINCS+ signatures</li>"
-                "<li>Keccak sponge construction (5×5 matrix)</li>"
+                "<li>Keccak sponge construction (5\u00d75 matrix)</li>"
                 "<li>24 rounds of permutation</li>"
                 "</ul></div>",
-                unsafe_allow_html=True
+                unsafe_allow_html=True,
             )
-        with col2:
+        with fcol2:
             st.markdown(
                 "<div style='background:#1e293b;border-radius:10px;padding:12px'>"
-                "<h4 style='color:#f59e0b;margin:0 0 6px'>⚛️ Quantum vs SHA-3</h4>"
+                "<h4 style='color:#f59e0b;margin:0 0 6px'>\u269b\ufe0f Quantum vs SHA-3</h4>"
                 "<ul style='color:#ccc;font-size:0.82rem;line-height:1.8;margin:0;padding-left:16px'>"
-                "<li>Grover's Algorithm: √N speedup</li>"
-                "<li>SHA3-256: 2^256 → 2^128 quantum</li>"
+                "<li>Grover's Algorithm: \u221aN speedup</li>"
+                "<li>SHA3-256: 2^256 \u2192 2^128 quantum</li>"
                 "<li>128-bit security = still safe!</li>"
-                "<li>Just use SHA3-384 for extra safety</li>"
+                "<li>Use SHA3-384 for extra margin</li>"
                 "<li>No known quantum collision attacks</li>"
                 "</ul></div>",
-                unsafe_allow_html=True
+                unsafe_allow_html=True,
             )
 
-        if st.button("✅ I understand the avalanche effect! +15 XP", key="hash_viz_done"):
+        if st.button("\u2705 I understand the avalanche effect! +15 XP", key="hash_viz_done"):
             mark_complete("hash_avalanche")
-            award_badge("🌊 Avalanche Expert", xp=15)
+            award_badge("\U0001f30a Avalanche Expert", xp=15)
             st.session_state.xp = st.session_state.get("xp", 0) + 15
-            st.success("🎉 Badge unlocked: Avalanche Expert! +15 XP")
+            st.success("\U0001f389 Badge unlocked: Avalanche Expert! +15 XP")
 
     with tab8:
         import plotly.graph_objects as go
