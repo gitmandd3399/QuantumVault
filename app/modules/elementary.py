@@ -509,48 +509,8 @@ body{margin:0;background:#0f172a;font-family:sans-serif;padding:8px;text-align:c
             "Tap a word to flip the card. Then try the quiz!"
         )
 
-        VOCAB = [
-            {"word": "Cryptography", "emoji": "🔐",
-             "simple": "Writing secret messages so only YOUR friend can read them!",
-             "full": "The science of creating codes and ciphers to protect information from people who should not see it.",
-             "example": "When you pass a secret note in class — that is cryptography!",
-             "color": "#10b981"},
-            {"word": "Quantum Computer", "emoji": "⚛️",
-             "simple": "A super-fast computer that uses teeny tiny magic bits!",
-             "full": "A computer that uses quantum mechanics — qubits that can be 0 AND 1 at the same time — to solve some problems exponentially faster.",
-             "example": "Like a million calculators all working at once!",
-             "color": "#8b5cf6"},
-            {"word": "Lattice", "emoji": "🏗️",
-             "simple": "A giant grid of dots with a secret hidden inside!",
-             "full": "A mathematical structure — a regular grid of points in space. In 1000 dimensions, finding the secret dot is impossible even for quantum computers.",
-             "example": "Like a giant puzzle with too many pieces to count!",
-             "color": "#3b82f6"},
-            {"word": "Encryption", "emoji": "🔒",
-             "simple": "Scrambling a message so it looks like nonsense!",
-             "full": "The process of encoding information so only the person with the correct key can understand it. Used for emails, texts, and websites.",
-             "example": "Hello → #$@!kX9 (only your friend with the key can turn it back!)",
-             "color": "#f59e0b"},
-            {"word": "Kyber", "emoji": "💎",
-             "simple": "The new super-lock that nobody can break!",
-             "full": "ML-KEM FIPS 203 — the NIST approved post-quantum key exchange algorithm. Uses lattice math based on the Module-LWE problem.",
-             "example": "It's a lock with more combinations than stars in the sky!",
-             "color": "#10b981"},
-            {"word": "Shor's Algorithm", "emoji": "💥",
-             "simple": "The monster's secret weapon for popping old locks!",
-             "full": "A quantum algorithm created by Peter Shor in 1994 that can factor large numbers exponentially faster than classical computers, breaking RSA.",
-             "example": "Like a cheat code that solves the puzzle right away!",
-             "color": "#ef4444"},
-            {"word": "Post-Quantum Cryptography", "emoji": "🛡️",
-             "simple": "New secret codes that nobody can crack!",
-             "full": "Cryptographic algorithms designed to be secure against both classical and quantum computers. NIST approved 4 standards in 2024.",
-             "example": "Kyber, Dilithium, SPHINCS+, and Falcon are the four new quantum-safe heroes!",
-             "color": "#4f46e5"},
-            {"word": "NIST", "emoji": "🏛️",
-             "simple": "The team of smart scientists who pick the best locks!",
-             "full": "National Institute of Standards and Technology — a US federal agency that runs competitions to find the best cryptographic algorithms.",
-             "example": "They tested lots of locks for years. Then they picked the winners!",
-             "color": "#f97316"},
-        ]
+        from modules.pqc_vocab import cards as _vocab_cards
+        VOCAB = _vocab_cards()  # 103 terms from the shared bank
 
         if "vocab_card_idx" not in st.session_state:
             st.session_state.vocab_card_idx = 0
