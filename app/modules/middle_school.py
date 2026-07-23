@@ -41,8 +41,8 @@ def render_middle_school():
         "post-quantum cryptography. Let's go! 🚀"
     )
 
-    tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9, tab10, tab11 = st.tabs(
-        ["📖 Story Time", "🏗️ Lattice Explorer", "🏭 Hash Factory", "🏇 Quantum Derby", "🔑 Key Workshop", "🌀 Mini Game", "🎨 Hash Visualizer", "🔬 Key Size Lab", "⚡ Logic Gates", "🧠 Quiz Board", "🌐 Secure Network"]
+    tab1, tab2, tab4, tab5, tab6, tab7, tab8, tab9, tab10, tab11 = st.tabs(
+        ["📖 Story Time", "🏗️ Lattice Explorer", "🏇 Quantum Derby", "🔑 Key Workshop", "🌀 Mini Game", "🎨 Hash Visualizer", "🔬 Key Size Lab", "⚡ Logic Gates", "🧠 Quiz Board", "🌐 Secure Network"]
     )
 
     with tab11:
@@ -315,139 +315,6 @@ def render_middle_school():
                 "An attacker seeing only A and t cannot find s - "
                 "this is the Module-LWE problem!"
             )
-
-    with tab3:
-        st.subheader("🏭 Hash Function Factory — One-Way Street!")
-        st.markdown(
-            "🔒 **A hash function is like a blender for data!** "
-            "You can put anything IN — but you can NEVER get the original back out. "
-            "Change even ONE letter and the ENTIRE hash changes completely!"
-        )
-
-        col1, col2, col3 = st.columns(3)
-        with col1:
-            st.markdown(
-                "<div style='background:#1e1b4b;border:2px solid #8b5cf6;border-radius:10px;"
-                "padding:12px;text-align:center'>"
-                "<div style='font-size:1.5rem'>📄</div>"
-                "<div style='font-size:0.8rem;color:#a5b4fc;font-weight:bold'>ANY Input</div>"
-                "<div style='font-size:0.72rem;color:#888'>Word, book, video</div>"
-                "</div>",
-                unsafe_allow_html=True
-            )
-        with col2:
-            st.markdown(
-                "<div style='background:#4f46e520;border:2px solid #4f46e5;border-radius:10px;"
-                "padding:12px;text-align:center'>"
-                "<div style='font-size:1.5rem'>🌀</div>"
-                "<div style='font-size:0.8rem;color:#818cf8;font-weight:bold'>SHA-3 Blender</div>"
-                "<div style='font-size:0.72rem;color:#888'>One way only!</div>"
-                "</div>",
-                unsafe_allow_html=True
-            )
-        with col3:
-            st.markdown(
-                "<div style='background:#0c2e1e;border:2px solid #10b981;border-radius:10px;"
-                "padding:12px;text-align:center'>"
-                "<div style='font-size:1.5rem'>🔢</div>"
-                "<div style='font-size:0.8rem;color:#34d399;font-weight:bold'>256-bit Hash</div>"
-                "<div style='font-size:0.72rem;color:#888'>Always same size</div>"
-                "</div>",
-                unsafe_allow_html=True
-            )
-
-        st.markdown("---")
-        st.markdown("### 🧪 Hash Lab — Type anything and see it!")
-
-        col1, col2 = st.columns(2)
-        with col1:
-            msg1 = st.text_input("Message 1:", value="Hello Kyber!", key="ms_hash1", max_chars=200)
-        with col2:
-            msg2 = st.text_input("Message 2 (try changing 1 letter!):", value="hello Kyber!", key="ms_hash2", max_chars=200)
-
-        import hashlib
-        h1 = hashlib.sha3_256(msg1.encode()).hexdigest() if msg1 else ""
-        h2 = hashlib.sha3_256(msg2.encode()).hexdigest() if msg2 else ""
-
-        def color_diff_hash(h1, h2):
-            if not h1 or not h2: return h1, h2
-            out1, out2 = "", ""
-            for c1, c2 in zip(h1, h2):
-                if c1 == c2:
-                    out1 += f"<span style='color:#6b7280'>{c1}</span>"
-                    out2 += f"<span style='color:#6b7280'>{c2}</span>"
-                else:
-                    out1 += f"<span style='color:#10b981;font-weight:bold'>{c1}</span>"
-                    out2 += f"<span style='color:#ef4444;font-weight:bold'>{c2}</span>"
-            return out1, out2
-
-        h1_colored, h2_colored = color_diff_hash(h1, h2)
-
-        col1, col2 = st.columns(2)
-        with col1:
-            st.markdown("**SHA-3 Hash of Message 1:**")
-            st.markdown(
-                f"<div style='background:#0f172a;border:1px solid #334155;border-radius:8px;"
-                f"padding:10px;font-family:monospace;font-size:11px;word-break:break-all;"
-                f"line-height:1.6'>{h1_colored}</div>",
-                unsafe_allow_html=True
-            )
-        with col2:
-            st.markdown("**SHA-3 Hash of Message 2:**")
-            st.markdown(
-                f"<div style='background:#0f172a;border:1px solid #334155;border-radius:8px;"
-                f"padding:10px;font-family:monospace;font-size:11px;word-break:break-all;"
-                f"line-height:1.6'>{h2_colored}</div>",
-                unsafe_allow_html=True
-            )
-
-        if h1 and h2:
-            diff = sum(1 for a,b in zip(h1,h2) if a!=b)
-            pct = round(diff/len(h1)*100)
-            color = "#10b981" if msg1 != msg2 else "#6b7280"
-            st.markdown(
-                f"<div style='background:{color}15;border:1px solid {color}40;"
-                f"border-radius:10px;padding:12px;text-align:center;margin:8px 0'>"
-                f"<b style='color:{color}'>"
-                f"{'🌊 AVALANCHE EFFECT! ' + str(diff) + '/64 characters changed (' + str(pct) + '%)!' if msg1 != msg2 else '✅ Identical messages = identical hashes'}"
-                f"</b></div>",
-                unsafe_allow_html=True
-            )
-            if msg1 != msg2:
-                st.progress(pct/100)
-
-        st.markdown("---")
-        st.markdown("### 🎯 Hash Challenge!")
-        challenges = [
-            ("What does SHA-3 stand for?", ["Secure Hash Algorithm 3", "Super Hard Arithmetic 3", "Simple Hash Attack 3", "Shor Hash Algorithm 3"], 0),
-            ("If you change the hash input, what happens?", ["The entire hash changes completely", "Only one character changes", "Nothing changes", "The hash gets shorter"], 0),
-            ("Can you reverse a SHA-3 hash to get the original?", ["No — it is one-way only!", "Yes — use the inverse function", "Yes — if you have the key", "Only quantum computers can"], 0),
-            ("What is the avalanche effect?", ["Small input change = huge output change", "Hash gets bigger over time", "Quantum speedup on hashing", "Hash collision attack"], 0),
-        ]
-
-        if "hash_q" not in st.session_state:
-            st.session_state.hash_q = 0
-            st.session_state.hash_score = 0
-            st.session_state.hash_answered = False
-
-        q_idx = st.session_state.hash_q % len(challenges)
-        q, opts, ans = challenges[q_idx]
-
-        st.markdown(f"**Question {q_idx+1}/4:** {q}")
-        for i, opt in enumerate(opts):
-            if st.button(opt, key=f"hq_{q_idx}_{i}", use_container_width=True):
-                if i == ans:
-                    st.success("🎉 Correct! +10 XP")
-                    st.session_state.xp = st.session_state.get("xp", 0) + 10
-                    st.session_state.hash_score += 1
-                    st.session_state.hash_q += 1
-                    if st.session_state.hash_q >= len(challenges):
-                        award_badge("🏭 Hash Master", xp=20)
-                        mark_complete("hash_factory")
-                else:
-                    st.error(f"❌ Not quite! The answer was: **{opts[ans]}**")
-                    st.session_state.hash_q += 1
-                st.rerun()
 
     with tab4:
         import streamlit.components.v1 as _ms4
