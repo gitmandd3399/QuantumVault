@@ -41,9 +41,13 @@ def render_middle_school():
         "post-quantum cryptography. Let's go! 🚀"
     )
 
-    tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9, tab10 = st.tabs(
-        ["📖 Story Time", "🏗️ Lattice Explorer", "🏭 Hash Factory", "🏇 Quantum Derby", "🔑 Key Workshop", "🌀 Mini Game", "🎨 Hash Visualizer", "🔬 Key Size Lab", "⚡ Logic Gates", "🧠 Quiz Board"]
+    tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9, tab10, tab11 = st.tabs(
+        ["📖 Story Time", "🏗️ Lattice Explorer", "🏭 Hash Factory", "🏇 Quantum Derby", "🔑 Key Workshop", "🌀 Mini Game", "🎨 Hash Visualizer", "🔬 Key Size Lab", "⚡ Logic Gates", "🧠 Quiz Board", "🌐 Secure Network"]
     )
+
+    with tab11:
+        from modules.secure_network import render_secure_network
+        render_secure_network()
 
     with tab10:
         from modules.quiz_board import render_quiz_board
