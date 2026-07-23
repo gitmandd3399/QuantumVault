@@ -53,7 +53,7 @@ def render_high_school():
         "real standards, and real Python code. Let's build the future of security. 🛡️"
     )
 
-    tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8 = st.tabs([
+    tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9 = st.tabs([
         "📅 NIST Timeline",
         "⚖️ Algorithm Lab",
         "💻 Code It Yourself",
@@ -62,7 +62,12 @@ def render_high_school():
         "🎮 Tower Defense",
         "🧮 Math Challenge",
         "⚛️ Quantum Composer",
+        "🛰️ Mission Control",
     ])
+
+    with tab9:
+        from modules.mission_control import render_mission_control
+        render_mission_control()
 
     # ── Tab 1: NIST PQC Timeline ──────────────────────────────────────────────
     with tab1:
