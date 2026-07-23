@@ -562,8 +562,14 @@ function sha3_256(msg) {
 function update() {
     const m1 = document.getElementById('m1').value;
     const m2 = document.getElementById('m2').value;
-    const h1 = sha3_256(m1);
-    const h2 = sha3_256(m2);
+    const h1 = qvHash(m1);
+    const h2 = qvHash(m2);
+    if (!h1 || !h2) {
+        document.getElementById('h1').textContent = 'Loading SHA-3 library...';
+        document.getElementById('h2').textContent = '';
+        setTimeout(update, 300);
+        return;
+    }
 
     // Highlight differences
     let s1 = '', s2 = '';
@@ -598,6 +604,7 @@ function update() {
         msg.style.background='#f59e0b15';msg.style.color='#f59e0b';msg.style.border='1px solid #f59e0b40';
     }
 }
+window.addEventListener('load', update);
 update();
 </script>
 """, height=480, scrolling=True)
