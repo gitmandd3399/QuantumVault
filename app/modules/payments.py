@@ -237,6 +237,11 @@ def render_pricing_page():
             free_mod = st.selectbox(
                 "Choose your free grade level module:",
                 ["🟢 Elementary (K-5)", "🟡 Middle School (6-8)", "🔴 High School (9-12)"],
+                format_func=lambda v: {
+                    "🟢 Elementary (K-5)": "🟢 Level 1 · Explorer (best for K-5)",
+                    "🟡 Middle School (6-8)": "🟡 Level 2 · Agent (best for grades 6-8)",
+                    "🔴 High School (9-12)": "🔴 Level 3 · Specialist (best for grades 9-12)",
+                }.get(v, v),
                 key="free_mod_select"
             )
             free_email = st.text_input(

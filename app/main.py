@@ -220,9 +220,9 @@ def sidebar():
     # ── Custom styled navigation ─────────────────────────────────────────
     SECTIONS = [
         {"label": "📚 LEARN", "color": "#10b981", "items": [
-            ("🟢", "Elementary (K-5)",    "🟢 Elementary (K–5)"),
-            ("🟡", "Middle School (6-8)", "🟡 Middle School (6–8)"),
-            ("🔴", "High School (9-12)",  "🔴 High School (9–12)"),
+            ("🟢", "Level 1 · Explorer",   "🟢 Level 1 · Explorer (K–5)"),
+            ("🟡", "Level 2 · Agent",      "🟡 Level 2 · Agent (6–8)"),
+            ("🔴", "Level 3 · Specialist", "🔴 Level 3 · Specialist (9–12)"),
             ("🦸", "Story Adventure",   "🦸 Story Adventure"),
         ]},
         {"label": "🎮 GAMES", "color": "#f59e0b", "items": [
@@ -584,11 +584,11 @@ def main():
         )
         col1, col2, col3 = st.columns(3)
         with col1:
-            st.info("🟢 **Elementary**\nPuzzles & stories about secret locks")
+            st.info("🟢 **Level 1 · Explorer**\nPuzzles & stories about secret locks · best for K-5")
         with col2:
-            st.warning("🟡 **Middle School**\nLattice mazes & hash factories")
+            st.warning("🟡 **Level 2 · Agent**\nLattice mazes & hash factories · best for grades 6-8")
         with col3:
-            st.error("🔴 **High School**\nReal PQC algorithms & code labs")
+            st.error("🔴 **Level 3 · Specialist**\nReal PQC algorithms & code labs · best for grades 9-12")
         st.markdown("*← Pick your grade level in the sidebar to begin!*")
         return
 
@@ -621,9 +621,9 @@ def main():
     ]
 
     GRADE_MAP = {
-        "Elementary": "🟢 Elementary (K–5)",
-        "Middle":     "🟡 Middle School (6–8)",
-        "High":       "🔴 High School (9–12)",
+        "Elementary": "🟢 Level 1 · Explorer (K–5)",
+        "Middle":     "🟡 Level 2 · Agent (6–8)",
+        "High":       "🔴 Level 3 · Specialist (9–12)",
     }
 
     if plan == "free" and level and not level.startswith("─"):
@@ -719,13 +719,13 @@ def main():
         st.info("⏳ **Free trial:** " + str(_d) + "d " + str(_h) + "h remaining · Upgrade anytime to keep access")
         return True
 
-    if "Elementary" in level:
+    if "Level 1" in level:
         if _grade_gate("elem"):
             render_elementary()
-    elif "Middle" in level:
+    elif "Level 2" in level:
         if _grade_gate("mid"):
             render_middle_school()
-    elif "High School" in level:
+    elif "Level 3" in level:
         if _grade_gate("hs"):
             render_high_school()
     elif "Leaderboard" in level:
