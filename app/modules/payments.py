@@ -203,7 +203,12 @@ def render_pricing_page():
             except Exception:
                 _started = _dt.datetime.utcnow()
             _rem = _dt.timedelta(days=7) - (_dt.datetime.utcnow() - _started)
-            _modlabel = st.session_state.get("free_module", "your grade level")
+            _raw = st.session_state.get("free_module", "")
+            _modlabel = {"Elementary": "\U0001F7E2 Level 1 \u00b7 Explorer",
+                         "Middle": "\U0001F7E1 Level 2 \u00b7 Agent",
+                         "High": "\U0001F534 Level 3 \u00b7 Specialist"}.get(
+                             next((k for k in ("Elementary","Middle","High") if k in _raw), ""),
+                             _raw or "your level")
             if _rem.total_seconds() > 0:
                 _d = _rem.days; _h = _rem.seconds // 3600
                 st.markdown(
