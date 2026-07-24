@@ -317,61 +317,8 @@ def render_middle_school():
             )
 
     with tab4:
-        import streamlit.components.v1 as _ms4
-        import json as _json
-        st.subheader("🏇 Quantum Derby — Bet on the Winner!")
-        st.markdown(
-            "🪙 **You have 100 coins.** Wager on each race: can quantum computers really beat classical at EVERYTHING? "
-            "Bet smart — some of these races have surprise endings!"
-        )
-
-        problems = [
-            {
-            "name": "🔢 Factor RSA-2048",
-            "classical": "🐢 Millions of YEARS",
-            "quantum": "⚡ Just a few HOURS",
-            "winner": "quantum",
-            "why": "Shor's Algorithm finds prime factors exponentially faster!",
-            "pqc": "❌ RSA is BROKEN by quantum — that's why we need Kyber!",
-            "pqc_color": "#ef4444",
-            },
-            {
-            "name": "🏗️ Solve Lattice SVP",
-            "classical": "🐢 Super hard",
-            "quantum": "🐢 Still super hard!",
-            "winner": "tie",
-            "why": "No quantum algorithm gives significant speedup on lattice problems!",
-            "pqc": "✅ Kyber is SAFE — quantum computers can't solve SVP faster!",
-            "pqc_color": "#10b981",
-            },
-            {
-            "name": "🔍 Search Unsorted Data",
-            "classical": "🐢 Check ALL N items",
-            "quantum": "⚡ Only √N steps!",
-            "winner": "quantum",
-            "why": "Grover's Algorithm gives a quadratic speedup on search!",
-            "pqc": "⚠️ SHA-3 still safe — just use 256-bit output for 128-bit quantum security!",
-            "pqc_color": "#f59e0b",
-            },
-            {
-            "name": "🌀 Break SHA-3 Hash",
-            "classical": "🐢 2^256 tries needed",
-            "quantum": "⚡ 2^128 tries (Grover)",
-            "winner": "classical_safe",
-            "why": "Grover only gives square root speedup — 2^128 is still impossibly large!",
-            "pqc": "✅ SHA-3 is SAFE — double the output size defeats Grover!",
-            "pqc_color": "#10b981",
-            },
-        ]
-
-        _derby_html = '<!DOCTYPE html>\n<html><head><meta charset="UTF-8"><style>\n*{margin:0;padding:0;box-sizing:border-box}\nbody{background:#0b1526;font-family:\'Segoe UI\',sans-serif;color:#e2e8f0;padding:10px}\n.wrap{max-width:600px;margin:0 auto}\n.hud{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}\n.coins{background:#1a1500;border:2px solid #fbbf24;border-radius:10px;padding:6px 14px;font-weight:800;color:#fbbf24;font-size:16px}\n.round{color:#94a3b8;font-size:12px}\n.card{background:#111c30;border:1px solid #334155;border-radius:12px;padding:12px;margin-bottom:8px}\n.pname{color:#a5b4fc;font-weight:800;font-size:15px;margin-bottom:8px;text-align:center}\n.vs{display:grid;grid-template-columns:1fr 1fr;gap:8px}\n.side{background:#1e293b;border-radius:8px;padding:8px;text-align:center;font-size:12px}\n.side b{display:block;font-size:13px;margin-top:3px}\n.lbl{color:#64748b;font-size:10px}\n.bets{display:flex;gap:6px;justify-content:center;margin:8px 0}\n.chip{padding:6px 14px;border-radius:16px;border:2px solid #475569;background:#1e293b;color:#e2e8f0;cursor:pointer;font-weight:700;font-size:13px}\n.chip.on{border-color:#fbbf24;background:#1a1500;color:#fbbf24}\n.picks{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}\n.pick{padding:10px 4px;border-radius:10px;border:2px solid #475569;background:#1e293b;color:#e2e8f0;cursor:pointer;font-weight:800;font-size:13px}\n.pick:hover{border-color:#a5b4fc}\ncanvas{display:block;margin:0 auto;border-radius:12px;background:#0a1120}\n.banner{text-align:center;font-weight:800;font-size:15px;padding:8px;border-radius:10px;margin:8px 0;display:none}\n.win{background:#05301f;color:#34d399;border:1px solid #10b981}\n.lose{background:#2d0a0a;color:#f87171;border:1px solid #ef4444}\n.why{background:#0c1a30;border-left:3px solid #60a5fa;border-radius:6px;padding:8px 10px;font-size:12px;margin:6px 0;display:none}\n.pqc{border-radius:6px;padding:8px 10px;font-size:12px;margin:6px 0;display:none}\n.nextb{display:none;width:100%;padding:11px;border:none;border-radius:10px;background:linear-gradient(135deg,#4f46e5,#7c3aed);color:white;font-weight:800;font-size:14px;cursor:pointer}\n#final{display:none;text-align:center;padding:14px}\n#final h2{color:#fbbf24}\n</style></head><body><div class="wrap">\n<div class="hud"><div class="coins">🪙 <span id="coins">100</span></div><div class="round" id="roundlbl">Race 1</div></div>\n<div class="card" id="betcard">\n  <div class="pname" id="pname"></div>\n  <div class="vs">\n    <div class="side"><span class="lbl">🖥️ CLASSICAL</span><b id="pcl"></b></div>\n    <div class="side"><span class="lbl">⚛️ QUANTUM</span><b id="pqu"></b></div>\n  </div>\n  <div style="text-align:center;color:#94a3b8;font-size:11px;margin-top:8px">How many coins do you wager?</div>\n  <div class="bets" id="betrow">\n    <button class="chip" onclick="setBet(10,this)">10</button>\n    <button class="chip on" onclick="setBet(25,this)">25</button>\n    <button class="chip" onclick="setBet(50,this)">50</button>\n    <button class="chip" onclick="setBet(-1,this)">ALL IN</button>\n  </div>\n  <div style="text-align:center;color:#94a3b8;font-size:11px;margin-bottom:6px">Who wins this race? (Tie pays double!)</div>\n  <div class="picks">\n    <button class="pick" onclick="lockBet(\'classical_safe\')">🖥️ Classical</button>\n    <button class="pick" onclick="lockBet(\'quantum\')">⚛️ Quantum</button>\n    <button class="pick" onclick="lockBet(\'tie\')">🤝 Tie</button>\n  </div>\n</div>\n<canvas id="track" width="560" height="190"></canvas>\n<div class="banner" id="banner"></div>\n<div class="why" id="why"></div>\n<div class="pqc" id="pqcbox"></div>\n<button class="nextb" id="nextb" onclick="nextRound()">Next Race ➡️</button>\n<div id="final" class="card"></div>\n</div><script>\nconst PROBLEMS=__PROBLEMS__;\nlet coins=100,bet=25,order=[],round=0,phase=\'bet\',called=0;\nconst cv=document.getElementById(\'track\'),cx=cv.getContext(\'2d\');\nfunction shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}\nfunction init(){order=shuffle(PROBLEMS.map((_,i)=>i));round=0;coins=100;called=0;phase=\'bet\';showRound();}\nfunction cur(){return PROBLEMS[order[round]];}\nfunction showRound(){\n  document.getElementById(\'coins\').textContent=coins;\n  document.getElementById(\'roundlbl\').textContent=\'Race \'+(round+1)+\' of \'+PROBLEMS.length;\n  document.getElementById(\'pname\').textContent=cur().name;\n  document.getElementById(\'pcl\').textContent=cur().classical;\n  document.getElementById(\'pqu\').textContent=cur().quantum;\n  document.getElementById(\'betcard\').style.display=\'block\';\n  [\'banner\',\'why\',\'pqcbox\'].forEach(id=>document.getElementById(id).style.display=\'none\');\n  document.getElementById(\'nextb\').style.display=\'none\';\n  drawTrack(0,0,\'\');\n}\nfunction setBet(v,el){\n  document.querySelectorAll(\'.chip\').forEach(c=>c.classList.remove(\'on\'));\n  el.classList.add(\'on\');\n  bet=(v===-1)?coins:Math.min(v,coins);\n}\nlet racing=null;\nfunction lockBet(pick){\n  if(phase!==\'bet\')return;\n  bet=Math.min(bet,coins);if(bet<1)bet=Math.min(10,coins);\n  phase=\'race\';\n  document.getElementById(\'betcard\').style.display=\'none\';\n  const w=cur().winner;\n  const t0=performance.now();\n  const DUR=3200;\n  racing=requestAnimationFrame(function frame(now){\n    let t=Math.min(1,(now-t0)/DUR);\n    // progress curves: winner surges after 45%; loser fades; tie neck-and-neck\n    let pc,pq;\n    const surge=x=>x<0.45?x*0.75:0.34+(x-0.45)*1.25;\n    const fade=x=>x<0.45?x*0.72:0.32+(x-0.45)*0.55;\n    const even=x=>x*0.92;\n    if(w===\'quantum\'){pq=surge(t);pc=fade(t);}\n    else if(w===\'classical_safe\'){pc=surge(t);pq=fade(t);}\n    else{pc=even(t)+Math.sin(t*14)*0.012;pq=even(t)-Math.sin(t*14)*0.012;}\n    drawTrack(pc,pq,t<1?\'\':w);\n    if(t<1){racing=requestAnimationFrame(frame);}\n    else{settle(pick,w);}\n  });\n}\nfunction drawTrack(pc,pq,winner){\n  const W=cv.width,H=cv.height;\n  cx.clearRect(0,0,W,H);\n  cx.fillStyle=\'#0a1120\';cx.fillRect(0,0,W,H);\n  // crowd\n  cx.font=\'13px serif\';cx.globalAlpha=0.5;\n  for(let i=0;i<12;i++)cx.fillText([\'🎉\',\'👀\',\'🙌\',\'⭐\'][i%4],20+i*46,22);\n  cx.globalAlpha=1;\n  // lanes\n  [[58,\'#12203a\'],[128,\'#101b33\']].forEach(([y,c])=>{cx.fillStyle=c;cx.fillRect(10,y-24,W-20,48);});\n  // finish line\n  for(let y=30;y<H-10;y+=12){cx.fillStyle=(y/12)%2<1?\'#e2e8f0\':\'#475569\';cx.fillRect(W-34,y,8,12);}\n  const lane=(y,p,emoji,label,col)=>{\n    const x=24+p*(W-90);\n    cx.font=\'11px sans-serif\';cx.fillStyle=col;cx.fillText(label,14,y-30);\n    cx.font=\'30px serif\';\n    const bob=Math.sin(performance.now()/90+y)*2.5;\n    cx.fillText(emoji,x,y+10+bob);\n    // dust\n    if(p>0.01&&p<0.97){cx.globalAlpha=0.35;cx.font=\'12px serif\';cx.fillText(\'💨\',x-16,y+8);cx.globalAlpha=1;}\n  };\n  lane(58,pc,\'🖥️\',\'CLASSICAL\',\'#60a5fa\');\n  lane(128,pq,\'⚛️\',\'QUANTUM\',\'#c084fc\');\n  if(winner){\n    cx.font=\'16px sans-serif\';cx.fillStyle=\'#fbbf24\';cx.textAlign=\'center\';\n    const msg=winner===\'tie\'?\'PHOTO FINISH — TIE!\':(winner===\'quantum\'?\'⚛️ QUANTUM WINS!\':\'🖥️ CLASSICAL HOLDS!\');\n    cx.fillText(msg,W/2,H-12);cx.textAlign=\'left\';\n  }\n}\nfunction settle(pick,w){\n  phase=\'reveal\';\n  const right=pick===w;\n  const payout=right?(w===\'tie\'?bet*2:bet):-bet;\n  coins=Math.max(0,coins+payout);\n  if(right)called++;\n  if(coins===0){coins=25;}\n  document.getElementById(\'coins\').textContent=coins;\n  const b=document.getElementById(\'banner\');\n  b.className=\'banner \'+(right?\'win\':\'lose\');\n  b.style.display=\'block\';\n  b.textContent=right?(\'🎯 You called it! +\'+payout+\' coins\'+(w===\'tie\'?\' (double for the tie!)\':\'\')):(\'😮 Wrong — lost \'+bet+\' coins.\'+(coins===25?\' The bank spots you 25 to keep playing!\':\'\'));\n  const why=document.getElementById(\'why\');why.style.display=\'block\';why.innerHTML=\'💡 <b>Why:</b> \'+cur().why;\n  const pq=document.getElementById(\'pqcbox\');pq.style.display=\'block\';\n  pq.style.background=cur().pqc_color+\'22\';pq.style.border=\'1px solid \'+cur().pqc_color;\n  pq.innerHTML=\'🔐 <b>PQC Impact:</b> \'+cur().pqc;\n  const nb=document.getElementById(\'nextb\');nb.style.display=\'block\';\n  nb.textContent=(round<PROBLEMS.length-1)?\'Next Race ➡️\':\'🏆 See Final Results!\';\n}\nfunction nextRound(){\n  if(round<PROBLEMS.length-1){round++;phase=\'bet\';showRound();}\n  else{\n    [\'betcard\',\'banner\',\'why\',\'pqcbox\',\'nextb\'].forEach(id=>document.getElementById(id).style.display=\'none\');\n    cv.style.display=\'none\';\n    const f=document.getElementById(\'final\');f.style.display=\'block\';\n    const verdict=coins>=200?\'🏆 QUANTUM ORACLE! You see the future of computing!\':coins>=120?\'🥈 Sharp bettor — you know what quantum can and can not do!\':\'📚 The house taught you something: quantum computers do NOT win everything!\';\n    f.innerHTML=\'<h2>🏇 Derby Complete!</h2><div style="font-size:34px;margin:8px">🪙 \'+coins+\' coins</div><div style="color:#94a3b8;font-size:13px;margin-bottom:6px">Correct calls: \'+called+\' / \'+PROBLEMS.length+\'</div><div style="color:#e2e8f0;font-size:13px;margin-bottom:10px">\'+verdict+\'</div><button class="nextb" style="display:block" onclick="restart()">🔄 Race Again (new order!)</button>\';\n  }\n}\nfunction restart(){document.getElementById(\'final\').style.display=\'none\';cv.style.display=\'block\';init();}\ninit();\n</script></body></html>'.replace("__PROBLEMS__", _json.dumps(problems))
-        _ms4.html(_derby_html, height=660, scrolling=True)
-
-        if st.button("🏆 Finished all 6 races? Claim your Quantum Racer badge!", key="derby_badge", use_container_width=True):
-            mark_complete("quantum_race")
-            award_badge("⚡ Quantum Racer", xp=25)
-            st.session_state.xp = st.session_state.get("xp", 0) + 25
-            st.balloons()
+        from modules.quantum_derby import render_quantum_derby
+        render_quantum_derby()
 
     with tab5:
         import random as _rand
