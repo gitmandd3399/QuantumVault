@@ -636,7 +636,8 @@ def main():
         # Allow the chosen free module
         if free_mod:
             for key, val in GRADE_MAP.items():
-                if key in free_mod and key in level:
+                # key matches the STORED value ("Elementary"); val is the CURRENT nav label
+                if key in free_mod and (val == level or val in level or level in val):
                     allowed = True
                     break
         # If not allowed show upgrade prompt
@@ -649,7 +650,8 @@ def main():
                 "<p style='color:#94a3b8;margin-bottom:16px'>"
                 "This feature is available on paid plans.<br>"
                 "Your free plan includes: <b style='color:#60a5fa'>"
-                + (free_mod if free_mod else "one grade module of your choice") +
+                + (GRADE_MAP.get(next((k for k in GRADE_MAP if k in (free_mod or "")), ""), free_mod)
+                   if free_mod else "one level of your choice") +
                 "</b></p>"
                 "</div>",
                 unsafe_allow_html=True
