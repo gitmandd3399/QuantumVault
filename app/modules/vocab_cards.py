@@ -137,13 +137,16 @@ function render(){var f=filt();
  }else{
   var h="<div class='blist'>";
   for(var i=0;i<f.length;i++){var b=f[i];
-   h+="<button class='brow"+(known[b.w]?" bk":"")+"' onclick=\"jump('"+b.w+"')\">"+
+   h+="<button class='brow"+(known[b.w]?" bk":"")+"' onclick=" + String.fromCharCode(34) +
+    "jump('"+b.w+"')" + String.fromCharCode(34) + ">"+
     "<span class='bem'>"+b.e+"</span><span class='bw'>"+b.w+"</span>"+
     "<span class='bs'>"+b.s+"</span><span class='bdot' style='background:"+b.col+"'></span></button>"}
   el("browse").innerHTML=h+"</div>";
  }}
-function buildCats(){var h="<button class='cb on' onclick=\"setCat('',this)\">All topics</button>";
- for(var i=0;i<CATS.length;i++)h+="<button class='cb' onclick=\"setCat('"+CATS[i]+"',this)\">"+CATS[i]+"</button>";
+function buildCats(){
+ var q=String.fromCharCode(34);
+ var h="<button class='cb on' onclick="+q+"setCat('',this)"+q+">All topics</button>";
+ for(var i=0;i<CATS.length;i++)h+="<button class='cb' onclick="+q+"setCat('"+CATS[i]+"',this)"+q+">"+CATS[i]+"</button>";
  el("cats").innerHTML=h}
 buildCats();render();
 </script></body></html>"""
