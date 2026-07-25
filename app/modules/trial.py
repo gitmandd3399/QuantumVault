@@ -54,7 +54,7 @@ def trial_gate(game_key: str, game_name: str) -> bool:
     Also starts trial on first visit.
     """
     plan = st.session_state.get("plan_type", "free")
-    if plan == "paid":
+    if plan in ("paid", "admin"):
         return True
 
     # Trials require a logged-in account (prevents reload/incognito trial farming)
