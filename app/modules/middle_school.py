@@ -439,15 +439,14 @@ def render_middle_school():
 
     with tab6:
         from modules.games import render_lattice_maze, render_zombie_blast
-        game_choice = st.radio("Pick a game:", ["🌀 Lattice Maze", "🧟 Zombie Blast", "🧪 Quantum Sandbox"], horizontal=True)
+        game_choice = st.radio("Pick a game:", ["🌀 Lattice Maze", "🧟 Zombie Blast"], horizontal=True)
         if game_choice == "🌀 Lattice Maze":
             render_lattice_maze()
         elif game_choice == "🧟 Zombie Blast":
             render_zombie_blast(difficulty="medium")
 
         elif "Sandbox" in game_choice:
-            from modules.quantum_sandbox import render_quantum_sandbox
-            render_quantum_sandbox()
+            st.info("🚧 Quantum Sandbox — Coming Soon! Check back after launch.")
     with tab7:
         import hashlib as _hl
         st.subheader("\U0001f3ed Hash Lab \u2014 Watch the Avalanche!")
