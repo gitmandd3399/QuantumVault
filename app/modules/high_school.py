@@ -76,8 +76,32 @@ def render_high_school():
 
     # ── Tab 1: NIST PQC Timeline ──────────────────────────────────────────────
     with tab1:
+        # ─── STORY PICKER ─────────────────────────────────────
+        st.markdown("### 📖 Story Time")
+        st.caption("Three stories, three angles on post-quantum crypto. Pick one to read.")
+
+        _story_choice = st.radio(
+            "Choose a story:",
+            ["📅 The NIST PQC Timeline", "🏥 Sarah's Hospital Migration", "🏛️ The Government Contract"],
+            key="hs_story_choice",
+            horizontal=True,
+            label_visibility="collapsed",
+        )
+        st.markdown("---")
+
+        if _story_choice == "🏥 Sarah's Hospital Migration":
+            _render_hospital_story()
+        elif _story_choice == "🏛️ The Government Contract":
+            _render_government_story()
+        else:
+            # falls through to the existing NIST Timeline block below
+            pass
+
         import streamlit.components.v1 as _hs1
-        st.subheader("📅 The Road to Post-Quantum Standards")
+        if _story_choice != "📅 The NIST PQC Timeline":
+            pass
+        else:
+            st.subheader("📅 The Road to Post-Quantum Standards")
         st.markdown(
             "🏛️ **NIST ran the biggest cryptography competition in history.** "
             "69 algorithms from teams worldwide competed for 6 years. "
