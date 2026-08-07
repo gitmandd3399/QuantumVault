@@ -39,6 +39,7 @@ from modules.games import render_prime_factor_game, render_secret_message, rende
 from modules.career_explorer import render_career_explorer
 from modules.harvest_timeline import render_harvest_timeline
 from modules.lesson_plans import render_lesson_plans
+from modules.feedback import render_feedback
 from modules.pqc_demo import render_pqc_demo
 from modules.story_adventure import render_story_adventure
 from modules.privacy_policy import render_privacy_policy, render_terms_of_service
@@ -271,6 +272,7 @@ def sidebar():
             ("🗺️", "Career Explorer",   "🗺️ Career Explorer"),
             ("☠️", "Harvest Timeline",  "☠️ Harvest Timeline"),
             ("📚", "Lesson Plans",      "📚 Lesson Plans"),
+            ("💬", "Feedback",          "💬 Feedback"),
             ("📧", "Weekly Report",     "📧 Weekly Report"),
         ]},
         {"label": "⚙️ ACCOUNT", "color": "#6b7280", "items": [
@@ -612,6 +614,7 @@ def main():
         "🔢 Prime Factor Cracker",
 # PARKED-DEFENDER #         "🌐 Network Defender",
         "☠️ Harvest Timeline",
+        "💬 Feedback",
 # PARKED-ORBITAL #         "🚀 Quantum Orbital",
         "⚛️ Quantum Composer",
         "🔤 Secret Message Maker",
@@ -812,6 +815,8 @@ def main():
         render_harvest_timeline()
     elif "Lesson Plans" in level:
         render_lesson_plans()
+    elif "Feedback" in level:
+        render_feedback()
     elif "Privacy Policy" in level:
         render_privacy_policy()
     elif "Terms of Service" in level:
