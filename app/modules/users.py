@@ -62,6 +62,7 @@ def _row_to_user(row: dict) -> dict:
         "trials": trials,
         "created": row.get("created"),
         "last_login": row.get("last_login"),
+        "session_expires_at": row.get("session_expires_at"),
         "login_count": row.get("login_count", 1),
         "active": row.get("active", True),
     }
@@ -86,7 +87,9 @@ def create_user(email: str, plan: str = "free") -> dict:
             if existing.data:
                 row = existing.data[0]
                 new_count = (row.get("login_count", 0) or 0) + 1
-                sb.table("users").update({"last_login": now, "login_count": new_count}).eq("email_hash", key).execute()
+                import datetime as _dt2
+                _expires = (_dt2.datetime.utcnow() + _dt2.timedelta(hours=8)).isoformat()
+                sb.table("users").update({"last_login": now, "login_count": new_count, "session_expires_at": _expires}).eq("email_hash", key).execute()
                 row["last_login"] = now
                 row["login_count"] = new_count
                 return _row_to_user(row)
