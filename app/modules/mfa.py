@@ -169,6 +169,7 @@ def render_mfa_login():
                         user = create_user(email_addr)
                         plan = user.get("plan", "free")
                         st.session_state.mfa_verified = True
+                        st.session_state.login_timestamp = time.time()
                         st.session_state.mfa_step = "done"
                         st.session_state.user_email = email_addr
                         st.session_state.plan_type = plan
