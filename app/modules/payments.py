@@ -346,7 +346,7 @@ def render_pricing_page():
     # ── Main pricing cards ─────────────────────────────────────────────────
     col1, col2, col3 = st.columns(3)
 
-    MAIN_PLANS = ["classroom", "school", "grant"]
+    MAIN_PLANS = ["individual", "classroom", "school", "grant"]
     COLS = [col1, col2, col3]
 
     for col, plan_key in zip(COLS, MAIN_PLANS):
