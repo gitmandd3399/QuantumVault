@@ -444,7 +444,7 @@ def render_pricing_page():
     with col2:
         plan_choice = st.selectbox(
             "Select Your Plan",
-            ["classroom", "school", "per_student", "grant", "district"],
+            ["individual", "classroom", "school", "per_student", "grant", "district"],
             format_func=lambda x: PLANS[x]["emoji"] + " " + PLANS[x]["name"] + " — " + PLANS[x]["price_display"],
             key="payment_plan"
         )
