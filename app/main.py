@@ -132,15 +132,19 @@ import time as _time
 _SESSION_TTL = 8 * 3600  # 8 hours
 if st.session_state.get("mfa_verified"):
     _login_time = st.session_state.get("login_timestamp", 0)
-    # Only expire if timestamp exists (0 means pre-existing session — give it a fresh stamp)
     if _login_time == 0:
-        st.session_state["login_timestamp"] = _time.time()
-    elif _time.time() - _login_time > _SESSION_TTL:
-        # Session expired - clear auth state
+        # No timestamp = session predates expiry system, expire it now
         for _k in ["mfa_verified","user_email","mfa_step","mfa_code","mfa_code_time","mfa_email","mfa_attempts"]:
             if _k in st.session_state:
                 del st.session_state[_k]
-        st.warning("Session expired. Please log in again.")
+        st.warning("Your session has expired. Please log in again.")
+        st.rerun()
+    elif _time.time() - _login_time > _SESSION_TTL:
+        # Session genuinely expired after 8 hours
+        for _k in ["mfa_verified","user_email","mfa_step","mfa_code","mfa_code_time","mfa_email","mfa_attempts"]:
+            if _k in st.session_state:
+                del st.session_state[_k]
+        st.warning("Session expired after 8 hours. Please log in again.")
         st.rerun()
 
 # ── AUDIT LOGGING ─────────────────────────────────────────────────────────────
