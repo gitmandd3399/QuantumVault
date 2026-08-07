@@ -133,15 +133,28 @@ import time as _time
 _SESSION_TTL = 8 * 3600  # 8 hours
 if st.session_state.get("mfa_verified"):
     _login_time = st.session_state.get("login_timestamp", 0)
+    # If no local timestamp, try to get last_login from Supabase
     if _login_time == 0:
-        # No timestamp = session predates expiry system, expire it now
+        try:
+            from modules.users import get_user
+            _db_user_check = get_user(st.session_state.get("user_email", ""))
+            if _db_user_check and _db_user_check.get("last_login"):
+                import datetime as _dt
+                _last = _dt.datetime.fromisoformat(
+                    _db_user_check["last_login"].replace("Z",""))
+                _login_time = _last.timestamp()
+                st.session_state["login_timestamp"] = _login_time
+        except:
+            pass
+    if _login_time == 0:
+        # Still no timestamp - expire session
         for _k in ["mfa_verified","user_email","mfa_step","mfa_code","mfa_code_time","mfa_email","mfa_attempts"]:
             if _k in st.session_state:
                 del st.session_state[_k]
         st.warning("Your session has expired. Please log in again.")
         st.rerun()
     elif _time.time() - _login_time > _SESSION_TTL:
-        # Session genuinely expired after 8 hours
+        # Session expired after 8 hours
         for _k in ["mfa_verified","user_email","mfa_step","mfa_code","mfa_code_time","mfa_email","mfa_attempts"]:
             if _k in st.session_state:
                 del st.session_state[_k]
