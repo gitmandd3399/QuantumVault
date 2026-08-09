@@ -65,9 +65,9 @@ PLANS = {
         "price": 49900,
         "price_display": "$499",
         "period": "/year",
-        "description": "Single teacher, one grade level",
+        "description": "Single teacher, all three grade levels",
         "features": [
-            "One grade level module",
+            "All 3 grade level modules (K-12)",
             "Up to 35 students",
             "All mini games and AI Tutor",
             "Leaderboard access",
