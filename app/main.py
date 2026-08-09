@@ -123,6 +123,13 @@ if _dev_password:
 
 # ── Google Search Console Verification ──────────────────────────────────────
 _query = st.query_params
+
+# Pre-select plan from URL query param e.g. ?plan=classroom
+_plan_param = _query.get("plan", "").lower()
+if _plan_param and "level" not in st.session_state:
+    st.session_state.level = "💎 Pricing & Plans"
+if _plan_param and _plan_param not in st.session_state.get("preselected_plan", ""):
+    st.session_state.preselected_plan = _plan_param
 if _query.get("google_verify") == "a3abbd1f357726a3":
     st.write("google-site-verification: googlea3abbd1f357726a3.html")
     st.stop()
