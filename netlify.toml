@@ -1,2 +1,6 @@
 [build]
   publish = "landing"
+  command = ""
+
+[build.environment]
+  PYTHON_VERSION = ""
