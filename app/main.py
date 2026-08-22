@@ -310,6 +310,69 @@ def sidebar():
         ]},
     ]
 
+    # ── GOLD GLOW SIDEBAR STYLING ──────────────────────────────────────────────
+    st.markdown("""
+<style>
+/* Gold shimmer on all sidebar expander headers */
+[data-testid="stSidebar"] .streamlit-expanderHeader {
+    background: linear-gradient(135deg, #1a1200, #2a1f00) !important;
+    border: 1px solid #fbbf2460 !important;
+    border-radius: 8px !important;
+    color: #fbbf24 !important;
+    font-weight: 700 !important;
+    font-size: 12px !important;
+    margin-bottom: 3px !important;
+    box-shadow: 0 0 8px #fbbf2430, 0 0 16px #fbbf2415 !important;
+    transition: all 0.3s ease !important;
+    animation: goldPulse 3s ease-in-out infinite !important;
+}
+[data-testid="stSidebar"] .streamlit-expanderHeader:hover {
+    border-color: #fbbf24 !important;
+    box-shadow: 0 0 14px #fbbf2460, 0 0 28px #fbbf2430 !important;
+    background: linear-gradient(135deg, #2a1f00, #3d2e00) !important;
+}
+[data-testid="stSidebar"] .streamlit-expanderHeader p {
+    color: #fbbf24 !important;
+    font-weight: 700 !important;
+}
+/* Shimmer animation */
+@keyframes goldPulse {
+    0%, 100% { box-shadow: 0 0 6px #fbbf2430, 0 0 12px #fbbf2415; }
+    50% { box-shadow: 0 0 12px #fbbf2460, 0 0 24px #fbbf2430, 0 0 36px #fbbf2415; }
+}
+/* Sidebar buttons */
+[data-testid="stSidebar"] .stButton button {
+    background: transparent !important;
+    border: 1px solid #1a3a5a !important;
+    border-radius: 6px !important;
+    color: #e2e8f0 !important;
+    font-size: 11px !important;
+    text-align: left !important;
+    transition: all 0.2s ease !important;
+    margin-bottom: 2px !important;
+}
+[data-testid="stSidebar"] .stButton button:hover {
+    border-color: #fbbf2480 !important;
+    background: #fbbf2410 !important;
+    color: #fbbf24 !important;
+    box-shadow: 0 0 8px #fbbf2430 !important;
+    transform: translateX(3px) !important;
+}
+/* Sidebar background */
+[data-testid="stSidebar"] {
+    background: linear-gradient(180deg, #020d14 0%, #071520 100%) !important;
+}
+/* Expander content background */
+[data-testid="stSidebar"] .streamlit-expanderContent {
+    background: #071520 !important;
+    border: 1px solid #1a3a5a40 !important;
+    border-top: none !important;
+    border-radius: 0 0 8px 8px !important;
+    padding: 4px 6px !important;
+}
+</style>
+""", unsafe_allow_html=True)
+
     current = st.session_state.get("level", "")
 
     def get_active_section(cur):
