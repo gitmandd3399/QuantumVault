@@ -1,3 +1,4 @@
+import streamlit as st
 
 def render_teacher_dashboard():
     st.title("👨‍🏫 Teacher Dashboard")
