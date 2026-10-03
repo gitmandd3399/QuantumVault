@@ -255,9 +255,9 @@ def sidebar():
     # ── Custom styled navigation ─────────────────────────────────────────
     SECTIONS = [
         {"label": "🚀 START LEARNING!", "color": "#10b981", "items": [
-            ("🟢", "⭐ Explorers  (K-5)",    "🟢 Level 1 · Explorer (K–5)"),
-            ("🟡", "🔥 Agents  (6-8)",        "🟡 Level 2 · Agent (6–8)"),
-            ("🔴", "💥 Specialists  (9-12)",  "🔴 Level 3 · Specialist (9–12)"),
+            ("🟢", "⭐ Level 1 · Explorer",  "🟢 Level 1 · Explorer"),
+            ("🟡", "🔥 Level 2 · Agent",      "🟡 Level 2 · Agent"),
+            ("🔴", "💥 Level 3 · Specialist","🔴 Level 3 · Specialist"),
             ("🦸", "📖 Story Adventure",       "🦸 Story Adventure"),
         ]},
         {"label": "🎮 PLAY GAMES!", "color": "#f59e0b", "items": [
