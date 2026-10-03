@@ -709,11 +709,11 @@ def main():
         )
         col1, col2, col3 = st.columns(3)
         with col1:
-            st.info("🟢 **Level 1 · Explorer**\nPuzzles & stories about secret locks · best for K-5")
+            st.info("🟢 **Level 1 · Explorer**\nPuzzles & stories about secret locks")
         with col2:
-            st.warning("🟡 **Level 2 · Agent**\nLattice mazes & hash factories · best for grades 6-8")
+            st.warning("🟡 **Level 2 · Agent**\nLattice mazes & hash factories")
         with col3:
-            st.error("🔴 **Level 3 · Specialist**\nReal PQC algorithms & code labs · best for grades 9-12")
+            st.error("🔴 **Level 3 · Specialist**\nReal PQC algorithms & code labs")
         st.markdown("*← Pick your level in the sidebar to begin!*")
         return
 
