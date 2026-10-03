@@ -108,7 +108,7 @@ def render_research_journal():
     with col2:
         grade = st.selectbox(
             "Module:",
-            ["Elementary", "Middle School", "High School"],
+            ["Level 1 · Explorer", "Level 2 · Agent", "Level 3 · Specialist"],
             key="journal_grade"
         )
         topic = st.selectbox(

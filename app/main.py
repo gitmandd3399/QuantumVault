@@ -714,7 +714,7 @@ def main():
             st.warning("🟡 **Level 2 · Agent**\nLattice mazes & hash factories · best for grades 6-8")
         with col3:
             st.error("🔴 **Level 3 · Specialist**\nReal PQC algorithms & code labs · best for grades 9-12")
-        st.markdown("*← Pick your grade level in the sidebar to begin!*")
+        st.markdown("*← Pick your level in the sidebar to begin!*")
         return
 
     level = st.session_state.level

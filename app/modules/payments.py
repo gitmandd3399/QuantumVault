@@ -45,7 +45,7 @@ PLANS = {
         "period": "/year",
         "description": "All 3 grade levels for one learner — perfect for homeschool & self-learners",
         "features": [
-            "All 3 grade level modules (Elementary, Middle, High School)",
+            "All 3 level modules (Level 1 Explorer, Level 2 Agent, Level 3 Specialist)",
             "All 14+ interactive PQC games",
             "AI Tutor unlimited access",
             "Personal progress tracking",
@@ -263,11 +263,11 @@ def render_pricing_page():
         with col1:
             free_mod = st.selectbox(
                 "Choose your free grade level module:",
-                ["🟢 Elementary (K-5)", "🟡 Middle School (6-8)", "🔴 High School (9-12)"],
+                ["🟢 Level 1 · Explorer (K-5)", "🟡 Level 2 · Agent (6-8)", "🔴 Level 3 · Specialist (9-12)"],
                 format_func=lambda v: {
-                    "🟢 Elementary (K-5)": "🟢 Level 1 · Explorer (best for K-5)",
-                    "🟡 Middle School (6-8)": "🟡 Level 2 · Agent (best for grades 6-8)",
-                    "🔴 High School (9-12)": "🔴 Level 3 · Specialist (best for grades 9-12)",
+                    "🟢 Level 1 · Explorer (K-5)": "🟢 Level 1 · Explorer (best for K-5)",
+                    "🟡 Level 2 · Agent (6-8)": "🟡 Level 2 · Agent (best for grades 6-8)",
+                    "🔴 Level 3 · Specialist (9-12)": "🔴 Level 3 · Specialist (best for grades 9-12)",
                 }.get(v, v),
                 key="free_mod_select"
             )

@@ -16,7 +16,7 @@ PROGRESS_FILE = pathlib.Path(__file__).parent.parent / "static" / "progress.json
 # ── All trackable activities ──────────────────────────────────────────────────
 ACTIVITIES = {
     "elementary": {
-        "label": "🟢 Elementary (K-5)",
+        "label": "🟢 Level 1 · Explorer (K-5)",
         "color": "#14d4a8",
         "items": {
             "story_read":        "📖 Read the Agent Pixel story",
@@ -29,7 +29,7 @@ ACTIVITIES = {
         }
     },
     "middle_school": {
-        "label": "🟡 Middle School (6-8)",
+        "label": "🟡 Level 2 · Agent (6-8)",
         "color": "#7c6dfa",
         "items": {
             "lattice_visualizer":  "🏗️ Used the lattice visualizer",
@@ -43,7 +43,7 @@ ACTIVITIES = {
         }
     },
     "high_school": {
-        "label": "🔴 High School (9-12)",
+        "label": "🔴 Level 3 · Specialist (9-12)",
         "color": "#f45c5c",
         "items": {
             "nist_timeline":       "📅 Studied the NIST timeline",
@@ -433,9 +433,9 @@ def render_certificate_section():
     
     # Check which grade levels are complete enough for a certificate
     GRADE_ACTIVITIES = {
-        "Elementary (K-5)": "elementary",
-        "Middle School (6-8)": "middle_school", 
-        "High School (9-12)": "high_school",
+        "Level 1 · Explorer (K-5)": "elementary",
+        "Level 2 · Agent (6-8)": "middle_school", 
+        "Level 3 · Specialist (9-12)": "high_school",
     }
 
     student_name = st.text_input(

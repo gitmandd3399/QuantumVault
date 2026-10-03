@@ -42,7 +42,7 @@ def award_badge(badge: str, xp: int = 10):
 # ── Main render ───────────────────────────────────────────────────────────────
 
 def render_elementary():
-    st.title("🟢 Secret Keepers — Elementary Edition")
+    st.title("🟢 Level 1 · Explorer")
     st.markdown(
         "Welcome, agent! 🕵️ Your job: learn to send secret messages. "
         "Messages so safe that even a monster can't read them! 🐉🔐"
