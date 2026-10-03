@@ -1217,3 +1217,276 @@ loadQ();
 
     with tab8:
         render_quantum_composer()
+
+
+def _render_hospital_story():
+    import streamlit as st
+    st.subheader("\U0001F3E5 Sarah's Hospital Migration")
+    st.caption("A security engineer inherits 20 years of patient records \u2014 and a ticking clock.")
+
+    CHAPTERS = [
+        {
+            "title": "Chapter 1: The Memo",
+            "body": (
+                "Sarah's first Monday at Desert Regional Hospital started with a manila folder on her desk. "
+                "Inside was a single page from the CISO:\n\n"
+                "> *We have 20 years of patient records encrypted with RSA-2048. NIST has deprecated RSA "
+                "against quantum attack. Adversaries are recording our traffic today under the assumption "
+                "they can decrypt it in ten years. This is called **harvest-now-decrypt-later**. "
+                "You have six months to plan the migration. Start today.*\n\n"
+                "Sarah understood every word \u2014 and still felt her stomach drop. The data was not just "
+                "current traffic. It was decades of records under HIPAA, protected for the patient's "
+                "lifetime. If someone had been quietly copying encrypted backups for years, "
+                "the day a cryptographically relevant quantum computer arrives is the day those records "
+                "become readable. Migration is not about the future \u2014 it is about damage already done."
+            ),
+            "callout": ("The Threat", "Harvest-now-decrypt-later means an attacker records encrypted data today and stores it until quantum computers can break it. Long-lived confidential data is the primary target."),
+        },
+        {
+            "title": "Chapter 2: The Inventory",
+            "body": (
+                "Sarah's second week was spent making a spreadsheet nobody else in IT wanted to make: "
+                "every place cryptography was used in the hospital network.\n\n"
+                "The list grew alarming quickly. The TLS certificates on the patient portal. The VPN "
+                "into the imaging center. The signing keys on the pharmacy dispensing robots. The backup "
+                "encryption on the offsite tape drives. The device certificates on 2,300 IV pumps. "
+                "The email certificates. The code-signing key that authorized firmware updates "
+                "to the MRI scanner.\n\n"
+                "By Friday she had 47 distinct cryptographic assets. Not one of them was quantum-safe. "
+                "Some used RSA-2048. Some used ECDSA P-256. A handful still used RSA-1024. "
+                "The MRI firmware signing key had not been rotated since 2019. "
+                "Sarah realized her job was not picking a new algorithm. "
+                "Her job was finding every place the old ones lived. You cannot migrate what you have not found."
+            ),
+            "callout": ("The Lesson", "A cryptographic inventory is the first step of any real PQC migration. Most organizations discover they have far more crypto than they thought \u2014 and it is older than they thought."),
+        },
+        {
+            "title": "Chapter 3: The Budget",
+            "body": (
+                "Sarah brought her list to the CISO's office expecting a plan. She got a question instead.\n\n"
+                "> *We can migrate eight systems this fiscal year. Which eight?*\n\n"
+                "Eight. Out of 47. Sarah stared at the number. She had to triage \u2014 rank every asset "
+                "by data lifetime, exposure, and blast radius.\n\n"
+                "The patient portal (public internet, lifetime data): high priority. The internal LAN links "
+                "between servers in the same locked room: low priority. The MRI firmware key bothered her. "
+                "It signed updates that would ship to devices with 15-year service lives. If that key was "
+                "forgeable in 2032, an attacker could push malicious firmware to every MRI in the hospital. "
+                "Sarah moved it to slot two, right after the patient portal. "
+                "The tape backups \u2014 physically locked, not on any network \u2014 dropped to slot 30. "
+                "Some risks look big and are not. Some look small and are not. "
+                "The engineer who can tell the difference is worth their salary."
+            ),
+            "callout": ("The Framework", "Prioritize by: (1) how long the data must stay confidential, (2) how exposed the link is, (3) blast radius if the crypto breaks. High + exposed + wide blast = fix first."),
+        },
+        {
+            "title": "Chapter 4: The Cascade",
+            "body": (
+                "Two months in, Sarah found the problem that changed her plan.\n\n"
+                "The hospital ran its own certificate authority \u2014 a small internal CA that signed every "
+                "device certificate on the network. The CA root signing key was ECDSA P-256. Ten-year validity. "
+                "Sarah had listed it as one asset among 47. She realized that morning it was not one asset. "
+                "It was the root of trust for every other certificate in the building.\n\n"
+                "If Shor's algorithm made ECDSA forgeable in 2033, an attacker who obtained that ability "
+                "could mint valid-looking certificates for anything: the patient portal, the pharmacy servers, "
+                "the IV pumps, the MRI. Every device trusted the CA. Break the CA and you break every "
+                "downstream trust decision at once.\n\n"
+                "Sarah rewrote her memo that night. The patient portal was still number one. "
+                "But the CA root moved to number two, ahead of the MRI firmware key. "
+                "She recommended SLH-DSA (FIPS 205) for the CA \u2014 hash-based, larger signatures, "
+                "but built on no assumption Shor can break. For a 10-year root of trust, conservative won. "
+                "The CISO read the memo, nodded once, and signed the budget line."
+            ),
+            "callout": ("The Cascade Effect", "Roots of trust have blast radius: one broken CA invalidates every certificate below it. NIST recommends SLH-DSA for long-lived roots because its security rests only on hash functions."),
+        },
+    ]
+
+    if "hosp_ch" not in st.session_state:
+        st.session_state.hosp_ch = 0
+
+    ch = CHAPTERS[st.session_state.hosp_ch]
+    st.markdown(f"### {ch['title']}")
+    st.markdown(ch["body"])
+    st.markdown(
+        f"<div style='background:#0c1a30;border-left:3px solid #60a5fa;border-radius:6px;"
+        f"padding:11px 14px;margin:10px 0;font-size:0.9rem;line-height:1.55'>"
+        f"<b style='color:#60a5fa'>\U0001F4A1 {ch['callout'][0]}:</b> {ch['callout'][1]}"
+        f"</div>", unsafe_allow_html=True)
+
+    c1, c2, c3 = st.columns([1, 2, 1])
+    with c1:
+        if st.session_state.hosp_ch > 0 and st.button("\u2b05\ufe0f Previous", key="hosp_prev"):
+            st.session_state.hosp_ch -= 1
+            st.rerun()
+    with c2:
+        st.markdown(f"<div style='text-align:center;color:#64748b;font-size:0.85rem;padding-top:6px'>"
+                    f"Chapter {st.session_state.hosp_ch + 1} of {len(CHAPTERS)}</div>", unsafe_allow_html=True)
+    with c3:
+        if st.session_state.hosp_ch < len(CHAPTERS) - 1:
+            if st.button("Next \u27a1\ufe0f", key="hosp_next", type="primary"):
+                st.session_state.hosp_ch += 1
+                st.rerun()
+
+    if st.session_state.hosp_ch == len(CHAPTERS) - 1:
+        st.markdown("---")
+        st.markdown("### \U0001F9E0 Comprehension Check")
+        st.markdown("**Why did Sarah move the CA root ahead of the MRI firmware key?** Write 3-5 sentences.")
+        st.text_area("Your answer:", key="hosp_answer", height=120,
+                     placeholder="Think about blast radius and what depends on what...")
+        with st.expander("\u2705 What a strong answer looks like"):
+            st.markdown("A strong answer identifies **blast radius**: the MRI key, if forged, compromises MRI "
+                "scanners. The CA root, if forged, compromises every certificate the CA has issued. "
+                "Sarah reordered because a single break at the CA cascades through every downstream "
+                "trust decision. Best answers also note that SLH-DSA is conservative for long-lived "
+                "roots because its security depends only on hash functions.")
+        if st.button("\U0001F3C6 I finished this story! +25 XP", key="hosp_done"):
+            try:
+                mark_complete("story_hospital")
+                award_badge("\U0001F3E5 Migration Planner", xp=25)
+            except NameError:
+                pass
+            st.session_state.xp = st.session_state.get("xp", 0) + 25
+            st.success("\U0001F389 Badge unlocked: Migration Planner! +25 XP")
+
+
+def _render_government_story():
+    import streamlit as st
+    st.subheader("\U0001F3DB\uFE0F The Government Contract")
+    st.caption("A defense contractor gets a CNSA 2.0 compliance memo \u2014 and six months to implement it.")
+
+    CHAPTERS = [
+        {
+            "title": "Chapter 1: The Memo",
+            "body": (
+                "Marcus had been at Meridian Defense Solutions for eleven years when the memo arrived. "
+                "Subject line: *CNSA 2.0 Compliance Requirement \u2014 Action Required by Q2.*\n\n"
+                "The NSA's Commercial National Security Algorithm Suite 2.0 had been public for two years. "
+                "Marcus had read the summary when it dropped and filed it under *eventually*. "
+                "Eventually had arrived.\n\n"
+                "The memo was three pages. The requirements were not subtle. All new key establishment "
+                "must use ML-KEM. All new digital signatures must use ML-DSA or SLH-DSA. "
+                "Legacy RSA and ECDSA were to be phased out on a specific timeline. "
+                "The contract renewal with the Navy \u2014 worth $40 million over five years \u2014 "
+                "was contingent on demonstrating compliance.\n\n"
+                "Marcus printed the FIPS documents. FIPS 203. FIPS 204. FIPS 205. "
+                "He made a pot of coffee and started reading."
+            ),
+            "callout": ("CNSA 2.0", "The NSA's Commercial National Security Algorithm Suite 2.0 mandates post-quantum algorithms for national security systems. ML-KEM for key exchange, ML-DSA and SLH-DSA for signatures. Legacy RSA and ECDSA have published end-of-life dates."),
+        },
+        {
+            "title": "Chapter 2: The Hybrid Question",
+            "body": (
+                "Marcus's first instinct was to rip out RSA everywhere and replace it with ML-KEM. "
+                "His senior engineer talked him out of it over lunch.\n\n"
+                "*You cannot just swap algorithms mid-flight*, she said. *What happens to every system "
+                "that does not support ML-KEM yet? What happens during the transition window when some "
+                "clients are updated and some are not?*\n\n"
+                "She was describing hybrid key exchange \u2014 running a classical algorithm and a "
+                "post-quantum algorithm in parallel, combining their outputs. If either one holds, "
+                "the session is secure. A system that does not support ML-KEM still gets the classical "
+                "protection. A system that does gets both.\n\n"
+                "This was not a compromise. It was the NIST-recommended migration path. "
+                "NIST SP 800-227 explicitly addressed hybrid schemes during the transition period. "
+                "Marcus updated his implementation plan. Phase one: hybrid everywhere. "
+                "Phase two: drop the classical leg once the ecosystem caught up.\n\n"
+                "His senior engineer nodded. *Now you are thinking like an engineer, not a procurement officer.*"
+            ),
+            "callout": ("Hybrid Key Exchange", "During migration, hybrid schemes combine classical (ECDH) and post-quantum (ML-KEM) key exchange. The session key is derived from both. Either algorithm failing is survivable. NIST SP 800-227 covers hybrid recommendations."),
+        },
+        {
+            "title": "Chapter 3: The Firmware Problem",
+            "body": (
+                "The key exchange migration went faster than Marcus expected. "
+                "The firmware signing problem took longer than he feared.\n\n"
+                "Meridian's flagship product was a communications relay deployed on Navy vessels. "
+                "Service life: 20 years minimum. Firmware updates were signed with ECDSA P-384. "
+                "The signing key lived in an HSM in a locked cage in the DC facility.\n\n"
+                "The math was straightforward and uncomfortable. If the relay shipped in 2025 "
+                "and served until 2045, the firmware signing key needed to remain trustworthy "
+                "for two decades. ECDSA P-384 would not survive that timeline against a "
+                "cryptographically relevant quantum computer.\n\n"
+                "Marcus evaluated ML-DSA first. Fast, reasonable signature size, lattice-based. "
+                "Then he looked at SLH-DSA. Slower, larger signatures, but its security rested "
+                "entirely on hash functions \u2014 no lattice assumption, no number theory. "
+                "If every other PQC algorithm turned out to have a flaw nobody had found yet, "
+                "SLH-DSA would still stand.\n\n"
+                "For a 20-year firmware signing root on a weapons system, Marcus chose conservative. "
+                "SLH-DSA it was. The HSM vendor's timeline for support was six months. "
+                "Marcus added it to the compliance schedule and told the Navy program officer "
+                "the honest date."
+            ),
+            "callout": ("SLH-DSA for Long-Lived Roots", "SLH-DSA (FIPS 205) is the conservative choice for long-lived signing roots. Its security depends only on hash functions, not lattice problems or discrete logarithms. Larger signatures, slower verification, but the broadest security assumption."),
+        },
+        {
+            "title": "Chapter 4: The Audit",
+            "body": (
+                "Compliance and security are different things. Marcus learned the difference "
+                "in the audit.\n\n"
+                "The Navy sent two assessors. They spent three days reviewing documentation, "
+                "running tests, and asking questions Marcus had not anticipated. "
+                "Not *which algorithms did you implement* but *prove it*.\n\n"
+                "Prove the ML-KEM key exchange is actually happening, not just configured. "
+                "Prove the SLH-DSA signatures are being verified before firmware loads. "
+                "Prove the legacy ECDSA endpoints have been decommissioned, not just disabled. "
+                "Prove the HSM key ceremony was conducted with two-person integrity. "
+                "Show the logs. Show the test results. Show the incident response plan "
+                "for the day a private key is compromised.\n\n"
+                "Marcus passed. But the audit changed how he thought about the work. "
+                "Before the audit, compliance felt like a checkbox. "
+                "After it, he understood that the documentation *was* part of the security. "
+                "A system nobody could audit was a system nobody could trust.\n\n"
+                "He updated Meridian's internal playbook. New section: *Auditability Requirements.* "
+                "Every cryptographic decision documented. Every key ceremony logged. "
+                "Every algorithm choice justified in writing.\n\n"
+                "The Navy renewed the contract. Marcus sent his senior engineer a bottle of bourbon."
+            ),
+            "callout": ("Compliance vs Security", "Passing a compliance audit requires documentation, not just implementation. Auditors ask you to prove the controls are working, not just that they exist. Auditability is part of security."),
+        },
+    ]
+
+    if "gov_ch" not in st.session_state:
+        st.session_state.gov_ch = 0
+
+    ch = CHAPTERS[st.session_state.gov_ch]
+    st.markdown(f"### {ch['title']}")
+    st.markdown(ch["body"])
+    st.markdown(
+        f"<div style='background:#0c1a30;border-left:3px solid #f59e0b;border-radius:6px;"
+        f"padding:11px 14px;margin:10px 0;font-size:0.9rem;line-height:1.55'>"
+        f"<b style='color:#f59e0b'>\U0001F4A1 {ch['callout'][0]}:</b> {ch['callout'][1]}"
+        f"</div>", unsafe_allow_html=True)
+
+    c1, c2, c3 = st.columns([1, 2, 1])
+    with c1:
+        if st.session_state.gov_ch > 0 and st.button("\u2b05\ufe0f Previous", key="gov_prev"):
+            st.session_state.gov_ch -= 1
+            st.rerun()
+    with c2:
+        st.markdown(f"<div style='text-align:center;color:#64748b;font-size:0.85rem;padding-top:6px'>"
+                    f"Chapter {st.session_state.gov_ch + 1} of {len(CHAPTERS)}</div>", unsafe_allow_html=True)
+    with c3:
+        if st.session_state.gov_ch < len(CHAPTERS) - 1:
+            if st.button("Next \u27a1\ufe0f", key="gov_next", type="primary"):
+                st.session_state.gov_ch += 1
+                st.rerun()
+
+    if st.session_state.gov_ch == len(CHAPTERS) - 1:
+        st.markdown("---")
+        st.markdown("### \U0001F9E0 Comprehension Check")
+        st.markdown("**Why did Marcus choose SLH-DSA over ML-DSA for the firmware signing root, "
+                    "and why does the audit matter as much as the implementation?** Write 3-5 sentences.")
+        st.text_area("Your answer:", key="gov_answer", height=120,
+                     placeholder="Think about security assumptions and what auditability means...")
+        with st.expander("\u2705 What a strong answer looks like"):
+            st.markdown("A strong answer explains that SLH-DSA's security rests only on hash functions, "
+                "giving it the broadest security assumption of any PQC algorithm. For a 20-year firmware "
+                "signing root on a weapons system, conservative is correct. On auditability: compliance "
+                "requires proving controls work, not just implementing them. Logs, key ceremonies, and "
+                "documented justifications are part of the security posture, not paperwork.")
+        if st.button("\U0001F3C6 I finished this story! +25 XP", key="gov_done"):
+            try:
+                mark_complete("story_government")
+                award_badge("\U0001F3DB\uFE0F Defense Contractor", xp=25)
+            except NameError:
+                pass
+            st.session_state.xp = st.session_state.get("xp", 0) + 25
+            st.success("\U0001F389 Badge unlocked: Defense Contractor! +25 XP")
